@@ -1,4 +1,4 @@
-name: Publish API Center Image
+name: Publish Evidence Data Center Image
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: publish-api-center-image
+  group: publish-evidence-data-center-image
   cancel-in-progress: false
 
 jobs:
@@ -62,7 +62,7 @@ jobs:
 
       - name: Build and publish immutable image
         env:
-          IMAGE: ghcr.io/${{ github.repository_owner }}/test-api-center
+          IMAGE: ghcr.io/${{ github.repository_owner }}/evidence-data-center
           KRAKEND_IMAGE: ${{ steps.base_image.outputs.image }}
         run: |
           set -euo pipefail
@@ -82,7 +82,7 @@ jobs:
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: api-center-image-${{ github.run_id }}
+          name: evidence-data-center-image-${{ github.run_id }}
           path: |
             api-center-image.json
             api-center-base-image.txt
