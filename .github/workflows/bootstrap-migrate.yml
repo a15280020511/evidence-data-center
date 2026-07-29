@@ -1,0 +1,256 @@
+name: Bootstrap Evidence Center Migration
+
+on:
+  push:
+    branches: ["migration/from-test-20260729"]
+    paths: [".github/workflows/bootstrap-migrate.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bootstrap-evidence-center
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout migration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: migration/from-test-20260729
+          fetch-depth: 0
+
+      - name: Import pinned evidence center
+        env:
+          SOURCE_REPOSITORY: a15280020511/test
+          SOURCE_SHA: ea3b834717436b8db54a85240e7e816084cf0033
+          CENTER_ID: evidence-data-center
+          CENTER_DIR: api-center
+        run: |
+          set -euo pipefail
+          rm -rf _source
+          git clone --filter=blob:none --no-checkout "https://github.com/${SOURCE_REPOSITORY}.git" _source
+          git -C _source fetch --depth 1 origin "$SOURCE_SHA"
+          git -C _source checkout --detach "$SOURCE_SHA"
+          test "$(git -C _source rev-parse HEAD)" = "$SOURCE_SHA"
+
+          rm -rf api-center compute-center open-model-market tests tools governance
+          mkdir -p .github/workflows governance tools
+          find .github/workflows -type f ! -name bootstrap-migrate.yml -delete
+          cp -a _source/api-center ./api-center
+
+          python - <<'PY'
+          from pathlib import Path
+          import shutil
+
+          src = Path('_source/.github/workflows')
+          dst = Path('.github/workflows')
+          target = 'api-center/'
+          forbidden = ('compute-center/', 'open-model-market/')
+          for path in sorted(src.glob('*')):
+              if not path.is_file():
+                  continue
+              text = path.read_text(encoding='utf-8', errors='ignore')
+              name = path.name.lower()
+              selected = target in text or any(key in name for key in ('api-', 'akshare', 'aifin', 'data-commons', 'google-cloud'))
+              if selected and not any(item in text for item in forbidden):
+                  shutil.copy2(path, dst / path.name)
+
+          tests_src = Path('_source/tests')
+          tests_dst = Path('tests')
+          tests_dst.mkdir(exist_ok=True)
+          patterns = ('api-center/', 'api_ticket', 'api_catalog', 'connector', 'akshare', 'aifin', 'data_commons', 'google_cloud', 'newsapi', 'openmeteo', 'baidu', 'tianditu', 'amap', 'worldbank', 'osm')
+          forbidden_tests = ('compute-center/', 'open-model-market/')
+          if tests_src.exists():
+              for path in sorted(tests_src.glob('test_*.py')):
+                  text = path.read_text(encoding='utf-8', errors='ignore')
+                  if any(p in text or p in path.name for p in patterns) and not any(p in text for p in forbidden_tests):
+                      shutil.copy2(path, tests_dst / path.name)
+
+          for workflow in dst.glob('*'):
+              text = workflow.read_text(encoding='utf-8', errors='ignore')
+              import re
+              for rel in sorted(set(re.findall(r'tools/[A-Za-z0-9_.-]+\.py', text))):
+                  source = Path('_source') / rel
+                  if source.is_file():
+                      target_path = Path(rel)
+                      target_path.parent.mkdir(parents=True, exist_ok=True)
+                      shutil.copy2(source, target_path)
+          PY
+
+          for file in pyproject.toml pytest.ini ruff.toml .python-version LICENSE; do
+            test ! -f "_source/$file" || cp "_source/$file" "$file"
+          done
+          for file in _source/requirements*.txt _source/requirements*.lock; do
+            test ! -f "$file" || cp "$file" .
+          done
+          test ! -f _source/.gitignore || cp _source/.gitignore .gitignore
+          test ! -f _source/.github/dependabot.yml || cp _source/.github/dependabot.yml .github/dependabot.source.yml
+
+          cp _source/architecture/three-center-isolation-contract.json governance/three-center-isolation-contract.json
+          cp _source/gpts-orchestration-policy.json governance/gpts-orchestration-policy.json
+          cp _source/THREE_CENTERS.md governance/THREE_CENTERS.snapshot.md
+          cp _source/GPTS_USAGE_ORCHESTRATION.md governance/GPTS_USAGE_ORCHESTRATION.snapshot.md
+
+          cat > README.md <<'EOF'
+          # 数据证据中心
+
+          **Evidence & Data Center**，从 `a15280020511/test` 的 `api-center/` 物理拆分而来。
+
+          本仓库只负责外部结构化数据、地图、天气、人口、金融、经济、新闻、遥感、数据质量、Snapshot、Manifest与溯源。它不执行数值仿真，不调用专家模型，也不与其他中心直接通信；GPTs总控使用台是唯一中继。
+
+          - 正式业务目录：`api-center/`
+          - 正式入口：`[api]` / 数据连接器工作流
+          - 网络策略：仅允许登记连接器访问受控上游
+          - 生产输出：冻结数据、质量报告、来源比较、Manifest与SHA
+          - 源提交：`ea3b834717436b8db54a85240e7e816084cf0033`
+          EOF
+
+          cat > OPERATIONS_RUNBOOK.md <<'EOF'
+          # 数据证据中心运行手册
+
+          1. 只接受数据获取、质量核验、版本冻结和来源冲突比较任务。
+          2. 每个正式响应必须记录 `observed_at`、`data_vintage`、`source_url_hash`、`response_sha256`、单位、地域、时间范围和许可证。
+          3. 连接器状态只允许 `PRODUCTION`、`DEGRADED`、`BLOCKED`、`RETIRED`。
+          4. Secret仅在本仓库或本仓库Environment中配置，不向其他中心共享。
+          5. 失败时先读Artifact、运行日志和 `api-center/runtime_diagnostics.py`，禁止无限重试。
+          EOF
+
+          cat > RECOVERY.md <<'EOF'
+          # 恢复
+
+          以 `SOURCE_LOCK.json`、`MIGRATION_MANIFEST.json`、本地Workflow和 `api-center/` 为恢复权威。恢复时校验全部SHA；不得运行时跨仓库读取旧仓库代码。
+          EOF
+
+          cat > SECURITY.md <<'EOF'
+          # 安全边界
+
+          - 禁止导入或执行计算中心、专家中心代码。
+          - 禁止中心间 `repository_dispatch`、Artifact下载和共享业务Workflow。
+          - 禁止在日志、Artifact、Issue评论中输出Secret。
+          - URL、参数、重定向、响应大小和Schema必须通过现有连接器守卫。
+          EOF
+
+          cat > DIAGNOSTICS.md <<'EOF'
+          # 诊断
+
+          诊断顺序：票据Schema → Secret存在性 → 连接器状态 → HTTP状态 → 非空率 → Schema漂移 → 数据新鲜度 → Artifact完整性。
+          EOF
+
+          cat > CHANGELOG.md <<'EOF'
+          # Changelog
+
+          ## 2026-07-29
+          - 从单仓库物理拆分数据证据中心。
+          - 建立独立CI、独立Secret边界、迁移Manifest和治理合同冻结副本。
+          EOF
+
+          cat > SOURCE_LOCK.json <<EOF
+          {"source_repository":"${SOURCE_REPOSITORY}","source_commit":"${SOURCE_SHA}","source_path":"api-center/","migrated_at":"2026-07-29","runtime_cross_repository_reads":false}
+          EOF
+
+          cat > governance-compatibility.json <<'EOF'
+          {"governance_version":"3.0.0","center_version":"2.0.0","compatible_governance_versions":">=3.0.0,<4.0.0","sole_relay":"gpts-usage-center","direct_center_to_center_communication":false}
+          EOF
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          catalog = Path('api-center/api-catalog.json')
+          payload = {
+              'center_id': 'evidence-data-center',
+              'authoritative_source': 'api-center/api-catalog.json' if catalog.exists() else 'api-center/connectors/',
+              'source_commit': 'ea3b834717436b8db54a85240e7e816084cf0033',
+          }
+          if catalog.exists():
+              payload['catalog'] = json.loads(catalog.read_text(encoding='utf-8'))
+          Path('CAPABILITIES.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
+
+          cat > tools/validate_repository_boundary.py <<'PY'
+          from pathlib import Path
+          import json, sys
+
+          forbidden_dirs = [Path('compute-center'), Path('open-model-market')]
+          errors = [f'forbidden directory: {p}' for p in forbidden_dirs if p.exists()]
+          for workflow in Path('.github/workflows').glob('*'):
+              text = workflow.read_text(encoding='utf-8', errors='ignore')
+              for forbidden in ('compute-center/', 'open-model-market/'):
+                  if forbidden in text:
+                      errors.append(f'{workflow}: cross-center runtime reference {forbidden}')
+          policy = json.loads(Path('governance-compatibility.json').read_text(encoding='utf-8'))
+          if policy.get('direct_center_to_center_communication') is not False:
+              errors.append('direct communication policy must be false')
+          if errors:
+              print('\n'.join(errors)); sys.exit(1)
+          print('PASS: evidence center boundary')
+          PY
+
+          cat > .github/workflows/repository-static.yml <<'EOF'
+          name: Evidence Center Static Quality Gate
+          on:
+            pull_request:
+            push:
+              branches: [main]
+            workflow_dispatch:
+          permissions:
+            contents: read
+          jobs:
+            validate:
+              runs-on: ubuntu-24.04
+              timeout-minutes: 10
+              steps:
+                - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+                  with:
+                    persist-credentials: false
+                - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+                  with:
+                    python-version: "3.12"
+                - run: python tools/validate_repository_boundary.py
+                - run: python -m py_compile api-center/*.py
+                - run: python tools/validate_migration_manifest.py
+          EOF
+
+          cat > tools/validate_migration_manifest.py <<'PY'
+          from pathlib import Path
+          import hashlib, json, sys
+          manifest = json.loads(Path('MIGRATION_MANIFEST.json').read_text(encoding='utf-8'))
+          errors=[]
+          for row in manifest['files']:
+              p=Path(row['path'])
+              if not p.is_file(): errors.append(f'missing:{p}'); continue
+              digest=hashlib.sha256(p.read_bytes()).hexdigest()
+              if digest != row['sha256']: errors.append(f'sha:{p}')
+          if errors: print('\n'.join(errors)); sys.exit(1)
+          print(f"PASS: {len(manifest['files'])} files")
+          PY
+
+          rm -f .github/workflows/bootstrap-migrate.yml
+          rm -rf _source
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          excluded = {'.git', 'MIGRATION_MANIFEST.json'}
+          rows=[]
+          for path in sorted(Path('.').rglob('*')):
+              if not path.is_file() or any(part in excluded for part in path.parts):
+                  continue
+              rows.append({'path': path.as_posix(), 'size_bytes': path.stat().st_size, 'sha256': hashlib.sha256(path.read_bytes()).hexdigest()})
+          payload={'version':1,'center_id':'evidence-data-center','source_repository':'a15280020511/test','source_commit':'ea3b834717436b8db54a85240e7e816084cf0033','files':rows}
+          Path('MIGRATION_MANIFEST.json').write_text(json.dumps(payload, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+          PY
+          python tools/validate_repository_boundary.py
+          python tools/validate_migration_manifest.py
+
+      - name: Commit imported center
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: migrate and isolate evidence data center"
+          git push origin HEAD:migration/from-test-20260729
