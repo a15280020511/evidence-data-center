@@ -1,4 +1,4 @@
 google-auth==2.56.0
 jsonschema==4.26.0
 requests==2.34.2
-sqlglot==30.13.0
+sqlglot==30.14.0
