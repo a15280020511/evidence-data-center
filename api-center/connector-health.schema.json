@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "connector_id",
+    "status",
+    "last_checked_at",
+    "http_success_rate",
+    "business_non_empty_rate",
+    "freshness_seconds"
+  ],
+  "properties": {
+    "connector_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "enum": [
+        "PRODUCTION",
+        "DEGRADED",
+        "BLOCKED",
+        "RETIRED"
+      ]
+    },
+    "last_checked_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "http_success_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "business_non_empty_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "freshness_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "schema_changed": {
+      "type": "boolean"
+    },
+    "rate_limited": {
+      "type": "boolean"
+    },
+    "license_or_cost_changed": {
+      "type": "boolean"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "metric",
+    "sources",
+    "recommended_source",
+    "merge_allowed"
+  ],
+  "properties": {
+    "metric": {
+      "type": "string"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 2
+    },
+    "recommended_source": {
+      "type": "string"
+    },
+    "merge_allowed": {
+      "type": "boolean"
+    },
+    "difference_summary": {
+      "type": "string"
+    },
+    "correlated_sources_detected": {
+      "type": "boolean"
+    }
+  }
+}

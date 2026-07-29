@@ -176,7 +176,7 @@ API中心产生Snapshot
 → GPTs创建新的正式票据
 ```
 
-调用顺序可以由GPTs自由组合，但必须满足 `gpts-orchestration-policy.json` 的输入依赖、证据和循环限制。
+调用顺序可以由GPTs自由组合，但必须满足本仓库 `governance-compatibility.json` 与治理仓库冻结合同的输入依赖、证据和循环限制；业务运行时不得跨仓库读取治理仓库。
 
 ## AKShare金融公开数据
 

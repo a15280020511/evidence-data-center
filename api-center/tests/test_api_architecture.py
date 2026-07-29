@@ -20,9 +20,10 @@ class ApiArchitectureTests(unittest.TestCase):
             API / "build_catalog.py",
             REPO / ".github/workflows/api-ticket.yml",
             REPO / ".github/workflows/api-catalog-validate.yml",
-            REPO / "THREE_CENTERS.md",
-            REPO / "GPTS_USAGE_ORCHESTRATION.md",
-            REPO / "gpts-orchestration-policy.json",
+            REPO / "README.md",
+            REPO / "OPERATIONS_RUNBOOK.md",
+            REPO / "SECURITY.md",
+            REPO / "governance-compatibility.json",
             REPO / "OBSERVABILITY.md",
         ]
         self.assertEqual([str(path) for path in required if not path.is_file()], [])
@@ -60,7 +61,7 @@ class ApiArchitectureTests(unittest.TestCase):
     def test_catalog_and_orchestration_lock_roles(self) -> None:
         catalog = json.loads((API / "api-catalog.json").read_text(encoding="utf-8"))
         orchestration = json.loads(
-            (REPO / "gpts-orchestration-policy.json").read_text(encoding="utf-8")
+            (REPO / "governance-compatibility.json").read_text(encoding="utf-8")
         )
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
         self.assertEqual(catalog["maintenance_owner"], "web-gpt-github-plugin")
