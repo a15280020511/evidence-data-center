@@ -1,0 +1,110 @@
+{
+  "id": "newsapi-top-headlines",
+  "enabled": true,
+  "endpoint": "/data/newsapi/top-headlines",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "10s",
+  "input_query_strings": [
+    "q",
+    "sources",
+    "country",
+    "category",
+    "pageSize",
+    "page"
+  ],
+  "secret_header": {
+    "name": "X-Api-Key",
+    "env": "NEWSAPI_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "ok"
+    ],
+    "error_code_path": "code",
+    "message_path": "message",
+    "any_data_paths": [
+      "articles"
+    ]
+  },
+  "backend": {
+    "host": "https://newsapi.org",
+    "url_pattern": "/v2/top-headlines",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "totalResults",
+      "articles",
+      "code",
+      "message"
+    ],
+    "resilience": {
+      "circuit_breaker": {
+        "interval": 60,
+        "timeout": 30,
+        "max_errors": 3,
+        "log_status_change": true
+      },
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "q": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 500
+      },
+      "country": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      },
+      "category": {
+        "type": "string",
+        "enum": [
+          "business",
+          "entertainment",
+          "general",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      },
+      "pageSize": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required_any_of": [
+      [
+        "q",
+        "sources",
+        "country",
+        "category"
+      ]
+    ],
+    "mutually_exclusive": [
+      [
+        "sources",
+        "country"
+      ],
+      [
+        "sources",
+        "category"
+      ]
+    ]
+  }
+}

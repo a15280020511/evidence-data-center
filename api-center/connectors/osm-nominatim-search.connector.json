@@ -1,0 +1,49 @@
+{
+  "id": "osm-nominatim-search",
+  "enabled": true,
+  "endpoint": "/data/osm/nominatim/search",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "20s",
+  "input_query_strings": [
+    "q",
+    "format",
+    "limit",
+    "countrycodes",
+    "addressdetails",
+    "extratags",
+    "namedetails",
+    "accept-language"
+  ],
+  "input_headers": [
+    "User-Agent"
+  ],
+  "response_contract": {
+    "status_path": "type",
+    "success_values": [
+      "FeatureCollection"
+    ],
+    "any_data_paths": [
+      "features"
+    ]
+  },
+  "backend": {
+    "host": "https://nominatim.openstreetmap.org",
+    "url_pattern": "/search",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "type",
+      "geocoding",
+      "features",
+      "bbox"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  }
+}

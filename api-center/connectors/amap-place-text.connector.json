@@ -1,0 +1,24 @@
+{
+  "id": "amap-place-text",
+  "enabled": true,
+  "endpoint": "/data/amap/place/text",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "5s",
+  "input_query_strings": ["keywords", "types", "region", "city_limit", "show_fields", "page_size", "page_num"],
+  "secret_query": {"name": "key", "env": "AMAP_API_KEY"},
+  "response_contract": {
+    "status_path": "status",
+    "success_values": ["1"],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": ["pois"]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v5/place/text",
+    "method": "GET",
+    "encoding": "json",
+    "allow": ["status", "info", "infocode", "count", "pois"]
+  }
+}

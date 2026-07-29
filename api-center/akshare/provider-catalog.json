@@ -1,0 +1,118 @@
+{
+  "schema_version": "akshare-provider-catalog-v1",
+  "ticket_prefix": "[api-akshare]",
+  "required_secret_environment_variable": "",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "akshare",
+      "display_name": "AKShare 中国金融公开数据",
+      "description": "通过固定、只读、限量的AKShare函数读取中国A股行情、历史K线、公司资料和财务指标。",
+      "enabled": true,
+      "catalog_policy": "GPTs可读取完整固定操作目录，但不能提交任意AKShare函数名、URL或Python代码。",
+      "execution_policy": "每张票据只执行一个固定只读函数；限制行数、日期范围和响应大小；不连接券商、不下单。",
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取AKShare适配器完整安全能力和限制，不访问上游。",
+          "parameters": []
+        },
+        {
+          "operation_id": "stock-a-share-spot",
+          "description": "读取A股实时行情总表，可按证券代码过滤并限制返回行数。",
+          "parameters": [
+            "symbols",
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "stock-a-share-history",
+          "description": "按证券代码、周期、日期和复权方式读取A股历史行情。",
+          "parameters": [
+            "symbol",
+            "period",
+            "start_date",
+            "end_date",
+            "adjust",
+            "max_rows",
+            "timeout_seconds"
+          ]
+        },
+        {
+          "operation_id": "stock-company-info",
+          "description": "读取单只A股公开公司基础资料。",
+          "parameters": [
+            "symbol",
+            "timeout_seconds"
+          ]
+        },
+        {
+          "operation_id": "stock-financial-indicators",
+          "description": "读取单只A股公开财务分析指标。",
+          "parameters": [
+            "symbol",
+            "indicator",
+            "max_rows"
+          ]
+        }
+      ],
+      "limits": {
+        "max_rows_default": 500,
+        "max_rows_hard": 5000,
+        "timeout_seconds_default": 20,
+        "timeout_seconds_hard": 60,
+        "arbitrary_functions_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "brokerage_execution_allowed": false
+      }
+    },
+    {
+      "provider_id": "ashare",
+      "display_name": "Ashare 轻量 A 股行情",
+      "description": "兼容 Ashare get_price 语义，通过固定腾讯与新浪公开行情端点读取A股、指数和基金日周月线及分钟线。",
+      "enabled": true,
+      "ticket_prefix": "[api-ashare]",
+      "catalog_policy": "GPTs只能选择固定 ashare-get-price 操作；不能提交任意URL、函数、请求头、脚本或Python代码。",
+      "execution_policy": "每张票据只读取一个证券代码；腾讯为主源，新浪为备用；限制周期、行数、超时和响应大小；不下单、不连接券商。",
+      "operations": [
+        {
+          "operation_id": "ashare-get-price",
+          "description": "按证券代码、周期、数量和结束日期读取规范化OHLCV行情。",
+          "parameters": [
+            "symbol",
+            "frequency",
+            "count",
+            "end_date",
+            "source",
+            "timeout_seconds"
+          ]
+        }
+      ],
+      "limits": {
+        "count_default": 120,
+        "count_hard": 1000,
+        "timeout_seconds_default": 15,
+        "timeout_seconds_hard": 30,
+        "sources": [
+          "auto",
+          "tencent",
+          "sina"
+        ],
+        "frequencies": [
+          "1d",
+          "1w",
+          "1M",
+          "1m",
+          "5m",
+          "15m",
+          "30m",
+          "60m"
+        ],
+        "arbitrary_functions_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "brokerage_execution_allowed": false
+      }
+    }
+  ]
+}

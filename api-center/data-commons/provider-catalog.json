@@ -1,0 +1,60 @@
+{
+  "schema_version": "data-commons-provider-catalog-v1",
+  "provider_id": "data-commons",
+  "display_name": "Google Data Commons",
+  "enabled": true,
+  "ticket_prefix": "[api-dc]",
+  "required_secret_environment_variable": "GOOGLE_DATA_COMMONS_API_KEY",
+  "secret_values_exposed": false,
+  "public_non_personal_data_only": true,
+  "base_url": "https://api.datacommons.org/v2",
+  "allowed_endpoints": ["/resolve", "/node", "/observation"],
+  "operations": [
+    {
+      "operation_id": "catalog-capabilities",
+      "description": "读取受控能力和中国起步目录，不调用上游。",
+      "parameters": []
+    },
+    {
+      "operation_id": "resolve-place",
+      "description": "按公开地点名称解析地点DCID。",
+      "endpoint": "/resolve",
+      "parameters": ["nodes_json", "property"]
+    },
+    {
+      "operation_id": "resolve-indicator",
+      "description": "按指标描述解析统计变量或主题DCID。",
+      "endpoint": "/resolve",
+      "parameters": ["nodes_json"]
+    },
+    {
+      "operation_id": "node-properties",
+      "description": "按关系表达式读取节点属性和相邻实体。",
+      "endpoint": "/node",
+      "parameters": ["nodes_json", "property"]
+    },
+    {
+      "operation_id": "observations",
+      "description": "读取实体和统计变量的观测值及来源facet。",
+      "endpoint": "/observation",
+      "parameters": ["entity_dcids_json", "variable_dcids_json", "date", "select_json", "facet_ids_json", "domains_json"]
+    }
+  ],
+  "limits": {
+    "max_nodes": 20,
+    "max_variables": 20,
+    "max_select_fields": 5,
+    "max_relation_expression_characters": 300,
+    "max_request_characters": 20000,
+    "max_response_bytes": 1000000,
+    "timeout_seconds": 60
+  },
+  "security": {
+    "arbitrary_url_allowed": false,
+    "sparql_allowed": false,
+    "natural_language_api_allowed": false,
+    "write_operations_allowed": false,
+    "personal_data_allowed": false,
+    "api_key_recorded": false
+  }
+}

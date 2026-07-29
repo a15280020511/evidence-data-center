@@ -1,0 +1,59 @@
+{
+  "id": "dbnomics-series",
+  "enabled": true,
+  "endpoint": "/data/dbnomics/series/{provider_code}/{dataset_code}/{series_code}",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "25s",
+  "path_parameters": {
+    "provider_code": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$",
+      "max_length": 32
+    },
+    "dataset_code": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+      "max_length": 128
+    },
+    "series_code": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$",
+      "max_length": 256
+    }
+  },
+  "input_query_strings": [
+    "observations",
+    "facets",
+    "metadata",
+    "align_periods",
+    "limit",
+    "offset"
+  ],
+  "response_contract": {
+    "status_path": "series.num_found",
+    "success_values": [
+      1
+    ],
+    "any_data_paths": [
+      "series.docs"
+    ]
+  },
+  "backend": {
+    "host": "https://api.db.nomics.world",
+    "url_pattern": "/v22/series/{provider_code}/{dataset_code}/{series_code}",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "_meta",
+      "datasets",
+      "providers",
+      "series",
+      "errors"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  }
+}

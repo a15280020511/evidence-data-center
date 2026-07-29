@@ -1,0 +1,92 @@
+{
+  "id": "newsapi-sources",
+  "enabled": true,
+  "endpoint": "/data/newsapi/sources",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "10s",
+  "input_query_strings": [
+    "category",
+    "language",
+    "country"
+  ],
+  "secret_header": {
+    "name": "X-Api-Key",
+    "env": "NEWSAPI_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "ok"
+    ],
+    "error_code_path": "code",
+    "message_path": "message",
+    "any_data_paths": [
+      "sources"
+    ]
+  },
+  "backend": {
+    "host": "https://newsapi.org",
+    "url_pattern": "/v2/top-headlines/sources",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "sources",
+      "code",
+      "message"
+    ],
+    "resilience": {
+      "circuit_breaker": {
+        "interval": 60,
+        "timeout": 30,
+        "max_errors": 3,
+        "log_status_change": true
+      },
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "country": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      },
+      "category": {
+        "type": "string",
+        "enum": [
+          "business",
+          "entertainment",
+          "general",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      },
+      "language": {
+        "type": "string",
+        "enum": [
+          "ar",
+          "de",
+          "en",
+          "es",
+          "fr",
+          "he",
+          "it",
+          "nl",
+          "no",
+          "pt",
+          "ru",
+          "sv",
+          "ud",
+          "zh"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "schema_version": "data-commons-china-starter-pack-v1",
+  "country_dcid": "country/CHN",
+  "selection_owner": "gpts-usage-center",
+  "purpose": "为中国公共统计查询提供可验证的地点和指标解析起点，不宣称所有省市县均有完整数据。",
+  "place_queries": [
+    {
+      "label": "中国",
+      "operation": "resolve-place",
+      "parameters": {"nodes_json": "[\"China\"]", "property": "<-description{typeOf:Country}->dcid"}
+    },
+    {
+      "label": "福建省",
+      "operation": "resolve-place",
+      "parameters": {"nodes_json": "[\"Fujian, China\"]", "property": "<-description{typeOf:AdministrativeArea1}->dcid"}
+    },
+    {
+      "label": "福州市",
+      "operation": "resolve-place",
+      "parameters": {"nodes_json": "[\"Fuzhou, Fujian, China\"]"}
+    }
+  ],
+  "indicator_queries": [
+    "population",
+    "gross domestic product",
+    "employment",
+    "unemployment rate",
+    "median income",
+    "education attainment",
+    "hospital beds",
+    "air pollution",
+    "electricity consumption",
+    "urban population"
+  ],
+  "known_general_statistical_variables": [
+    {
+      "dcid": "Count_Person",
+      "description": "人口数量；实际可用年份、行政层级和来源facet必须通过observation查询确认。"
+    }
+  ],
+  "recommended_workflow": [
+    "先resolve-place确认地点DCID和类型。",
+    "再resolve-indicator解析所需指标的统计变量DCID。",
+    "使用observations读取LATEST或all，并选择date、entity、variable、value、facet。",
+    "保留facet来源；若同一指标存在多个来源，不得无说明混合。",
+    "关键中国政策或投资结论应与国家统计局、地方统计年鉴或其他原始来源交叉核验。"
+  ],
+  "limitations": [
+    "中国城市和县级指标覆盖可能不完整。",
+    "不同来源的统计口径、年份和测量方法可能不同。",
+    "Data Commons是聚合和标准化层，不替代原始统计机构。",
+    "不得把解析到的同名地点候选自动当作正确地点。"
+  ]
+}

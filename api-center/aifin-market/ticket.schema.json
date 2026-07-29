@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Wind AIFin Market Managed API Ticket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "objective",
+    "data_policy",
+    "operation",
+    "parameters"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{7,127}$"
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "data_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification",
+        "contains_personal_data"
+      ],
+      "properties": {
+        "classification": {
+          "const": "public"
+        },
+        "contains_personal_data": {
+          "const": false
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "operation": {
+      "enum": [
+        "catalog-capabilities",
+        "catalog-tools",
+        "stock-quote",
+        "stock-price-indicators",
+        "financial-news",
+        "economic-data",
+        "analytics-query"
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "maxProperties": 20,
+      "propertyNames": {
+        "pattern": "^[A-Za-z0-9._~-]{1,64}$"
+      },
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "type": "string",
+            "maxLength": 4096
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "boolean"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "version": 2,
+  "updates": [
+    {
+      "package-ecosystem": "github-actions",
+      "directory": "/",
+      "schedule": {
+        "interval": "weekly"
+      },
+      "open-pull-requests-limit": 5
+    },
+    {
+      "package-ecosystem": "pip",
+      "directory": "/api-center",
+      "schedule": {
+        "interval": "weekly"
+      },
+      "open-pull-requests-limit": 5
+    },
+    {
+      "package-ecosystem": "pip",
+      "directory": "/api-center/akshare",
+      "schedule": {
+        "interval": "weekly"
+      },
+      "open-pull-requests-limit": 5
+    },
+    {
+      "package-ecosystem": "pip",
+      "directory": "/api-center/data-commons",
+      "schedule": {
+        "interval": "weekly"
+      },
+      "open-pull-requests-limit": 5
+    },
+    {
+      "package-ecosystem": "pip",
+      "directory": "/api-center/google-cloud",
+      "schedule": {
+        "interval": "weekly"
+      },
+      "open-pull-requests-limit": 5
+    }
+  ]
+}

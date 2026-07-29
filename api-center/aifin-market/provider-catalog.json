@@ -1,0 +1,82 @@
+{
+  "schema_version": "aifin-provider-catalog-v1",
+  "ticket_prefix": "[api-aifin]",
+  "required_secret_environment_variable": "WIND_API_KEY",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "aifin-market",
+      "display_name": "Wind AIFin Market 金融数据与能力",
+      "description": "通过万得官方MCP端点，以固定、只读、限量操作访问股票、金融新闻、宏观经济和通用金融数据。",
+      "enabled": true,
+      "catalog_policy": "GPTs可读取固定操作目录和参数名称；不得提交任意MCP端点、server_type、tool_name、脚本或密钥。",
+      "execution_policy": "每张票据只执行一个固定只读操作；先初始化MCP，再调用白名单工具；限制响应大小；不下单、不写入、不执行任意代码。",
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地AIFin Market固定能力与限制，不访问上游。",
+          "parameters": []
+        },
+        {
+          "operation_id": "catalog-tools",
+          "description": "列出指定受支持Wind MCP服务当前公开工具目录。",
+          "parameters": [
+            "server_type"
+          ]
+        },
+        {
+          "operation_id": "stock-quote",
+          "description": "读取单只A股、港股或美股标的的最新行情快照。",
+          "parameters": [
+            "windcode"
+          ]
+        },
+        {
+          "operation_id": "stock-price-indicators",
+          "description": "读取单只股票指定价格指标。",
+          "parameters": [
+            "windcode",
+            "indexes"
+          ]
+        },
+        {
+          "operation_id": "financial-news",
+          "description": "按查询词读取有限条数的万得金融新闻结果。",
+          "parameters": [
+            "query",
+            "top_k"
+          ]
+        },
+        {
+          "operation_id": "economic-data",
+          "description": "按自然语言查询Wind EDB宏观或行业经济指标。",
+          "parameters": [
+            "executionMode",
+            "question",
+            "observation",
+            "beginDate",
+            "endDate"
+          ]
+        },
+        {
+          "operation_id": "analytics-query",
+          "description": "在专项工具无法覆盖时执行单个通用结构化金融取数问题。",
+          "parameters": [
+            "question"
+          ]
+        }
+      ],
+      "limits": {
+        "max_operations_per_ticket": 1,
+        "max_response_bytes": 200000,
+        "timeout_seconds": 60,
+        "arbitrary_server_types_allowed": false,
+        "arbitrary_tool_names_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "write_operations_allowed": false
+      }
+    }
+  ]
+}

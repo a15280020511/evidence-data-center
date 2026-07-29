@@ -1,0 +1,70 @@
+{
+  "id": "worldbank-indicator-jsonstat",
+  "enabled": true,
+  "endpoint": "/data/worldbank/indicator/{country_code}/{indicator_code}",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "25s",
+  "path_parameters": {
+    "country_code": {
+      "pattern": "^[A-Za-z]{2,3}$",
+      "max_length": 3
+    },
+    "indicator_code": {
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,63}$",
+      "max_length": 64
+    }
+  },
+  "input_query_strings": [
+    "format",
+    "date",
+    "mrv",
+    "mrnev",
+    "gapfill",
+    "frequency",
+    "source",
+    "per_page",
+    "page",
+    "footnote",
+    "scale",
+    "ctrycode"
+  ],
+  "input_headers": [
+    "User-Agent"
+  ],
+  "response_contract": {
+    "status_path": "class",
+    "success_values": [
+      "dataset"
+    ],
+    "any_data_paths": [
+      "value"
+    ]
+  },
+  "backend": {
+    "host": "https://api.worldbank.org",
+    "url_pattern": "/v2/country/{country_code}/indicator/{indicator_code}",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "version",
+      "class",
+      "label",
+      "source",
+      "updated",
+      "id",
+      "size",
+      "role",
+      "dimension",
+      "value",
+      "status"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 2,
+        "every": "1s",
+        "capacity": 2
+      }
+    }
+  }
+}

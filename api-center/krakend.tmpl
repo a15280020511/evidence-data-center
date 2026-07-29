@@ -1,0 +1,1061 @@
+{
+  "$schema": "https://www.krakend.io/schema/v2.13/krakend.json",
+  "version": 3,
+  "name": "independent-api-center",
+  "port": 8080,
+  "timeout": "3s",
+  "cache_ttl": "0s",
+  "output_encoding": "json",
+  "endpoints": [
+    {
+      "endpoint": "/data/amap/direction/driving",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://restapi.amap.com"
+          ],
+          "url_pattern": "/v5/direction/driving",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-amap-direction-driving",
+              "log_status_change": true
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "key",
+                "value": {{ env "AMAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "info",
+            "infocode",
+            "count",
+            "route"
+          ]
+        }
+      ],
+      "timeout": "8s",
+      "input_query_strings": [
+        "origin",
+        "destination",
+        "waypoints",
+        "strategy",
+        "avoidpolygons",
+        "avoidroad",
+        "plate",
+        "cartype",
+        "ferry",
+        "show_fields"
+      ]
+    },
+    {
+      "endpoint": "/data/amap/direction/walking",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://restapi.amap.com"
+          ],
+          "url_pattern": "/v5/direction/walking",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-amap-direction-walking",
+              "log_status_change": true
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "key",
+                "value": {{ env "AMAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "info",
+            "infocode",
+            "count",
+            "route"
+          ]
+        }
+      ],
+      "timeout": "8s",
+      "input_query_strings": [
+        "origin",
+        "destination",
+        "origin_id",
+        "destination_id",
+        "show_fields"
+      ]
+    },
+    {
+      "endpoint": "/data/amap/distance",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://restapi.amap.com"
+          ],
+          "url_pattern": "/v3/distance",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-amap-distance",
+              "log_status_change": true
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "key",
+                "value": {{ env "AMAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "info",
+            "infocode",
+            "results"
+          ]
+        }
+      ],
+      "timeout": "5s",
+      "input_query_strings": [
+        "origins",
+        "destination",
+        "type"
+      ]
+    },
+    {
+      "endpoint": "/data/amap/geocode",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://restapi.amap.com"
+          ],
+          "url_pattern": "/v3/geocode/geo",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-amap-geocode",
+              "log_status_change": true
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "key",
+                "value": {{ env "AMAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "info",
+            "infocode",
+            "count",
+            "geocodes"
+          ]
+        }
+      ],
+      "timeout": "5s",
+      "input_query_strings": [
+        "address",
+        "city",
+        "batch"
+      ]
+    },
+    {
+      "endpoint": "/data/amap/place/text",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://restapi.amap.com"
+          ],
+          "url_pattern": "/v5/place/text",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-amap-place-text",
+              "log_status_change": true
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "key",
+                "value": {{ env "AMAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "info",
+            "infocode",
+            "count",
+            "pois"
+          ]
+        }
+      ],
+      "timeout": "5s",
+      "input_query_strings": [
+        "keywords",
+        "types",
+        "region",
+        "city_limit",
+        "show_fields",
+        "page_size",
+        "page_num"
+      ]
+    },
+    {
+      "endpoint": "/data/amap/regeocode",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://restapi.amap.com"
+          ],
+          "url_pattern": "/v3/geocode/regeo",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-amap-regeocode",
+              "log_status_change": true
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "key",
+                "value": {{ env "AMAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "info",
+            "infocode",
+            "regeocode"
+          ]
+        }
+      ],
+      "timeout": "5s",
+      "input_query_strings": [
+        "location",
+        "poitype",
+        "radius",
+        "extensions",
+        "roadlevel",
+        "homeorcorp"
+      ]
+    },
+    {
+      "endpoint": "/data/amap/weather",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://restapi.amap.com"
+          ],
+          "url_pattern": "/v3/weather/weatherInfo",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-amap-weather",
+              "log_status_change": true
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "key",
+                "value": {{ env "AMAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "info",
+            "infocode",
+            "count",
+            "lives",
+            "forecasts"
+          ]
+        }
+      ],
+      "timeout": "5s",
+      "input_query_strings": [
+        "city",
+        "extensions"
+      ]
+    },
+    {
+      "endpoint": "/data/baidu/direction/driving",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.map.baidu.com"
+          ],
+          "url_pattern": "/directionlite/v1/driving",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-baidu-direction-driving",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 5.0,
+              "every": "1s",
+              "capacity": 5
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "ak",
+                "value": {{ env "BAIDU_MAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "message",
+            "result"
+          ]
+        }
+      ],
+      "timeout": "10s",
+      "input_query_strings": [
+        "origin",
+        "destination",
+        "waypoints",
+        "tactics",
+        "coord_type",
+        "ret_coordtype"
+      ]
+    },
+    {
+      "endpoint": "/data/baidu/geocode",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.map.baidu.com"
+          ],
+          "url_pattern": "/geocoding/v3/",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-baidu-geocode",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 5.0,
+              "every": "1s",
+              "capacity": 5
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "ak",
+                "value": {{ env "BAIDU_MAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "result",
+            "message"
+          ]
+        }
+      ],
+      "timeout": "10s",
+      "input_query_strings": [
+        "address",
+        "city",
+        "output",
+        "ret_coordtype"
+      ]
+    },
+    {
+      "endpoint": "/data/baidu/place/search",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.map.baidu.com"
+          ],
+          "url_pattern": "/place/v2/search",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-baidu-place-search",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 5.0,
+              "every": "1s",
+              "capacity": 5
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "ak",
+                "value": {{ env "BAIDU_MAP_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "message",
+            "total",
+            "results"
+          ]
+        }
+      ],
+      "timeout": "10s",
+      "input_query_strings": [
+        "query",
+        "region",
+        "bounds",
+        "location",
+        "radius",
+        "scope",
+        "tag",
+        "page_size",
+        "page_num",
+        "output",
+        "coord_type",
+        "ret_coordtype"
+      ]
+    },
+    {
+      "endpoint": "/data/chinadata/dataset/{dataset_id}",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://chinadata.live"
+          ],
+          "url_pattern": "/api/v2/data/{dataset_id}",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-chinadata-live-dataset",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "success",
+            "data",
+            "error",
+            "message"
+          ]
+        }
+      ],
+      "timeout": "20s"
+    },
+    {
+      "endpoint": "/data/dbnomics/series/{provider_code}/{dataset_code}/{series_code}",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.db.nomics.world"
+          ],
+          "url_pattern": "/v22/series/{provider_code}/{dataset_code}/{series_code}",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-dbnomics-series",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "_meta",
+            "datasets",
+            "providers",
+            "series",
+            "errors"
+          ]
+        }
+      ],
+      "timeout": "25s",
+      "input_query_strings": [
+        "observations",
+        "facets",
+        "metadata",
+        "align_periods",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/data/newsapi/everything",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://newsapi.org"
+          ],
+          "url_pattern": "/v2/everything",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-newsapi-everything",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            },
+            "modifier/martian": {
+              "header.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "X-Api-Key",
+                "value": {{ env "NEWSAPI_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "totalResults",
+            "articles",
+            "code",
+            "message"
+          ]
+        }
+      ],
+      "timeout": "10s",
+      "input_query_strings": [
+        "q",
+        "searchIn",
+        "sources",
+        "domains",
+        "excludeDomains",
+        "from",
+        "to",
+        "language",
+        "sortBy",
+        "pageSize",
+        "page"
+      ]
+    },
+    {
+      "endpoint": "/data/newsapi/sources",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://newsapi.org"
+          ],
+          "url_pattern": "/v2/top-headlines/sources",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-newsapi-sources",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            },
+            "modifier/martian": {
+              "header.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "X-Api-Key",
+                "value": {{ env "NEWSAPI_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "sources",
+            "code",
+            "message"
+          ]
+        }
+      ],
+      "timeout": "10s",
+      "input_query_strings": [
+        "category",
+        "language",
+        "country"
+      ]
+    },
+    {
+      "endpoint": "/data/newsapi/top-headlines",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://newsapi.org"
+          ],
+          "url_pattern": "/v2/top-headlines",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-newsapi-top-headlines",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            },
+            "modifier/martian": {
+              "header.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "X-Api-Key",
+                "value": {{ env "NEWSAPI_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "status",
+            "totalResults",
+            "articles",
+            "code",
+            "message"
+          ]
+        }
+      ],
+      "timeout": "10s",
+      "input_query_strings": [
+        "q",
+        "sources",
+        "country",
+        "category",
+        "pageSize",
+        "page"
+      ]
+    },
+    {
+      "endpoint": "/data/openmeteo/forecast",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.open-meteo.com"
+          ],
+          "url_pattern": "/v1/forecast",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-openmeteo-forecast",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 10.0,
+              "every": "1s",
+              "capacity": 10
+            }
+          },
+          "allow": [
+            "latitude",
+            "longitude",
+            "generationtime_ms",
+            "utc_offset_seconds",
+            "timezone",
+            "timezone_abbreviation",
+            "elevation",
+            "current_units",
+            "current",
+            "hourly_units",
+            "hourly",
+            "daily_units",
+            "daily",
+            "reason",
+            "error"
+          ]
+        }
+      ],
+      "timeout": "15s",
+      "input_query_strings": [
+        "latitude",
+        "longitude",
+        "current",
+        "hourly",
+        "daily",
+        "timezone",
+        "forecast_days",
+        "past_days",
+        "temperature_unit",
+        "wind_speed_unit",
+        "precipitation_unit",
+        "timeformat"
+      ]
+    },
+    {
+      "endpoint": "/data/osm/commercial/around/{latitude}/{longitude}/{radius}",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://overpass-api.de"
+          ],
+          "url_pattern": "/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A25%5D%3B%0Anwr%28around%3A{radius}%2C{latitude}%2C{longitude}%29%5B~%22%5E%28shop%7Camenity%7Ctourism%7Coffice%7Cpublic_transport%7Crailway%29%24%22~%22.%22%5D%3B%0Aout%20center%20tags%20qt%20300%3B",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-osm-commercial-around",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "2s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "version",
+            "generator",
+            "osm3s",
+            "elements",
+            "remark"
+          ]
+        }
+      ],
+      "timeout": "35s"
+    },
+    {
+      "endpoint": "/data/osm/nominatim/search",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://nominatim.openstreetmap.org"
+          ],
+          "url_pattern": "/search",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-osm-nominatim-search",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "type",
+            "geocoding",
+            "features",
+            "bbox"
+          ]
+        }
+      ],
+      "timeout": "20s",
+      "input_query_strings": [
+        "q",
+        "format",
+        "limit",
+        "countrycodes",
+        "addressdetails",
+        "extratags",
+        "namedetails",
+        "accept-language"
+      ],
+      "input_headers": [
+        "User-Agent"
+      ]
+    },
+    {
+      "endpoint": "/data/tianditu/place/search",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.tianditu.gov.cn"
+          ],
+          "url_pattern": "/v2/search",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-tianditu-place-search",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            },
+            "modifier/martian": {
+              "querystring.Modifier": {
+                "scope": [
+                  "request"
+                ],
+                "name": "tk",
+                "value": {{ env "TIANDITU_API_KEY" | quote }}
+              }
+            }
+          },
+          "allow": [
+            "resultType",
+            "count",
+            "keyword",
+            "pois",
+            "statistics",
+            "priorityCitys",
+            "allAdmins",
+            "area",
+            "lineData",
+            "prompt",
+            "status"
+          ]
+        }
+      ],
+      "timeout": "15s",
+      "input_query_strings": [
+        "postStr",
+        "type"
+      ]
+    },
+    {
+      "endpoint": "/data/wikidata/entity/search",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://www.wikidata.org"
+          ],
+          "url_pattern": "/w/api.php",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-wikidata-entity-search",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "searchinfo",
+            "search",
+            "search-continue",
+            "success"
+          ]
+        }
+      ],
+      "timeout": "12s",
+      "input_query_strings": [
+        "action",
+        "search",
+        "language",
+        "uselang",
+        "type",
+        "limit",
+        "continue",
+        "format"
+      ]
+    },
+    {
+      "endpoint": "/data/worldbank/indicator/{country_code}/{indicator_code}",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.worldbank.org"
+          ],
+          "url_pattern": "/v2/country/{country_code}/indicator/{indicator_code}",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-worldbank-indicator-jsonstat",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 2.0,
+              "every": "1s",
+              "capacity": 2
+            }
+          },
+          "allow": [
+            "version",
+            "class",
+            "label",
+            "source",
+            "updated",
+            "id",
+            "size",
+            "role",
+            "dimension",
+            "value",
+            "status"
+          ]
+        }
+      ],
+      "timeout": "25s",
+      "input_query_strings": [
+        "format",
+        "date",
+        "mrv",
+        "mrnev",
+        "gapfill",
+        "frequency",
+        "source",
+        "per_page",
+        "page",
+        "footnote",
+        "scale",
+        "ctrycode"
+      ],
+      "input_headers": [
+        "User-Agent"
+      ]
+    }
+  ]
+}

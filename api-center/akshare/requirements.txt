@@ -1,0 +1,2 @@
+akshare==1.18.74
+jsonschema==4.26.0

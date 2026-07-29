@@ -1,0 +1,24 @@
+{
+  "id": "amap-distance",
+  "enabled": true,
+  "endpoint": "/data/amap/distance",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "5s",
+  "input_query_strings": ["origins", "destination", "type"],
+  "secret_query": {"name": "key", "env": "AMAP_API_KEY"},
+  "response_contract": {
+    "status_path": "status",
+    "success_values": ["1"],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": ["results"]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v3/distance",
+    "method": "GET",
+    "encoding": "json",
+    "allow": ["status", "info", "infocode", "results"]
+  }
+}

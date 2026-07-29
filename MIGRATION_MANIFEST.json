@@ -1,0 +1,606 @@
+{
+  "schema_version": "center-migration-manifest-v1",
+  "center": "evidence-data-center",
+  "source_repository": "a15280020511/test",
+  "source_commit": "abac3d776340c8c162b8fc0c670167fde94f3baa",
+  "target_repository": "a15280020511/evidence-data-center",
+  "strategy": "physical repository split with original business paths preserved",
+  "copied_file_count": 98,
+  "copied_total_bytes": 663061,
+  "copied_files": [
+    {
+      "source_path": ".github/workflows/aifin-api-ticket.yml",
+      "target_path": ".github/workflows/aifin-api-ticket.yml",
+      "size_bytes": 4609,
+      "sha256": "0a9017db93f2ef8ae69391ddf2d488f1db867a03fd1b842855dacdf58cce0a71"
+    },
+    {
+      "source_path": ".github/workflows/akshare-api-ticket.yml",
+      "target_path": ".github/workflows/akshare-api-ticket.yml",
+      "size_bytes": 4587,
+      "sha256": "d41f496fb6034018797782543bc30568016cd9b7818d80693f68c01b55b5507b"
+    },
+    {
+      "source_path": ".github/workflows/akshare-provider-validate.yml",
+      "target_path": ".github/workflows/akshare-provider-validate.yml",
+      "size_bytes": 3805,
+      "sha256": "c804ee21c1dc3f6fbab2b8ecb7b2fb2a834d35f4ece6583e5588e5029d46e2b7"
+    },
+    {
+      "source_path": ".github/workflows/api-catalog-validate.yml",
+      "target_path": ".github/workflows/api-catalog-validate.yml",
+      "size_bytes": 6500,
+      "sha256": "6557b6e4dcee1812e619ed4b4ac4299a8ec823ee0586a03bdf3e087007e90fd9"
+    },
+    {
+      "source_path": ".github/workflows/api-center-image.yml",
+      "target_path": ".github/workflows/api-center-image.yml",
+      "size_bytes": 3353,
+      "sha256": "f04098646893fac3372b2ce5ec88da789046d8efb5a715d53515369ceabb494e"
+    },
+    {
+      "source_path": ".github/workflows/api-center-validate.yml",
+      "target_path": ".github/workflows/api-center-validate.yml",
+      "size_bytes": 11399,
+      "sha256": "bede2a8fdbf4b4c9d5527721999f332f3cb17460652d28326297aace6755b117"
+    },
+    {
+      "source_path": ".github/workflows/api-ticket.yml",
+      "target_path": ".github/workflows/api-ticket.yml",
+      "size_bytes": 14446,
+      "sha256": "16fb41e38382afd3adce37f1d9dab1a0a7fe9082ce94929b99c45001ade39606"
+    },
+    {
+      "source_path": ".github/workflows/data-commons-api-ticket.yml",
+      "target_path": ".github/workflows/data-commons-api-ticket.yml",
+      "size_bytes": 5077,
+      "sha256": "ab0f1c25cad6e720720e736f4a997cabd17c16225f54c22adc3ad3b1bbec32ee"
+    },
+    {
+      "source_path": ".github/workflows/data-commons-provider-validate.yml",
+      "target_path": ".github/workflows/data-commons-provider-validate.yml",
+      "size_bytes": 5534,
+      "sha256": "c7595f08ac6b7bf8fb3c1879860756527adc73e03bfd06d567432e97398e9125"
+    },
+    {
+      "source_path": ".github/workflows/google-cloud-api-ticket.yml",
+      "target_path": ".github/workflows/google-cloud-api-ticket.yml",
+      "size_bytes": 5066,
+      "sha256": "b5a55eeb3e19cdb87f80de590afc058d4652bbf39543d3de336244c60c35470d"
+    },
+    {
+      "source_path": ".github/workflows/google-cloud-provider-validate.yml",
+      "target_path": ".github/workflows/google-cloud-provider-validate.yml",
+      "size_bytes": 5278,
+      "sha256": "952574e389aadda95d94e64e1ba62a9183f841f008d8bf8932fdeae4fe281e0e"
+    },
+    {
+      "source_path": ".gitignore",
+      "target_path": ".gitignore",
+      "size_bytes": 128,
+      "sha256": "f1316371f57a4ba94799f616ae4ee73636745e809b29ad57dabce4a00465c7ac"
+    },
+    {
+      "source_path": "OBSERVABILITY.md",
+      "target_path": "OBSERVABILITY.md",
+      "size_bytes": 4223,
+      "sha256": "ec9ba790d17e34c892d3f714556186c561adeb5cc1b8ee770df8be61f153cc87"
+    },
+    {
+      "source_path": "api-center/Dockerfile",
+      "target_path": "api-center/Dockerfile",
+      "size_bytes": 533,
+      "sha256": "15431d67bc0357f1b5fa739dd44027e7d67f734e956d7303936e866c74889ff3"
+    },
+    {
+      "source_path": "api-center/README.md",
+      "target_path": "api-center/README.md",
+      "size_bytes": 8166,
+      "sha256": "a0a180d743d3d252f9e28a5bc1ebd9f8ed4a838c2b78c7afbafaf2c338a54d87"
+    },
+    {
+      "source_path": "api-center/aifin-market/aifin_task.py",
+      "target_path": "api-center/aifin-market/aifin_task.py",
+      "size_bytes": 13601,
+      "sha256": "56411d068fe8d44d5c6c2d0fdbb197e2c145c50b7135f29072666af1ced26c3b"
+    },
+    {
+      "source_path": "api-center/aifin-market/provider-catalog.json",
+      "target_path": "api-center/aifin-market/provider-catalog.json",
+      "size_bytes": 2904,
+      "sha256": "39db2a4de805506ba464aec1a5721cb0446c98e501b46bc39bf2c76a9572b737"
+    },
+    {
+      "source_path": "api-center/aifin-market/tests/test_aifin_task.py",
+      "target_path": "api-center/aifin-market/tests/test_aifin_task.py",
+      "size_bytes": 2738,
+      "sha256": "2bfc44b4214b063a78e61d6e90359c6d97a60e7229cbc27e782391b536cf8386"
+    },
+    {
+      "source_path": "api-center/aifin-market/ticket.schema.json",
+      "target_path": "api-center/aifin-market/ticket.schema.json",
+      "size_bytes": 1640,
+      "sha256": "df14b857779064d4b89ab4493dbf2676e5bd351d760195f952cb63de9842d999"
+    },
+    {
+      "source_path": "api-center/akshare/README.md",
+      "target_path": "api-center/akshare/README.md",
+      "size_bytes": 893,
+      "sha256": "84c696434889084e4b4ad2898c9c6db7309c72eefca1454643ba60d3f08079e3"
+    },
+    {
+      "source_path": "api-center/akshare/akshare_task.py",
+      "target_path": "api-center/akshare/akshare_task.py",
+      "size_bytes": 20799,
+      "sha256": "c11bf2fc204eb5371921b904daa7ff9b98261842e2cb82ba6e496513f48b59c7"
+    },
+    {
+      "source_path": "api-center/akshare/duplicate_guard.py",
+      "target_path": "api-center/akshare/duplicate_guard.py",
+      "size_bytes": 4605,
+      "sha256": "529bd0b3e29eb92dfd00fff95fadf0f651e6be6f741c643029174f363578d541"
+    },
+    {
+      "source_path": "api-center/akshare/provider-catalog.json",
+      "target_path": "api-center/akshare/provider-catalog.json",
+      "size_bytes": 4006,
+      "sha256": "95cfd932805e94e20ee57998dfed23a3af8391cc467c03128a490ef22e851a4a"
+    },
+    {
+      "source_path": "api-center/akshare/requirements.txt",
+      "target_path": "api-center/akshare/requirements.txt",
+      "size_bytes": 36,
+      "sha256": "7d85f6359ac8a31e7bcd03ff38d816c1899909a1e9c5a3bd7fe70178a6de82b1"
+    },
+    {
+      "source_path": "api-center/akshare/tests/test_akshare_task.py",
+      "target_path": "api-center/akshare/tests/test_akshare_task.py",
+      "size_bytes": 4679,
+      "sha256": "dd8d565ebcb8bc72f584f4c376270754892b8f224f97658d809ca3fa0cfa5234"
+    },
+    {
+      "source_path": "api-center/akshare/ticket.schema.json",
+      "target_path": "api-center/akshare/ticket.schema.json",
+      "size_bytes": 1884,
+      "sha256": "6b88fa79ce6d4cd5af45744e51d5bd71012f3a71fef4834aeb5b5b7bda638edb"
+    },
+    {
+      "source_path": "api-center/api-catalog.json",
+      "target_path": "api-center/api-catalog.json",
+      "size_bytes": 52489,
+      "sha256": "55e61f3c661c5370208b713d1d01e38fa2dddf54b38f2f717fbd0805b2f1cd03"
+    },
+    {
+      "source_path": "api-center/api-catalog.md",
+      "target_path": "api-center/api-catalog.md",
+      "size_bytes": 38844,
+      "sha256": "39805e38d09080060b3beb0adea1dd66637b00b94346f2afe98bfc881698e9cf"
+    },
+    {
+      "source_path": "api-center/api-ticket.schema.json",
+      "target_path": "api-center/api-ticket.schema.json",
+      "size_bytes": 6432,
+      "sha256": "a0932e94aa4da52eaa4a733d1e219c78f3897fc7b7654a5ebb3f833e0d754f6f"
+    },
+    {
+      "source_path": "api-center/api_task.py",
+      "target_path": "api-center/api_task.py",
+      "size_bytes": 33509,
+      "sha256": "303ef67904d390f903201c660cc7f866bfddb0cded9133d2f16f5e3365695c25"
+    },
+    {
+      "source_path": "api-center/api_ticket.py",
+      "target_path": "api-center/api_ticket.py",
+      "size_bytes": 21706,
+      "sha256": "e0585a4c53783066db1cabc4bb5ccbea34f064af027eba56425300ebee45fc38"
+    },
+    {
+      "source_path": "api-center/build_catalog.py",
+      "target_path": "api-center/build_catalog.py",
+      "size_bytes": 17513,
+      "sha256": "6e36e9d353b20c532a23fae3acf47ed31d04731200a4faf5782e5006f4d1bfa5"
+    },
+    {
+      "source_path": "api-center/build_config.py",
+      "target_path": "api-center/build_config.py",
+      "size_bytes": 16659,
+      "sha256": "cd6842026007bfc5058bb140d1418df8c5c12357237ac65a463a66db5c528d37"
+    },
+    {
+      "source_path": "api-center/catalog-metadata.json",
+      "target_path": "api-center/catalog-metadata.json",
+      "size_bytes": 28828,
+      "sha256": "5ff9bc23a494831766acea8e2dec39ce690fdfa0be0dc6a403ce8488fac480a0"
+    },
+    {
+      "source_path": "api-center/connector-manifest.json",
+      "target_path": "api-center/connector-manifest.json",
+      "size_bytes": 14398,
+      "sha256": "7ddf9bd7f2a8d22eef747681627373476fca3ec287d4af31621371b3fe8e0ce2"
+    },
+    {
+      "source_path": "api-center/connector.schema.json",
+      "target_path": "api-center/connector.schema.json",
+      "size_bytes": 10250,
+      "sha256": "40567de25f2c24e52ae62503a169c087c50f3ba9a32fe931d9fd59b3b746619d"
+    },
+    {
+      "source_path": "api-center/connectors/amap-direction-driving.connector.json",
+      "target_path": "api-center/connectors/amap-direction-driving.connector.json",
+      "size_bytes": 772,
+      "sha256": "58251f59f0c64a81cfb53bc58314fabafd91e482a1a9f62acd7479e5ae58963a"
+    },
+    {
+      "source_path": "api-center/connectors/amap-direction-walking.connector.json",
+      "target_path": "api-center/connectors/amap-direction-walking.connector.json",
+      "size_bytes": 719,
+      "sha256": "8a4a7ce971f3d239ce5de2e17873f8805bcef3a3f3adb98301d74fae33677005"
+    },
+    {
+      "source_path": "api-center/connectors/amap-distance.connector.json",
+      "target_path": "api-center/connectors/amap-distance.connector.json",
+      "size_bytes": 650,
+      "sha256": "fe0af77c69f005fbc238fa3866e46baa77ac63faf539958b91ffa4981c86722b"
+    },
+    {
+      "source_path": "api-center/connectors/amap-geocode.connector.json",
+      "target_path": "api-center/connectors/amap-geocode.connector.json",
+      "size_bytes": 656,
+      "sha256": "c248f07867bd45ab49b5bbf060cdfa8863bcb6e366f33d6eeefb4dead9720496"
+    },
+    {
+      "source_path": "api-center/connectors/amap-place-text.connector.json",
+      "target_path": "api-center/connectors/amap-place-text.connector.json",
+      "size_bytes": 710,
+      "sha256": "728cccdfb1326a06fb5a37d4a67010e139440bfe690450485cf0fb1cc8a3448f"
+    },
+    {
+      "source_path": "api-center/connectors/amap-regeocode.connector.json",
+      "target_path": "api-center/connectors/amap-regeocode.connector.json",
+      "size_bytes": 701,
+      "sha256": "34b133f9118b3e227627a0881e899fe04718ebdf4c86efad93f9b338aea774b2"
+    },
+    {
+      "source_path": "api-center/connectors/amap-weather.connector.json",
+      "target_path": "api-center/connectors/amap-weather.connector.json",
+      "size_bytes": 678,
+      "sha256": "4b33d67b3a80be965ac2677f7a15c463fd461f22a791c114012b82425c778b82"
+    },
+    {
+      "source_path": "api-center/connectors/baidu-direction-driving.connector.json",
+      "target_path": "api-center/connectors/baidu-direction-driving.connector.json",
+      "size_bytes": 1730,
+      "sha256": "75f15f9330b400b5e453a3eae958f305f90cfe14085027e92e3a59b2decc4fef"
+    },
+    {
+      "source_path": "api-center/connectors/baidu-geocode.connector.json",
+      "target_path": "api-center/connectors/baidu-geocode.connector.json",
+      "size_bytes": 1382,
+      "sha256": "bdfc5fb5a4c746fab9599a3554bb5a814cc89268d9e94a29e72b1f81c996f64b"
+    },
+    {
+      "source_path": "api-center/connectors/baidu-place-search.connector.json",
+      "target_path": "api-center/connectors/baidu-place-search.connector.json",
+      "size_bytes": 2320,
+      "sha256": "130b8fdedaf18d76b504db3a865b85ef8c4031b41633cbc0bb1d89c3aabe2914"
+    },
+    {
+      "source_path": "api-center/connectors/chinadata-live-dataset.connector.json",
+      "target_path": "api-center/connectors/chinadata-live-dataset.connector.json",
+      "size_bytes": 841,
+      "sha256": "8b12175601513f84aa1c4198575a442f77c0117d0c7481cf39d9c375d7796c45"
+    },
+    {
+      "source_path": "api-center/connectors/dbnomics-series.connector.json",
+      "target_path": "api-center/connectors/dbnomics-series.connector.json",
+      "size_bytes": 1255,
+      "sha256": "218ab7b68fae8042dd87b16bf5841b7e64bd0c5b1f4c184fa1622fdbe4701938"
+    },
+    {
+      "source_path": "api-center/connectors/newsapi-everything.connector.json",
+      "target_path": "api-center/connectors/newsapi-everything.connector.json",
+      "size_bytes": 2200,
+      "sha256": "33c66c87eef2acabbc0bfd047d01ce75916b28294d987c17a394e395b6f48b31"
+    },
+    {
+      "source_path": "api-center/connectors/newsapi-sources.connector.json",
+      "target_path": "api-center/connectors/newsapi-sources.connector.json",
+      "size_bytes": 1704,
+      "sha256": "23f716d6df5917ef89df5e0f5ec7a8f266a8b0addd628d3bf800bfc5b2a3be07"
+    },
+    {
+      "source_path": "api-center/connectors/newsapi-top-headlines.connector.json",
+      "target_path": "api-center/connectors/newsapi-top-headlines.connector.json",
+      "size_bytes": 2020,
+      "sha256": "0df902ac8802bc723d76c7516ed9116b2f9984049f9f4d563bdf013f5f623d07"
+    },
+    {
+      "source_path": "api-center/connectors/openmeteo-forecast.connector.json",
+      "target_path": "api-center/connectors/openmeteo-forecast.connector.json",
+      "size_bytes": 2367,
+      "sha256": "295362caa824bc3f955792df77800ff19a9bfcccf3b01ddc7ce35f73b1b6678b"
+    },
+    {
+      "source_path": "api-center/connectors/osm-commercial-around.connector.json",
+      "target_path": "api-center/connectors/osm-commercial-around.connector.json",
+      "size_bytes": 1499,
+      "sha256": "fb26234ebb0fcbbcafc6b303ff50de7e930d56da1219c04c1ddb896a94643aa1"
+    },
+    {
+      "source_path": "api-center/connectors/osm-nominatim-search.connector.json",
+      "target_path": "api-center/connectors/osm-nominatim-search.connector.json",
+      "size_bytes": 894,
+      "sha256": "459e80fe8c4fa615f9d640c8211e3e2dd8777cffdedb592070f9a0cac8e5bade"
+    },
+    {
+      "source_path": "api-center/connectors/tianditu-place-search.connector.json",
+      "target_path": "api-center/connectors/tianditu-place-search.connector.json",
+      "size_bytes": 1077,
+      "sha256": "29285be4a78d350ed16bd79dcb6adcb3be6d0fd7ea2a5532b8453ca5d14c9add"
+    },
+    {
+      "source_path": "api-center/connectors/wikidata-entity-search.connector.json",
+      "target_path": "api-center/connectors/wikidata-entity-search.connector.json",
+      "size_bytes": 766,
+      "sha256": "e59513d37305c67c3e390af2b8f6dae327278e52bbac689b3694d1a31fa259b7"
+    },
+    {
+      "source_path": "api-center/connectors/worldbank-indicator-jsonstat.connector.json",
+      "target_path": "api-center/connectors/worldbank-indicator-jsonstat.connector.json",
+      "size_bytes": 1316,
+      "sha256": "3856b4498811593adab7b0ab125dcc082aa2aca3deda036ff743ba5a718c538e"
+    },
+    {
+      "source_path": "api-center/data-commons/README.md",
+      "target_path": "api-center/data-commons/README.md",
+      "size_bytes": 1832,
+      "sha256": "1cc14ce7ab6dad0a56225d05e6b7e4949dfd3c7ffd4a110f3e09079f63287c1f"
+    },
+    {
+      "source_path": "api-center/data-commons/china-starter-pack.json",
+      "target_path": "api-center/data-commons/china-starter-pack.json",
+      "size_bytes": 2059,
+      "sha256": "aedd4ac51315c9dbef8b971c4d94e94baa2e6c7402858135953a30107bc76e3d"
+    },
+    {
+      "source_path": "api-center/data-commons/data_commons_task.py",
+      "target_path": "api-center/data-commons/data_commons_task.py",
+      "size_bytes": 19014,
+      "sha256": "cf52eadb503f20be18cb8e72b8244c1724548319af02f2c2a32227dd174ad6b4"
+    },
+    {
+      "source_path": "api-center/data-commons/duplicate_guard.py",
+      "target_path": "api-center/data-commons/duplicate_guard.py",
+      "size_bytes": 4538,
+      "sha256": "3a695983f9e0789bab16e27ac7f30e0ae857b64813d1c322d1c71e5743807c72"
+    },
+    {
+      "source_path": "api-center/data-commons/provider-catalog.json",
+      "target_path": "api-center/data-commons/provider-catalog.json",
+      "size_bytes": 1986,
+      "sha256": "d37b3bc412b72f12bebf86ef63dcaab48f6e6738bd356ecd510eadd4eb22f23f"
+    },
+    {
+      "source_path": "api-center/data-commons/requirements.txt",
+      "target_path": "api-center/data-commons/requirements.txt",
+      "size_bytes": 36,
+      "sha256": "9c857ea59d2f368cb8549f0f2546a8fc1d0393f2290a2b80f356ce01d43ead95"
+    },
+    {
+      "source_path": "api-center/data-commons/tests/test_data_commons_task.py",
+      "target_path": "api-center/data-commons/tests/test_data_commons_task.py",
+      "size_bytes": 6411,
+      "sha256": "38790a4856a2c7e7ffd99880fca98ba910a234db7e82aca12101e1777a800736"
+    },
+    {
+      "source_path": "api-center/data-commons/ticket.schema.json",
+      "target_path": "api-center/data-commons/ticket.schema.json",
+      "size_bytes": 1684,
+      "sha256": "4f11d61d80a1714035599f5c35d380ab491681e80bd2f1462de5eb1a2b0bd01d"
+    },
+    {
+      "source_path": "api-center/docker-compose.yml",
+      "target_path": "api-center/docker-compose.yml",
+      "size_bytes": 459,
+      "sha256": "0cbdb328a7258c3cef5b90fcfbc92c6bd633c4f4eb5ca2b78392c05c81553827"
+    },
+    {
+      "source_path": "api-center/google-cloud/README.md",
+      "target_path": "api-center/google-cloud/README.md",
+      "size_bytes": 4370,
+      "sha256": "ee59bdbe333dcb3545dc0e8b0c189e7716079cdb36a569cd85e6fad87cbe198a"
+    },
+    {
+      "source_path": "api-center/google-cloud/china-topic-packs.json",
+      "target_path": "api-center/google-cloud/china-topic-packs.json",
+      "size_bytes": 8689,
+      "sha256": "9ce87287defc00d1084b5aaeee7fa94c16cd90abc38d4ea3a1deb7b338410d7f"
+    },
+    {
+      "source_path": "api-center/google-cloud/duplicate_guard.py",
+      "target_path": "api-center/google-cloud/duplicate_guard.py",
+      "size_bytes": 4556,
+      "sha256": "2713f278b729449167a6c6b0d2c7837d0e5b459459411b2ed0cb62498822ea39"
+    },
+    {
+      "source_path": "api-center/google-cloud/google_cloud_task.py",
+      "target_path": "api-center/google-cloud/google_cloud_task.py",
+      "size_bytes": 35293,
+      "sha256": "7d67d234e6093aef10ae76c89afe8d42ba44b12d2c5316d9d1ac9366f9993f11"
+    },
+    {
+      "source_path": "api-center/google-cloud/provider-catalog.json",
+      "target_path": "api-center/google-cloud/provider-catalog.json",
+      "size_bytes": 8263,
+      "sha256": "d001957bdfbae1aaf59c80096ee10428d07ebcd668095b94edb0c9b6fe0658d8"
+    },
+    {
+      "source_path": "api-center/google-cloud/requirements.txt",
+      "target_path": "api-center/google-cloud/requirements.txt",
+      "size_bytes": 73,
+      "sha256": "0733721fc10685adcf5f902c499b309a9a937e50976702476507ba28d3fdafc7"
+    },
+    {
+      "source_path": "api-center/google-cloud/tests/test_duplicate_guard.py",
+      "target_path": "api-center/google-cloud/tests/test_duplicate_guard.py",
+      "size_bytes": 5004,
+      "sha256": "d8af1a62225f7c625cef633c47a2e9cb8127ad0e020aa820b3dad3c5d997dbdc"
+    },
+    {
+      "source_path": "api-center/google-cloud/tests/test_google_cloud_task.py",
+      "target_path": "api-center/google-cloud/tests/test_google_cloud_task.py",
+      "size_bytes": 11507,
+      "sha256": "f2c5708c240e4f7b27056d4183b1f249dc398e937effed48e95869bbe6a35fed"
+    },
+    {
+      "source_path": "api-center/google-cloud/ticket.schema.json",
+      "target_path": "api-center/google-cloud/ticket.schema.json",
+      "size_bytes": 1826,
+      "sha256": "f514c981852c5a7991342a057eb5da31d355f14878db93113b516ee7192deb57"
+    },
+    {
+      "source_path": "api-center/krakend.base.json",
+      "target_path": "api-center/krakend.base.json",
+      "size_bytes": 224,
+      "sha256": "ee8517440a24bf48af2ddebf01ce7eb9506546964c0f468f4d4eafcdfea22fdb"
+    },
+    {
+      "source_path": "api-center/krakend.tmpl",
+      "target_path": "api-center/krakend.tmpl",
+      "size_bytes": 26312,
+      "sha256": "e0d4cb36994dda5758bcab833b01c06bb89ecda79f9d254485e95d82dda22c7f"
+    },
+    {
+      "source_path": "api-center/krakend.validation.json",
+      "target_path": "api-center/krakend.validation.json",
+      "size_bytes": 26186,
+      "sha256": "f1645822f664be754ead4fb2a551619b8fd4595955df6933fe9e07ecd955292d"
+    },
+    {
+      "source_path": "api-center/requirements.txt",
+      "target_path": "api-center/requirements.txt",
+      "size_bytes": 19,
+      "sha256": "756cc9e506ae4ee1a6f6c0507088b5cfc0dc8ba350fb2d2d46f1ffa72033adb6"
+    },
+    {
+      "source_path": "api-center/runtime_diagnostics.py",
+      "target_path": "api-center/runtime_diagnostics.py",
+      "size_bytes": 9769,
+      "sha256": "82d1c3037a7feae5f3afd7c26926491ca020575c62a40628368788f901fed575"
+    },
+    {
+      "source_path": "api-center/tests/test_amap_connectors.py",
+      "target_path": "api-center/tests/test_amap_connectors.py",
+      "size_bytes": 2228,
+      "sha256": "f71f4878107d9d1e92bfbb0d0ddd2a2a8e9662b0f4f046f0a4d50e9735d2ea03"
+    },
+    {
+      "source_path": "api-center/tests/test_api_architecture.py",
+      "target_path": "api-center/tests/test_api_architecture.py",
+      "size_bytes": 3323,
+      "sha256": "ff0b1af0643aaca7ef8f293d7da40665496762631a434f402a726df8e43bccb6"
+    },
+    {
+      "source_path": "api-center/tests/test_api_catalog.py",
+      "target_path": "api-center/tests/test_api_catalog.py",
+      "size_bytes": 6484,
+      "sha256": "e4e82bc679706ce4d776f6c6235c404afffc1fc224fd64552ef25de9358bdb3e"
+    },
+    {
+      "source_path": "api-center/tests/test_api_quality_and_parameter_rules.py",
+      "target_path": "api-center/tests/test_api_quality_and_parameter_rules.py",
+      "size_bytes": 3321,
+      "sha256": "ad6e84a5b79cf0cf366bab7679907d4bcd22cd899465c354808d03fd4ea7806f"
+    },
+    {
+      "source_path": "api-center/tests/test_api_task.py",
+      "target_path": "api-center/tests/test_api_task.py",
+      "size_bytes": 9956,
+      "sha256": "e6085f300acc4dfa2f56e4a1d068487ace38f428cead6092773f20f33f67123c"
+    },
+    {
+      "source_path": "api-center/tests/test_api_ticket.py",
+      "target_path": "api-center/tests/test_api_ticket.py",
+      "size_bytes": 4855,
+      "sha256": "e8c6f5fe8e1928af7739ac55768ba3ff32aeee5b8a1576f264db04e3bd049d3b"
+    },
+    {
+      "source_path": "api-center/tests/test_build_config.py",
+      "target_path": "api-center/tests/test_build_config.py",
+      "size_bytes": 10991,
+      "sha256": "e2729243c94072816aed3f33d5206ed1b41985b70a8766831ad6dd25ad6f7790"
+    },
+    {
+      "source_path": "api-center/tests/test_newsapi_connectors.py",
+      "target_path": "api-center/tests/test_newsapi_connectors.py",
+      "size_bytes": 5192,
+      "sha256": "1e05abaa53cc5539ac17e1b0e87b3d632c1f6e47965e812b262e633cfc70380b"
+    },
+    {
+      "source_path": "api-center/tests/test_openmeteo_baidu_connectors.py",
+      "target_path": "api-center/tests/test_openmeteo_baidu_connectors.py",
+      "size_bytes": 2689,
+      "sha256": "2a03535aa8d0bf998d3a0c6c578548d458910d7f9ee2565d23fa9c2ed36feb60"
+    },
+    {
+      "source_path": "api-center/tests/test_osm_worldbank_connectors.py",
+      "target_path": "api-center/tests/test_osm_worldbank_connectors.py",
+      "size_bytes": 6960,
+      "sha256": "a39d2c631c21aa4e13c39fe72ee09d467440b3d91436cd792e512da4a567618a"
+    },
+    {
+      "source_path": "api-center/tests/test_path_parameter_connectors.py",
+      "target_path": "api-center/tests/test_path_parameter_connectors.py",
+      "size_bytes": 4397,
+      "sha256": "dc4751ac29ee8e9d9091a02a93dd5175b0599fd07cde3e27bf665e0897d2f687"
+    },
+    {
+      "source_path": "api-center/tests/test_public_data_connectors.py",
+      "target_path": "api-center/tests/test_public_data_connectors.py",
+      "size_bytes": 2353,
+      "sha256": "4e7c0a330d6b495b539ab8ab7ecafb4727ba8c965b2b89cdb1b4647be62d02b7"
+    },
+    {
+      "source_path": "api-center/tests/test_runtime_diagnostics.py",
+      "target_path": "api-center/tests/test_runtime_diagnostics.py",
+      "size_bytes": 3791,
+      "sha256": "532db8324aac9aac566a44abd6f3462a67bb666477b75c29b5db3c8e405a81ed"
+    },
+    {
+      "source_path": "api-center/tests/test_tianditu_connector.py",
+      "target_path": "api-center/tests/test_tianditu_connector.py",
+      "size_bytes": 3426,
+      "sha256": "b527740dc3bb2f565ed8f640fb26f0c9457ac1f7a04b874d7cdc1736f507960b"
+    },
+    {
+      "source_path": "api-center/tests/test_worldbank_connector.py",
+      "target_path": "api-center/tests/test_worldbank_connector.py",
+      "size_bytes": 3371,
+      "sha256": "0b0deb2f80c12042dee1406da5ca153a8984ae0738194a33f8826b806f43bf37"
+    },
+    {
+      "source_path": "requirements-dev.txt",
+      "target_path": "requirements-dev.txt",
+      "size_bytes": 76,
+      "sha256": "eca9c7bed945232caeadf232be99080686d24bae483b2bb96d5bc008d3135fe0"
+    },
+    {
+      "source_path": "requirements-runtime.txt",
+      "target_path": "requirements-runtime.txt",
+      "size_bytes": 19,
+      "sha256": "756cc9e506ae4ee1a6f6c0507088b5cfc0dc8ba350fb2d2d46f1ffa72033adb6"
+    },
+    {
+      "source_path": "tools/mock_api_server.py",
+      "target_path": "tools/mock_api_server.py",
+      "size_bytes": 2145,
+      "sha256": "c92980d069eedf87d7cf1601e4d4999c0f45175fa457aa27ad94807046000b04"
+    }
+  ],
+  "excluded_business_roots": [
+    "compute-center",
+    "open-model-market"
+  ],
+  "source_repository_retained": true,
+  "secrets_copied": false
+}

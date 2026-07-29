@@ -1,0 +1,119 @@
+{
+  "id": "newsapi-everything",
+  "enabled": true,
+  "endpoint": "/data/newsapi/everything",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "10s",
+  "input_query_strings": [
+    "q",
+    "searchIn",
+    "sources",
+    "domains",
+    "excludeDomains",
+    "from",
+    "to",
+    "language",
+    "sortBy",
+    "pageSize",
+    "page"
+  ],
+  "secret_header": {
+    "name": "X-Api-Key",
+    "env": "NEWSAPI_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "ok"
+    ],
+    "error_code_path": "code",
+    "message_path": "message",
+    "any_data_paths": [
+      "articles"
+    ]
+  },
+  "backend": {
+    "host": "https://newsapi.org",
+    "url_pattern": "/v2/everything",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "totalResults",
+      "articles",
+      "code",
+      "message"
+    ],
+    "resilience": {
+      "circuit_breaker": {
+        "interval": 60,
+        "timeout": 30,
+        "max_errors": 3,
+        "log_status_change": true
+      },
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "q": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 500
+      },
+      "searchIn": {
+        "type": "string",
+        "pattern": "^(?:title|description|content)(?:,(?:title|description|content))*$"
+      },
+      "language": {
+        "type": "string",
+        "enum": [
+          "ar",
+          "de",
+          "en",
+          "es",
+          "fr",
+          "he",
+          "it",
+          "nl",
+          "no",
+          "pt",
+          "ru",
+          "sv",
+          "ud",
+          "zh"
+        ]
+      },
+      "sortBy": {
+        "type": "string",
+        "enum": [
+          "relevancy",
+          "popularity",
+          "publishedAt"
+        ]
+      },
+      "pageSize": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      },
+      "page": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required_any_of": [
+      [
+        "q",
+        "sources",
+        "domains"
+      ]
+    ]
+  }
+}

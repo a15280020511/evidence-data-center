@@ -1,0 +1,129 @@
+{
+  "id": "baidu-place-search",
+  "enabled": true,
+  "endpoint": "/data/baidu/place/search",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "10s",
+  "input_query_strings": [
+    "query",
+    "region",
+    "bounds",
+    "location",
+    "radius",
+    "scope",
+    "tag",
+    "page_size",
+    "page_num",
+    "output",
+    "coord_type",
+    "ret_coordtype"
+  ],
+  "secret_query": {
+    "name": "ak",
+    "env": "BAIDU_MAP_API_KEY"
+  },
+  "parameter_rules": {
+    "properties": {
+      "query": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 200
+      },
+      "region": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 100
+      },
+      "bounds": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      },
+      "location": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 100
+      },
+      "radius": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50000
+      },
+      "scope": {
+        "type": "integer",
+        "enum": [
+          1,
+          2
+        ]
+      },
+      "page_size": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 20
+      },
+      "page_num": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "output": {
+        "type": "string",
+        "enum": [
+          "json"
+        ]
+      },
+      "coord_type": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 6
+      },
+      "ret_coordtype": {
+        "type": "string",
+        "enum": [
+          "gcj02ll",
+          "bd09ll"
+        ]
+      }
+    },
+    "required_any_of": [
+      [
+        "query"
+      ],
+      [
+        "region",
+        "bounds",
+        "location"
+      ]
+    ]
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      0
+    ],
+    "message_path": "message",
+    "any_data_paths": [
+      "results"
+    ]
+  },
+  "backend": {
+    "host": "https://api.map.baidu.com",
+    "url_pattern": "/place/v2/search",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "message",
+      "total",
+      "results"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  }
+}

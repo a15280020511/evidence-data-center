@@ -1,0 +1,43 @@
+{
+  "id": "chinadata-live-dataset",
+  "enabled": true,
+  "endpoint": "/data/chinadata/dataset/{dataset_id}",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "20s",
+  "path_parameters": {
+    "dataset_id": {
+      "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
+      "max_length": 64
+    }
+  },
+  "response_contract": {
+    "status_path": "success",
+    "success_values": [
+      true
+    ],
+    "message_path": "message",
+    "any_data_paths": [
+      "data.data"
+    ]
+  },
+  "backend": {
+    "host": "https://chinadata.live",
+    "url_pattern": "/api/v2/data/{dataset_id}",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "success",
+      "data",
+      "error",
+      "message"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  }
+}

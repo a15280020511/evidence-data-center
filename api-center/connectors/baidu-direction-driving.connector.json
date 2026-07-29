@@ -1,0 +1,94 @@
+{
+  "id": "baidu-direction-driving",
+  "enabled": true,
+  "endpoint": "/data/baidu/direction/driving",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "10s",
+  "input_query_strings": [
+    "origin",
+    "destination",
+    "waypoints",
+    "tactics",
+    "coord_type",
+    "ret_coordtype"
+  ],
+  "secret_query": {
+    "name": "ak",
+    "env": "BAIDU_MAP_API_KEY"
+  },
+  "parameter_rules": {
+    "properties": {
+      "origin": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      },
+      "destination": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      },
+      "waypoints": {
+        "type": "string",
+        "max_length": 1000
+      },
+      "tactics": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 12
+      },
+      "coord_type": {
+        "type": "string",
+        "enum": [
+          "bd09ll",
+          "gcj02",
+          "wgs84"
+        ]
+      },
+      "ret_coordtype": {
+        "type": "string",
+        "enum": [
+          "bd09ll",
+          "gcj02"
+        ]
+      }
+    },
+    "required_any_of": [
+      [
+        "origin"
+      ],
+      [
+        "destination"
+      ]
+    ]
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      0
+    ],
+    "message_path": "message",
+    "any_data_paths": [
+      "result.routes"
+    ]
+  },
+  "backend": {
+    "host": "https://api.map.baidu.com",
+    "url_pattern": "/directionlite/v1/driving",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "message",
+      "result"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  }
+}

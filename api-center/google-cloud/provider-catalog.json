@@ -1,0 +1,179 @@
+{
+  "schema_version": "google-cloud-provider-catalog-v2",
+  "generation": "runtime-discovery-plus-repository-policy",
+  "selection_owner": "gpts-usage-center",
+  "maintenance_owner": "web-gpt-github-plugin",
+  "ticket_prefix": "[api-gcp]",
+  "required_secret_environment_variable": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
+  "secret_values_exposed": false,
+  "public_non_personal_data_only": true,
+  "topic_catalog_files": [
+    "google-cloud/china-topic-packs.json",
+    "data-commons/china-starter-pack.json"
+  ],
+  "providers": [
+    {
+      "provider_id": "bigquery",
+      "display_name": "Google BigQuery",
+      "enabled": true,
+      "description": "动态列出获准公共项目中的数据集、表、字段、模型和例程，并执行经过费用预检的只读GoogleSQL查询。",
+      "catalog_policy": "GPTs可读取全部获准项目的目录元数据；默认公共项目为bigquery-public-data、gdelt-bq和patents-public-data。",
+      "execution_policy": "只允许单条SELECT或WITH查询；禁止DDL、DML、脚本、导出、外部查询、远程函数和私有项目访问。",
+      "default_public_projects": [
+        "bigquery-public-data",
+        "gdelt-bq",
+        "patents-public-data"
+      ],
+      "operations": [
+        {
+          "operation_id": "catalog-projects",
+          "description": "列出当前允许访问的BigQuery公共项目和计费项目标识。",
+          "parameters": []
+        },
+        {
+          "operation_id": "catalog-datasets",
+          "description": "列出指定获准项目中的全部可见数据集。",
+          "parameters": ["project_id", "max_results", "page_token"]
+        },
+        {
+          "operation_id": "catalog-tables",
+          "description": "列出指定数据集中的表、视图、外部表和物化视图。",
+          "parameters": ["project_id", "dataset_id", "max_results", "page_token"]
+        },
+        {
+          "operation_id": "catalog-table",
+          "description": "读取指定表的完整安全元数据和字段结构，不读取表中数据。",
+          "parameters": ["project_id", "dataset_id", "table_id"]
+        },
+        {
+          "operation_id": "catalog-routines",
+          "description": "列出指定数据集中的用户定义函数和存储过程目录。",
+          "parameters": ["project_id", "dataset_id", "max_results", "page_token"]
+        },
+        {
+          "operation_id": "catalog-models",
+          "description": "列出指定数据集中的BigQuery ML模型目录。",
+          "parameters": ["project_id", "dataset_id", "max_results", "page_token"]
+        },
+        {
+          "operation_id": "query-readonly",
+          "description": "先dry-run估算扫描量，再执行只读GoogleSQL并返回有限行数和费用证据。",
+          "parameters": ["sql", "location", "maximum_bytes_billed", "max_rows", "timeout_ms", "query_parameters_json"]
+        }
+      ],
+      "limits": {
+        "default_maximum_bytes_billed": 1000000000,
+        "hard_maximum_bytes_billed": 10000000000,
+        "default_max_rows": 1000,
+        "hard_max_rows": 5000,
+        "query_timeout_ms": 30000
+      }
+    },
+    {
+      "provider_id": "earth-engine",
+      "display_name": "Google Earth Engine",
+      "enabled": true,
+      "description": "开放官方STAC数据目录和全部算法目录，并执行受控的只读value:compute表达式。中国专题目录覆盖人口、夜间灯光、城市扩张、土地利用和长期气候。",
+      "catalog_policy": "GPTs可搜索和读取官方Earth Engine STAC目录，并按名称或说明筛选全部可用算法；优先使用china-topic-packs.json中的已核验全球数据集。",
+      "execution_policy": "只允许返回JSON值的只读计算；禁止导出、写资产、删除、复制、重命名、上传、外部URL和视频或缩略图任务。",
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取Earth Engine目录、算法和只读计算的完整使用规则。",
+          "parameters": []
+        },
+        {
+          "operation_id": "catalog-dataset-root",
+          "description": "读取官方Earth Engine STAC总目录入口。",
+          "parameters": []
+        },
+        {
+          "operation_id": "catalog-dataset-search",
+          "description": "在官方STAC对象名称中搜索数据集，并返回可继续读取的对象路径。",
+          "parameters": ["search", "max_results", "page_token"]
+        },
+        {
+          "operation_id": "catalog-dataset",
+          "description": "按官方STAC对象路径读取一个数据集或子目录的完整元数据。",
+          "parameters": ["object_path"]
+        },
+        {
+          "operation_id": "catalog-algorithms",
+          "description": "从Earth Engine API读取全部算法的名称、说明、返回类型和参数，并支持搜索和分页。",
+          "parameters": ["search", "offset", "max_results"]
+        },
+        {
+          "operation_id": "compute-value-readonly",
+          "description": "执行经过结构和算法安全校验的Earth Engine序列表达式，只返回JSON值。",
+          "parameters": ["expression_json", "workload_tag"]
+        }
+      ],
+      "limits": {
+        "max_expression_characters": 20000,
+        "max_expression_nodes": 500,
+        "max_expression_depth": 30,
+        "max_algorithm_results": 200,
+        "max_dataset_results": 100
+      }
+    },
+    {
+      "provider_id": "data-commons",
+      "display_name": "Google Data Commons",
+      "enabled": true,
+      "ticket_prefix": "[api-dc]",
+      "required_secret_environment_variable": "GOOGLE_DATA_COMMONS_API_KEY",
+      "description": "通过Data Commons REST V2只读查询全球公共统计知识图谱，重点支持中国国家、省级、城市及可用更细行政层级的人口、经济、就业、教育、医疗和环境指标。",
+      "catalog_policy": "GPTs先读取data-commons/provider-catalog.json和china-starter-pack.json，再解析地点或统计指标DCID；中国细粒度覆盖取决于原始来源，不得假设所有城市或县均有数据。",
+      "execution_policy": "仅允许固定的resolve、node和observation端点；只提交公开实体、指标和关系表达式；禁止SPARQL、自然语言接口、任意URL和个人数据。",
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取Data Commons受控能力、限制和中国起步目录，不调用上游。",
+          "parameters": []
+        },
+        {
+          "operation_id": "resolve-place",
+          "description": "按一个或多个公开地点名称解析Data Commons地点DCID。",
+          "parameters": ["nodes_json", "property"]
+        },
+        {
+          "operation_id": "resolve-indicator",
+          "description": "按指标描述解析统计变量或主题DCID。",
+          "parameters": ["nodes_json"]
+        },
+        {
+          "operation_id": "node-properties",
+          "description": "按固定关系表达式读取节点属性、相邻实体或行政层级关系。",
+          "parameters": ["nodes_json", "property"]
+        },
+        {
+          "operation_id": "observations",
+          "description": "读取指定实体和统计变量的最新、指定日期或完整时间序列观测，并保留facet来源。",
+          "parameters": ["entity_dcids_json", "variable_dcids_json", "date", "select_json", "facet_ids_json", "domains_json"]
+        }
+      ],
+      "limits": {
+        "max_nodes": 20,
+        "max_variables": 20,
+        "max_select_fields": 5,
+        "max_relation_expression_characters": 300,
+        "max_response_bytes": 1000000,
+        "timeout_seconds": 60
+      }
+    }
+  ],
+  "replaced_legacy_connectors": [
+    {
+      "connector_id": "gdelt-doc-articles",
+      "replacement": "bigquery/query-readonly against gdelt-bq.gdeltv2"
+    },
+    {
+      "connector_id": "nasa-black-marble-granules",
+      "replacement": "earth-engine catalog and compute using NASA/VIIRS/002/VNP46A2"
+    },
+    {
+      "connector_id": "worldpop-population-stats",
+      "replacement": "earth-engine catalog and compute using WorldPop/GP/100m/pop"
+    }
+  ]
+}

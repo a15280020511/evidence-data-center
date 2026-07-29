@@ -1,0 +1,672 @@
+{
+  "version": 4,
+  "connectors": {
+    "amap-direction-driving": {
+      "display_name": "高德驾车路线规划",
+      "description": "根据起点、终点及可选途经点取得驾车路线、距离、预计时间和路线步骤。",
+      "data_category": "routing",
+      "use_cases": [
+        "路线比较",
+        "通勤与配送测算",
+        "候选区域之间的行驶成本估算"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时实时返回；交通时效以供应商响应为准",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origin": "必填；经度,纬度",
+        "destination": "必填；经度,纬度",
+        "waypoints": "可选；途经点",
+        "strategy": "可选；路线策略",
+        "show_fields": "可选；扩展返回字段"
+      },
+      "example_parameters": {
+        "origin": "119.2965,26.0745",
+        "destination": "119.3062,26.0637"
+      },
+      "limitations": [
+        "不代表网约车平台实时订单热度",
+        "交通时间可能受实时拥堵和供应商策略影响"
+      ]
+    },
+    "amap-direction-walking": {
+      "display_name": "高德步行路线规划",
+      "description": "取得两点之间的步行路线、距离、预计时间和路线步骤。",
+      "data_category": "routing",
+      "use_cases": [
+        "短距离可达性",
+        "最后一公里分析",
+        "步行接驳测算"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origin": "必填；经度,纬度",
+        "destination": "必填；经度,纬度",
+        "show_fields": "可选；扩展返回字段"
+      },
+      "example_parameters": {
+        "origin": "119.2965,26.0745",
+        "destination": "119.3000,26.0700"
+      },
+      "limitations": [
+        "不包含实时人流量",
+        "道路施工或临时封闭可能存在延迟"
+      ]
+    },
+    "amap-distance": {
+      "display_name": "高德多点距离测量",
+      "description": "计算一个或多个起点到目标点的距离和预计时间。",
+      "data_category": "distance",
+      "use_cases": [
+        "候选地点排序",
+        "多起点成本比较",
+        "配送与接驳半径测算"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origins": "必填；一个或多个起点坐标",
+        "destination": "必填；目标坐标",
+        "type": "可选；距离计算类型"
+      },
+      "example_parameters": {
+        "origins": "119.2965,26.0745|119.3100,26.0800",
+        "destination": "119.3062,26.0637",
+        "type": "1"
+      },
+      "limitations": [
+        "仅提供距离和时间，不提供订单需求概率"
+      ]
+    },
+    "amap-geocode": {
+      "display_name": "高德地址转坐标",
+      "description": "把公开地址转换为经纬度坐标和标准化地址信息。",
+      "data_category": "geocoding",
+      "use_cases": [
+        "地点定位",
+        "路线任务准备",
+        "公开地址标准化"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "address": "必填；公开地址",
+        "city": "建议填写；城市或行政区",
+        "batch": "可选；是否批量"
+      },
+      "example_parameters": {
+        "address": "福州宝龙城市广场",
+        "city": "福州"
+      },
+      "limitations": [
+        "模糊地址可能返回多个候选",
+        "不得提交私人住宅精确地址或个人轨迹"
+      ]
+    },
+    "amap-place-text": {
+      "display_name": "高德 POI 关键词搜索",
+      "description": "按关键词、类型和区域搜索公开兴趣点及其坐标、地址和类别。",
+      "data_category": "poi",
+      "use_cases": [
+        "候选地点发现",
+        "商圈与设施清单",
+        "公开地点核验"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回；POI 更新频率由供应商决定",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "keywords": "必填或与types至少填写一项",
+        "types": "可选；POI类别",
+        "region": "建议填写；城市或行政区",
+        "page_size": "可选；单页数量",
+        "page_num": "可选；页码"
+      },
+      "example_parameters": {
+        "keywords": "商场",
+        "region": "福州",
+        "page_size": 20,
+        "page_num": 1
+      },
+      "limitations": [
+        "POI数量不等于实时客流或订单量",
+        "分页结果受供应商上限影响"
+      ]
+    },
+    "amap-regeocode": {
+      "display_name": "高德坐标转地址",
+      "description": "把公开经纬度转换为标准地址、道路和附近公开兴趣点信息。",
+      "data_category": "geocoding",
+      "use_cases": [
+        "坐标说明",
+        "区域归属核验",
+        "公开地点上下文补充"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "location": "必填；经度,纬度",
+        "radius": "可选；搜索半径",
+        "extensions": "可选；基础或完整结果"
+      },
+      "example_parameters": {
+        "location": "119.2965,26.0745",
+        "extensions": "all"
+      },
+      "limitations": [
+        "不得用于处理私人实时轨迹",
+        "附近POI并不代表实时需求"
+      ]
+    },
+    "amap-weather": {
+      "display_name": "高德城市天气",
+      "description": "取得指定城市的实时天气或预报信息。",
+      "data_category": "weather",
+      "use_cases": [
+        "需求情景调整",
+        "出行风险分析",
+        "配送和网约车天气修正"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "实时或预报；以响应时间为准",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "city": "必填；行政区代码或城市标识",
+        "extensions": "可选；base为实时，all为预报"
+      },
+      "example_parameters": {
+        "city": "350100",
+        "extensions": "base"
+      },
+      "limitations": [
+        "天气预报存在不确定性",
+        "不能替代平台订单或交通实时数据"
+      ]
+    },
+    "chinadata-live-dataset": {
+      "display_name": "ChinaData.live 中国统计数据集",
+      "description": "按稳定数据集 slug 获取 ChinaData.live 整理的中国宏观、人口、产业、能源和贸易等公开时间序列。",
+      "data_category": "china-statistics",
+      "use_cases": [
+        "中国宏观指标取数",
+        "人口与产业趋势",
+        "与官方或国际来源交叉核验"
+      ],
+      "parameter_notes": {
+        "dataset_id": "必填；ChinaData.live 数据集 slug，只允许小写字母、数字和连字符，例如 china-gdp"
+      },
+      "example_parameters": {
+        "dataset_id": "china-gdp"
+      },
+      "geographic_coverage": "中国；具体地域和口径以数据集元数据为准",
+      "freshness": "随 ChinaData.live 对上游官方或国际来源的更新而更新",
+      "cost_class": "free-public-fair-use",
+      "limitations": [
+        "ChinaData.live 是独立数据门户，不是中国政府机构",
+        "必须保留响应中的 source、unit、frequency 和原始来源说明",
+        "公开 API 用于研究、评估和轻量调用，受公平使用和源数据许可约束",
+        "关键政策或投资结论应回到国家统计局、海关或原始国际机构复核"
+      ]
+    },
+    "dbnomics-series": {
+      "display_name": "DBnomics 经济时间序列",
+      "description": "通过 DBnomics v22 统一接口读取指定提供方、数据集和序列的元数据及观测值。",
+      "data_category": "economic-time-series",
+      "use_cases": [
+        "中国国家统计局序列",
+        "国际宏观指标交叉验证",
+        "可复现历史时间序列分析"
+      ],
+      "parameter_notes": {
+        "provider_code": "必填；DBnomics 提供方代码，例如 NBS、WB、IMF",
+        "dataset_code": "必填；提供方的数据集代码，例如 A_A0201",
+        "series_code": "必填；精确单序列代码，例如 A020106",
+        "observations": "建议填1或true以返回观测值",
+        "facets": "可选；是否返回分面元数据",
+        "metadata": "可选；是否返回详细元数据",
+        "align_periods": "可选；多序列时对齐期间，本连接器主要用于精确单序列",
+        "limit": "可选；返回上限",
+        "offset": "可选；分页偏移"
+      },
+      "example_parameters": {
+        "provider_code": "NBS",
+        "dataset_code": "A_A0201",
+        "series_code": "A020106",
+        "observations": 1
+      },
+      "geographic_coverage": "全球；可通过 NBS 等提供方读取中国数据",
+      "freshness": "DBnomics 抓取器通常在上游发布后自动更新，并保留历史修订",
+      "cost_class": "free-public",
+      "limitations": [
+        "DBnomics 是聚合平台，数值、代码和许可沿用原始提供方",
+        "连接器限制为精确单序列，series.num_found 必须等于1",
+        "不用于整库批量下载；应做聚焦查询并保留 provider/dataset/series 代码",
+        "关键数据应同时检查原始统计机构的发布日期、单位和修订说明"
+      ]
+    },
+    "newsapi-everything": {
+      "display_name": "NewsAPI 全网新闻检索",
+      "description": "调用NewsAPI Everything端点，按关键词、时间、语言、来源或域名检索公开新闻文章元数据。",
+      "data_category": "news-search",
+      "use_cases": [
+        "专题新闻检索",
+        "企业与事件舆情线索",
+        "按时间和来源构建新闻证据集"
+      ],
+      "geographic_coverage": "全球；覆盖范围取决于NewsAPI收录的新闻源",
+      "freshness": "取决于订阅套餐；Developer免费套餐文章延迟24小时且最多检索近1个月",
+      "cost_class": "provider-key-plan-limited",
+      "parameter_notes": {
+        "q": "建议必填；关键词或布尔表达式，官方上限500字符",
+        "searchIn": "可选；title、description、content，可逗号分隔",
+        "sources": "可选；最多20个来源ID，不能与domains同时假设等价",
+        "domains": "可选；限定来源域名",
+        "excludeDomains": "可选；排除域名",
+        "from": "可选；ISO 8601起始时间，受套餐历史范围限制",
+        "to": "可选；ISO 8601结束时间",
+        "language": "可选；两位语言代码，例如zh、en",
+        "sortBy": "可选；relevancy、popularity或publishedAt",
+        "pageSize": "可选；1至100",
+        "page": "可选；页码"
+      },
+      "example_parameters": {
+        "q": "\"福州\" AND 商业",
+        "language": "zh",
+        "sortBy": "publishedAt",
+        "pageSize": 20,
+        "page": 1
+      },
+      "limitations": [
+        "只返回文章元数据、摘要和最多约200字符的content片段，不提供完整文章正文",
+        "Developer免费套餐仅限开发测试，不能用于正式生产或内部生产环境",
+        "Developer免费套餐每天100次请求、文章延迟24小时、最多检索近1个月",
+        "来源覆盖、去重、发布时间和摘要可能不完整；重要事实必须打开原文并进行多源核验",
+        "不得绕过出版商付费墙、版权或NewsAPI订阅条款"
+      ]
+    },
+    "newsapi-top-headlines": {
+      "display_name": "NewsAPI 头条新闻",
+      "description": "调用NewsAPI Top Headlines端点，按国家、类别、来源或关键词读取头条新闻元数据。",
+      "data_category": "news-headlines",
+      "use_cases": [
+        "国家与行业头条监测",
+        "突发事件线索",
+        "指定来源最新标题采集"
+      ],
+      "geographic_coverage": "NewsAPI支持的国家、类别和来源；具体列表以官方Sources目录为准",
+      "freshness": "取决于订阅套餐；免费Developer套餐存在24小时延迟",
+      "cost_class": "provider-key-plan-limited",
+      "parameter_notes": {
+        "q": "可选；关键词或短语",
+        "sources": "可选；来源ID列表；不能与country或category组合",
+        "country": "可选；两位国家代码；不能与sources组合",
+        "category": "可选；business、entertainment、general、health、science、sports、technology",
+        "pageSize": "可选；1至100",
+        "page": "可选；页码"
+      },
+      "example_parameters": {
+        "country": "cn",
+        "category": "business",
+        "pageSize": 20,
+        "page": 1
+      },
+      "limitations": [
+        "sources不能与country或category混用，错误组合会由上游拒绝",
+        "免费Developer套餐并不适合真正的实时生产监控",
+        "只提供新闻元数据和摘要片段，不提供完整正文",
+        "头条排序、来源覆盖和国家分类由NewsAPI决定，不能视为完整媒体样本"
+      ]
+    },
+    "newsapi-sources": {
+      "display_name": "NewsAPI 新闻来源目录",
+      "description": "调用NewsAPI Sources端点，列出Top Headlines支持的新闻来源及其类别、语言和国家信息。",
+      "data_category": "news-source-catalog",
+      "use_cases": [
+        "发现可用新闻来源ID",
+        "按国家语言筛选媒体",
+        "为头条查询准备来源白名单"
+      ],
+      "geographic_coverage": "全球；仅包含NewsAPI Top Headlines支持的来源子集",
+      "freshness": "来源目录变化较慢，建议每日或每周缓存一次",
+      "cost_class": "provider-key-plan-limited",
+      "parameter_notes": {
+        "category": "可选；新闻类别",
+        "language": "可选；两位语言代码，例如zh、en",
+        "country": "可选；两位国家代码，例如cn、us"
+      },
+      "example_parameters": {
+        "language": "zh",
+        "country": "cn"
+      },
+      "limitations": [
+        "Sources只列出Top Headlines可用来源，不等于Everything端点的全部收录来源",
+        "该端点也计入请求配额，官方建议缓存并降低调用频率",
+        "媒体归属国家、语言和类别由NewsAPI维护，必要时应访问来源官网核验"
+      ]
+    },
+    "wikidata-entity-search": {
+      "display_name": "Wikidata 公开实体搜索",
+      "description": "调用Wikidata官方Wikibase接口，按名称和别名搜索公开实体、标签、描述与实体ID。",
+      "data_category": "knowledge-graph",
+      "use_cases": [
+        "公开实体识别",
+        "名称消歧",
+        "为跨数据源任务取得稳定Wikidata ID"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "请求时读取Wikidata当前公开数据",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "action": "固定填写wbsearchentities",
+        "search": "必填；实体名称或关键词",
+        "language": "必填；搜索语言代码",
+        "uselang": "可选；返回界面语言",
+        "type": "可选；item或property",
+        "limit": "可选；结果数量",
+        "continue": "可选；分页游标",
+        "format": "固定填写json"
+      },
+      "example_parameters": {
+        "action": "wbsearchentities",
+        "search": "Fuzhou",
+        "language": "en",
+        "uselang": "zh",
+        "type": "item",
+        "limit": 5,
+        "format": "json"
+      },
+      "limitations": [
+        "只用于公开实体搜索，不提供登录、编辑、写入或任意SPARQL执行",
+        "同名实体必须结合描述、国家和实体ID消歧",
+        "Wikidata为协作式知识库，关键结论仍需结合原始来源核验"
+      ]
+    },
+    "worldbank-indicator-jsonstat": {
+      "display_name": "世界银行发展指标时间序列",
+      "description": "通过世界银行 Indicators API V2 按国家和指标代码读取公开发展时间序列；调用方必须显式请求 JSON-stat 格式。",
+      "data_category": "global-development-indicators",
+      "use_cases": [
+        "城市化与人口趋势宏观背景",
+        "人均收入和消费能力基准",
+        "商业环境跨来源交叉核验"
+      ],
+      "geographic_coverage": "全球国家和地区；本连接器限制单个2至3位国家代码",
+      "freshness": "随世界银行上游数据库更新；具体更新时间和年份以响应元数据为准",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "country_code": "必填；2至3位国家或地区代码，例如CHN",
+        "indicator_code": "必填；世界银行指标代码",
+        "format": "必填；本连接器正式票据使用jsonstat",
+        "date": "可选；年份或年份区间，例如2015:2025",
+        "mrv": "可选；最近若干期",
+        "mrnev": "可选；最近非空若干期",
+        "gapfill": "可选；是否填补空期",
+        "frequency": "可选；频率",
+        "source": "可选；数据源编号",
+        "per_page": "可选；分页大小",
+        "page": "可选；页码",
+        "footnote": "可选；脚注",
+        "scale": "可选；缩放",
+        "ctrycode": "可选；国家代码响应选项"
+      },
+      "example_parameters": {
+        "country_code": "CHN",
+        "indicator_code": "SP.URB.TOTL.IN.ZS",
+        "format": "jsonstat",
+        "date": "2015:2025"
+      },
+      "limitations": [
+        "世界银行指标通常是国家或地区级，不代表福州或宝龙周边本地实测值",
+        "正式票据必须显式传format=jsonstat；响应合同要求class=dataset且value非空",
+        "指标定义、基年、币种、许可和修订以响应元数据及原始数据源为准",
+        "关键商业判断必须与本地人口、POI、交通和现场数据组合使用"
+      ]
+    },
+    "osm-nominatim-search": {
+      "display_name": "OpenStreetMap Nominatim 地点搜索",
+      "description": "使用 OpenStreetMap Nominatim 在固定公开主机上搜索公开地点并返回 GeocodeJSON 坐标和地址属性。",
+      "data_category": "open-geocoding",
+      "use_cases": [
+        "公开商业设施定位",
+        "地址与行政区核验",
+        "无密钥空间分析锚点"
+      ],
+      "geographic_coverage": "全球；完整度取决于OpenStreetMap社区数据",
+      "freshness": "随OpenStreetMap与Nominatim索引更新",
+      "cost_class": "free-public-fair-use",
+      "parameter_notes": {
+        "q": "必填；结构化地点查询文本",
+        "format": "必填；正式票据使用geocodejson",
+        "limit": "可选；返回数量，建议不超过5",
+        "countrycodes": "可选；国家代码过滤，例如cn",
+        "addressdetails": "可选；地址明细",
+        "extratags": "可选；额外标签",
+        "namedetails": "可选；名称明细",
+        "accept-language": "可选；返回语言"
+      },
+      "example_parameters": {
+        "q": "福州宝龙城市广场,台江区,福州市,福建省,中国",
+        "format": "geocodejson",
+        "limit": 5,
+        "countrycodes": "cn",
+        "addressdetails": 1,
+        "extratags": 1,
+        "namedetails": 1,
+        "accept-language": "zh-CN"
+      },
+      "limitations": [
+        "Nominatim是地点搜索而非完整POI枚举，周边设施使用独立Overpass连接器",
+        "结果依赖OpenStreetMap覆盖和名称标注，必须核验名称、地址和geometry",
+        "公开服务执行每秒一次限流；不得批量抓取或高频调用",
+        "坐标为WGS84经纬度，geometry.coordinates顺序为经度、纬度"
+      ]
+    },
+    "osm-commercial-around": {
+      "display_name": "OpenStreetMap 周边商业与公共设施",
+      "description": "使用固定、受限的 Overpass QL 模板，在指定公开坐标和半径内检索商店、餐饮、旅游、办公、公共交通及车站要素。",
+      "data_category": "commercial-spatial-poi",
+      "use_cases": [
+        "商业设施密度",
+        "业态结构和竞争代理",
+        "公共交通与服务设施可达性"
+      ],
+      "geographic_coverage": "全球；完整度取决于OpenStreetMap社区数据",
+      "freshness": "随OpenStreetMap和Overpass实例更新",
+      "cost_class": "free-public-fair-use",
+      "parameter_notes": {
+        "latitude": "必填；WGS84纬度，预校验后进入固定查询模板",
+        "longitude": "必填；WGS84经度，预校验后进入固定查询模板",
+        "radius": "必填；100至20000米，建议城市商业模型使用1000至3000米"
+      },
+      "example_parameters": {
+        "latitude": "26.0620",
+        "longitude": "119.2920",
+        "radius": "2000"
+      },
+      "limitations": [
+        "只执行固定Overpass模板，不接受任意QL、URL或标签表达式",
+        "单次最多返回300个排序后的要素，因此高密度区域可能发生截断",
+        "OSM要素数量不是客流、销售额或完整商户名录",
+        "道路时间、室内动线、楼层分布、租金和经营状态不在本接口范围内"
+      ]
+    },
+    "tianditu-place-search": {
+      "display_name": "天地图地名与POI搜索",
+      "description": "调用天地图地名搜索V2.0固定接口，使用受控postStr查询公开地名、POI、行政区或统计结果。",
+      "data_category": "china-place-search",
+      "use_cases": [
+        "中国地点与POI核验",
+        "行政区和公共设施搜索",
+        "空间分析锚点补充"
+      ],
+      "geographic_coverage": "中国；具体覆盖和更新频率以天地图服务为准",
+      "freshness": "请求时读取天地图当前公开数据",
+      "cost_class": "provider-key-quota",
+      "parameter_notes": {
+        "postStr": "必填；字符串化JSON。建议普通搜索固定包含keyWord、level、mapBound、queryType、start、count",
+        "type": "必填；固定填写query；tk由服务端Secret注入，不得由客户端提交"
+      },
+      "example_parameters": {
+        "postStr": "{\"keyWord\":\"福州宝龙城市广场\",\"level\":12,\"mapBound\":\"119.20,25.95,119.45,26.20\",\"queryType\":1,\"start\":0,\"count\":10}",
+        "type": "query"
+      },
+      "limitations": [
+        "需要在天地图开发者控制台申请Key，并在仓库API_CENTER_SECRETS_JSON中配置TIANDITU_API_KEY",
+        "postStr必须符合天地图官方地名搜索V2.0参数规则；本连接器不接受任意URL",
+        "POI结果和坐标必须与高德、OpenStreetMap或现场信息交叉核验",
+        "配额、许可、坐标体系和使用限制以天地图账户及官方条款为准"
+      ]
+    },
+    "openmeteo-forecast": {
+      "display_name": "Open‑Meteo 全球天气预报",
+      "description": "按经纬度读取当前天气、小时预报或逐日预报，适合全球天气情景与出行风险修正。",
+      "data_category": "global-weather",
+      "use_cases": [
+        "全球天气查询",
+        "商业与出行情景修正",
+        "配送和网约车天气风险建模"
+      ],
+      "geographic_coverage": "全球经纬度",
+      "freshness": "请求时读取Open‑Meteo当前模型结果；更新频率取决于具体预报模型",
+      "cost_class": "free-public-fair-use",
+      "parameter_notes": {
+        "latitude": "必填；WGS84纬度",
+        "longitude": "必填；WGS84经度",
+        "current": "current变量列表，例如temperature_2m,precipitation,weather_code",
+        "hourly": "小时变量列表",
+        "daily": "逐日变量列表",
+        "timezone": "建议填写auto或IANA时区",
+        "forecast_days": "1至16",
+        "past_days": "0至92",
+        "temperature_unit": "celsius或fahrenheit",
+        "wind_speed_unit": "kmh、ms、mph或kn",
+        "precipitation_unit": "mm或inch",
+        "timeformat": "iso8601或unixtime"
+      },
+      "example_parameters": {
+        "latitude": 26.0745,
+        "longitude": 119.2965,
+        "current": "temperature_2m,precipitation,weather_code,wind_speed_10m",
+        "hourly": "temperature_2m,precipitation_probability",
+        "forecast_days": 3,
+        "timezone": "Asia/Shanghai"
+      },
+      "limitations": [
+        "天气预报具有模型不确定性，不等于现场观测",
+        "免费公共服务受公平使用和上游可用性限制",
+        "经纬度必须为WGS84；不得提交个人实时轨迹"
+      ]
+    },
+    "baidu-geocode": {
+      "display_name": "百度地图地址转坐标",
+      "description": "使用百度地图地理编码服务把公开地址转换为坐标和可信度等结果。",
+      "data_category": "china-geocoding",
+      "use_cases": [
+        "公开地点定位",
+        "路线任务准备",
+        "地址与坐标交叉核验"
+      ],
+      "geographic_coverage": "中国；以百度地图覆盖为准",
+      "freshness": "请求时读取百度地图当前数据",
+      "cost_class": "provider-key-quota",
+      "parameter_notes": {
+        "address": "必填；公开地址",
+        "city": "建议填写；城市名称",
+        "output": "固定建议json",
+        "ret_coordtype": "gcj02ll或bd09ll"
+      },
+      "example_parameters": {
+        "address": "福州宝龙城市广场",
+        "city": "福州",
+        "output": "json",
+        "ret_coordtype": "gcj02ll"
+      },
+      "limitations": [
+        "需要BAIDU_MAP_API_KEY",
+        "百度坐标体系与WGS84不同，建模前必须统一坐标",
+        "不得提交私人住宅精确地址、个人实时位置或轨迹",
+        "配额和许可由百度地图开放平台账户决定"
+      ]
+    },
+    "baidu-place-search": {
+      "display_name": "百度地图POI搜索",
+      "description": "按关键词和区域、边界或中心点搜索公开兴趣点。",
+      "data_category": "china-poi",
+      "use_cases": [
+        "商圈与设施清单",
+        "竞争和业态代理变量",
+        "公开地点交叉核验"
+      ],
+      "geographic_coverage": "中国；以百度地图覆盖为准",
+      "freshness": "请求时读取百度地图当前POI数据",
+      "cost_class": "provider-key-quota",
+      "parameter_notes": {
+        "query": "必填；关键词",
+        "region": "区域搜索时填写城市或行政区",
+        "bounds": "矩形边界搜索",
+        "location": "圆形搜索中心纬度,经度",
+        "radius": "圆形搜索半径，米",
+        "scope": "1基础结果，2详细结果",
+        "tag": "可选分类",
+        "page_size": "1至20",
+        "page_num": "从0开始",
+        "output": "固定建议json",
+        "coord_type": "输入坐标类型",
+        "ret_coordtype": "返回坐标类型"
+      },
+      "example_parameters": {
+        "query": "商场",
+        "region": "福州",
+        "scope": 2,
+        "page_size": 20,
+        "page_num": 0,
+        "output": "json",
+        "ret_coordtype": "gcj02ll"
+      },
+      "limitations": [
+        "POI数量不等于实时客流、销售额或完整商户名录",
+        "需要BAIDU_MAP_API_KEY",
+        "页数和配额受上游限制",
+        "坐标体系必须在计算中心显式标注"
+      ]
+    },
+    "baidu-direction-driving": {
+      "display_name": "百度地图驾车路线规划",
+      "description": "根据起终点及可选途经点读取驾车路线、距离、耗时和步骤。",
+      "data_category": "china-routing",
+      "use_cases": [
+        "路线比较",
+        "配送与通勤成本估算",
+        "候选区域之间的可达性建模"
+      ],
+      "geographic_coverage": "中国；以百度地图道路覆盖为准",
+      "freshness": "请求时读取；交通时效以百度响应为准",
+      "cost_class": "provider-key-quota",
+      "parameter_notes": {
+        "origin": "必填；坐标或名称",
+        "destination": "必填；坐标或名称",
+        "waypoints": "可选途经点",
+        "tactics": "路线策略",
+        "coord_type": "输入坐标类型",
+        "ret_coordtype": "返回坐标类型"
+      },
+      "example_parameters": {
+        "origin": "26.0745,119.2965",
+        "destination": "26.0637,119.3062",
+        "coord_type": "gcj02",
+        "ret_coordtype": "gcj02"
+      },
+      "limitations": [
+        "路线耗时不代表网约车订单热度",
+        "需要BAIDU_MAP_API_KEY",
+        "实时交通能力和配额取决于百度账户及接口返回",
+        "坐标顺序和坐标系必须在调用前核验"
+      ]
+    }
+  }
+}

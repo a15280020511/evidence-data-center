@@ -1,0 +1,24 @@
+{
+  "id": "amap-direction-walking",
+  "enabled": true,
+  "endpoint": "/data/amap/direction/walking",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "8s",
+  "input_query_strings": ["origin", "destination", "origin_id", "destination_id", "show_fields"],
+  "secret_query": {"name": "key", "env": "AMAP_API_KEY"},
+  "response_contract": {
+    "status_path": "status",
+    "success_values": ["1"],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": ["route"]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v5/direction/walking",
+    "method": "GET",
+    "encoding": "json",
+    "allow": ["status", "info", "infocode", "count", "route"]
+  }
+}
