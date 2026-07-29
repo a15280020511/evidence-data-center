@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "observed_at",
+    "data_vintage",
+    "source_url_hash",
+    "response_sha256",
+    "unit",
+    "geography",
+    "time_scope",
+    "license"
+  ],
+  "properties": {
+    "observed_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "data_vintage": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_url_hash": {
+      "type": "string",
+      "minLength": 1
+    },
+    "response_sha256": {
+      "type": "string",
+      "minLength": 1
+    },
+    "unit": {
+      "type": "string",
+      "minLength": 1
+    },
+    "geography": {
+      "type": "string",
+      "minLength": 1
+    },
+    "time_scope": {
+      "type": "string",
+      "minLength": 1
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

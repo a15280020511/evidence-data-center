@@ -21,3 +21,7 @@
 ## 迁移证据
 
 查看 `MIGRATION_MANIFEST.json`、`MIGRATION.md` 和 `governance-compatibility.json`。
+
+## V3 data quality controls
+
+Connector status is classified as PRODUCTION / DEGRADED / BLOCKED / RETIRED. Formal outputs require immutable snapshot metadata and a source-comparison report; correlated sources may not be naively averaged.

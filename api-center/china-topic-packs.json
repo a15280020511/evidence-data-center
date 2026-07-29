@@ -1,0 +1,41 @@
+{
+  "schema_version": "china-topic-packs-v1",
+  "status": "controlled-production-scope",
+  "packs": [
+    {
+      "id": "urban-population-structure",
+      "sources_must_be_catalogued": true,
+      "snapshot_required": true
+    },
+    {
+      "id": "commercial-poi",
+      "sources_must_be_catalogued": true,
+      "snapshot_required": true
+    },
+    {
+      "id": "nighttime-light-builtup",
+      "sources_must_be_catalogued": true,
+      "snapshot_required": true
+    },
+    {
+      "id": "transport-accessibility",
+      "sources_must_be_catalogued": true,
+      "snapshot_required": true
+    },
+    {
+      "id": "weather-disaster",
+      "sources_must_be_catalogued": true,
+      "snapshot_required": true
+    },
+    {
+      "id": "finance-enterprise",
+      "sources_must_be_catalogued": true,
+      "snapshot_required": true
+    },
+    {
+      "id": "policy-statistical-definition",
+      "sources_must_be_catalogued": true,
+      "snapshot_required": true
+    }
+  ]
+}
