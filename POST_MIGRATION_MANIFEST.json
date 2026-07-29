@@ -6,7 +6,7 @@
   "governance_version": "3.1.0",
   "optimization_status": "phase-1-controls-implemented; advanced modes controlled-preview",
   "file_count": 113,
-  "total_bytes": 701969,
+  "total_bytes": 704577,
   "files": [
     {
       "path": ".github/dependabot.yml",
@@ -60,8 +60,8 @@
     },
     {
       "path": ".github/workflows/evidence-quality-validate.yml",
-      "size_bytes": 759,
-      "sha256": "560ff9d7df81ab346b017a570f65b011c66e8665085f1e38f5416a3cc6526844"
+      "size_bytes": 2961,
+      "sha256": "e272560b75caf2a984a6feebe3427b53b5352c642879b01f7798d10be376f38b"
     },
     {
       "path": ".github/workflows/google-cloud-api-ticket.yml",
@@ -535,8 +535,8 @@
     },
     {
       "path": "api-center/tests/test_quality_control.py",
-      "size_bytes": 768,
-      "sha256": "876a0f6ce40cd664a0ca744541de1ba392ebcb2547c29ffa1652a1e307100a60"
+      "size_bytes": 1174,
+      "sha256": "53c53a09cb257d096433030aa20496b19a999bdd8409276cd23bfe5d80e1135f"
     },
     {
       "path": "api-center/tests/test_runtime_diagnostics.py",
