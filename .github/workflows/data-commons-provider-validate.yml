@@ -4,8 +4,7 @@ on:
   pull_request:
     paths:
       - "api-center/data-commons/**"
-      - "api-center/google-cloud/provider-catalog.json"
-      - "api-center/google-cloud/china-topic-packs.json"
+      - "api-center/google-cloud/**"
       - "api-center/build_catalog.py"
       - ".github/workflows/data-commons-provider-validate.yml"
       - ".github/workflows/data-commons-api-ticket.yml"
@@ -14,8 +13,7 @@ on:
     branches: [main]
     paths:
       - "api-center/data-commons/**"
-      - "api-center/google-cloud/provider-catalog.json"
-      - "api-center/google-cloud/china-topic-packs.json"
+      - "api-center/google-cloud/**"
       - "api-center/build_catalog.py"
       - ".github/workflows/data-commons-provider-validate.yml"
       - ".github/workflows/data-commons-api-ticket.yml"
@@ -57,11 +55,11 @@ jobs:
           python -m py_compile \
             api-center/data-commons/data_commons_task.py \
             api-center/data-commons/duplicate_guard.py \
+            api-center/google-cloud/unified_google_credentials.py \
             api-center/data-commons/tests/test_data_commons_task.py
 
       - name: Run Data Commons tests
-        run: |
-          python -m unittest discover -s api-center/data-commons/tests -v
+        run: python -m unittest discover -s api-center/data-commons/tests -v
 
       - name: Validate provider and China pack contracts
         run: |
@@ -74,6 +72,9 @@ jobs:
           google = json.loads(Path('api-center/google-cloud/provider-catalog.json').read_text())
           packs = json.loads(Path('api-center/google-cloud/china-topic-packs.json').read_text())
 
+          assert dc['schema_version'] == 'data-commons-provider-catalog-v2'
+          assert dc['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
+          assert dc['credential_bundle_field'] == 'data_commons_api_key'
           assert dc['secret_values_exposed'] is False
           assert set(dc['allowed_endpoints']) == {'/resolve', '/node', '/observation'}
           assert dc['security']['sparql_allowed'] is False
@@ -83,21 +84,17 @@ jobs:
           providers = {row['provider_id']: row for row in google['providers']}
           assert {'bigquery', 'earth-engine', 'data-commons'} <= set(providers)
           assert providers['data-commons']['ticket_prefix'] == '[api-dc]'
-          assert providers['data-commons']['required_secret_environment_variable'] == 'GOOGLE_DATA_COMMONS_API_KEY'
+          assert providers['data-commons']['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
+          assert all(row['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON' for row in providers.values())
           assert 'patents-public-data' in providers['bigquery']['default_public_projects']
 
           assert packs['schema_version'] == 'google-china-topic-packs-v2'
           pack_ids = {row['pack_id'] for row in packs['packs']}
           expected = {
-              'china-patent-intelligence',
-              'china-news-events-risk',
-              'china-population-grid',
-              'china-nighttime-activity',
-              'china-urban-expansion-land-use',
-              'china-climate-extreme-weather',
-              'china-urban-heat',
-              'china-air-quality-emissions',
-              'china-water-flood-drought',
+              'china-patent-intelligence', 'china-news-events-risk', 'china-population-grid',
+              'china-nighttime-activity', 'china-urban-expansion-land-use',
+              'china-climate-extreme-weather', 'china-urban-heat',
+              'china-air-quality-emissions', 'china-water-flood-drought',
               'china-settlement-topography',
           }
           assert pack_ids == expected
@@ -108,7 +105,7 @@ jobs:
           assert 'COPERNICUS/S5P/OFFL/L3_NO2' in by_id['china-air-quality-emissions']['dataset_ids']
           assert 'JRC/CEMS_GLOFAS/FloodHazard/v2_1' in by_id['china-water-flood-drought']['dataset_ids']
           assert 'JRC/GHSL/P2023A/GHS_BUILT_H' in by_id['china-settlement-topography']['dataset_ids']
-          print(json.dumps({'status': 'PASS', 'providers': sorted(providers), 'china_packs': sorted(pack_ids)}))
+          print(json.dumps({'status': 'PASS', 'google_secret_count': 1, 'china_packs': sorted(pack_ids)}))
           PY
 
       - name: Regenerate API catalog in temporary paths
@@ -124,6 +121,7 @@ jobs:
           assert 'data-commons' in providers
           assert providers['data-commons']['enabled'] is True
           assert providers['data-commons']['ticket_prefix'] == '[api-dc]'
+          assert providers['data-commons']['required_secret_environment_variable_name'] == 'GOOGLE_CREDENTIALS_JSON'
           assert providers['data-commons']['secret_value_exposed'] is False
           print(json.dumps({'status': 'PASS', 'managed_provider_count': catalog['managed_provider_count']}))
           PY
