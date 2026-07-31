@@ -72,7 +72,7 @@ jobs:
           assert catalog['secret_values_exposed'] is False
           provider = catalog['providers'][0]
           assert provider['provider_id'] == 'tianditu'
-          assert provider['required_secret_environment_variable'] == 'TIANDITU_TOKEN'
+          assert provider['required_secret_environment_variable'] == 'TIANDITU_API_KEY'
           assert provider['ticket_prefix'] == '[api-tianditu]'
           assert len(provider['operations']) == 8
           assert {row['operation_id'] for row in provider['operations']} == {
@@ -88,6 +88,11 @@ jobs:
           assert limits['tile_bulk_download_allowed'] is False
           assert limits['write_operations_allowed'] is False
           assert limits['direct_phone_fields_redacted'] is True
+          assert catalog['replaced_legacy_connectors'] == [{
+              'connector_id': 'tianditu-place-search',
+              'replacement': 'tianditu managed provider with seven bounded place-search operations',
+          }]
+          assert 'TIANDITU_TOKEN' not in json.dumps(catalog, ensure_ascii=False)
           print(json.dumps({'status': 'PASS', 'provider': 'tianditu', 'operations': 8}))
           PY
 
@@ -95,9 +100,9 @@ jobs:
         run: |
           set -euo pipefail
           if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ \
-            --extended-regexp 'TIANDITU_TOKEN[[:space:]]*=[[:space:]]*[A-Za-z0-9._-]{8,}|tk=[A-Za-z0-9._-]{8,}' \
+            --extended-regexp 'TIANDITU_API_KEY[[:space:]]*=[[:space:]]*[A-Za-z0-9._-]{8,}|tk=[A-Za-z0-9._-]{8,}' \
             api-center/tianditu; then
-            echo "literal Tianditu token found" >&2
+            echo "literal Tianditu key found" >&2
             exit 1
           fi
           if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --ignore-case \
