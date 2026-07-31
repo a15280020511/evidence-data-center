@@ -1,30 +1,32 @@
-name: Apply Tianditu WAF Fix
+name: Test Tianditu WAF Fix
 
 on:
   pull_request:
     branches: [main]
     paths:
-      - "tools/apply_tianditu_waf_fix.py"
+      - "api-center/tianditu/**"
+      - ".github/workflows/tianditu-api-ticket.yml"
       - ".github/workflows/apply-tianditu-waf-fix.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
-  group: apply-tianditu-waf-fix-${{ github.head_ref }}
+  group: test-tianditu-waf-fix-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
-  apply-fix:
-    if: github.actor != 'github-actions[bot]'
+  live-probe:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      TIANDITU_API_KEY: ${{ secrets.TIANDITU_API_KEY }}
     steps:
       - name: Checkout repair branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.head_ref }}
-          fetch-depth: 0
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
@@ -36,44 +38,81 @@ jobs:
           python -m pip install --disable-pip-version-check --no-input -r api-center/tianditu/requirements.txt
           python -m pip check
 
-      - name: Apply deterministic repair
-        run: |
-          python tools/apply_tianditu_waf_fix.py
-          git checkout -- .github/workflows/tianditu-api-ticket.yml
-          python - <<'PY'
-          import re
-          from pathlib import Path
-
-          path = Path('api-center/tianditu/tianditu_task.py')
-          text = path.read_text(encoding='utf-8')
-          pattern = r'^        config_lines = \[f\'url = .*?\n'
-          replacement = '        config_lines = ["url = " + json.dumps(url)]\n'
-          text, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE)
-          if count != 1:
-              raise SystemExit(f'expected one curl URL line, replaced {count}')
-          path.write_text(text, encoding='utf-8')
-          PY
-          python api-center/build_catalog_market_search.py
-
-      - name: Validate repaired implementation
+      - name: Run deterministic tests
         run: |
           python -m py_compile api-center/tianditu/tianditu_task.py
           python -m unittest discover -s api-center/tianditu/tests -v
-          python -m unittest discover -s api-center/tests -v
 
-      - name: Commit repaired contracts
+      - name: Build minimal live ticket
         run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add \
-            api-center/tianditu/tianditu_task.py \
-            api-center/tianditu/tests/test_tianditu_task.py \
-            api-center/tianditu/provider-catalog.json \
-            api-center/api-catalog.json \
-            api-center/api-catalog.md
-          if git diff --cached --quiet; then
-            echo 'No repair changes generated'
-            exit 1
-          fi
-          git commit -m 'fix(api-center): harden Tianditu CloudWAF transport'
-          git push origin HEAD:${{ github.head_ref }}
+          mkdir -p tianditu-live
+          cat > tianditu-live/ticket.json <<'JSON'
+          {
+            "task_id": "tianditu-waf-fix-live-20260801",
+            "provider": "tianditu",
+            "operation": "administrative-search",
+            "objective": "Validate repaired Tianditu transport against the official API",
+            "parameters": {
+              "keyword": "小学",
+              "specify": "福州市",
+              "start": 0,
+              "count": 1,
+              "show": 1
+            },
+            "data_policy": {
+              "classification": "public",
+              "contains_personal_data": false
+            },
+            "acceptance": {
+              "timeout_seconds": 45,
+              "max_response_bytes": 1000000
+            }
+          }
+          JSON
+
+      - name: Execute real Tianditu request
+        id: live
+        continue-on-error: true
+        run: |
+          python api-center/tianditu/tianditu_task.py execute \
+            --ticket tianditu-live/ticket.json \
+            --output-dir tianditu-live
+
+      - name: Print safe diagnostic summary
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('tianditu-live/result.json').read_text(encoding='utf-8'))
+          summary = {
+              'status': result['status'],
+              'metadata': result.get('metadata'),
+              'failure': result.get('failure'),
+              'secret_values_exposed': result['secret_values_exposed'],
+              'snapshot_sha256': result['snapshot_sha256'],
+          }
+          print(json.dumps(summary, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Upload live diagnostic evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: tianditu-waf-live-${{ github.run_id }}
+          path: tianditu-live/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Require business success
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = json.loads(Path('tianditu-live/result.json').read_text(encoding='utf-8'))
+          if result['status'] != 'API_TIANDITU_COMPLETED':
+              raise SystemExit(f"live probe failed: {result.get('failure')}")
+          if str(result.get('metadata', {}).get('business_status')) != '1000':
+              raise SystemExit('Tianditu business status is not 1000')
+          PY
