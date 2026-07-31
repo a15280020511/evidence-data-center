@@ -29,6 +29,8 @@ EXPECTED_OPERATION_COUNTS = {
     "tickflow": 5,
     "serpapi": 4,
     "tushare": 20,
+    "wolframalpha": 5,
+    "llamaparse": 4,
 }
 
 
@@ -46,10 +48,10 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["connector_count"], manifest["connector_count"])
         self.assertEqual(catalog["enabled_connector_count"], manifest["enabled_connector_count"])
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 16)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 16)
-        self.assertEqual(catalog["managed_operation_count"], 143)
-        self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
+        self.assertEqual(catalog["managed_provider_count"], 18)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 18)
+        self.assertEqual(catalog["managed_operation_count"], 152)
+        self.assertGreaterEqual(catalog["exposed_parameter_count"], 886)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
@@ -78,6 +80,8 @@ class ApiCatalogTests(unittest.TestCase):
             "tickflow": "TICKFLOW_API_KEY",
             "serpapi": "SERPAPI_API_KEY",
             "tushare": "TUSHARE_API_TOKEN",
+            "wolframalpha": "WOLFRAMALPHA_APP_ID",
+            "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
         for provider_id, secret_name in expected_secret_names.items():
             self.assertEqual(
@@ -101,8 +105,39 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(tushare_limits["arbitrary_urls_allowed"])
         self.assertFalse(tushare_limits["write_operations_allowed"])
         self.assertFalse(tushare_limits["trading_or_order_execution_allowed"])
+
+        self.assertEqual(providers["wolframalpha"]["ticket_prefix"], "[api-wolframalpha]")
+        self.assertEqual(
+            {row["operation_id"] for row in providers["wolframalpha"]["operations"]},
+            {
+                "catalog-capabilities", "llm-query", "full-results-json",
+                "short-answer", "query-recognizer",
+            },
+        )
+        self.assertFalse(providers["wolframalpha"]["limits"]["arbitrary_urls_allowed"])
+
+        self.assertEqual(providers["llamaparse"]["ticket_prefix"], "[api-llamaparse]")
+        self.assertEqual(
+            {row["operation_id"] for row in providers["llamaparse"]["operations"]},
+            {
+                "catalog-capabilities", "create-parse-job",
+                "list-parse-jobs", "get-parse-result",
+            },
+        )
+        self.assertFalse(
+            providers["llamaparse"]["limits"]["private_or_loopback_sources_allowed"]
+        )
+
         self.assertIn("tushare/provider-catalog.json", catalog["managed_provider_catalog_files"])
         self.assertIn("tushare/provider-catalog.json", catalog["detail_reading_order"])
+        self.assertIn(
+            "knowledge-document/provider-catalog.json",
+            catalog["managed_provider_catalog_files"],
+        )
+        self.assertIn(
+            "knowledge-document/provider-catalog.json",
+            catalog["detail_reading_order"],
+        )
         self.assertNotIn("tianditu/provider-catalog.json", catalog["managed_provider_catalog_files"])
 
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
