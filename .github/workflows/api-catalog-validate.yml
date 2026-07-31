@@ -86,6 +86,7 @@ jobs:
           catalog = load_json('api-center/api-catalog.json')
           google_providers = load_json('api-center/google-cloud/provider-catalog.json')
           company_providers = load_json('api-center/company-intelligence/provider-catalog.json')
+          web_providers = load_json('api-center/web-retrieval/provider-catalog.json')
           validation = load_json('api-center/krakend.validation.json')
           rows = manifest['connectors']
           enabled_rows = [row for row in rows if row['enabled']]
@@ -102,14 +103,15 @@ jobs:
           assert catalog['schema_version'] == 'api-catalog-v3'
           assert catalog['connector_count'] == manifest['connector_count']
           assert catalog['enabled_connector_count'] == manifest['enabled_connector_count']
-          assert catalog['managed_provider_count'] == 9
-          assert catalog['enabled_managed_provider_count'] == 9
+          assert catalog['managed_provider_count'] == 11
+          assert catalog['enabled_managed_provider_count'] == 11
           assert managed_provider_ids == {
               'bigquery', 'earth-engine', 'data-commons', 'akshare', 'ashare',
-              'aifin-market', 'yuandian-law', 'qichacha', 'tianyancha'
+              'aifin-market', 'yuandian-law', 'qichacha', 'tianyancha',
+              'jina-reader', 'exa'
           }
-          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 99
-          assert catalog['exposed_parameter_count'] == 655
+          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 104
+          assert catalog['exposed_parameter_count'] == 668
           assert google_providers['secret_values_exposed'] is False
           assert {row['provider_id'] for row in google_providers['providers']} == {
               'bigquery', 'earth-engine', 'data-commons'
@@ -117,6 +119,10 @@ jobs:
           assert company_providers['secret_values_exposed'] is False
           assert {row['provider_id'] for row in company_providers['providers']} == {
               'qichacha', 'tianyancha'
+          }
+          assert web_providers['secret_values_exposed'] is False
+          assert {row['provider_id'] for row in web_providers['providers']} == {
+              'jina-reader', 'exa'
           }
           assert len(validation['endpoints']) == len(enabled_rows)
           assert {
@@ -133,8 +139,8 @@ jobs:
               'connectors': manifest['connector_count'],
               'enabled': manifest['enabled_connector_count'],
               'routes': len(validation['endpoints']),
-              'managed_providers': 9,
-              'managed_operations': 99,
+              'managed_providers': 11,
+              'managed_operations': 104,
               'exposed_parameters': catalog['exposed_parameter_count'],
           }))
           PY
@@ -161,5 +167,7 @@ jobs:
             api-center/yuandian/readonly-apis.snapshot.json
             api-center/company-intelligence/provider-catalog.json
             api-center/company-intelligence/ticket.schema.json
+            api-center/web-retrieval/provider-catalog.json
+            api-center/web-retrieval/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
