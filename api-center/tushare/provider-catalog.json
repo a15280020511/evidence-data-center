@@ -1,0 +1,171 @@
+{
+  "schema_version": "tushare-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "tushare",
+      "display_name": "Tushare Pro 中国金融数据 API",
+      "description": "通过 Tushare Pro 官方 HTTPS JSON API 读取中国股票、指数、基金、财务、资金流和交易日历数据。实际可用范围由账户积分和接口权限决定。",
+      "enabled": true,
+      "ticket_prefix": "[api-tushare]",
+      "required_secret_environment_variable": "TUSHARE_API_TOKEN",
+      "catalog_policy": "仅开放显式登记的 Tushare Pro 只读 api_name；禁止任意 API 名称、任意 URL、交易、下单、账户操作、写入和自定义请求头。",
+      "execution_policy": "TUSHARE_API_TOKEN 仅在后端 HTTPS POST JSON 中注入，不写入日志、Issue 或 Artifact；每张票据最多一次正常请求和一次瞬态故障重试，并限制参数、超时、响应体积和分页。",
+      "limits": {
+        "requests_per_ticket_max": 2,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 5000000,
+        "limit_max": 5000,
+        "offset_max": 1000000,
+        "arbitrary_api_names_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "write_operations_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地安全能力目录，不访问上游且不需要 Token。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}}
+        },
+        {
+          "operation_id": "trade-calendar",
+          "description": "读取各交易所交易日历。",
+          "parameters": ["exchange", "start_date", "end_date", "is_open", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"exchange": {"type": "string", "maxLength": 16}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "is_open": {"type": "string", "enum": ["0", "1"]}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"date": {"type": "string", "pattern": "^[0-9]{8}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "trade_cal", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "stock-basic",
+          "description": "读取 A 股证券基础信息和上市状态。",
+          "parameters": ["ts_code", "name", "market", "exchange", "list_status", "is_hs", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "name": {"type": "string", "maxLength": 80}, "market": {"type": "string", "maxLength": 40}, "exchange": {"type": "string", "maxLength": 16}, "list_status": {"type": "string", "enum": ["L", "D", "P"]}, "is_hs": {"type": "string", "enum": ["N", "H", "S"]}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "stock_basic", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "daily-quotes",
+          "description": "读取 A 股日线行情。",
+          "parameters": ["ts_code", "trade_date", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/marketQuery", "$defs": {"marketQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "trade_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "daily", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "weekly-quotes",
+          "description": "读取 A 股周线行情。",
+          "parameters": ["ts_code", "trade_date", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/marketQuery", "$defs": {"marketQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "trade_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "weekly", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "monthly-quotes",
+          "description": "读取 A 股月线行情。",
+          "parameters": ["ts_code", "trade_date", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/marketQuery", "$defs": {"marketQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "trade_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "monthly", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "adjust-factor",
+          "description": "读取 A 股复权因子。",
+          "parameters": ["ts_code", "trade_date", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/marketQuery", "$defs": {"marketQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "trade_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "adj_factor", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "daily-basic",
+          "description": "读取每日估值、市值、换手率和股本指标。",
+          "parameters": ["ts_code", "trade_date", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/marketQuery", "$defs": {"marketQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "trade_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "daily_basic", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "money-flow",
+          "description": "读取个股资金流向。",
+          "parameters": ["ts_code", "trade_date", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/marketQuery", "$defs": {"marketQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "trade_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "moneyflow", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "margin-summary",
+          "description": "读取融资融券交易汇总。",
+          "parameters": ["trade_date", "exchange_id", "start_date", "end_date", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"trade_date": {"$ref": "#/$defs/date"}, "exchange_id": {"type": "string", "maxLength": 16}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"date": {"type": "string", "pattern": "^[0-9]{8}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "margin", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "top-list",
+          "description": "读取龙虎榜每日明细。",
+          "parameters": ["trade_date", "ts_code", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"trade_date": {"$ref": "#/$defs/date"}, "ts_code": {"$ref": "#/$defs/code"}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "top_list", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "income-statement",
+          "description": "读取上市公司利润表。",
+          "parameters": ["ts_code", "ann_date", "start_date", "end_date", "period", "report_type", "comp_type", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/financeQuery", "$defs": {"financeQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "ann_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "period": {"$ref": "#/$defs/date"}, "report_type": {"type": "string", "maxLength": 8}, "comp_type": {"type": "string", "maxLength": 8}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "income", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "balance-sheet",
+          "description": "读取上市公司资产负债表。",
+          "parameters": ["ts_code", "ann_date", "start_date", "end_date", "period", "report_type", "comp_type", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/financeQuery", "$defs": {"financeQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "ann_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "period": {"$ref": "#/$defs/date"}, "report_type": {"type": "string", "maxLength": 8}, "comp_type": {"type": "string", "maxLength": 8}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "balancesheet", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "cash-flow-statement",
+          "description": "读取上市公司现金流量表。",
+          "parameters": ["ts_code", "ann_date", "start_date", "end_date", "period", "report_type", "comp_type", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/financeQuery", "$defs": {"financeQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "ann_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "period": {"$ref": "#/$defs/date"}, "report_type": {"type": "string", "maxLength": 8}, "comp_type": {"type": "string", "maxLength": 8}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "cashflow", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "financial-indicator",
+          "description": "读取上市公司财务指标。",
+          "parameters": ["ts_code", "ann_date", "start_date", "end_date", "period", "offset", "limit", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "ann_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "period": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "fina_indicator", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "index-basic",
+          "description": "读取指数基础信息。",
+          "parameters": ["ts_code", "name", "market", "publisher", "category", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "name": {"type": "string", "maxLength": 80}, "market": {"type": "string", "maxLength": 32}, "publisher": {"type": "string", "maxLength": 80}, "category": {"type": "string", "maxLength": 40}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "index_basic", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "index-daily",
+          "description": "读取指数日线行情。",
+          "parameters": ["ts_code", "trade_date", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"$ref": "#/$defs/marketQuery", "$defs": {"marketQuery": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "trade_date": {"$ref": "#/$defs/date"}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}}, "date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "index_daily", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "fund-basic",
+          "description": "读取公募基金基础信息。",
+          "parameters": ["market", "status", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"market": {"type": "string", "maxLength": 16}, "status": {"type": "string", "maxLength": 16}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "fund_basic", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "fund-nav",
+          "description": "读取公募基金净值。",
+          "parameters": ["ts_code", "ann_date", "nav_date", "market", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"ts_code": {"$ref": "#/$defs/code"}, "ann_date": {"$ref": "#/$defs/date"}, "nav_date": {"$ref": "#/$defs/date"}, "market": {"type": "string", "maxLength": 16}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "fund_nav", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        },
+        {
+          "operation_id": "hk-hold",
+          "description": "读取沪深港通持股明细。",
+          "parameters": ["trade_date", "ts_code", "exchange", "start_date", "end_date", "offset", "limit", "fields"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {"trade_date": {"$ref": "#/$defs/date"}, "ts_code": {"$ref": "#/$defs/code"}, "exchange": {"type": "string", "maxLength": 16}, "start_date": {"$ref": "#/$defs/date"}, "end_date": {"$ref": "#/$defs/date"}, "offset": {"type": "integer", "minimum": 0, "maximum": 1000000}, "limit": {"type": "integer", "minimum": 1, "maximum": 5000}, "fields": {"$ref": "#/$defs/fields"}}, "$defs": {"date": {"type": "string", "pattern": "^[0-9]{8}$"}, "code": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,32}$"}, "fields": {"type": "string", "pattern": "^[A-Za-z0-9_,]*$", "maxLength": 2000}}},
+          "result_contract": {"provider": "tushare", "api_name": "hk_hold", "official_endpoint": "https://api.tushare.pro", "http_method": "POST", "read_only": true}
+        }
+      ]
+    }
+  ]
+}
