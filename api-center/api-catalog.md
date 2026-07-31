@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`16/16` 已启用
-- 托管操作总数：`143`
-- 已公开参数总数：`877`
-- 目录 SHA-256：`6ec123d1efe66b4ddd77f192c7475ef0ec5feb38a4ea6c481ee2a343b0cdbe70`
+- 托管提供方：`18/18` 已启用
+- 托管操作总数：`152`
+- 已公开参数总数：`913`
+- 目录 SHA-256：`e307fc43704cc73e07685cf21ae0b6c471070527c77f7eec95774ef33837ed71`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -33,6 +33,8 @@
 | TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
 | Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
+| Wolfram|Alpha 计算知识 API | `wolframalpha` | 启用 | `[api-wolframalpha]` | `5` | 否 |
+| LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `4` | 否 |
 
 ## 普通连接器
 
@@ -6167,6 +6169,430 @@
   "arbitrary_headers_allowed": false,
   "write_operations_allowed": false,
   "trading_or_order_execution_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## Wolfram|Alpha 计算知识 API (`wolframalpha`)
+
+- 状态：`启用`
+- 说明：通过 Wolfram|Alpha 官方 HTTPS API 获取面向大模型的计算结果、完整 JSON 结果、短答案和快速查询识别结果。
+- 目录策略：仅开放固定官方只读端点和显式参数；禁止任意 URL、任意请求头、写入、抓取和 AppID 暴露。
+- 执行策略：AppID 仅以 Authorization Bearer 或查询参数注入上游请求，所有日志、Issue 与 Artifact 均进行脱敏；每张票据最多一次正常请求和一次瞬态故障重试。
+- 票据前缀：`[api-wolframalpha]`
+- Secret环境变量名：`WOLFRAMALPHA_APP_ID`（仅名称）
+- 提供方SHA-256：`75a2e7dcdd284956c55701ba34707496e45ce8269508ad58925fb95159789845`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地安全能力目录，不访问上游且不需要 AppID。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `llm-query` | 调用 Wolfram|Alpha LLM API，返回适合大模型消费的计算知识文本。 | `input, maxchars, units, languagecode, countrycode, location, timezone` |
+
+`llm-query` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "maxchars": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 12000
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "metric",
+        "imperial"
+      ]
+    },
+    "languagecode": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,8}$"
+    },
+    "countrycode": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "location": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "timezone": {
+      "type": "string",
+      "maxLength": 80
+    }
+  }
+}
+```
+
+| `full-results-json` | 调用 Full Results API，返回结构化 JSON pods、假设、来源和警告。 | `input, assumption, units, languagecode, countrycode, location, timezone, scantimeout, parsetimeout, formattimeout, totaltimeout` |
+
+`full-results-json` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "assumption": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      }
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "metric",
+        "imperial"
+      ]
+    },
+    "languagecode": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,8}$"
+    },
+    "countrycode": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "location": {
+      "type": "string",
+      "maxLength": 120
+    },
+    "timezone": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "scantimeout": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 20
+    },
+    "parsetimeout": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 20
+    },
+    "formattimeout": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 20
+    },
+    "totaltimeout": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 45
+    }
+  }
+}
+```
+
+| `short-answer` | 调用 Short Answers API，返回单行计算结果。 | `input, units, timeout` |
+
+`short-answer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "metric",
+        "imperial"
+      ]
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    }
+  }
+}
+```
+
+| `query-recognizer` | 快速判断 Wolfram|Alpha 是否能处理查询并返回领域分类。 | `input, mode` |
+
+`query-recognizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "Default",
+        "Voice"
+      ]
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 2,
+  "timeout_seconds_max": 45,
+  "max_response_bytes": 3000000,
+  "input_characters_max": 2000,
+  "maxchars_max": 12000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## LlamaParse 文档解析 API (`llamaparse`)
+
+- 状态：`启用`
+- 说明：通过 LlamaCloud Parse v2 官方 HTTPS API 创建受控文档解析任务、列出任务并读取文本、Markdown、结构化项目和元数据结果。
+- 目录策略：仅开放固定 Parse v2 端点；创建任务仅接受 file_id 或经过公共 HTTPS/SSRF 校验的 source_url；禁止任意请求头、私网 URL、写入外部系统和删除任务。
+- 执行策略：API Key 仅通过 Authorization Bearer 注入；source_url 必须是公共 HTTPS 且解析到非私网地址；结果中的临时预签名 URL 默认不主动下载；每张票据最多两次传输尝试。
+- 票据前缀：`[api-llamaparse]`
+- Secret环境变量名：`LLAMA_CLOUD_API_KEY`（仅名称）
+- 提供方SHA-256：`b925519e332cd87d7578bcec93c703ea120b75c8f0d54784c7a99483eb2b4ef8`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地安全能力目录，不访问上游且不需要 API Key。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `create-parse-job` | 使用既有 file_id 或经安全校验的公共 HTTPS source_url 创建 Parse v2 任务。 | `file_id, source_url, tier, version, page_ranges, output_options, processing_options` |
+
+`create-parse-job` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "file_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "fast",
+        "cost_effective",
+        "agentic",
+        "agentic_plus"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40
+    },
+    "page_ranges": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_pages": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        },
+        "target_pages": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "output_options": {
+      "type": "object",
+      "maxProperties": 20
+    },
+    "processing_options": {
+      "type": "object",
+      "maxProperties": 20
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "file_id"
+      ],
+      "not": {
+        "required": [
+          "source_url"
+        ]
+      }
+    },
+    {
+      "required": [
+        "source_url"
+      ],
+      "not": {
+        "required": [
+          "file_id"
+        ]
+      }
+    }
+  ]
+}
+```
+
+| `list-parse-jobs` | 按状态和分页参数列出 Parse v2 任务。 | `page_size, page_token, status` |
+
+`list-parse-jobs` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "page_token": {
+      "type": "string",
+      "maxLength": 2000
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PENDING",
+        "RUNNING",
+        "COMPLETED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    }
+  }
+}
+```
+
+| `get-parse-result` | 查询单个 Parse v2 任务状态并按白名单 expand 值读取结果。 | `job_id, expand, image_filenames` |
+
+`get-parse-result` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,199}$"
+    },
+    "expand": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "enum": [
+          "text",
+          "markdown",
+          "items",
+          "metadata",
+          "job_metadata",
+          "text_full",
+          "markdown_full",
+          "images_content_metadata"
+        ]
+      }
+    },
+    "image_filenames": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._-]{1,200}$"
+      }
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 2,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 10000000,
+  "page_size_max": 100,
+  "expand_values_max": 8,
+  "source_url_characters_max": 2048,
+  "private_or_loopback_sources_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "delete_operations_allowed": false,
   "secret_values_exposed": false
 }
 ```

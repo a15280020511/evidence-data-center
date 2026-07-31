@@ -16,15 +16,16 @@
     "company-intelligence/provider-catalog.json",
     "web-retrieval/provider-catalog.json",
     "market-search/provider-catalog.json",
-    "tushare/provider-catalog.json"
+    "tushare/provider-catalog.json",
+    "knowledge-document/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "db85c991c6e4b87260629b793df463a8d0ce68e22c1ee44cfa8bb04aee95cff1",
+  "managed_provider_catalog_sha256": "853d1a85cf599c87e1d347b4f8c18a47c4e00b33e91b03fbb1f61d1e08146796",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 16,
-  "enabled_managed_provider_count": 16,
-  "managed_operation_count": 143,
-  "exposed_parameter_count": 877,
+  "managed_provider_count": 18,
+  "enabled_managed_provider_count": 18,
+  "managed_operation_count": 152,
+  "exposed_parameter_count": 913,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -39,6 +40,7 @@
     "yuandian/readonly-apis.snapshot.json",
     "market-search/provider-catalog.json",
     "tushare/provider-catalog.json",
+    "knowledge-document/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -7150,6 +7152,497 @@
       "secret_value_exposed": false,
       "provider_sha256": "17b75ee3179f49be521afbdd4bb310f963983cc17161a6a806a5119f81a460eb",
       "catalog_file": "tushare/provider-catalog.json"
+    },
+    {
+      "provider_id": "wolframalpha",
+      "display_name": "Wolfram|Alpha 计算知识 API",
+      "description": "通过 Wolfram|Alpha 官方 HTTPS API 获取面向大模型的计算结果、完整 JSON 结果、短答案和快速查询识别结果。",
+      "enabled": true,
+      "ticket_prefix": "[api-wolframalpha]",
+      "catalog_policy": "仅开放固定官方只读端点和显式参数；禁止任意 URL、任意请求头、写入、抓取和 AppID 暴露。",
+      "execution_policy": "AppID 仅以 Authorization Bearer 或查询参数注入上游请求，所有日志、Issue 与 Artifact 均进行脱敏；每张票据最多一次正常请求和一次瞬态故障重试。",
+      "operation_count": 5,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地安全能力目录，不访问上游且不需要 AppID。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "llm-query",
+          "description": "调用 Wolfram|Alpha LLM API，返回适合大模型消费的计算知识文本。",
+          "parameter_names": [
+            "input",
+            "maxchars",
+            "units",
+            "languagecode",
+            "countrycode",
+            "location",
+            "timezone"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "input"
+            ],
+            "properties": {
+              "input": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "maxchars": {
+                "type": "integer",
+                "minimum": 100,
+                "maximum": 12000
+              },
+              "units": {
+                "type": "string",
+                "enum": [
+                  "metric",
+                  "imperial"
+                ]
+              },
+              "languagecode": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2,8}$"
+              },
+              "countrycode": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2}$"
+              },
+              "location": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "timezone": {
+                "type": "string",
+                "maxLength": 80
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://www.wolframalpha.com/api/v1/llm-api",
+            "http_method": "GET",
+            "output": "text",
+            "read_only": true
+          }
+        },
+        {
+          "operation_id": "full-results-json",
+          "description": "调用 Full Results API，返回结构化 JSON pods、假设、来源和警告。",
+          "parameter_names": [
+            "input",
+            "assumption",
+            "units",
+            "languagecode",
+            "countrycode",
+            "location",
+            "timezone",
+            "scantimeout",
+            "parsetimeout",
+            "formattimeout",
+            "totaltimeout"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "input"
+            ],
+            "properties": {
+              "input": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "assumption": {
+                "type": "array",
+                "maxItems": 20,
+                "items": {
+                  "type": "string",
+                  "maxLength": 500
+                }
+              },
+              "units": {
+                "type": "string",
+                "enum": [
+                  "metric",
+                  "imperial"
+                ]
+              },
+              "languagecode": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2,8}$"
+              },
+              "countrycode": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2}$"
+              },
+              "location": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "timezone": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "scantimeout": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 20
+              },
+              "parsetimeout": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 20
+              },
+              "formattimeout": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 20
+              },
+              "totaltimeout": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 45
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.wolframalpha.com/v2/query",
+            "http_method": "GET",
+            "output": "json",
+            "read_only": true
+          }
+        },
+        {
+          "operation_id": "short-answer",
+          "description": "调用 Short Answers API，返回单行计算结果。",
+          "parameter_names": [
+            "input",
+            "units",
+            "timeout"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "input"
+            ],
+            "properties": {
+              "input": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "units": {
+                "type": "string",
+                "enum": [
+                  "metric",
+                  "imperial"
+                ]
+              },
+              "timeout": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.wolframalpha.com/v1/result",
+            "http_method": "GET",
+            "output": "text",
+            "read_only": true
+          }
+        },
+        {
+          "operation_id": "query-recognizer",
+          "description": "快速判断 Wolfram|Alpha 是否能处理查询并返回领域分类。",
+          "parameter_names": [
+            "input",
+            "mode"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "input"
+            ],
+            "properties": {
+              "input": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "Default",
+                  "Voice"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://www.wolframalpha.com/queryrecognizer/query.jsp",
+            "http_method": "GET",
+            "output": "json",
+            "read_only": true
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 2,
+        "timeout_seconds_max": 45,
+        "max_response_bytes": 3000000,
+        "input_characters_max": 2000,
+        "maxchars_max": 12000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "WOLFRAMALPHA_APP_ID",
+      "optional_secret_environment_variable_name": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "75a2e7dcdd284956c55701ba34707496e45ce8269508ad58925fb95159789845",
+      "catalog_file": "knowledge-document/provider-catalog.json"
+    },
+    {
+      "provider_id": "llamaparse",
+      "display_name": "LlamaParse 文档解析 API",
+      "description": "通过 LlamaCloud Parse v2 官方 HTTPS API 创建受控文档解析任务、列出任务并读取文本、Markdown、结构化项目和元数据结果。",
+      "enabled": true,
+      "ticket_prefix": "[api-llamaparse]",
+      "catalog_policy": "仅开放固定 Parse v2 端点；创建任务仅接受 file_id 或经过公共 HTTPS/SSRF 校验的 source_url；禁止任意请求头、私网 URL、写入外部系统和删除任务。",
+      "execution_policy": "API Key 仅通过 Authorization Bearer 注入；source_url 必须是公共 HTTPS 且解析到非私网地址；结果中的临时预签名 URL 默认不主动下载；每张票据最多两次传输尝试。",
+      "operation_count": 4,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地安全能力目录，不访问上游且不需要 API Key。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "create-parse-job",
+          "description": "使用既有 file_id 或经安全校验的公共 HTTPS source_url 创建 Parse v2 任务。",
+          "parameter_names": [
+            "file_id",
+            "source_url",
+            "tier",
+            "version",
+            "page_ranges",
+            "output_options",
+            "processing_options"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "file_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "source_url": {
+                "type": "string",
+                "format": "uri",
+                "maxLength": 2048
+              },
+              "tier": {
+                "type": "string",
+                "enum": [
+                  "fast",
+                  "cost_effective",
+                  "agentic",
+                  "agentic_plus"
+                ]
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40
+              },
+              "page_ranges": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "max_pages": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 500
+                  },
+                  "target_pages": {
+                    "type": "string",
+                    "maxLength": 1000
+                  }
+                }
+              },
+              "output_options": {
+                "type": "object",
+                "maxProperties": 20
+              },
+              "processing_options": {
+                "type": "object",
+                "maxProperties": 20
+              }
+            },
+            "oneOf": [
+              {
+                "required": [
+                  "file_id"
+                ],
+                "not": {
+                  "required": [
+                    "source_url"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "source_url"
+                ],
+                "not": {
+                  "required": [
+                    "file_id"
+                  ]
+                }
+              }
+            ]
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.cloud.llamaindex.ai/api/v2/parse",
+            "http_method": "POST",
+            "output": "json",
+            "read_only_result": true
+          }
+        },
+        {
+          "operation_id": "list-parse-jobs",
+          "description": "按状态和分页参数列出 Parse v2 任务。",
+          "parameter_names": [
+            "page_size",
+            "page_token",
+            "status"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "page_size": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "page_token": {
+                "type": "string",
+                "maxLength": 2000
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "PENDING",
+                  "RUNNING",
+                  "COMPLETED",
+                  "FAILED",
+                  "CANCELLED"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.cloud.llamaindex.ai/api/v2/parse",
+            "http_method": "GET",
+            "output": "json",
+            "read_only": true
+          }
+        },
+        {
+          "operation_id": "get-parse-result",
+          "description": "查询单个 Parse v2 任务状态并按白名单 expand 值读取结果。",
+          "parameter_names": [
+            "job_id",
+            "expand",
+            "image_filenames"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "job_id"
+            ],
+            "properties": {
+              "job_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,199}$"
+              },
+              "expand": {
+                "type": "array",
+                "uniqueItems": true,
+                "maxItems": 8,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "text",
+                    "markdown",
+                    "items",
+                    "metadata",
+                    "job_metadata",
+                    "text_full",
+                    "markdown_full",
+                    "images_content_metadata"
+                  ]
+                }
+              },
+              "image_filenames": {
+                "type": "array",
+                "uniqueItems": true,
+                "maxItems": 50,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]{1,200}$"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.cloud.llamaindex.ai/api/v2/parse/{job_id}",
+            "http_method": "GET",
+            "output": "json",
+            "read_only": true
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 2,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 10000000,
+        "page_size_max": 100,
+        "expand_values_max": 8,
+        "source_url_characters_max": 2048,
+        "private_or_loopback_sources_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "delete_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "LLAMA_CLOUD_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "b925519e332cd87d7578bcec93c703ea120b75c8f0d54784c7a99483eb2b4ef8",
+      "catalog_file": "knowledge-document/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -15486,5 +15979,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "6ec123d1efe66b4ddd77f192c7475ef0ec5feb38a4ea6c481ee2a343b0cdbe70"
+  "catalog_sha256": "e307fc43704cc73e07685cf21ae0b6c471070527c77f7eec95774ef33837ed71"
 }
