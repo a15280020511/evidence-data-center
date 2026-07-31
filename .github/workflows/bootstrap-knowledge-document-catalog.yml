@@ -8,6 +8,12 @@ on:
       - "api-center/knowledge-document/**"
       - "api-center/build_catalog_market_search.py"
       - ".github/workflows/bootstrap-knowledge-document-catalog.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "api-center/knowledge-document/**"
+      - "api-center/build_catalog_market_search.py"
+      - ".github/workflows/bootstrap-knowledge-document-catalog.yml"
 
 permissions:
   contents: write
