@@ -16,14 +16,14 @@ jobs:
   regenerate:
     if: >-
       github.actor == github.repository_owner &&
-      github.event.issue.title == '[bootstrap-knowledge-document] regenerate catalog'
+      github.event.issue.title == '[bootstrap-knowledge-tools] regenerate catalog'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - name: Checkout feature branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: feat/api-center-wolframalpha-llamaparse
+          ref: feat/wolfram-llamaparse-api-center
           persist-credentials: true
 
       - name: Set up Python
@@ -36,10 +36,10 @@ jobs:
           set -euo pipefail
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
-            -r api-center/knowledge-document/requirements.txt
+            -r api-center/knowledge-tools/requirements.txt
           python -m pip check
-          python -m py_compile api-center/knowledge-document/provider_task.py
-          python -m unittest discover -s api-center/knowledge-document/tests -p 'test_*.py' -v
+          python -m py_compile api-center/knowledge-tools/knowledge_tools_task.py
+          python -m unittest discover -s api-center/knowledge-tools/tests -p 'test_*.py' -v
           python api-center/build_catalog_market_search.py
 
       - name: Commit generated contracts to feature branch
@@ -49,8 +49,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add api-center/api-catalog.json api-center/api-catalog.md
           if ! git diff --cached --quiet; then
-            git commit -m "chore(api-center): regenerate WolframAlpha and LlamaParse catalog"
-            git push origin HEAD:feat/api-center-wolframalpha-llamaparse
+            git commit -m "chore(api-center): regenerate Wolfram and LlamaParse catalog"
+            git push origin HEAD:feat/wolfram-llamaparse-api-center
           fi
 
       - name: Publish bootstrap result
@@ -58,4 +58,4 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
-            -f body='Catalog bootstrap completed and feature branch contracts were regenerated.'
+            -f body='Knowledge tools catalog bootstrap completed and feature branch contracts were regenerated.'
