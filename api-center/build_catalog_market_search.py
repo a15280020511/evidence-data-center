@@ -16,6 +16,7 @@ base = importlib.util.module_from_spec(BASE_SPEC)
 BASE_SPEC.loader.exec_module(base)
 
 MARKET_SEARCH_CATALOG = HERE / "market-search/provider-catalog.json"
+EXPECTED_MARKET_PROVIDERS = {"tickflow": 5, "serpapi": 4}
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
     *base.MANAGED_PROVIDER_CATALOG_PATHS,
     MARKET_SEARCH_CATALOG,
@@ -27,6 +28,16 @@ canonical_sha = base.canonical_sha
 
 def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dict[str, Any]:
     catalog = base.build(manifest_path, metadata_path, connector_root)
+    providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
+    for provider_id, expected_operations in EXPECTED_MARKET_PROVIDERS.items():
+        provider = providers.get(provider_id)
+        if provider is None or provider["operation_count"] != expected_operations:
+            raise ValueError(
+                f"market-search provider invariant failed: {provider_id}/{expected_operations}"
+            )
+        if provider["secret_value_exposed"] is not False:
+            raise ValueError(f"market-search provider exposes secret values: {provider_id}")
+
     reading_order = list(catalog.get("detail_reading_order") or [])
     item = "market-search/provider-catalog.json"
     if item not in reading_order:
