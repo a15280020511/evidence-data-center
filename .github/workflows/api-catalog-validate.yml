@@ -85,7 +85,8 @@ jobs:
           manifest = load_json('api-center/connector-manifest.json')
           catalog = load_json('api-center/api-catalog.json')
           google_providers = load_json('api-center/google-cloud/provider-catalog.json')
-          company_providers = load_json('api-center/company-intelligence/provider-catalog.json')
+          commercial_providers = load_json('api-center/company-intelligence/provider-catalog.json')
+          miaoxiang_local = load_json('api-center/miaoxiang/provider-catalog.json')
           web_providers = load_json('api-center/web-retrieval/provider-catalog.json')
           validation = load_json('api-center/krakend.validation.json')
           rows = manifest['connectors']
@@ -107,31 +108,33 @@ jobs:
           assert catalog['enabled_managed_provider_count'] == 11
           assert managed_provider_ids == {
               'bigquery', 'earth-engine', 'data-commons', 'akshare', 'ashare',
-              'aifin-market', 'yuandian-law', 'qichacha', 'tianyancha',
+              'aifin-market', 'yuandian-law', 'tianyancha', 'miaoxiang',
               'jina-reader', 'exa'
           }
-          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 104
+          assert 'qichacha' not in managed_provider_ids
+          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 105
           assert catalog['exposed_parameter_count'] == 668
+          assert google_providers['required_secret_environment_variables'] == ['GOOGLE_CREDENTIALS_JSON']
           assert google_providers['secret_values_exposed'] is False
           assert {row['provider_id'] for row in google_providers['providers']} == {
               'bigquery', 'earth-engine', 'data-commons'
           }
-          assert company_providers['secret_values_exposed'] is False
-          assert {row['provider_id'] for row in company_providers['providers']} == {
-              'qichacha', 'tianyancha'
-          }
+          assert all(
+              row['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
+              for row in google_providers['providers']
+          )
+          assert commercial_providers['secret_values_exposed'] is False
+          commercial_map = {row['provider_id']: row for row in commercial_providers['providers']}
+          assert set(commercial_map) == {'tianyancha', 'miaoxiang'}
+          assert commercial_map['miaoxiang'] == miaoxiang_local['providers'][0]
           assert web_providers['secret_values_exposed'] is False
           assert {row['provider_id'] for row in web_providers['providers']} == {
               'jina-reader', 'exa'
           }
           assert len(validation['endpoints']) == len(enabled_rows)
           assert {
-              'newsapi-everything',
-              'newsapi-top-headlines',
-              'newsapi-sources',
-              'openmeteo-forecast',
-              'baidu-geocode',
-              'baidu-place-search',
+              'newsapi-everything', 'newsapi-top-headlines', 'newsapi-sources',
+              'openmeteo-forecast', 'baidu-geocode', 'baidu-place-search',
               'baidu-direction-driving',
           }.issubset(connector_ids)
           print(json.dumps({
@@ -140,7 +143,7 @@ jobs:
               'enabled': manifest['enabled_connector_count'],
               'routes': len(validation['endpoints']),
               'managed_providers': 11,
-              'managed_operations': 104,
+              'managed_operations': 105,
               'exposed_parameters': catalog['exposed_parameter_count'],
           }))
           PY
@@ -167,6 +170,8 @@ jobs:
             api-center/yuandian/readonly-apis.snapshot.json
             api-center/company-intelligence/provider-catalog.json
             api-center/company-intelligence/ticket.schema.json
+            api-center/miaoxiang/provider-catalog.json
+            api-center/miaoxiang/ticket.schema.json
             api-center/web-retrieval/provider-catalog.json
             api-center/web-retrieval/ticket.schema.json
           if-no-files-found: error
