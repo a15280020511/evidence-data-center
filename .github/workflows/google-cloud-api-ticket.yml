@@ -216,7 +216,8 @@ jobs:
       - name: Restore production workflow and remove temporary files
         run: |
           set -euo pipefail
-          git show HEAD^:.github/workflows/google-cloud-api-ticket.yml \
+          git show e104b1dfe73755b181aea34a5ec6035258580592:.github/workflows/google-cloud-api-ticket.yml \
+            | sed 's/GOOGLE_CREDENTIALS_JSON/GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON/g' \
             > .github/workflows/google-cloud-api-ticket.yml
           rm -f \
             api-center/google-cloud/migrate_unified_secret.py \
