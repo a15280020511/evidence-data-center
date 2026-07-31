@@ -1,0 +1,96 @@
+name: Temporary evidence-gated capability cleanup
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  cleanup:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[maintenance-cleanup-capabilities]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Verify merged contracts and evidence receipts
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
+          catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          wind = json.loads(Path('api-center/aifin-market/provider-catalog.json').read_text(encoding='utf-8'))
+          assert manifest['connector_count'] == 69, manifest['connector_count']
+          assert catalog['connector_count'] == 69, catalog['connector_count']
+          assert catalog['managed_provider_count'] == 6, catalog['managed_provider_count']
+          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 53
+          assert len(wind['providers'][0]['operations']) == 17
+          PY
+          gh api "repos/${GITHUB_REPOSITORY}/issues/41/comments?per_page=100" --jq '.[].body' > /tmp/finalizer-comments.txt
+          gh api "repos/${GITHUB_REPOSITORY}/issues/42/comments?per_page=100" --jq '.[].body' > /tmp/wind-comments.txt
+          gh api "repos/${GITHUB_REPOSITORY}/issues/43/comments?per_page=100" --jq '.[].body' > /tmp/akshare-comments.txt
+          grep -Fq 'FINALIZER_STATUS=completed' /tmp/finalizer-comments.txt
+          grep -Fq 'WIND_EXPANDED_SMOKE=passed' /tmp/finalizer-comments.txt
+          grep -Fq 'AKSHARE_EXPANDED_SMOKE=passed' /tmp/finalizer-comments.txt
+          grep -Fq 'API_AIFIN_COMPLETED' /tmp/wind-comments.txt
+          grep -Fq 'API_AKSHARE_COMPLETED' /tmp/akshare-comments.txt
+
+      - name: Remove temporary workflows
+        run: |
+          rm -f \
+            .github/workflows/temporary-apply-capability-patch.yml \
+            .github/workflows/temporary-apply-capability-patch-v2.yml \
+            .github/workflows/temporary-finalize-capabilities.yml \
+            .github/workflows/temporary-cleanup-capabilities.yml
+          git diff --check
+
+      - name: Commit cleanup to main
+        id: publish
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B main
+          git add --all
+          if git diff --cached --quiet; then
+            sha="$(git rev-parse HEAD)"
+          else
+            git commit -m "chore: remove temporary capability maintenance workflows"
+            git push origin HEAD:main
+            sha="$(git rev-parse HEAD)"
+          fi
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish cleanup receipt and close maintenance tickets
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="CLEANUP_STATUS=completed\nMAIN_SHA=${{ steps.publish.outputs.sha }}\nTEMPORARY_WORKFLOWS_PRESENT=false\nEVIDENCE_GATES=passed"
+          for issue in 31 32 33 34 35 36 37 39 40 41 42 43; do
+            gh issue close "$issue" --reason completed >/dev/null 2>&1 || true
+          done
+          state="$(gh pr view 38 --json state --jq .state 2>/dev/null || true)"
+          if [[ "${state}" == "OPEN" ]]; then
+            gh pr close 38 --comment "Superseded by the validated main commit and evidence-gated cleanup."
+          fi
+          gh issue close "${{ github.event.issue.number }}" --reason completed
+
+      - name: Report blocked cleanup
+        if: failure()
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="CLEANUP_STATUS=blocked\nAt least one merged-state or real-smoke evidence gate did not pass. No evidence-gated cleanup commit was published by this run."
