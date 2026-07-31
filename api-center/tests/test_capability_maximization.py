@@ -31,7 +31,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_managed_providers_expose_fixed_readonly_operations_only(self) -> None:
         catalog = json.loads((ROOT / "api-catalog.json").read_text(encoding="utf-8"))
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 114)
+        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 123)
         self.assertNotIn("qichacha", providers)
         self.assertEqual(len(providers["miaoxiang"]["operations"]), 4)
         self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
@@ -43,6 +43,8 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertEqual(len(providers["exa"]["operations"]), 3)
         self.assertEqual(len(providers["tavily"]["operations"]), 5)
         self.assertEqual(len(providers["firecrawl"]["operations"]), 4)
+        self.assertEqual(len(providers["tickflow"]["operations"]), 5)
+        self.assertEqual(len(providers["serpapi"]["operations"]), 4)
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertFalse(any(row["secret_value_exposed"] for row in providers.values()))
 
@@ -94,6 +96,16 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(firecrawl_limits["actions_allowed"])
         self.assertFalse(firecrawl_limits["arbitrary_headers_allowed"])
         self.assertFalse(firecrawl_limits["async_crawl_allowed"])
+
+        market = json.loads((ROOT / "market-search/provider-catalog.json").read_text(encoding="utf-8"))
+        market_providers = {row["provider_id"]: row for row in market["providers"]}
+        tickflow_limits = market_providers["tickflow"]["limits"]
+        serpapi_limits = market_providers["serpapi"]["limits"]
+        self.assertFalse(tickflow_limits["write_or_trade_allowed"])
+        self.assertFalse(tickflow_limits["websocket_allowed"])
+        self.assertFalse(serpapi_limits["async_allowed"])
+        self.assertFalse(serpapi_limits["html_output_allowed"])
+        self.assertFalse(serpapi_limits["arbitrary_engine_allowed"])
 
 
 if __name__ == "__main__":

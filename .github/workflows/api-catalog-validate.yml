@@ -50,9 +50,13 @@ jobs:
       - name: Rebuild registry and GPTs capability catalog
         run: |
           set -euo pipefail
-          python -m py_compile api-center/build_config.py api-center/build_catalog.py api-center/tests/test_api_catalog.py
+          python -m py_compile \
+            api-center/build_config.py \
+            api-center/build_catalog.py \
+            api-center/build_catalog_market_search.py \
+            api-center/tests/test_api_catalog.py
           python api-center/build_config.py
-          python api-center/build_catalog.py
+          python api-center/build_catalog_market_search.py
           python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
 
       - name: Verify generated contracts are semantically identical
@@ -88,6 +92,7 @@ jobs:
           commercial_providers = load_json('api-center/company-intelligence/provider-catalog.json')
           miaoxiang_local = load_json('api-center/miaoxiang/provider-catalog.json')
           web_providers = load_json('api-center/web-retrieval/provider-catalog.json')
+          market_providers = load_json('api-center/market-search/provider-catalog.json')
           validation = load_json('api-center/krakend.validation.json')
           rows = manifest['connectors']
           enabled_rows = [row for row in rows if row['enabled']]
@@ -104,16 +109,16 @@ jobs:
           assert catalog['schema_version'] == 'api-catalog-v3'
           assert catalog['connector_count'] == manifest['connector_count']
           assert catalog['enabled_connector_count'] == manifest['enabled_connector_count']
-          assert catalog['managed_provider_count'] == 13
-          assert catalog['enabled_managed_provider_count'] == 13
+          assert catalog['managed_provider_count'] == 15
+          assert catalog['enabled_managed_provider_count'] == 15
           assert managed_provider_ids == {
               'bigquery', 'earth-engine', 'data-commons', 'akshare', 'ashare',
               'aifin-market', 'yuandian-law', 'tianyancha', 'miaoxiang',
-              'jina-reader', 'exa', 'tavily', 'firecrawl'
+              'jina-reader', 'exa', 'tavily', 'firecrawl', 'tickflow', 'serpapi'
           }
           assert 'qichacha' not in managed_provider_ids
-          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 114
-          assert catalog['exposed_parameter_count'] == 714
+          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 123
+          assert catalog['exposed_parameter_count'] == 746
           assert google_providers['required_secret_environment_variables'] == ['GOOGLE_CREDENTIALS_JSON']
           assert google_providers['secret_values_exposed'] is False
           assert {row['provider_id'] for row in google_providers['providers']} == {
@@ -132,6 +137,13 @@ jobs:
           assert set(web_map) == {'jina-reader', 'exa', 'tavily', 'firecrawl'}
           assert web_map['tavily']['required_secret_environment_variable'] == 'TAVILY_API_KEY'
           assert web_map['firecrawl']['required_secret_environment_variable'] == 'FIRECRAWL_API_KEY'
+          assert market_providers['secret_values_exposed'] is False
+          market_map = {row['provider_id']: row for row in market_providers['providers']}
+          assert set(market_map) == {'tickflow', 'serpapi'}
+          assert market_map['tickflow']['required_secret_environment_variable'] == 'TICKFLOW_API_KEY'
+          assert market_map['serpapi']['required_secret_environment_variable'] == 'SERPAPI_API_KEY'
+          assert len(market_map['tickflow']['operations']) == 5
+          assert len(market_map['serpapi']['operations']) == 4
           assert len(validation['endpoints']) == len(enabled_rows)
           assert {
               'newsapi-everything', 'newsapi-top-headlines', 'newsapi-sources',
@@ -143,8 +155,8 @@ jobs:
               'connectors': manifest['connector_count'],
               'enabled': manifest['enabled_connector_count'],
               'routes': len(validation['endpoints']),
-              'managed_providers': 13,
-              'managed_operations': 114,
+              'managed_providers': 15,
+              'managed_operations': 123,
               'exposed_parameters': catalog['exposed_parameter_count'],
           }))
           PY
@@ -176,5 +188,7 @@ jobs:
             api-center/web-retrieval/provider-catalog.json
             api-center/web-retrieval/ticket.schema.json
             api-center/web-retrieval/context-ticket.schema.json
+            api-center/market-search/provider-catalog.json
+            api-center/market-search/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
