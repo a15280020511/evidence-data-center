@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("build_catalog", ROOT / "build_catalog.py")
+SPEC = importlib.util.spec_from_file_location("build_catalog", ROOT / "build_catalog_market_search.py")
 assert SPEC and SPEC.loader
 build_catalog = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(build_catalog)
@@ -28,17 +28,17 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
         self.assertEqual(catalog["maintenance_owner"], "web-gpt-github-plugin")
         self.assertEqual(catalog["schema_version"], "api-catalog-v3")
-        self.assertEqual(catalog["managed_provider_count"], 13)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 13)
-        self.assertEqual(catalog["managed_operation_count"], 114)
-        self.assertEqual(catalog["exposed_parameter_count"], 714)
+        self.assertEqual(catalog["managed_provider_count"], 15)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 15)
+        self.assertEqual(catalog["managed_operation_count"], 123)
+        self.assertEqual(catalog["exposed_parameter_count"], 746)
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
         self.assertEqual(
             set(providers),
             {
                 "bigquery", "earth-engine", "data-commons", "akshare", "ashare",
                 "aifin-market", "yuandian-law", "tianyancha", "miaoxiang",
-                "jina-reader", "exa", "tavily", "firecrawl",
+                "jina-reader", "exa", "tavily", "firecrawl", "tickflow", "serpapi",
             },
         )
         expected_operation_counts = {
@@ -55,6 +55,8 @@ class ApiCatalogTests(unittest.TestCase):
             "exa": 3,
             "tavily": 5,
             "firecrawl": 4,
+            "tickflow": 5,
+            "serpapi": 4,
         }
         for provider_id, expected in expected_operation_counts.items():
             self.assertEqual(len(providers[provider_id]["operations"]), expected)
@@ -86,8 +88,12 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(providers["exa"]["required_secret_environment_variable_name"], "EXA_API_KEY")
         self.assertEqual(providers["tavily"]["required_secret_environment_variable_name"], "TAVILY_API_KEY")
         self.assertEqual(providers["firecrawl"]["required_secret_environment_variable_name"], "FIRECRAWL_API_KEY")
+        self.assertEqual(providers["tickflow"]["required_secret_environment_variable_name"], "TICKFLOW_API_KEY")
+        self.assertEqual(providers["serpapi"]["required_secret_environment_variable_name"], "SERPAPI_API_KEY")
         self.assertEqual(providers["tavily"]["ticket_prefix"], "[api-context]")
         self.assertEqual(providers["firecrawl"]["ticket_prefix"], "[api-context]")
+        self.assertEqual(providers["tickflow"]["ticket_prefix"], "[api-tickflow]")
+        self.assertEqual(providers["serpapi"]["ticket_prefix"], "[api-serpapi]")
         self.assertEqual(
             {row["operation_id"] for row in providers["tavily"]["operations"]},
             {"catalog-capabilities", "search", "extract", "map", "crawl"},
@@ -95,6 +101,14 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(
             {row["operation_id"] for row in providers["firecrawl"]["operations"]},
             {"catalog-capabilities", "search", "scrape", "map"},
+        )
+        self.assertEqual(
+            {row["operation_id"] for row in providers["tickflow"]["operations"]},
+            {"catalog-capabilities", "quotes", "klines", "intraday-klines", "instruments"},
+        )
+        self.assertEqual(
+            {row["operation_id"] for row in providers["serpapi"]["operations"]},
+            {"catalog-capabilities", "google-search", "google-news", "google-scholar"},
         )
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertEqual(
