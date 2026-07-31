@@ -1,0 +1,100 @@
+name: Temporary fix maximized API publisher
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  fix:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[maintenance-fix-maximized-api-publisher]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Replace brittle correction block
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('.github/workflows/temporary-publish-maximized-api-capabilities.yml')
+          text = path.read_text(encoding='utf-8')
+          start_marker = "          replacements = {\n"
+          end_marker = "          PY\n          git diff --check\n"
+          start = text.index(start_marker)
+          end = text.index(end_marker, start)
+          replacement = '''          targets = [
+              Path('api-center/tests/test_api_catalog.py'),
+              Path('.github/workflows/api-catalog-validate.yml'),
+          ]
+          for target in targets:
+              content = target.read_text(encoding='utf-8')
+              content = content.replace('api-catalog-v2', 'api-catalog-v3')
+              if target.name == 'api-catalog-validate.yml':
+                  content = content.replace(
+                      "assert sum(len(row['operations']) for row in catalog['managed_providers']) == 31",
+                      "assert sum(len(row['operations']) for row in catalog['managed_providers']) == 53",
+                  )
+                  content = content.replace("'managed_operations': 31", "'managed_operations': 53")
+              target.write_text(content, encoding='utf-8')
+
+          test_text = Path('api-center/tests/test_api_catalog.py').read_text(encoding='utf-8')
+          workflow_text = Path('.github/workflows/api-catalog-validate.yml').read_text(encoding='utf-8')
+          assert 'api-catalog-v2' not in test_text
+          assert 'api-catalog-v2' not in workflow_text
+          assert 'api-catalog-v3' in test_text
+          assert 'api-catalog-v3' in workflow_text
+          assert "== 53" in workflow_text
+          assert "'managed_operations': 53" in workflow_text
+'''
+          text = text[:start] + replacement + text[end:]
+          path.write_text(text, encoding='utf-8')
+          PY
+          rm -f .github/workflows/temporary-fix-maximized-api-publisher.yml
+          git diff --check
+
+      - name: Commit publisher correction
+        id: commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "fix: make capability publisher contract correction robust"
+          git push origin HEAD:main
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Trigger corrected gated release
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues" \
+            -f title='[maintenance-publish-maximized-api-capabilities] corrected final gated release' \
+            -f body='Corrected deterministic contract migration matcher. Re-run the same SHA-verified archive recovery, full dependency installation, complete tests, Wind real smoke, and AKShare real smoke. Publish only after every gate passes.' >/tmp/retry-issue.json
+          retry_number="$(python -c 'import json; print(json.load(open("/tmp/retry-issue.json"))["number"])')"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="STATUS=completed\nPUBLISHER_FIX_SHA=${{ steps.commit.outputs.sha }}\nRETRY_ISSUE=${retry_number}"
+          gh api --method PATCH "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}" \
+            -f state=closed -f state_reason=completed >/dev/null
+
+      - name: Report structured failure
+        if: failure()
+        shell: bash
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="STATUS=failed\nRUN_ID=${GITHUB_RUN_ID}"
