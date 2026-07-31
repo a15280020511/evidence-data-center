@@ -111,10 +111,10 @@ jobs:
           assert catalog['schema_version'] == 'api-catalog-v3'
           assert catalog['connector_count'] == 68
           assert catalog['enabled_connector_count'] == 68
-          assert catalog['managed_provider_count'] == 16
-          assert catalog['enabled_managed_provider_count'] == 16
-          assert catalog['managed_operation_count'] == 143
-          assert catalog['exposed_parameter_count'] >= 850
+          assert catalog['managed_provider_count'] == 18
+          assert catalog['enabled_managed_provider_count'] == 18
+          assert catalog['managed_operation_count'] == 150
+          assert catalog['exposed_parameter_count'] >= 900
           assert catalog['secret_values_exposed'] is False
 
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
@@ -135,10 +135,12 @@ jobs:
               'tickflow': 5,
               'serpapi': 4,
               'tushare': 20,
+              'wolfram-alpha': 4,
+              'llamaparse': 3,
           }
           assert set(providers) == set(expected_counts)
           assert 'tianditu' not in providers
-          assert sum(len(row['operations']) for row in providers.values()) == 143
+          assert sum(len(row['operations']) for row in providers.values()) == 150
           for provider_id, expected in expected_counts.items():
               assert len(providers[provider_id]['operations']) == expected
               assert providers[provider_id]['secret_value_exposed'] is False
@@ -157,6 +159,8 @@ jobs:
               'tickflow': 'TICKFLOW_API_KEY',
               'serpapi': 'SERPAPI_API_KEY',
               'tushare': 'TUSHARE_API_TOKEN',
+              'wolfram-alpha': 'WOLFRAM_ALPHA_APP_ID',
+              'llamaparse': 'LLAMA_CLOUD_API_KEY',
           }
           for provider_id, secret_name in expected_secret_names.items():
               assert providers[provider_id]['required_secret_environment_variable_name'] == secret_name
@@ -170,27 +174,58 @@ jobs:
               'balance-sheet', 'cash-flow-statement', 'financial-indicator',
               'index-basic', 'index-daily', 'fund-basic', 'fund-nav', 'hk-hold',
           }
-          limits = tushare['limits']
-          assert limits['arbitrary_api_names_allowed'] is False
-          assert limits['arbitrary_urls_allowed'] is False
-          assert limits['arbitrary_headers_allowed'] is False
-          assert limits['write_operations_allowed'] is False
-          assert limits['trading_or_order_execution_allowed'] is False
-          assert limits['secret_values_exposed'] is False
-          assert 'tushare/provider-catalog.json' in catalog['managed_provider_catalog_files']
-          assert 'tushare/provider-catalog.json' in catalog['detail_reading_order']
+          tushare_limits = tushare['limits']
+          assert tushare_limits['arbitrary_api_names_allowed'] is False
+          assert tushare_limits['arbitrary_urls_allowed'] is False
+          assert tushare_limits['arbitrary_headers_allowed'] is False
+          assert tushare_limits['write_operations_allowed'] is False
+          assert tushare_limits['trading_or_order_execution_allowed'] is False
+          assert tushare_limits['secret_values_exposed'] is False
+
+          wolfram = providers['wolfram-alpha']
+          assert wolfram['ticket_prefix'] == '[api-wolfram]'
+          assert {row['operation_id'] for row in wolfram['operations']} == {
+              'catalog-capabilities', 'full-results', 'short-answer', 'llm-result',
+          }
+          assert wolfram['limits']['arbitrary_urls_allowed'] is False
+          assert wolfram['limits']['arbitrary_headers_allowed'] is False
+          assert wolfram['limits']['write_operations_allowed'] is False
+          assert wolfram['limits']['image_endpoints_enabled'] is False
+
+          llamaparse = providers['llamaparse']
+          assert llamaparse['ticket_prefix'] == '[api-llamaparse]'
+          assert {row['operation_id'] for row in llamaparse['operations']} == {
+              'catalog-capabilities', 'parse-public-document', 'get-job',
+          }
+          assert llamaparse['limits']['arbitrary_urls_allowed'] is False
+          assert llamaparse['limits']['arbitrary_headers_allowed'] is False
+          assert llamaparse['limits']['webhooks_allowed'] is False
+          assert llamaparse['limits']['write_operations_allowed'] is False
+          assert llamaparse['limits']['presigned_urls_exposed'] is False
+          assert llamaparse['limits']['max_pages'] <= 200
+          assert llamaparse['limits']['poll_timeout_seconds_max'] <= 600
+
+          for catalog_file in (
+              'tushare/provider-catalog.json',
+              'knowledge-tools/provider-catalog.json',
+          ):
+              assert catalog_file in catalog['managed_provider_catalog_files']
+              assert catalog_file in catalog['detail_reading_order']
           assert 'tianditu/provider-catalog.json' not in catalog['managed_provider_catalog_files']
           serialized = json.dumps(catalog, ensure_ascii=False)
           assert 'TIANDITU_API_KEY' not in serialized
           assert 'TIANDITU_EXPECTED_EGRESS_IP' not in serialized
+          assert 'Bearer llx-' not in serialized
+          assert 'presigned_url' not in serialized or 'presigned_urls_exposed' in serialized
 
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 16,
-              'managed_operations': 143,
+              'managed_providers': 18,
+              'managed_operations': 150,
               'exposed_parameters': catalog['exposed_parameter_count'],
-              'tushare_operations': 20,
+              'wolfram_operations': 4,
+              'llamaparse_operations': 3,
               'tianditu': 'removed',
           }))
           PY
@@ -218,5 +253,7 @@ jobs:
             api-center/market-search/provider-catalog.json
             api-center/tushare/provider-catalog.json
             api-center/tushare/ticket.schema.json
+            api-center/knowledge-tools/provider-catalog.json
+            api-center/knowledge-tools/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
