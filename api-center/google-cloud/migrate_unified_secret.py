@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 OLD_SECRET = "GOOGLE_CREDENTIALS_JSON"
@@ -35,6 +36,24 @@ def publish_start_receipt() -> None:
             f"repos/{repository}/issues/{issue_number}/comments",
             "-f",
             f"body={body}",
+        ],
+        check=True,
+    )
+
+
+def install_test_dependencies() -> None:
+    subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--disable-pip-version-check",
+            "--no-input",
+            "-r",
+            "api-center/google-cloud/requirements.txt",
+            "-r",
+            "api-center/data-commons/requirements.txt",
         ],
         check=True,
     )
@@ -140,6 +159,7 @@ def add_compact_bundle_test() -> None:
 
 def main() -> int:
     publish_start_receipt()
+    install_test_dependencies()
     replace_secret_name()
     support_compact_bundle()
     add_compact_bundle_test()
