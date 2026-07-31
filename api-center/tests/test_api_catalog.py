@@ -31,6 +31,7 @@ EXPECTED_OPERATION_COUNTS = {
     "tickflow": 5,
     "serpapi": 4,
     "tushare": 20,
+    "baostock": 20,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -55,9 +56,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 17)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 17)
-        self.assertEqual(catalog["managed_operation_count"], 145)
+        self.assertEqual(catalog["managed_provider_count"], 18)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 18)
+        self.assertEqual(catalog["managed_operation_count"], 165)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -98,6 +99,11 @@ class ApiCatalogTests(unittest.TestCase):
                 ],
                 secret_name,
             )
+
+        self.assertEqual(providers["baostock"]["ticket_prefix"], "[api-baostock]")
+        self.assertEqual(providers["baostock"]["required_secret_environment_variable_name"], "")
+        self.assertFalse(providers["baostock"]["limits"]["arbitrary_functions_allowed"])
+        self.assertFalse(providers["baostock"]["limits"]["trading_or_order_execution_allowed"])
 
         self.assertEqual(
             providers["tushare"]["ticket_prefix"],
@@ -164,6 +170,7 @@ class ApiCatalogTests(unittest.TestCase):
 
         for catalog_file in (
             "tushare/provider-catalog.json",
+            "baostock/provider-catalog.json",
             "knowledge-tools/provider-catalog.json",
         ):
             self.assertIn(catalog_file, catalog["managed_provider_catalog_files"])

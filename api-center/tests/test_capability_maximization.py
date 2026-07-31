@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            145,
+            165,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -73,6 +73,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "tickflow": 5,
             "serpapi": 4,
             "tushare": 20,
+            "baostock": 20,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -187,6 +188,16 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(tushare_limits["write_operations_allowed"])
         self.assertFalse(tushare_limits["trading_or_order_execution_allowed"])
         self.assertFalse(tushare_limits["secret_values_exposed"])
+
+        baostock = json.loads(
+            (ROOT / "baostock/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        baostock_provider = baostock["providers"][0]
+        self.assertEqual(baostock_provider["required_secret_environment_variable"], "")
+        self.assertFalse(baostock_provider["limits"]["arbitrary_functions_allowed"])
+        self.assertFalse(baostock_provider["limits"]["arbitrary_hosts_allowed"])
+        self.assertFalse(baostock_provider["limits"]["write_operations_allowed"])
+        self.assertFalse(baostock_provider["limits"]["trading_or_order_execution_allowed"])
 
         knowledge = json.loads(
             (ROOT / "knowledge-tools/provider-catalog.json").read_text(
