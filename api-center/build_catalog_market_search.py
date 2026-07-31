@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 from pathlib import Path
 from typing import Any, Mapping
 
-import build_catalog as base
+HERE = Path(__file__).resolve().parent
+BASE_SPEC = importlib.util.spec_from_file_location("base_build_catalog", HERE / "build_catalog.py")
+if BASE_SPEC is None or BASE_SPEC.loader is None:
+    raise RuntimeError("unable to load base API catalog generator")
+base = importlib.util.module_from_spec(BASE_SPEC)
+BASE_SPEC.loader.exec_module(base)
 
-HERE = base.HERE
 MARKET_SEARCH_CATALOG = HERE / "market-search/provider-catalog.json"
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
     *base.MANAGED_PROVIDER_CATALOG_PATHS,
