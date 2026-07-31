@@ -42,10 +42,10 @@ jobs:
       - name: Build and verify Tianditu integration
         run: python tools/bootstrap_tianditu_bundle.py
 
-      - name: Commit generated integration
+      - name: Commit generated API integration
         run: |
           set -euo pipefail
-          git add api-center .github/workflows
+          git add api-center
           git diff --cached --check
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
