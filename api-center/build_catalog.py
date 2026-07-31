@@ -20,6 +20,7 @@ MANAGED_PROVIDER_CATALOG_PATHS = (
     HERE / "aifin-market/provider-catalog.json",
     HERE / "yuandian/provider-catalog.json",
     HERE / "company-intelligence/provider-catalog.json",
+    HERE / "web-retrieval/provider-catalog.json",
 )
 
 
@@ -137,6 +138,9 @@ def _build_managed_providers() -> tuple[dict[str, Any], list[dict[str, Any]]]:
                 "limits": dict(raw_provider.get("limits") or {}),
                 "required_secret_environment_variable_name": str(
                     raw_provider.get("required_secret_environment_variable") or catalog_secret_name
+                ),
+                "optional_secret_environment_variable_name": str(
+                    raw_provider.get("optional_secret_environment_variable") or ""
                 ),
                 "secret_value_exposed": False,
                 "provider_sha256": canonical_sha(raw_provider),

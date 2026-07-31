@@ -13,15 +13,16 @@
     "akshare/provider-catalog.json",
     "aifin-market/provider-catalog.json",
     "yuandian/provider-catalog.json",
-    "company-intelligence/provider-catalog.json"
+    "company-intelligence/provider-catalog.json",
+    "web-retrieval/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "c4124aad84beec37524c374ddf5a281d35d52e7f9e1f616f938d15f6966d3f1d",
+  "managed_provider_catalog_sha256": "eaeb7b2860bb1a0ad4350c16f2e0dce6b85fc55b2984b47a816caa87c081617b",
   "connector_count": 69,
   "enabled_connector_count": 69,
-  "managed_provider_count": 9,
-  "enabled_managed_provider_count": 9,
-  "managed_operation_count": 99,
-  "exposed_parameter_count": 655,
+  "managed_provider_count": 11,
+  "enabled_managed_provider_count": 11,
+  "managed_operation_count": 104,
+  "exposed_parameter_count": 668,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -372,6 +373,7 @@
         "query_timeout_ms": 30000
       },
       "required_secret_environment_variable_name": "BIGQUERY_SERVICE_ACCOUNT_JSON",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "8397745c4f05dcf2bb17ecfd2aab9372c1a0bf28831b6d7a731fce29d55595cc",
       "catalog_file": "google-cloud/provider-catalog.json"
@@ -544,6 +546,7 @@
         "max_dataset_results": 100
       },
       "required_secret_environment_variable_name": "EARTH_ENGINE_SERVICE_ACCOUNT_JSON",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "833e3999ce99340e9db7d2192c6bf7b0614b67581b686f2aefa73741d173ca33",
       "catalog_file": "google-cloud/provider-catalog.json"
@@ -725,6 +728,7 @@
         "timeout_seconds": 60
       },
       "required_secret_environment_variable_name": "GOOGLE_DATA_COMMONS_API_KEY",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "54da4c493916be4a170264ed85762d702ea4af6008f012346327498cb1a7ade0",
       "catalog_file": "google-cloud/provider-catalog.json"
@@ -1305,6 +1309,7 @@
         "max_response_bytes": 5000000
       },
       "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "51c98e310e75aa22eb2cf474ed39a82cef707470af3d0d88a487271cb7ddc4d1",
       "catalog_file": "akshare/provider-catalog.json"
@@ -1411,6 +1416,7 @@
         "brokerage_execution_allowed": false
       },
       "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "f763ed3c3a2aa7e979a6de86ffa20527b6f93b9d9e8613d21df21e0a4cffe481",
       "catalog_file": "akshare/provider-catalog.json"
@@ -2000,6 +2006,7 @@
         "write_operations_allowed": false
       },
       "required_secret_environment_variable_name": "WIND_API_KEY",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "b630c7bf2699e4ff10856cc68063f54bbb5d64e14de27273f38dded0aa6ff819",
       "catalog_file": "aifin-market/provider-catalog.json"
@@ -3596,6 +3603,7 @@
         ]
       },
       "required_secret_environment_variable_name": "YUANDIAN_API_KEY",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "209bcddd432ce325bb04568aa8404881ec8e42ec6995648166a0a3182ceea80e",
       "catalog_file": "yuandian/provider-catalog.json",
@@ -4386,6 +4394,7 @@
         "max_response_bytes": 2000000
       },
       "required_secret_environment_variable_name": "QICHACHA_CREDENTIALS_JSON",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "85abe40844bb052de018ca38695efc22d520207c35c37712e4d6264da767fb29",
       "catalog_file": "company-intelligence/provider-catalog.json"
@@ -4485,9 +4494,246 @@
         "max_response_bytes": 2000000
       },
       "required_secret_environment_variable_name": "TIANYANCHA_API_TOKEN",
+      "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "cfae6391c6824cc14c5d90bbc3c90c2ec5bfe97910735691ff687db980909544",
       "catalog_file": "company-intelligence/provider-catalog.json"
+    },
+    {
+      "provider_id": "jina-reader",
+      "display_name": "Jina AI Reader",
+      "description": "使用 Jina Reader 将公开网页或公开 PDF 转换为适合大模型使用的 Markdown/JSON 内容。",
+      "enabled": true,
+      "ticket_prefix": "[api-web]",
+      "catalog_policy": "只允许读取调用方明确提供的公开 HTTPS URL；禁止内网、回环、链路本地、保留地址、登录态 Cookie、任意请求头和任意代码。",
+      "execution_policy": "无 Key 时使用 Jina Reader 官方匿名基础额度；配置 JINA_API_KEY 时仅在后端 Authorization Bearer 头注入以提高额度。每张票据最多读取一个 URL。",
+      "operation_count": 2,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取 Jina Reader 本地安全能力目录，不访问上游且不需要密钥。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "read-url",
+          "description": "通过 r.jina.ai 读取一个公开 HTTPS 网页或 PDF，返回 LLM 友好的正文。",
+          "parameter_names": [
+            "url",
+            "max_tokens",
+            "no_cache"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 9,
+                "maxLength": 2048,
+                "pattern": "^https://"
+              },
+              "max_tokens": {
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 20000
+              },
+              "no_cache": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "jina-reader",
+            "official_endpoint": "https://r.jina.ai/<public-https-url>",
+            "http_method": "GET",
+            "read_only": true,
+            "anonymous_supported": true,
+            "optional_secret": "JINA_API_KEY"
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://jina.ai/reader/"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 5000000,
+        "max_tokens": 20000
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "JINA_API_KEY",
+      "secret_value_exposed": false,
+      "provider_sha256": "44e58ffbc0199c0920a3f86db7093bd389aef67fb7a2d1a95f14dd669d18f4b6",
+      "catalog_file": "web-retrieval/provider-catalog.json"
+    },
+    {
+      "provider_id": "exa",
+      "display_name": "Exa Search API",
+      "description": "使用 Exa 官方搜索与 Contents API 搜索公开网页并提取干净、适合大模型使用的内容。",
+      "enabled": true,
+      "ticket_prefix": "[api-web]",
+      "catalog_policy": "只暴露固定的 Exa /search 与 /contents 只读接口；禁止 Answer、Agent、Research、Websets、联系人富集、任意 URL 主机和任意请求头。",
+      "execution_policy": "EXA_API_KEY 仅在后端 x-api-key 头注入；每张票据只执行一次调用；搜索最多10条，Contents最多5个公开 HTTPS URL，不启用摘要或联系人富集。",
+      "operation_count": 3,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取 Exa 本地安全能力目录，不访问上游且不需要密钥。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "search",
+          "description": "调用 Exa /search 搜索公开网页，可返回结果元数据及受限的 highlights 或正文。",
+          "parameter_names": [
+            "query",
+            "num_results",
+            "search_type",
+            "content_mode",
+            "max_characters"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "num_results": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10
+              },
+              "search_type": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "fast",
+                  "instant"
+                ]
+              },
+              "content_mode": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "highlights",
+                  "text"
+                ]
+              },
+              "max_characters": {
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 20000
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "exa",
+            "official_endpoint": "https://api.exa.ai/search",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://exa.ai/docs/reference/search"
+          }
+        },
+        {
+          "operation_id": "contents",
+          "description": "调用 Exa /contents 读取最多5个已知公开 HTTPS URL 的正文或 highlights。",
+          "parameter_names": [
+            "urls",
+            "content_mode",
+            "highlight_query",
+            "max_characters",
+            "max_age_hours"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "urls": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 9,
+                  "maxLength": 2048,
+                  "pattern": "^https://"
+                }
+              },
+              "content_mode": {
+                "type": "string",
+                "enum": [
+                  "highlights",
+                  "text"
+                ]
+              },
+              "highlight_query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "max_characters": {
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 20000
+              },
+              "max_age_hours": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 720
+              }
+            },
+            "required": [
+              "urls"
+            ]
+          },
+          "result_contract": {
+            "provider": "exa",
+            "official_endpoint": "https://api.exa.ai/contents",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://exa.ai/docs/reference/get-contents"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 5000000,
+        "search_results_max": 10,
+        "content_urls_max": 5
+      },
+      "required_secret_environment_variable_name": "EXA_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "9ae67e37ccc9cb17e849551300f7c87b705415ff90d759e972cc9c5d3d4164ce",
+      "catalog_file": "web-retrieval/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -12933,5 +13179,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "e5adf36847c878b4725d9b36c5f7285abb5001b6190ec0faa58031d48cda9a2e"
+  "catalog_sha256": "acb528e52838243fbcf1d74fecb0253569966ee600ac070ffad308a34eae89aa"
 }
