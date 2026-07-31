@@ -26,9 +26,12 @@ jobs:
 
       - name: Publish started receipt
         run: |
+          {
+            echo "STATUS=push-integrator-started"
+            echo "RUN_ID=${GITHUB_RUN_ID}"
+          } > /tmp/comment.txt
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -f body="STATUS=push-integrator-started
-RUN_ID=${GITHUB_RUN_ID}"
+            -F body=@/tmp/comment.txt
 
       - name: Apply deterministic integration patch
         run: |
@@ -84,18 +87,23 @@ RUN_ID=${GITHUB_RUN_ID}"
 
       - name: Publish completed receipt
         run: |
-          result=$(cat /tmp/web-result.txt)
+          {
+            echo "STATUS=completed"
+            echo "SHA=${{ steps.commit.outputs.sha }}"
+            cat /tmp/web-result.txt
+            echo "JINA_OPTIONAL_SECRET=JINA_API_KEY"
+            echo "EXA_SECRET=EXA_API_KEY"
+            echo "SECRET_VALUES_READ=false"
+          } > /tmp/comment.txt
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -f body="STATUS=completed
-SHA=${{ steps.commit.outputs.sha }}
-${result}
-JINA_OPTIONAL_SECRET=JINA_API_KEY
-EXA_SECRET=EXA_API_KEY
-SECRET_VALUES_READ=false"
+            -F body=@/tmp/comment.txt
 
       - name: Publish failed receipt
         if: failure()
         run: |
+          {
+            echo "STATUS=failed"
+            echo "RUN_ID=${GITHUB_RUN_ID}"
+          } > /tmp/comment.txt
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -f body="STATUS=failed
-RUN_ID=${GITHUB_RUN_ID}"
+            -F body=@/tmp/comment.txt
