@@ -38,12 +38,15 @@ jobs:
           chunks = {}
           for row in rows:
               body = str(row.get('body') or '')
-              match = re.fullmatch(r'PATCH_CHUNK_(\d{2})\n([A-Za-z0-9+/=]+)', body, re.DOTALL)
+              match = re.fullmatch(r'PATCH_CHUNK_(\d{3})\n([A-Za-z0-9+/=]+)', body, re.DOTALL)
               if match:
                   chunks[int(match.group(1))] = match.group(2)
-          if sorted(chunks) != [1, 2, 3, 4, 5]:
-              raise SystemExit(f'invalid patch chunks: {sorted(chunks)}')
-          Path('/tmp/patch.b64').write_text(''.join(chunks[index] for index in sorted(chunks)), encoding='ascii')
+          if not chunks:
+              raise SystemExit('no patch chunks found')
+          expected = list(range(1, max(chunks) + 1))
+          if sorted(chunks) != expected:
+              raise SystemExit(f'non-contiguous patch chunks: {sorted(chunks)}')
+          Path('/tmp/patch.b64').write_text(''.join(chunks[index] for index in expected), encoding='ascii')
           PY
           base64 --decode /tmp/patch.b64 > /tmp/capability-patch.tar.gz
           echo "${PATCH_SHA256}  /tmp/capability-patch.tar.gz" | sha256sum --check --strict
