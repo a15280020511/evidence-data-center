@@ -31,7 +31,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_managed_providers_expose_fixed_readonly_operations_only(self) -> None:
         catalog = json.loads((ROOT / "api-catalog.json").read_text(encoding="utf-8"))
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 143)
+        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 152)
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
         expected_counts = {
@@ -48,6 +48,8 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "tickflow": 5,
             "serpapi": 4,
             "tushare": 20,
+            "wolframalpha": 5,
+            "llamaparse": 4,
         }
         for provider_id, count in expected_counts.items():
             self.assertEqual(len(providers[provider_id]["operations"]), count)
@@ -123,6 +125,20 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(tushare_limits["write_operations_allowed"])
         self.assertFalse(tushare_limits["trading_or_order_execution_allowed"])
         self.assertFalse(tushare_limits["secret_values_exposed"])
+
+        knowledge = json.loads(
+            (ROOT / "knowledge-document/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        knowledge_providers = {row["provider_id"]: row for row in knowledge["providers"]}
+        wolfram_limits = knowledge_providers["wolframalpha"]["limits"]
+        llama_limits = knowledge_providers["llamaparse"]["limits"]
+        self.assertFalse(wolfram_limits["arbitrary_urls_allowed"])
+        self.assertFalse(wolfram_limits["arbitrary_headers_allowed"])
+        self.assertFalse(wolfram_limits["write_operations_allowed"])
+        self.assertFalse(llama_limits["private_or_loopback_sources_allowed"])
+        self.assertFalse(llama_limits["arbitrary_headers_allowed"])
+        self.assertFalse(llama_limits["delete_operations_allowed"])
+        self.assertFalse(llama_limits["secret_values_exposed"])
 
 
 if __name__ == "__main__":
