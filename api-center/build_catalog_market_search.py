@@ -16,10 +16,12 @@ base = importlib.util.module_from_spec(BASE_SPEC)
 BASE_SPEC.loader.exec_module(base)
 
 MARKET_SEARCH_CATALOG = HERE / "market-search/provider-catalog.json"
-EXPECTED_MARKET_PROVIDERS = {"tickflow": 5, "serpapi": 4}
+TIANDITU_CATALOG = HERE / "tianditu/provider-catalog.json"
+EXPECTED_EXTENDED_PROVIDERS = {"tickflow": 5, "serpapi": 4, "tianditu": 8}
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
     *base.MANAGED_PROVIDER_CATALOG_PATHS,
     MARKET_SEARCH_CATALOG,
+    TIANDITU_CATALOG,
 )
 
 load_json = base.load_json
@@ -29,7 +31,7 @@ canonical_sha = base.canonical_sha
 def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dict[str, Any]:
     catalog = base.build(manifest_path, metadata_path, connector_root)
     providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-    for provider_id, expected_operations in EXPECTED_MARKET_PROVIDERS.items():
+    for provider_id, expected_operations in EXPECTED_EXTENDED_PROVIDERS.items():
         provider = providers.get(provider_id)
         if provider is None or provider["operation_count"] != expected_operations:
             raise ValueError(
@@ -39,13 +41,13 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
             raise ValueError(f"market-search provider exposes secret values: {provider_id}")
 
     reading_order = list(catalog.get("detail_reading_order") or [])
-    item = "market-search/provider-catalog.json"
-    if item not in reading_order:
-        insert_at = reading_order.index("catalog-metadata.json") if "catalog-metadata.json" in reading_order else len(reading_order)
-        reading_order.insert(insert_at, item)
-        catalog["detail_reading_order"] = reading_order
-        catalog.pop("catalog_sha256", None)
-        catalog["catalog_sha256"] = base.canonical_sha(catalog)
+    for item in ("market-search/provider-catalog.json", "tianditu/provider-catalog.json"):
+        if item not in reading_order:
+            insert_at = reading_order.index("catalog-metadata.json") if "catalog-metadata.json" in reading_order else len(reading_order)
+            reading_order.insert(insert_at, item)
+    catalog["detail_reading_order"] = reading_order
+    catalog.pop("catalog_sha256", None)
+    catalog["catalog_sha256"] = base.canonical_sha(catalog)
     return catalog
 
 

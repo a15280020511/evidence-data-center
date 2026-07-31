@@ -2884,62 +2884,6 @@
       ]
     },
     {
-      "endpoint": "/data/tianditu/place/search",
-      "method": "GET",
-      "output_encoding": "json",
-      "backend": [
-        {
-          "host": [
-            "https://api.tianditu.gov.cn"
-          ],
-          "url_pattern": "/v2/search",
-          "method": "GET",
-          "encoding": "json",
-          "extra_config": {
-            "qos/circuit-breaker": {
-              "interval": 60,
-              "timeout": 30,
-              "max_errors": 3,
-              "name": "cb-tianditu-place-search",
-              "log_status_change": true
-            },
-            "qos/ratelimit/proxy": {
-              "max_rate": 1.0,
-              "every": "1s",
-              "capacity": 1
-            },
-            "modifier/martian": {
-              "querystring.Modifier": {
-                "scope": [
-                  "request"
-                ],
-                "name": "tk",
-                "value": {{ env "TIANDITU_API_KEY" | quote }}
-              }
-            }
-          },
-          "allow": [
-            "resultType",
-            "count",
-            "keyword",
-            "pois",
-            "statistics",
-            "priorityCitys",
-            "allAdmins",
-            "area",
-            "lineData",
-            "prompt",
-            "status"
-          ]
-        }
-      ],
-      "timeout": "15s",
-      "input_query_strings": [
-        "postStr",
-        "type"
-      ]
-    },
-    {
       "endpoint": "/data/wikidata/entity/claims",
       "method": "GET",
       "output_encoding": "json",

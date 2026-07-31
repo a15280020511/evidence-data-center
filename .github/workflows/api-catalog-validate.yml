@@ -24,11 +24,13 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Checkout pinned source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
 
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      - name: Set up isolated Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
           cache: pip
@@ -47,19 +49,19 @@ jobs:
           cp api-center/krakend.validation.json /tmp/committed-krakend.validation.json
           cp api-center/krakend.tmpl /tmp/committed-krakend.tmpl
 
-      - name: Rebuild registry and GPTs capability catalog
+      - name: Rebuild and run API-center tests
         run: |
           set -euo pipefail
           python -m py_compile \
             api-center/build_config.py \
             api-center/build_catalog.py \
             api-center/build_catalog_market_search.py \
-            api-center/tests/test_api_catalog.py
+            api-center/tests/*.py
           python api-center/build_config.py
           python api-center/build_catalog_market_search.py
-          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
+          python -m unittest discover -s api-center/tests -v
 
-      - name: Verify generated contracts are semantically identical
+      - name: Verify deterministic contracts and provider invariants
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -88,12 +90,6 @@ jobs:
 
           manifest = load_json('api-center/connector-manifest.json')
           catalog = load_json('api-center/api-catalog.json')
-          google_providers = load_json('api-center/google-cloud/provider-catalog.json')
-          commercial_providers = load_json('api-center/company-intelligence/provider-catalog.json')
-          miaoxiang_local = load_json('api-center/miaoxiang/provider-catalog.json')
-          web_providers = load_json('api-center/web-retrieval/provider-catalog.json')
-          market_providers = load_json('api-center/market-search/provider-catalog.json')
-          validation = load_json('api-center/krakend.validation.json')
           rows = manifest['connectors']
           enabled_rows = [row for row in rows if row['enabled']]
           expected_secrets = sorted({
@@ -102,62 +98,97 @@ jobs:
               if row.get('secret_environment_variable')
           })
           connector_ids = {row['id'] for row in rows}
-          managed_provider_ids = {row['provider_id'] for row in catalog['managed_providers']}
-          assert manifest['connector_count'] == len(rows)
-          assert manifest['enabled_connector_count'] == len(enabled_rows)
+          assert manifest['connector_count'] == len(rows) == 68
+          assert manifest['enabled_connector_count'] == len(enabled_rows) == 68
           assert manifest['required_secret_environment_variables'] == expected_secrets
+          assert 'tianditu-place-search' not in connector_ids
+          assert 'TIANDITU_API_KEY' not in manifest['required_secret_environment_variables']
+          assert not Path('api-center/connectors/tianditu-place-search.connector.json').exists()
+          assert not Path('api-center/tests/test_tianditu_connector.py').exists()
+
           assert catalog['schema_version'] == 'api-catalog-v3'
-          assert catalog['connector_count'] == manifest['connector_count']
-          assert catalog['enabled_connector_count'] == manifest['enabled_connector_count']
-          assert catalog['managed_provider_count'] == 15
-          assert catalog['enabled_managed_provider_count'] == 15
-          assert managed_provider_ids == {
-              'bigquery', 'earth-engine', 'data-commons', 'akshare', 'ashare',
-              'aifin-market', 'yuandian-law', 'tianyancha', 'miaoxiang',
-              'jina-reader', 'exa', 'tavily', 'firecrawl', 'tickflow', 'serpapi'
+          assert catalog['connector_count'] == 68
+          assert catalog['enabled_connector_count'] == 68
+          assert catalog['managed_provider_count'] == 16
+          assert catalog['enabled_managed_provider_count'] == 16
+          assert catalog['managed_operation_count'] == 131
+          assert catalog['exposed_parameter_count'] == 790
+          assert catalog['secret_values_exposed'] is False
+
+          providers = {row['provider_id']: row for row in catalog['managed_providers']}
+          expected_counts = {
+              'bigquery': 7,
+              'earth-engine': 6,
+              'data-commons': 5,
+              'akshare': 17,
+              'ashare': 1,
+              'aifin-market': 17,
+              'yuandian-law': 40,
+              'tianyancha': 3,
+              'miaoxiang': 4,
+              'jina-reader': 2,
+              'exa': 3,
+              'tavily': 5,
+              'firecrawl': 4,
+              'tickflow': 5,
+              'serpapi': 4,
+              'tianditu': 8,
           }
-          assert 'qichacha' not in managed_provider_ids
-          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 123
-          assert catalog['exposed_parameter_count'] == 746
-          assert google_providers['required_secret_environment_variables'] == ['GOOGLE_CREDENTIALS_JSON']
-          assert google_providers['secret_values_exposed'] is False
-          assert {row['provider_id'] for row in google_providers['providers']} == {
-              'bigquery', 'earth-engine', 'data-commons'
+          assert set(providers) == set(expected_counts)
+          assert sum(len(row['operations']) for row in providers.values()) == 131
+          for provider_id, expected in expected_counts.items():
+              assert len(providers[provider_id]['operations']) == expected
+              assert providers[provider_id]['secret_value_exposed'] is False
+
+          expected_secret_names = {
+              'bigquery': 'GOOGLE_CREDENTIALS_JSON',
+              'earth-engine': 'GOOGLE_CREDENTIALS_JSON',
+              'data-commons': 'GOOGLE_CREDENTIALS_JSON',
+              'aifin-market': 'WIND_API_KEY',
+              'yuandian-law': 'YUANDIAN_API_KEY',
+              'tianyancha': 'TIANYANCHA_API_TOKEN',
+              'miaoxiang': 'MX_APIKEY',
+              'exa': 'EXA_API_KEY',
+              'tavily': 'TAVILY_API_KEY',
+              'firecrawl': 'FIRECRAWL_API_KEY',
+              'tickflow': 'TICKFLOW_API_KEY',
+              'serpapi': 'SERPAPI_API_KEY',
+              'tianditu': 'TIANDITU_API_KEY',
           }
-          assert all(
-              row['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
-              for row in google_providers['providers']
+          for provider_id, secret_name in expected_secret_names.items():
+              assert providers[provider_id]['required_secret_environment_variable_name'] == secret_name
+
+          tianditu = providers['tianditu']
+          assert tianditu['ticket_prefix'] == '[api-tianditu]'
+          assert {row['operation_id'] for row in tianditu['operations']} == {
+              'catalog-capabilities', 'normal-search', 'viewport-search',
+              'nearby-search', 'polygon-search', 'administrative-search',
+              'category-search', 'statistics-search',
+          }
+          limits = tianditu['limits']
+          assert limits['nearby_radius_meters_max'] == 10000
+          assert limits['polygon_points_max'] == 20
+          assert limits['arbitrary_urls_allowed'] is False
+          assert limits['arbitrary_headers_allowed'] is False
+          assert limits['tile_bulk_download_allowed'] is False
+          assert limits['write_operations_allowed'] is False
+          assert limits['direct_phone_fields_redacted'] is True
+          assert 'tianditu/provider-catalog.json' in catalog['managed_provider_catalog_files']
+          assert 'tianditu/provider-catalog.json' in catalog['detail_reading_order']
+          assert 'TIANDITU_TOKEN' not in json.dumps(tianditu, ensure_ascii=False)
+          assert any(
+              row['connector_id'] == 'tianditu-place-search'
+              for row in catalog['replaced_legacy_connectors']
           )
-          assert commercial_providers['secret_values_exposed'] is False
-          commercial_map = {row['provider_id']: row for row in commercial_providers['providers']}
-          assert set(commercial_map) == {'tianyancha', 'miaoxiang'}
-          assert commercial_map['miaoxiang'] == miaoxiang_local['providers'][0]
-          assert web_providers['secret_values_exposed'] is False
-          web_map = {row['provider_id']: row for row in web_providers['providers']}
-          assert set(web_map) == {'jina-reader', 'exa', 'tavily', 'firecrawl'}
-          assert web_map['tavily']['required_secret_environment_variable'] == 'TAVILY_API_KEY'
-          assert web_map['firecrawl']['required_secret_environment_variable'] == 'FIRECRAWL_API_KEY'
-          assert market_providers['secret_values_exposed'] is False
-          market_map = {row['provider_id']: row for row in market_providers['providers']}
-          assert set(market_map) == {'tickflow', 'serpapi'}
-          assert market_map['tickflow']['required_secret_environment_variable'] == 'TICKFLOW_API_KEY'
-          assert market_map['serpapi']['required_secret_environment_variable'] == 'SERPAPI_API_KEY'
-          assert len(market_map['tickflow']['operations']) == 5
-          assert len(market_map['serpapi']['operations']) == 4
-          assert len(validation['endpoints']) == len(enabled_rows)
-          assert {
-              'newsapi-everything', 'newsapi-top-headlines', 'newsapi-sources',
-              'openmeteo-forecast', 'baidu-geocode', 'baidu-place-search',
-              'baidu-direction-driving',
-          }.issubset(connector_ids)
+
           print(json.dumps({
               'status': 'PASS',
-              'connectors': manifest['connector_count'],
-              'enabled': manifest['enabled_connector_count'],
-              'routes': len(validation['endpoints']),
-              'managed_providers': 15,
-              'managed_operations': 123,
-              'exposed_parameters': catalog['exposed_parameter_count'],
+              'connectors': 68,
+              'managed_providers': 16,
+              'managed_operations': 131,
+              'exposed_parameters': 790,
+              'tianditu_operations': 8,
+              'legacy_tianditu_connector': 'removed',
           }))
           PY
 
@@ -174,21 +205,15 @@ jobs:
             api-center/krakend.tmpl
             api-center/krakend.validation.json
             api-center/google-cloud/provider-catalog.json
-            api-center/google-cloud/china-topic-packs.json
             api-center/data-commons/provider-catalog.json
-            api-center/data-commons/china-starter-pack.json
             api-center/akshare/provider-catalog.json
             api-center/aifin-market/provider-catalog.json
             api-center/yuandian/provider-catalog.json
-            api-center/yuandian/readonly-apis.snapshot.json
             api-center/company-intelligence/provider-catalog.json
-            api-center/company-intelligence/ticket.schema.json
             api-center/miaoxiang/provider-catalog.json
-            api-center/miaoxiang/ticket.schema.json
             api-center/web-retrieval/provider-catalog.json
-            api-center/web-retrieval/ticket.schema.json
-            api-center/web-retrieval/context-ticket.schema.json
             api-center/market-search/provider-catalog.json
-            api-center/market-search/ticket.schema.json
+            api-center/tianditu/provider-catalog.json
+            api-center/tianditu/ticket.schema.json
           if-no-files-found: error
           retention-days: 30

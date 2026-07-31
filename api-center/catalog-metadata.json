@@ -495,33 +495,6 @@
         "道路时间、室内动线、楼层分布、租金和经营状态不在本接口范围内"
       ]
     },
-    "tianditu-place-search": {
-      "display_name": "天地图地名与POI搜索",
-      "description": "调用天地图地名搜索V2.0固定接口，使用受控postStr查询公开地名、POI、行政区或统计结果。",
-      "data_category": "china-place-search",
-      "use_cases": [
-        "中国地点与POI核验",
-        "行政区和公共设施搜索",
-        "空间分析锚点补充"
-      ],
-      "geographic_coverage": "中国；具体覆盖和更新频率以天地图服务为准",
-      "freshness": "请求时读取天地图当前公开数据",
-      "cost_class": "provider-key-quota",
-      "parameter_notes": {
-        "postStr": "必填；字符串化JSON。建议普通搜索固定包含keyWord、level、mapBound、queryType、start、count",
-        "type": "必填；固定填写query；tk由服务端Secret注入，不得由客户端提交"
-      },
-      "example_parameters": {
-        "postStr": "{\"keyWord\":\"福州宝龙城市广场\",\"level\":12,\"mapBound\":\"119.20,25.95,119.45,26.20\",\"queryType\":1,\"start\":0,\"count\":10}",
-        "type": "query"
-      },
-      "limitations": [
-        "需要在天地图开发者控制台申请Key，并配置独立 Repository Secret TIANDITU_API_KEY",
-        "postStr必须符合天地图官方地名搜索V2.0参数规则；本连接器不接受任意URL",
-        "POI结果和坐标必须与高德、OpenStreetMap或现场信息交叉核验",
-        "配额、许可、坐标体系和使用限制以天地图账户及官方条款为准"
-      ]
-    },
     "openmeteo-forecast": {
       "display_name": "Open‑Meteo 全球天气预报",
       "description": "按经纬度读取当前天气、小时预报或逐日预报，适合全球天气情景与出行风险修正。",

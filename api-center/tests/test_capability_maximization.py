@@ -11,8 +11,8 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_maximum_safe_readonly_surface_is_registered(self) -> None:
         manifest = json.loads((ROOT / "connector-manifest.json").read_text(encoding="utf-8"))
         rows = manifest["connectors"]
-        self.assertEqual(manifest["connector_count"], 69)
-        self.assertEqual(manifest["enabled_connector_count"], 69)
+        self.assertEqual(manifest["connector_count"], 68)
+        self.assertEqual(manifest["enabled_connector_count"], 68)
         counts = {
             prefix: sum(row["id"].startswith(prefix) for row in rows)
             for prefix in (
@@ -31,7 +31,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_managed_providers_expose_fixed_readonly_operations_only(self) -> None:
         catalog = json.loads((ROOT / "api-catalog.json").read_text(encoding="utf-8"))
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 123)
+        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 131)
         self.assertNotIn("qichacha", providers)
         self.assertEqual(len(providers["miaoxiang"]["operations"]), 4)
         self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
@@ -45,6 +45,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertEqual(len(providers["firecrawl"]["operations"]), 4)
         self.assertEqual(len(providers["tickflow"]["operations"]), 5)
         self.assertEqual(len(providers["serpapi"]["operations"]), 4)
+        self.assertEqual(len(providers["tianditu"]["operations"]), 8)
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertFalse(any(row["secret_value_exposed"] for row in providers.values()))
 
@@ -106,6 +107,14 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(serpapi_limits["async_allowed"])
         self.assertFalse(serpapi_limits["html_output_allowed"])
         self.assertFalse(serpapi_limits["arbitrary_engine_allowed"])
+
+        tianditu = json.loads((ROOT / "tianditu/provider-catalog.json").read_text(encoding="utf-8"))
+        tianditu_limits = tianditu["providers"][0]["limits"]
+        self.assertFalse(tianditu_limits["arbitrary_urls_allowed"])
+        self.assertFalse(tianditu_limits["arbitrary_headers_allowed"])
+        self.assertFalse(tianditu_limits["tile_bulk_download_allowed"])
+        self.assertFalse(tianditu_limits["write_operations_allowed"])
+        self.assertTrue(tianditu_limits["direct_phone_fields_redacted"])
 
 
 if __name__ == "__main__":
