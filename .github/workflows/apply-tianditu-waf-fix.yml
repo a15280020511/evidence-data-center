@@ -39,6 +39,7 @@ jobs:
       - name: Apply deterministic repair
         run: |
           python tools/apply_tianditu_waf_fix.py
+          git checkout -- .github/workflows/tianditu-api-ticket.yml
           python - <<'PY'
           import re
           from pathlib import Path
@@ -69,8 +70,7 @@ jobs:
             api-center/tianditu/tests/test_tianditu_task.py \
             api-center/tianditu/provider-catalog.json \
             api-center/api-catalog.json \
-            api-center/api-catalog.md \
-            .github/workflows/tianditu-api-ticket.yml
+            api-center/api-catalog.md
           if git diff --cached --quiet; then
             echo 'No repair changes generated'
             exit 1
