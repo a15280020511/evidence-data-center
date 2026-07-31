@@ -1,0 +1,134 @@
+name: Temporary Build Company Intelligence Integration
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  integrate:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[maintenance-build-company-intelligence]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      BRANCH_NAME: feat/company-intelligence-providers
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Integrate providers into global catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          build = Path('api-center/build_catalog.py')
+          text = build.read_text(encoding='utf-8')
+          old = '    HERE / "yuandian/provider-catalog.json",\n)'
+          new = '    HERE / "yuandian/provider-catalog.json",\n    HERE / "company-intelligence/provider-catalog.json",\n)'
+          if old not in text and 'company-intelligence/provider-catalog.json' not in text:
+              raise SystemExit('build_catalog.py integration anchor not found')
+          if 'company-intelligence/provider-catalog.json' not in text:
+              text = text.replace(old, new, 1)
+          build.write_text(text, encoding='utf-8')
+
+          test = Path('api-center/tests/test_api_catalog.py')
+          text = test.read_text(encoding='utf-8')
+          text = text.replace('self.assertEqual(catalog["managed_provider_count"], 7)', 'self.assertEqual(catalog["managed_provider_count"], 9)')
+          text = text.replace('self.assertEqual(catalog["enabled_managed_provider_count"], 7)', 'self.assertEqual(catalog["enabled_managed_provider_count"], 9)')
+          old_set = '{"bigquery", "earth-engine", "data-commons", "akshare", "ashare", "aifin-market", "yuandian-law"}'
+          new_set = '{"bigquery", "earth-engine", "data-commons", "akshare", "ashare", "aifin-market", "yuandian-law", "qichacha", "tianyancha"}'
+          if old_set in text:
+              text = text.replace(old_set, new_set, 1)
+          anchor = '        self.assertEqual(len(providers["yuandian-law"]["operations"]), 40)\n'
+          addition = (
+              anchor
+              + '        self.assertEqual(len(providers["qichacha"]["operations"]), 3)\n'
+              + '        self.assertEqual(len(providers["tianyancha"]["operations"]), 3)\n'
+              + '        self.assertEqual(\n'
+              + '            providers["qichacha"]["required_secret_environment_variable_name"],\n'
+              + '            "QICHACHA_CREDENTIALS_JSON",\n'
+              + '        )\n'
+              + '        self.assertEqual(\n'
+              + '            providers["tianyancha"]["required_secret_environment_variable_name"],\n'
+              + '            "TIANYANCHA_API_TOKEN",\n'
+              + '        )\n'
+          )
+          if 'len(providers["qichacha"]["operations"])' not in text:
+              if anchor not in text:
+                  raise SystemExit('test_api_catalog.py operation anchor not found')
+              text = text.replace(anchor, addition, 1)
+          test.write_text(text, encoding='utf-8')
+
+          temporary = Path('.github/workflows/temporary-yuandian-anonymous-probe.yml')
+          if temporary.exists():
+              temporary.unlink()
+          PY
+
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/company-intelligence/requirements.txt
+          python -m pip check
+
+      - name: Generate global catalog and validate source
+        run: |
+          set -euo pipefail
+          python api-center/build_catalog.py
+          python -m compileall -q api-center
+          python -m unittest discover -s api-center/company-intelligence/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
+          git diff --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          providers = {row['provider_id']: row for row in catalog['managed_providers']}
+          assert catalog['managed_provider_count'] == 9
+          assert catalog['enabled_managed_provider_count'] == 9
+          assert catalog['managed_operation_count'] == 99
+          assert {'qichacha', 'tianyancha'}.issubset(providers)
+          assert providers['qichacha']['required_secret_environment_variable_name'] == 'QICHACHA_CREDENTIALS_JSON'
+          assert providers['tianyancha']['required_secret_environment_variable_name'] == 'TIANYANCHA_API_TOKEN'
+          assert catalog['secret_values_exposed'] is False
+          print(json.dumps({'providers': 9, 'operations': 99, 'status': 'PASS'}))
+          PY
+
+      - name: Commit integrated source and generated catalog
+        id: commit
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center .github/workflows
+          if git diff --cached --quiet; then
+            echo "No integration changes to commit"
+          else
+            git commit -m "feat: integrate Qichacha and Tianyancha providers"
+            git push origin "HEAD:${BRANCH_NAME}"
+          fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish completion receipt
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -f body="STATUS=completed\nBRANCH=${BRANCH_NAME}\nSHA=${{ steps.commit.outputs.sha }}\nMANAGED_PROVIDERS=9\nMANAGED_OPERATIONS=99\nQICHACHA_SECRET=QICHACHA_CREDENTIALS_JSON\nTIANYANCHA_SECRET=TIANYANCHA_API_TOKEN\nSECRET_VALUES_READ=false"
+
+      - name: Publish structured failure
+        if: failure()
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -f body="STATUS=failed\nRUN_ID=${GITHUB_RUN_ID}\nThe integration branch was not declared production-ready."
