@@ -77,6 +77,11 @@ LLAMA_CLOUD_API_KEY
 
 部分上游以固定 POST 协议实现只读取数或只读源转换。该协议不等于开放写操作：请求体必须由白名单参数构造，不能指定任意 URL、Webhook、回调、存储目标或用户自定义请求头。
 
+
+## BaoStock 中国证券免费数据
+
+`api-center/baostock/` 通过官方 `baostock==0.9.3` Python 客户端提供免密、只读的中国证券数据。正式票据前缀为 `[api-baostock]`，无需 Repository Secret。固定开放 20 项能力，覆盖交易日历、全部证券、证券基础、历史 K 线、复权因子、行业、三类主要指数成分、六类财务能力指标、业绩快报/预告、存款利率和 Shibor。每张票据只允许一次登录、一次白名单查询和一次登出，禁止任意函数、任意主机、代码执行、交易、下单和写入。
+
 ## Tushare Pro 中国金融数据
 
 `api-center/tushare/` 使用官方 HTTPS JSON API：

@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`17/17` 已启用
-- 托管操作总数：`145`
-- 已公开参数总数：`891`
-- 目录 SHA-256：`ff00f878cdedacbcca41ceed8ed2b997a7da05e2e08e93addca56535ce7c59ea`
+- 托管提供方：`18/18` 已启用
+- 托管操作总数：`165`
+- 已公开参数总数：`938`
+- 目录 SHA-256：`71d6f1e9596534e8b89c376299288b44d7a65a690be32dc5e56b0e40f7c79566`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -32,6 +32,7 @@
 | TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
 | Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
+| BaoStock 中国证券免费数据 | `baostock` | 启用 | `[api-baostock]` | `20` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -5991,6 +5992,578 @@
   "arbitrary_headers_allowed": false,
   "write_operations_allowed": false,
   "trading_or_order_execution_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## BaoStock 中国证券免费数据 (`baostock`)
+
+- 状态：`启用`
+- 说明：通过官方 baostock Python 客户端读取中国证券历史行情、交易日历、证券基础、指数成分、财务能力指标、业绩报告和宏观利率数据。无需 API Key。
+- 目录策略：仅开放显式登记的 BaoStock 查询函数；禁止任意函数、任意网络地址、交易、下单、账户操作、写入和自定义代码。
+- 执行策略：每张票据只允许一次登录、一次白名单查询和一次登出；设置进程级 socket 超时、最大行数与序列化响应体积，结果生成 Snapshot、Diagnostics 和 Artifact。
+- 票据前缀：`[api-baostock]`
+- Secret环境变量名：`无`（仅名称）
+- 提供方SHA-256：`aa43174e5bc0ba90d4c630d6933f46f0d19269faee5225750d8330417ad2de83`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 BaoStock 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `trade-dates` | 读取指定日期范围内的交易日历。 | `start_date, end_date` |
+
+`trade-dates` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+| `all-stocks` | 读取指定交易日全部证券代码和交易状态。 | `day` |
+
+`all-stocks` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "day": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "day"
+  ]
+}
+```
+
+| `stock-basic` | 按证券代码或名称读取证券基础资料。 | `code, code_name` |
+
+`stock-basic` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "code_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "max_rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    }
+  }
+}
+```
+
+| `history-k` | 读取沪深京证券日/周/月或 5/15/30/60 分钟历史 K 线及估值字段。 | `code, fields, start_date, end_date, frequency, adjustflag` |
+
+`history-k` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]+$",
+      "maxLength": 1000
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "d",
+        "w",
+        "m",
+        "5",
+        "15",
+        "30",
+        "60"
+      ]
+    },
+    "adjustflag": {
+      "type": "string",
+      "enum": [
+        "1",
+        "2",
+        "3"
+      ]
+    }
+  },
+  "required": [
+    "code",
+    "fields",
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+| `adjust-factor` | 读取证券除权除息与复权因子。 | `code, start_date, end_date` |
+
+`adjust-factor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "code",
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+| `stock-industry` | 读取证券行业分类。 | `code, date` |
+
+`stock-industry` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `sz50-constituents` | 读取上证 50 成分股。 | `date` |
+
+`sz50-constituents` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `hs300-constituents` | 读取沪深 300 成分股。 | `date` |
+
+`hs300-constituents` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `zz500-constituents` | 读取中证 500 成分股。 | `date` |
+
+`zz500-constituents` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `profit-data` | 读取季度盈利能力数据。 | `code, year, quarter` |
+
+`profit-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2100
+    },
+    "quarter": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    }
+  },
+  "required": [
+    "code",
+    "year",
+    "quarter"
+  ]
+}
+```
+
+| `operation-data` | 读取季度营运能力数据。 | `code, year, quarter` |
+
+`operation-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2100
+    },
+    "quarter": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    }
+  },
+  "required": [
+    "code",
+    "year",
+    "quarter"
+  ]
+}
+```
+
+| `growth-data` | 读取季度成长能力数据。 | `code, year, quarter` |
+
+`growth-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2100
+    },
+    "quarter": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    }
+  },
+  "required": [
+    "code",
+    "year",
+    "quarter"
+  ]
+}
+```
+
+| `balance-data` | 读取季度偿债能力数据。 | `code, year, quarter` |
+
+`balance-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2100
+    },
+    "quarter": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    }
+  },
+  "required": [
+    "code",
+    "year",
+    "quarter"
+  ]
+}
+```
+
+| `cash-flow-data` | 读取季度现金流量数据。 | `code, year, quarter` |
+
+`cash-flow-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2100
+    },
+    "quarter": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    }
+  },
+  "required": [
+    "code",
+    "year",
+    "quarter"
+  ]
+}
+```
+
+| `dupont-data` | 读取季度杜邦分析数据。 | `code, year, quarter` |
+
+`dupont-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1990,
+      "maximum": 2100
+    },
+    "quarter": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    }
+  },
+  "required": [
+    "code",
+    "year",
+    "quarter"
+  ]
+}
+```
+
+| `performance-express` | 读取业绩快报。 | `code, start_date, end_date` |
+
+`performance-express` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+| `forecast-report` | 读取业绩预告。 | `code, start_date, end_date` |
+
+`forecast-report` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^(sh|sz|bj)\\.[0-9]{6}$"
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+| `deposit-rate` | 读取中国存款基准利率。 | `start_date, end_date` |
+
+`deposit-rate` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+| `shibor` | 读取上海银行间同业拆放利率。 | `start_date, end_date` |
+
+`shibor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "queries_per_ticket_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 5000000,
+  "max_rows": 10000,
+  "arbitrary_functions_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_code_allowed": false,
+  "write_operations_allowed": false,
+  "trading_or_order_execution_allowed": false,
+  "credentials_required": false,
   "secret_values_exposed": false
 }
 ```
