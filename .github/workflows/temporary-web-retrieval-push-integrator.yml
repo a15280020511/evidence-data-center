@@ -61,8 +61,8 @@ jobs:
                       raise SystemExit('unsafe archive path')
               archive.extractall('.')
           PY
-          python integrate.py
-          rm -f integrate.py
+          python integration_v2.py
+          rm -f integration_v2.py integrate.py
           rm -rf .integration
           rm -f .github/workflows/temporary-web-retrieval-push-integrator.yml
 
