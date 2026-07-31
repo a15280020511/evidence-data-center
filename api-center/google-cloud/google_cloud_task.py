@@ -472,8 +472,44 @@ def _bigquery_query(params: Mapping[str, Any], token: str, billing_project: str,
         },
         timeout=max(timeout, (timeout_ms // 1000) + 5),
     )
+    poll_count = 0
     if not result.get("jobComplete", False):
-        raise RuntimeError("BigQuery job did not complete within the allowed synchronous timeout")
+        job_reference = result.get("jobReference")
+        if not isinstance(job_reference, Mapping):
+            raise RuntimeError("BigQuery returned an incomplete job without jobReference")
+        job_project = str(job_reference.get("projectId") or billing_project)
+        job_id = str(job_reference.get("jobId") or "")
+        job_location = str(job_reference.get("location") or location)
+        if not PROJECT_ID_RE.fullmatch(job_project) or not job_id:
+            raise RuntimeError("BigQuery returned an invalid jobReference")
+        poll_url = (
+            "https://bigquery.googleapis.com/bigquery/v2/projects/"
+            f"{quote(job_project)}/queries/{quote(job_id)}"
+        )
+        deadline = time.monotonic() + max(
+            1.0,
+            min(float(timeout), timeout_ms / 1000.0 + 5.0),
+        )
+        while not result.get("jobComplete", False):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise RuntimeError("BigQuery job did not complete before the polling deadline")
+            poll_timeout_ms = max(1000, min(10_000, int(remaining * 1000)))
+            result, poll_meta = _http_json(
+                "GET",
+                poll_url,
+                token=token,
+                params={
+                    "location": job_location,
+                    "maxResults": max_rows,
+                    "timeoutMs": poll_timeout_ms,
+                },
+                timeout=max(5, min(timeout, (poll_timeout_ms // 1000) + 5)),
+            )
+            exec_meta = poll_meta
+            poll_count += 1
+            if not result.get("jobComplete", False):
+                time.sleep(min(1.0, max(0.05, remaining / 10.0)))
     return {
         "schema": result.get("schema") or {},
         "rows": _decode_bq_rows(result),
@@ -485,7 +521,11 @@ def _bigquery_query(params: Mapping[str, Any], token: str, billing_project: str,
         "cache_hit": bool(result.get("cacheHit")),
         "referenced_projects": sorted(referenced_projects),
         "location": location,
-    }, {**exec_meta, "dry_run_http_status": dry_meta["http_status"]}
+    }, {
+        **exec_meta,
+        "dry_run_http_status": dry_meta["http_status"],
+        "poll_count": poll_count,
+    }
 
 
 def _public_json(url: str, *, params: Mapping[str, Any] | None, timeout: int) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -644,7 +684,7 @@ def _earth_engine(operation: str, params: Mapping[str, Any], token: str | None, 
         path = _validate_stac_path(params.get("object_path"))
         return _public_json(EE_STAC_MEDIA_PREFIX + quote(path, safe="/"), params=None, timeout=timeout)
     if not token or not billing_project:
-        raise RuntimeError(f"missing repository Secret {SERVICE_ACCOUNT_ENV}")
+        raise RuntimeError(f"missing repository Secret {EARTH_ENGINE_SERVICE_ACCOUNT_ENV}")
     if operation == "catalog-algorithms":
         return _earth_engine_algorithms(params, token, billing_project, timeout)
     if operation == "compute-value-readonly":
