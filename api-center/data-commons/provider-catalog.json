@@ -4,7 +4,7 @@
   "display_name": "Google Data Commons",
   "enabled": true,
   "ticket_prefix": "[api-dc]",
-  "required_secret_environment_variable": "GOOGLE_CREDENTIALS_JSON",
+  "required_secret_environment_variable": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
   "credential_bundle_field": "data_commons_api_key",
   "secret_values_exposed": false,
   "public_non_personal_data_only": true,

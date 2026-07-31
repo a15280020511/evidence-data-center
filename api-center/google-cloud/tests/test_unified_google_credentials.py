@@ -49,8 +49,17 @@ class UnifiedGoogleCredentialsTests(unittest.TestCase):
         self.assertEqual(service_account["project_id"], "valid-project-123")
         self.assertEqual(api_key, "test-placeholder-key")
 
+    def test_parse_compact_single_secret_object(self) -> None:
+        value = json.loads(self.bundle())
+        compact = dict(value["service_account"])
+        compact["data_commons_api_key"] = value["data_commons_api_key"]
+        service_account, api_key = module.parse_bundle(json.dumps(compact))
+        self.assertEqual(service_account["project_id"], "valid-project-123")
+        self.assertNotIn("data_commons_api_key", service_account)
+        self.assertEqual(api_key, "test-placeholder-key")
+
     def test_missing_bundle_is_rejected(self) -> None:
-        with self.assertRaisesRegex(RuntimeError, "GOOGLE_CREDENTIALS_JSON"):
+        with self.assertRaisesRegex(RuntimeError, "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"):
             module.parse_bundle("")
 
     def test_missing_data_commons_key_is_rejected(self) -> None:
@@ -67,7 +76,7 @@ class UnifiedGoogleCredentialsTests(unittest.TestCase):
             self.assertIn("BIGQUERY_SERVICE_ACCOUNT_JSON<<", text)
             self.assertIn("EARTH_ENGINE_SERVICE_ACCOUNT_JSON<<", text)
             self.assertIn("GOOGLE_DATA_COMMONS_API_KEY<<", text)
-            self.assertNotIn("GOOGLE_CREDENTIALS_JSON=", text)
+            self.assertNotIn("GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON=", text)
 
     def test_gcp_missing_bundle_generates_structured_artifact(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -93,10 +102,10 @@ class UnifiedGoogleCredentialsTests(unittest.TestCase):
                 snapshot["failure"]["code"],
                 "GOOGLE_CREDENTIALS_BUNDLE_INVALID",
             )
-            self.assertIn("GOOGLE_CREDENTIALS_JSON", snapshot["failure"]["message"])
+            self.assertIn("GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON", snapshot["failure"]["message"])
             self.assertEqual(
                 diagnostics["credential_secret_name"],
-                "GOOGLE_CREDENTIALS_JSON",
+                "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
             )
             self.assertFalse(diagnostics["credential_secret_value_exposed"])
 

@@ -77,9 +77,9 @@ class ApiCatalogTests(unittest.TestCase):
             self.assertFalse(providers[provider_id]["secret_value_exposed"])
 
         expected_secret_names = {
-            "bigquery": "GOOGLE_CREDENTIALS_JSON",
-            "earth-engine": "GOOGLE_CREDENTIALS_JSON",
-            "data-commons": "GOOGLE_CREDENTIALS_JSON",
+            "bigquery": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
+            "earth-engine": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
+            "data-commons": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
             "aifin-market": "WIND_API_KEY",
             "yuandian-law": "YUANDIAN_API_KEY",
             "tianyancha": "TIANYANCHA_API_TOKEN",

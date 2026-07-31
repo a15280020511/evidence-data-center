@@ -5,7 +5,7 @@
 - 托管提供方：`18/18` 已启用
 - 托管操作总数：`150`
 - 已公开参数总数：`902`
-- 目录 SHA-256：`a897bcf2ec0e083d3fbf057d53e3185951e9d84b9c99ca339c8b29839ec49c1f`
+- 目录 SHA-256：`0f2685730f6685e2716394ed0aac91ded25ecf53576fa95946649d5c598b00e9`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -124,8 +124,8 @@
 - 目录策略：GPTs可读取全部获准项目的目录元数据；默认公共项目为bigquery-public-data、gdelt-bq和patents-public-data。
 - 执行策略：只允许单条SELECT或WITH查询；禁止DDL、DML、脚本、导出、外部查询、远程函数和私有项目访问。
 - 票据前缀：`[api-gcp]`
-- Secret环境变量名：`GOOGLE_CREDENTIALS_JSON`（仅名称）
-- 提供方SHA-256：`b1a8c325645e8a09b0095278267b2570cf374ebeac671c7b61e76fb3539f7333`
+- Secret环境变量名：`GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`（仅名称）
+- 提供方SHA-256：`92ce9c51980065a31186c2bc2273959f6e43c6441df5f29dea8affef1b6659c3`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -430,8 +430,8 @@
 - 目录策略：GPTs可搜索和读取官方Earth Engine STAC目录，并按名称或说明筛选全部可用算法；优先使用china-topic-packs.json中的已核验全球数据集。
 - 执行策略：只允许返回JSON值的只读计算；禁止导出、写资产、删除、复制、重命名、上传、外部URL和视频或缩略图任务。
 - 票据前缀：`[api-gcp]`
-- Secret环境变量名：`GOOGLE_CREDENTIALS_JSON`（仅名称）
-- 提供方SHA-256：`e82d1548e47c49c9c94e36d7d5a820bad8170c8205aaf3e15c0c27e221c04ab4`
+- Secret环境变量名：`GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`（仅名称）
+- 提供方SHA-256：`90546500a5762ec00c17ea64e49cf60bada2bfe850551587abd8f0e161c73938`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -602,8 +602,8 @@
 - 目录策略：GPTs先读取data-commons/provider-catalog.json和china-starter-pack.json，再解析地点或统计指标DCID；中国细粒度覆盖取决于原始来源，不得假设所有城市或县均有数据。
 - 执行策略：仅允许固定的resolve、node和observation端点；只提交公开实体、指标和关系表达式；禁止SPARQL、自然语言接口、任意URL和个人数据。
 - 票据前缀：`[api-dc]`
-- Secret环境变量名：`GOOGLE_CREDENTIALS_JSON`（仅名称）
-- 提供方SHA-256：`3b2841e6d5d97452f8c2989bbe9c1cf97ca10baa7b42c2099780ddfd56e3a6c5`
+- Secret环境变量名：`GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`（仅名称）
+- 提供方SHA-256：`6e09d3b4679ee8d5d30441a1fbafd278123dd630fca31a8e146aafc05dc8a3c7`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|

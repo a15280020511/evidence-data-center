@@ -4,7 +4,7 @@
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "ticket_prefix": "[api-gcp]",
-  "required_secret_environment_variable": "GOOGLE_CREDENTIALS_JSON",
+  "required_secret_environment_variable": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
   "credential_bundle_contract": {
     "type": "object",
     "required": [
@@ -87,7 +87,7 @@
         "hard_max_rows": 5000,
         "query_timeout_ms": 30000
       },
-      "required_secret_environment_variable": "GOOGLE_CREDENTIALS_JSON"
+      "required_secret_environment_variable": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
     },
     {
       "provider_id": "earth-engine",
@@ -135,14 +135,14 @@
         "max_algorithm_results": 200,
         "max_dataset_results": 100
       },
-      "required_secret_environment_variable": "GOOGLE_CREDENTIALS_JSON"
+      "required_secret_environment_variable": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
     },
     {
       "provider_id": "data-commons",
       "display_name": "Google Data Commons",
       "enabled": true,
       "ticket_prefix": "[api-dc]",
-      "required_secret_environment_variable": "GOOGLE_CREDENTIALS_JSON",
+      "required_secret_environment_variable": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
       "description": "通过Data Commons REST V2只读查询全球公共统计知识图谱，重点支持中国国家、省级、城市及可用更细行政层级的人口、经济、就业、教育、医疗和环境指标。",
       "catalog_policy": "GPTs先读取data-commons/provider-catalog.json和china-starter-pack.json，再解析地点或统计指标DCID；中国细粒度覆盖取决于原始来源，不得假设所有城市或县均有数据。",
       "execution_policy": "仅允许固定的resolve、node和observation端点；只提交公开实体、指标和关系表达式；禁止SPARQL、自然语言接口、任意URL和个人数据。",
@@ -198,6 +198,6 @@
     }
   ],
   "required_secret_environment_variables": [
-    "GOOGLE_CREDENTIALS_JSON"
+    "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
   ]
 }

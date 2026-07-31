@@ -41,15 +41,15 @@ class GoogleCloudTaskTests(unittest.TestCase):
         self.assertEqual(set(providers), {"bigquery", "earth-engine", "data-commons"})
         self.assertEqual(
             set(catalog["required_secret_environment_variables"]),
-            {"GOOGLE_CREDENTIALS_JSON"},
+            {"GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"},
         )
         self.assertEqual(
             providers["bigquery"]["required_secret_environment_variable"],
-            "GOOGLE_CREDENTIALS_JSON",
+            "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
         )
         self.assertEqual(
             providers["earth-engine"]["required_secret_environment_variable"],
-            "GOOGLE_CREDENTIALS_JSON",
+            "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
         )
         self.assertEqual(
             {row["operation_id"] for row in providers["bigquery"]["operations"]},
@@ -87,7 +87,7 @@ class GoogleCloudTaskTests(unittest.TestCase):
         self.assertEqual(providers["data-commons"]["ticket_prefix"], "[api-dc]")
         self.assertEqual(
             providers["data-commons"]["required_secret_environment_variable"],
-            "GOOGLE_CREDENTIALS_JSON",
+            "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
         )
         self.assertFalse(catalog["secret_values_exposed"])
 

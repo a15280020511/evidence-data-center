@@ -41,7 +41,6 @@ class ApiArchitectureTests(unittest.TestCase):
         forbidden = (
             "API_CENTER" + "_SECRETS_JSON",
             "YD" + "_API_KEY",
-            "GOOGLE_CLOUD" + "_SERVICE_ACCOUNT_JSON",
         )
         roots = [API, REPO / ".github/workflows"]
         matches = []

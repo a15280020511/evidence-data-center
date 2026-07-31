@@ -19,7 +19,7 @@
     "tushare/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "e030c644e53498bfaac2dc8e83f6e1b57654e67801ed0093dc368f72053086ab",
+  "managed_provider_catalog_sha256": "492456f65381928b14af23f64dfbe2fd3b64df5ea8322c701efd9673582c9579",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 18,
@@ -378,10 +378,10 @@
         "hard_max_rows": 5000,
         "query_timeout_ms": 30000
       },
-      "required_secret_environment_variable_name": "GOOGLE_CREDENTIALS_JSON",
+      "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
-      "provider_sha256": "b1a8c325645e8a09b0095278267b2570cf374ebeac671c7b61e76fb3539f7333",
+      "provider_sha256": "92ce9c51980065a31186c2bc2273959f6e43c6441df5f29dea8affef1b6659c3",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -551,10 +551,10 @@
         "max_algorithm_results": 200,
         "max_dataset_results": 100
       },
-      "required_secret_environment_variable_name": "GOOGLE_CREDENTIALS_JSON",
+      "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
-      "provider_sha256": "e82d1548e47c49c9c94e36d7d5a820bad8170c8205aaf3e15c0c27e221c04ab4",
+      "provider_sha256": "90546500a5762ec00c17ea64e49cf60bada2bfe850551587abd8f0e161c73938",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -733,10 +733,10 @@
         "max_response_bytes": 1000000,
         "timeout_seconds": 60
       },
-      "required_secret_environment_variable_name": "GOOGLE_CREDENTIALS_JSON",
+      "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
-      "provider_sha256": "3b2841e6d5d97452f8c2989bbe9c1cf97ca10baa7b42c2099780ddfd56e3a6c5",
+      "provider_sha256": "6e09d3b4679ee8d5d30441a1fbafd278123dd630fca31a8e146aafc05dc8a3c7",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -15906,5 +15906,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "a897bcf2ec0e083d3fbf057d53e3185951e9d84b9c99ca339c8b29839ec49c1f"
+  "catalog_sha256": "0f2685730f6685e2716394ed0aac91ded25ecf53576fa95946649d5c598b00e9"
 }

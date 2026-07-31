@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
-BUNDLE_ENV = "GOOGLE_CREDENTIALS_JSON"
+BUNDLE_ENV = "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
 
 
 def utc_now() -> str:
@@ -46,10 +46,15 @@ def parse_bundle(raw: str) -> tuple[dict[str, Any], str]:
         raise RuntimeError(f"{BUNDLE_ENV} is not valid JSON") from exc
     if not isinstance(value, Mapping):
         raise RuntimeError(f"{BUNDLE_ENV} must contain a JSON object")
-    service_account = value.get("service_account")
-    api_key = str(value.get("data_commons_api_key") or "").strip()
-    if not isinstance(service_account, Mapping):
-        raise RuntimeError(f"{BUNDLE_ENV}.service_account must be a JSON object")
+    nested_service_account = value.get("service_account")
+    if isinstance(nested_service_account, Mapping):
+        service_account = dict(nested_service_account)
+        api_key = str(value.get("data_commons_api_key") or "").strip()
+        service_account_path = f"{BUNDLE_ENV}.service_account"
+    else:
+        service_account = dict(value)
+        api_key = str(service_account.pop("data_commons_api_key", "") or "").strip()
+        service_account_path = BUNDLE_ENV
     required = {
         "type",
         "project_id",
@@ -61,15 +66,13 @@ def parse_bundle(raw: str) -> tuple[dict[str, Any], str]:
     missing = sorted(required - set(service_account))
     if missing:
         raise RuntimeError(
-            f"{BUNDLE_ENV}.service_account is missing fields: {missing}"
+            f"{service_account_path} is missing service-account fields: {missing}"
         )
     if str(service_account.get("type") or "") != "service_account":
-        raise RuntimeError(
-            f"{BUNDLE_ENV}.service_account.type must be service_account"
-        )
+        raise RuntimeError(f"{service_account_path}.type must be service_account")
     if not api_key:
         raise RuntimeError(f"{BUNDLE_ENV}.data_commons_api_key is required")
-    return dict(service_account), api_key
+    return service_account, api_key
 
 
 def append_multiline(path: Path, name: str, value: str) -> None:
