@@ -74,6 +74,15 @@ def replace_secret_name() -> None:
             path.write_text(replaced, encoding="utf-8")
 
 
+def permit_canonical_unified_secret() -> None:
+    path = Path("api-center/tests/test_api_architecture.py")
+    text = path.read_text(encoding="utf-8")
+    forbidden_entry = '            "GOOGLE_CLOUD" + "_SERVICE_ACCOUNT_JSON",\n'
+    if forbidden_entry not in text:
+        raise RuntimeError("Google unified-secret policy entry was not found")
+    path.write_text(text.replace(forbidden_entry, ""), encoding="utf-8")
+
+
 def support_compact_bundle() -> None:
     path = Path("api-center/google-cloud/unified_google_credentials.py")
     text = path.read_text(encoding="utf-8")
@@ -161,6 +170,7 @@ def main() -> int:
     publish_start_receipt()
     install_test_dependencies()
     replace_secret_name()
+    permit_canonical_unified_secret()
     support_compact_bundle()
     add_compact_bundle_test()
     return 0
