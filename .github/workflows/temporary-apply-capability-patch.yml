@@ -19,7 +19,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BRANCH_NAME: feat/maximize-api-capabilities-20260731
-      PATCH_SHA256: 708a0c1bdb57e781c32f4167ad9b153097208e0e7a67518ec73f33f1a1b240d6
+      PATCH_SHA256: 0000fab8f91e3a4c4d44c54b8ea4fb2958d92e43e1981f8bca3e7b236045f261
     steps:
       - name: Checkout current main
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -32,7 +32,7 @@ jobs:
           set -euo pipefail
           gh api "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments?per_page=100" > /tmp/comments.json
           python - <<'PY'
-          import json, os, re
+          import json, re
           from pathlib import Path
           rows = json.loads(Path('/tmp/comments.json').read_text(encoding='utf-8'))
           chunks = {}
@@ -41,17 +41,19 @@ jobs:
               match = re.fullmatch(r'PATCH_CHUNK_(\d{2})\n([A-Za-z0-9+/=]+)', body, re.DOTALL)
               if match:
                   chunks[int(match.group(1))] = match.group(2)
-          if sorted(chunks) != [1, 2, 3, 4]:
+          if sorted(chunks) != [1, 2, 3, 4, 5]:
               raise SystemExit(f'invalid patch chunks: {sorted(chunks)}')
           Path('/tmp/patch.b64').write_text(''.join(chunks[index] for index in sorted(chunks)), encoding='ascii')
           PY
           base64 --decode /tmp/patch.b64 > /tmp/capability-patch.tar.gz
           echo "${PATCH_SHA256}  /tmp/capability-patch.tar.gz" | sha256sum --check --strict
 
-      - name: Apply patch and remove temporary workflow
+      - name: Apply source patch and regenerate contracts
         run: |
           set -euo pipefail
           tar -xzf /tmp/capability-patch.tar.gz -C .
+          python api-center/build_config.py
+          python api-center/build_catalog.py
           rm -f .github/workflows/temporary-apply-capability-patch.yml
           git diff --check
 
