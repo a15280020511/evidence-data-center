@@ -41,6 +41,15 @@ jobs:
         run: |
           set -euo pipefail
           python maintenance/remove_data_commons.py
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('api-center/tests/test_capability_maximization.py')
+          text = path.read_text(encoding='utf-8')
+          old = '            150,\n'
+          if text.count(old) != 1:
+              raise SystemExit('managed operation count anchor not found exactly once')
+          path.write_text(text.replace(old, '            145,\n', 1), encoding='utf-8')
+          PY
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
             -r api-center/google-cloud/requirements.txt \
