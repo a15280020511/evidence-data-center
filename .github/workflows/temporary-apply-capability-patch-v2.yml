@@ -1,0 +1,118 @@
+name: Temporary owner-only capability patch applicator v2
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  apply-patch:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[maintenance-apply-capability-patch-v2]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH_NAME: feat/maximize-api-capabilities-20260731
+      PATCH_SOURCE_ISSUE: 34
+      PATCH2_COMMENT_ID: 5139759259
+      PATCH_B64_LENGTH: 85592
+      PATCH_SHA256: 0000fab8f91e3a4c4d44c54b8ea4fb2958d92e43e1981f8bca3e7b236045f261
+    steps:
+      - name: Report execution start
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="PATCH_V2_RUN_ID=${GITHUB_RUN_ID}\nPATCH_V2_STATUS=started"
+
+      - name: Checkout current main
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Reassemble and verify reviewed patch archive
+        id: reassemble
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/issues/${PATCH_SOURCE_ISSUE}/comments?per_page=100" > /tmp/comments.json
+          python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+
+          rows = json.loads(Path('/tmp/comments.json').read_text(encoding='utf-8'))
+          chunks = {}
+          special_id = int(os.environ['PATCH2_COMMENT_ID'])
+          special_body = None
+          for row in rows:
+              body = str(row.get('body') or '')
+              match = re.fullmatch(r'PATCH2_CHUNK_(\d{3})\n([A-Za-z0-9+/=]+)', body, re.DOTALL)
+              if match:
+                  chunks[int(match.group(1))] = match.group(2)
+              if int(row.get('id') or 0) == special_id:
+                  special_body = body
+
+          if special_body is None:
+              raise SystemExit(f'chunk 2 source comment {special_id} not found')
+          payload = special_body.split('\n', 1)[1] if '\n' in special_body else special_body
+          chunks[2] = re.sub(r'[^A-Za-z0-9+/=]', '', payload)
+
+          diagnostics = [f"recognized={sorted(chunks)}"]
+          diagnostics.extend(f"chunk_{index:03d}_length={len(chunks[index])}" for index in sorted(chunks))
+          diagnostics.append(f"joined_length={sum(len(value) for value in chunks.values())}")
+          Path('/tmp/patch-v2-diagnostics.txt').write_text('\n'.join(diagnostics), encoding='utf-8')
+
+          expected = list(range(1, 10))
+          if sorted(chunks) != expected:
+              raise SystemExit(f'invalid chunks: {sorted(chunks)}')
+          for index in range(1, 9):
+              if len(chunks[index]) != 10000:
+                  raise SystemExit(f'chunk {index} length={len(chunks[index])}, expected=10000')
+          if len(chunks[9]) != 5592:
+              raise SystemExit(f'chunk 9 length={len(chunks[9])}, expected=5592')
+
+          joined = ''.join(chunks[index] for index in expected)
+          expected_length = int(os.environ['PATCH_B64_LENGTH'])
+          if len(joined) != expected_length:
+              raise SystemExit(f'joined length={len(joined)}, expected={expected_length}')
+          Path('/tmp/patch.b64').write_text(joined, encoding='ascii')
+          PY
+          base64 --decode /tmp/patch.b64 > /tmp/capability-patch.tar.gz
+          echo "${PATCH_SHA256}  /tmp/capability-patch.tar.gz" | sha256sum --check --strict
+
+      - name: Apply source patch and regenerate contracts
+        id: apply
+        run: |
+          set -euo pipefail
+          tar -xzf /tmp/capability-patch.tar.gz -C .
+          python api-center/build_config.py
+          python api-center/build_catalog.py
+          rm -f \
+            .github/workflows/temporary-apply-capability-patch.yml \
+            .github/workflows/temporary-apply-capability-patch-v2.yml
+          git diff --check
+
+      - name: Commit capability maximization branch
+        id: publish
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "${BRANCH_NAME}"
+          git add --all
+          git commit -m "feat: maximize safe read-only API capabilities"
+          git push --force origin "HEAD:${BRANCH_NAME}"
+          sha="$(git rev-parse HEAD)"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="PATCH_APPLIED_BRANCH=${BRANCH_NAME}\nPATCH_APPLIED_SHA=${sha}"
+
+      - name: Report structured failure
+        if: failure()
+        run: |
+          diagnostics="$(cat /tmp/patch-v2-diagnostics.txt 2>/dev/null || true)"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="PATCH_V2_RUN_ID=${GITHUB_RUN_ID}\nPATCH_V2_STATUS=failed\ncheckout=${{ steps.checkout.outcome }}\nreassemble=${{ steps.reassemble.outcome }}\napply=${{ steps.apply.outcome }}\npublish=${{ steps.publish.outcome }}\n${diagnostics}"
