@@ -6,6 +6,10 @@ import argparse
 import hashlib
 import json
 import os
+import re
+import shutil
+import subprocess
+import tempfile
 import time
 import urllib.error
 import urllib.parse
@@ -30,6 +34,25 @@ QUERY_TYPES = {
     "category-search": 13,
     "statistics-search": 14,
 }
+BROWSER_HEADERS = {
+    "Accept": "application/json,text/plain,*/*",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Cache-Control": "no-cache",
+    "Pragma": "no-cache",
+    "Referer": "https://lbs.tianditu.gov.cn/",
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/124.0.0.0 Safari/537.36"
+    ),
+}
+
+
+class TiandituRequestError(RuntimeError):
+    def __init__(self, code: str, message: str, metadata: Mapping[str, Any]) -> None:
+        super().__init__(message)
+        self.code = code
+        self.metadata = dict(metadata)
 
 
 def utc_now() -> str:
@@ -317,24 +340,148 @@ def provider_key() -> str:
     return key
 
 
-def read_response(request: urllib.request.Request, timeout: int, max_bytes: int) -> tuple[int, bytes, str]:
+def safe_headers(headers: Mapping[str, Any] | None) -> dict[str, str]:
+    if not headers:
+        return {"content_type": "", "server": ""}
+    return {
+        "content_type": str(headers.get("Content-Type") or ""),
+        "server": str(headers.get("Server") or "")[:200],
+    }
+
+
+def response_too_large(raw: bytes, max_bytes: int) -> None:
+    if len(raw) > max_bytes:
+        raise TiandituRequestError(
+            "TIANDITU_RESPONSE_TOO_LARGE",
+            f"response exceeds acceptance.max_response_bytes={max_bytes}",
+            {"upstream_called": True},
+        )
+
+
+def read_response(request: urllib.request.Request, timeout: int, max_bytes: int) -> tuple[int, bytes, dict[str, Any]]:
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
             status = int(response.status)
             raw = response.read(max_bytes + 1)
-            content_type = str(response.headers.get("Content-Type") or "")
+            header_meta = safe_headers(response.headers)
     except urllib.error.HTTPError as exc:
         status = int(exc.code)
         raw = exc.read(max_bytes + 1)
-        content_type = str(exc.headers.get("Content-Type") or "") if exc.headers else ""
+        header_meta = safe_headers(exc.headers)
     except urllib.error.URLError as exc:
-        raise RuntimeError("Tianditu upstream connection failed") from exc
-    if len(raw) > max_bytes:
-        raise RuntimeError(f"response exceeds acceptance.max_response_bytes={max_bytes}")
-    if not 200 <= status < 300:
-        message = raw[:1000].decode("utf-8", errors="replace").strip()
-        raise RuntimeError(f"Tianditu upstream HTTP {status}: {message}")
-    return status, raw, content_type
+        raise TiandituRequestError(
+            "TIANDITU_CONNECTION_ERROR",
+            f"Tianditu upstream connection failed: {type(exc.reason).__name__}",
+            {
+                "upstream_called": True,
+                "transport": "python-urllib",
+                "transport_attempts": ["python-urllib"],
+                "connection_error": type(exc.reason).__name__,
+            },
+        ) from exc
+    response_too_large(raw, max_bytes)
+    return status, raw, {
+        **header_meta,
+        "upstream_called": True,
+        "transport": "python-urllib",
+        "transport_attempts": ["python-urllib"],
+    }
+
+
+def parse_curl_headers(raw: str) -> dict[str, str]:
+    blocks = [block for block in re.split(r"\r?\n\r?\n", raw.strip()) if block.strip()]
+    block = blocks[-1] if blocks else ""
+    headers: dict[str, str] = {}
+    for line in block.splitlines()[1:]:
+        if ":" not in line:
+            continue
+        name, value = line.split(":", 1)
+        headers[name.strip().casefold()] = value.strip()
+    return {
+        "content_type": headers.get("content-type", ""),
+        "server": headers.get("server", "")[:200],
+    }
+
+
+def curl_response(url: str, timeout: int, max_bytes: int) -> tuple[int, bytes, dict[str, Any]]:
+    curl = shutil.which("curl")
+    if not curl:
+        raise TiandituRequestError(
+            "TIANDITU_CURL_UNAVAILABLE",
+            "curl transport is unavailable for the CloudWAF compatibility retry",
+            {"upstream_called": False, "transport": "curl-http1.1"},
+        )
+    with tempfile.TemporaryDirectory() as tmp:
+        body_path = Path(tmp) / "body.bin"
+        header_path = Path(tmp) / "headers.txt"
+        config_lines = ["url = " + json.dumps(url)]
+        for name, value in BROWSER_HEADERS.items():
+            config_lines.append(f'header = "{name}: {value}"')
+        completed = subprocess.run(
+            [
+                curl,
+                "--silent",
+                "--show-error",
+                "--http1.1",
+                "--compressed",
+                "--connect-timeout",
+                str(min(timeout, 15)),
+                "--max-time",
+                str(timeout),
+                "--dump-header",
+                str(header_path),
+                "--output",
+                str(body_path),
+                "--write-out",
+                "%{http_code}",
+                "--config",
+                "-",
+            ],
+            input="\n".join(config_lines) + "\n",
+            text=True,
+            capture_output=True,
+            timeout=timeout + 5,
+            check=False,
+        )
+        raw = body_path.read_bytes() if body_path.exists() else b""
+        response_too_large(raw, max_bytes)
+        status_text = completed.stdout.strip()[-3:]
+        status = int(status_text) if status_text.isdigit() else 0
+        header_meta = parse_curl_headers(
+            header_path.read_text(encoding="iso-8859-1", errors="replace")
+            if header_path.exists()
+            else ""
+        )
+        if completed.returncode != 0 and status == 0:
+            raise TiandituRequestError(
+                "TIANDITU_CONNECTION_ERROR",
+                f"Tianditu curl transport failed with exit code {completed.returncode}",
+                {
+                    **header_meta,
+                    "upstream_called": True,
+                    "transport": "curl-http1.1",
+                    "transport_attempts": ["curl-http1.1"],
+                    "curl_exit_code": completed.returncode,
+                },
+            )
+        return status, raw, {
+            **header_meta,
+            "upstream_called": True,
+            "transport": "curl-http1.1",
+            "transport_attempts": ["curl-http1.1"],
+            "curl_exit_code": completed.returncode,
+        }
+
+
+def cloud_waf_blocked(status: int, raw: bytes, server: str) -> bool:
+    sample = raw[:5000].decode("utf-8", errors="ignore").casefold()
+    return status == 418 or "cloudwaf" in server.casefold() or "访问被拦截" in sample
+
+
+def compact_response_message(raw: bytes) -> str:
+    text = raw[:4000].decode("utf-8", errors="replace")
+    text = re.sub(r"<[^>]+>", " ", text)
+    return re.sub(r"\s+", " ", text).strip()[:500]
 
 
 def business_status(payload: Mapping[str, Any]) -> tuple[str | None, str]:
@@ -365,6 +512,18 @@ def redact_direct_phones(value: Any) -> Any:
     return value
 
 
+def request_metadata(post: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "request_origin": "api.tianditu.gov.cn",
+        "request_path": "/v2/search",
+        "query_type": post["queryType"],
+        "credential_mode": "query-token",
+        "credential_secret_name": SECRET_ENV,
+        "runner_environment": str(os.getenv("RUNNER_ENVIRONMENT") or "unknown"),
+        "direct_phone_fields_redacted": True,
+    }
+
+
 def call_tianditu(operation: str, parameters: Mapping[str, Any], timeout: int, max_bytes: int) -> tuple[Any, dict[str, Any]]:
     post = build_post_str(operation, parameters)
     query = urllib.parse.urlencode(
@@ -372,23 +531,72 @@ def call_tianditu(operation: str, parameters: Mapping[str, Any], timeout: int, m
             "postStr": json.dumps(post, ensure_ascii=False, separators=(",", ":")),
             "type": "query",
             "tk": provider_key(),
-        }
+        },
+        quote_via=urllib.parse.quote,
     )
-    request = urllib.request.Request(
-        f"{ENDPOINT}?{query}",
-        headers={"Accept": "application/json", "User-Agent": "gpts-evidence-data-center-tianditu/1"},
-        method="GET",
-    )
-    http_status, raw, content_type = read_response(request, timeout, max_bytes)
+    url = f"{ENDPOINT}?{query}"
+    request = urllib.request.Request(url, headers=BROWSER_HEADERS, method="GET")
+    http_status, raw, transport_meta = read_response(request, timeout, max_bytes)
+    attempts = list(transport_meta.get("transport_attempts") or [])
+    if cloud_waf_blocked(http_status, raw, str(transport_meta.get("server") or "")):
+        try:
+            http_status, raw, curl_meta = curl_response(url, timeout, max_bytes)
+            attempts.extend(curl_meta.get("transport_attempts") or [])
+            transport_meta = {**curl_meta, "transport_attempts": attempts}
+        except TiandituRequestError as exc:
+            exc.metadata = {
+                **request_metadata(post),
+                **transport_meta,
+                **exc.metadata,
+                "transport_attempts": attempts + list(exc.metadata.get("transport_attempts") or []),
+                "waf_blocked": True,
+                "first_http_status": http_status,
+            }
+            raise
+    base_meta = {
+        **request_metadata(post),
+        **transport_meta,
+        "http_status": http_status,
+        "waf_blocked": cloud_waf_blocked(
+            http_status, raw, str(transport_meta.get("server") or "")
+        ),
+    }
+    if base_meta["waf_blocked"]:
+        raise TiandituRequestError(
+            "TIANDITU_WAF_BLOCKED",
+            (
+                "Tianditu CloudWAF blocked both bounded direct transports; "
+                "use a mainland self-hosted runner via repository variable TIANDITU_RUNNER_LABEL"
+            ),
+            base_meta,
+        )
+    if not 200 <= http_status < 300:
+        raise TiandituRequestError(
+            "TIANDITU_HTTP_ERROR",
+            f"Tianditu upstream HTTP {http_status}: {compact_response_message(raw)}",
+            base_meta,
+        )
     try:
         payload = json.loads(raw.decode("utf-8")) if raw else {}
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise RuntimeError("Tianditu upstream returned invalid JSON") from exc
+        raise TiandituRequestError(
+            "TIANDITU_INVALID_JSON",
+            "Tianditu upstream returned invalid JSON",
+            base_meta,
+        ) from exc
     if not isinstance(payload, Mapping):
-        raise RuntimeError("Tianditu upstream JSON root must be an object")
+        raise TiandituRequestError(
+            "TIANDITU_INVALID_JSON",
+            "Tianditu upstream JSON root must be an object",
+            base_meta,
+        )
     code, description = business_status(payload)
     if code is not None and code != "1000":
-        raise RuntimeError(f"Tianditu business status {code}: {description or 'request failed'}")
+        raise TiandituRequestError(
+            "TIANDITU_BUSINESS_ERROR",
+            f"Tianditu business status {code}: {description or 'request failed'}",
+            {**base_meta, "business_status": code},
+        )
     redacted = redact_direct_phones(dict(payload))
     result_count: int | None = None
     try:
@@ -396,17 +604,9 @@ def call_tianditu(operation: str, parameters: Mapping[str, Any], timeout: int, m
     except (TypeError, ValueError):
         result_count = None
     return redacted, {
-        "http_status": http_status,
+        **base_meta,
         "business_status": code,
-        "content_type": content_type,
-        "request_origin": "api.tianditu.gov.cn",
-        "request_path": "/v2/search",
-        "query_type": post["queryType"],
-        "credential_mode": "query-token",
-        "credential_secret_name": SECRET_ENV,
-        "upstream_called": True,
         "result_count": result_count,
-        "direct_phone_fields_redacted": True,
     }
 
 
@@ -438,8 +638,13 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         else:
             data, metadata = call_tianditu(operation, parameters, timeout, max_bytes)
         status = "API_TIANDITU_COMPLETED"
-    except (RuntimeError, ValueError, urllib.error.URLError) as exc:
-        failure = {"code": "TIANDITU_UPSTREAM_ERROR", "message": str(exc)}
+    except TiandituRequestError as exc:
+        metadata = dict(exc.metadata)
+        failure = {"code": exc.code, "message": str(exc)}
+    except ValueError as exc:
+        failure = {"code": "TIANDITU_VALIDATION_ERROR", "message": str(exc)}
+    except RuntimeError as exc:
+        failure = {"code": "TIANDITU_CONFIGURATION_ERROR", "message": str(exc)}
     elapsed_ms = round((time.perf_counter() - started) * 1000, 3)
     snapshot = {
         "schema_version": "tianditu-result-v1",
@@ -484,6 +689,12 @@ def render(output_dir: Path, phase: str, artifact_url: str = "") -> int:
     print("- Provider: `tianditu`")
     print(f"- Operation: `{result['operation']}`")
     print(f"- Upstream called: `{str(bool(result['metadata'].get('upstream_called'))).lower()}`")
+    if result["metadata"].get("http_status") is not None:
+        print(f"- HTTP status: `{result['metadata']['http_status']}`")
+    if result["metadata"].get("transport_attempts"):
+        print(f"- Transport attempts: `{','.join(result['metadata']['transport_attempts'])}`")
+    if result["metadata"].get("waf_blocked") is not None:
+        print(f"- WAF blocked: `{str(bool(result['metadata']['waf_blocked'])).lower()}`")
     print(f"- Snapshot SHA256: `{result['snapshot_sha256']}`")
     if artifact_url:
         print(f"- Artifact: {artifact_url}")

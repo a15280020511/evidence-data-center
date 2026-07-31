@@ -5,7 +5,7 @@
 - 托管提供方：`16/16` 已启用
 - 托管操作总数：`131`
 - 已公开参数总数：`790`
-- 目录 SHA-256：`41ce83ddea32ee2a8dfa11a28316e912d71bc7b73ca3db9f8241ae79db535e06`
+- 目录 SHA-256：`099be9ddae941147a9d9789c6372e2f9f4536a027605d824621831eb197a2e21`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -5112,10 +5112,10 @@
 - 状态：`启用`
 - 说明：通过国家地理信息公共服务平台天地图地名搜索 V2.0 读取普通、视野、周边、多边形、行政区、分类与统计搜索结果。
 - 目录策略：仅调用天地图官方固定 HTTPS 地名搜索 V2.0 端点；禁止瓦片批量下载、任意 URL、任意请求头、任意代码、写入和账号操作。
-- 执行策略：TIANDITU_API_KEY 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次同步只读请求，并限制坐标范围、周边半径、多边形点数、分页、超时和响应体积，输出中的电话字段自动脱敏。
+- 执行策略：TIANDITU_API_KEY 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次业务请求，遇到 CloudWAF 418 时仅追加一次固定 curl HTTP/1.1 兼容重试；记录真实 upstream_called、HTTP 状态、WAF 分类与传输尝试。若 GitHub 托管出口仍被拦截，可通过仓库变量 TIANDITU_RUNNER_LABEL 切换到中国大陆自托管 Runner。
 - 票据前缀：`[api-tianditu]`
 - Secret环境变量名：`TIANDITU_API_KEY`（仅名称）
-- 提供方SHA-256：`f78530d70a8829e5df5a4cf2050a1662f1ec3af13109bac070a974c1537ae9e7`
+- 提供方SHA-256：`e7d8d183ceb0cd0fe74f38a1c6cbc50865feeaafd89cc287821156969d125d19`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -5569,7 +5569,11 @@
   "arbitrary_headers_allowed": false,
   "tile_bulk_download_allowed": false,
   "write_operations_allowed": false,
-  "direct_phone_fields_redacted": true
+  "direct_phone_fields_redacted": true,
+  "transport_attempts_max": 2,
+  "cloud_waf_detection": true,
+  "arbitrary_proxy_urls_allowed": false,
+  "self_hosted_runner_supported": true
 }
 ```
 

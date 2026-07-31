@@ -19,7 +19,7 @@ class FakeResponse:
     def __init__(self, payload: dict) -> None:
         self.status = 200
         self._raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        self.headers = {"Content-Type": "application/json"}
+        self.headers = {"Content-Type": "application/json", "Server": "Tianditu"}
 
     def read(self, _size: int) -> bytes:
         return self._raw
@@ -169,13 +169,62 @@ class TiandituTaskTests(unittest.TestCase):
         with mock.patch.dict(os.environ, {"TIANDITU_API_KEY": "secret-value"}, clear=True), mock.patch.object(
             module.urllib.request, "urlopen", return_value=FakeResponse(payload)
         ):
-            with self.assertRaisesRegex(RuntimeError, "business status 2001"):
+            with self.assertRaisesRegex(module.TiandituRequestError, "business status 2001") as raised:
                 module.call_tianditu(
                     "administrative-search",
                     {"keyword": "学校", "specify": "156110108"},
                     30,
                     1000000,
                 )
+            self.assertEqual(raised.exception.code, "TIANDITU_BUSINESS_ERROR")
+
+    def test_waf_failure_records_real_upstream_attempt_and_curl_retry(self) -> None:
+        ticket = self.ticket(
+            "administrative-search",
+            {"keyword": "学校", "specify": "福州市", "count": 1},
+        )
+        waf = module.TiandituRequestError(
+            "TIANDITU_WAF_BLOCKED",
+            "Tianditu CloudWAF blocked both bounded direct transports",
+            {
+                "upstream_called": True,
+                "http_status": 418,
+                "waf_blocked": True,
+                "transport": "curl-http1.1",
+                "transport_attempts": ["python-urllib", "curl-http1.1"],
+            },
+        )
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+            os.environ, {"TIANDITU_API_KEY": "secret-value"}, clear=True
+        ), mock.patch.object(module, "call_tianditu", side_effect=waf):
+            ticket_path = Path(tmp) / "ticket.json"
+            out = Path(tmp) / "out"
+            ticket_path.write_text(json.dumps(ticket, ensure_ascii=False), encoding="utf-8")
+            self.assertEqual(module.execute(ticket_path, out), 1)
+            result = json.loads((out / "result.json").read_text(encoding="utf-8"))
+            self.assertEqual(result["failure"]["code"], "TIANDITU_WAF_BLOCKED")
+            self.assertTrue(result["metadata"]["upstream_called"])
+            self.assertEqual(result["metadata"]["http_status"], 418)
+            self.assertEqual(
+                result["metadata"]["transport_attempts"],
+                ["python-urllib", "curl-http1.1"],
+            )
+
+    def test_browser_compatible_headers_are_used(self) -> None:
+        payload = {"count": "0", "status": {"infocode": 1000, "cndesc": "服务正常"}}
+        with mock.patch.dict(os.environ, {"TIANDITU_API_KEY": "secret-value"}, clear=True), mock.patch.object(
+            module.urllib.request, "urlopen", return_value=FakeResponse(payload)
+        ) as mocked:
+            module.call_tianditu(
+                "administrative-search",
+                {"keyword": "学校", "specify": "福州市", "count": 1},
+                30,
+                1000000,
+            )
+            request = mocked.call_args.args[0]
+            self.assertIn("Mozilla/5.0", request.headers["User-agent"])
+            self.assertEqual(request.headers["Referer"], "https://lbs.tianditu.gov.cn/")
+            self.assertNotIn("+", request.full_url.split("postStr=", 1)[1].split("&type=", 1)[0])
 
 
 if __name__ == "__main__":
