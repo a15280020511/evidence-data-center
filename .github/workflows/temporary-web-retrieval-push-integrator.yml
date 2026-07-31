@@ -1,0 +1,86 @@
+name: Temporary Web Retrieval Push Integrator
+
+on:
+  push:
+    branches:
+      - trigger/web-retrieval-integration
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BRANCH_NAME: feat/jina-exa-web-retrieval
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.BRANCH_NAME }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Verify and decode fixed bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import base64
+          import hashlib
+          import zipfile
+          from pathlib import Path
+
+          parts = sorted(Path('.integration').glob('web-retrieval.bundle.part*'))
+          expected = [f'web-retrieval.bundle.part{i:02d}' for i in range(6)]
+          if [item.name for item in parts] != expected:
+              raise SystemExit('bundle parts are incomplete')
+          encoded = ''.join(item.read_text(encoding='utf-8').strip() for item in parts)
+          raw = base64.b64decode(encoded, validate=True)
+          digest = hashlib.sha256(raw).hexdigest()
+          if digest != '656b7868284471c501d221abcef14ef73fc561e3b5df85808b929b102700388f':
+              raise SystemExit(f'bundle digest mismatch: {digest}')
+          target = Path('/tmp/web-retrieval-bundle.zip')
+          target.write_bytes(raw)
+          with zipfile.ZipFile(target) as archive:
+              for member in archive.infolist():
+                  path = Path(member.filename)
+                  if path.is_absolute() or '..' in path.parts:
+                      raise SystemExit('unsafe archive path')
+              archive.extractall('.')
+          PY
+          python integrate.py
+          rm -f integrate.py
+          rm -rf .integration
+
+      - name: Install and validate
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt -r api-center/web-retrieval/requirements.txt
+          python -m pip check
+          python api-center/build_catalog.py
+          python -m compileall -q api-center
+          python -m unittest discover -s api-center/web-retrieval/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
+          git diff --check
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          providers = {row['provider_id']: row for row in catalog['managed_providers']}
+          assert catalog['managed_provider_count'] == 11
+          assert catalog['enabled_managed_provider_count'] == 11
+          assert catalog['managed_operation_count'] == 104
+          assert providers['jina-reader']['optional_secret_environment_variable_name'] == 'JINA_API_KEY'
+          assert providers['exa']['required_secret_environment_variable_name'] == 'EXA_API_KEY'
+          PY
+
+      - name: Commit integrated feature branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: integrate Jina Reader and Exa web retrieval providers"
+          git push origin "HEAD:${BRANCH_NAME}"
