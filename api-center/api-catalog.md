@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`16/16` 已启用
-- 托管操作总数：`143`
-- 已公开参数总数：`877`
-- 目录 SHA-256：`6ec123d1efe66b4ddd77f192c7475ef0ec5feb38a4ea6c481ee2a343b0cdbe70`
+- 托管提供方：`18/18` 已启用
+- 托管操作总数：`150`
+- 已公开参数总数：`902`
+- 目录 SHA-256：`a897bcf2ec0e083d3fbf057d53e3185951e9d84b9c99ca339c8b29839ec49c1f`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -33,6 +33,8 @@
 | TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
 | Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
+| Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
+| LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
 ## 普通连接器
 
@@ -6167,6 +6169,349 @@
   "arbitrary_headers_allowed": false,
   "write_operations_allowed": false,
   "trading_or_order_execution_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## Wolfram|Alpha 计算知识 API (`wolfram-alpha`)
+
+- 状态：`启用`
+- 说明：通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。
+- 目录策略：只允许调用 Wolfram|Alpha 官方固定 GET 端点；禁止任意 URL、任意请求头、图片生成端点、异步状态修改和任何写入。
+- 执行策略：WOLFRAM_ALPHA_APP_ID 仅在后端 appid 查询参数注入；每张票据执行一次只读查询，固定输出类型并限制输入、超时和响应体积。
+- 票据前缀：`[api-wolfram]`
+- Secret环境变量名：`WOLFRAM_ALPHA_APP_ID`（仅名称）
+- 提供方SHA-256：`d510d42245f91826f4ff38f567b17c9bf7f6a60972b51c7202ac00e04e3a796a`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 Wolfram|Alpha 本地安全能力目录，不访问上游且不需要 AppID。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `full-results` | 调用 Full Results API v2，以 JSON 返回 pods、假设、来源和纯文本结果。 | `input, units, location, languagecode, upstream_timeout_seconds` |
+
+`full-results` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "default",
+        "metric",
+        "imperial"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "languagecode": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "upstream_timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    }
+  }
+}
+```
+
+| `short-answer` | 调用 Short Answers API，返回单行计算答案。 | `input, units, location, upstream_timeout_seconds` |
+
+`short-answer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "default",
+        "metric",
+        "imperial"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "upstream_timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    }
+  }
+}
+```
+
+| `llm-result` | 调用 Wolfram|Alpha LLM API，返回便于 GPTs 消化的计算知识文本。 | `input, units, location, languagecode, upstream_timeout_seconds` |
+
+`llm-result` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "input"
+  ],
+  "properties": {
+    "input": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "default",
+        "metric",
+        "imperial"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "languagecode": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "upstream_timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 5000000,
+  "input_characters_max": 2000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "write_operations_allowed": false,
+  "image_endpoints_enabled": false,
+  "secret_values_exposed": false
+}
+```
+
+## LlamaParse 文档解析 API (`llamaparse`)
+
+- 状态：`启用`
+- 说明：通过 LlamaParse v2 将固定白名单来源的公开文档解析为 Markdown、文本、结构化项目和元数据。
+- 目录策略：只允许 LlamaParse 官方 NA/EU 固定 HTTPS 主机、固定 Parse v2 端点和受限公开文档来源；禁止任意 URL、Webhook、任意请求头、文件回写和索引写入。
+- 执行策略：LLAMA_CLOUD_API_KEY 仅在后端 Bearer 请求头注入；新建解析任务后在单张票据内有限轮询，并过滤预签名下载 URL、Authorization 和密钥。
+- 票据前缀：`[api-llamaparse]`
+- Secret环境变量名：`LLAMA_CLOUD_API_KEY`（仅名称）
+- 提供方SHA-256：`5104c79c0f79e9b401c203957b4c122b2b26f1462e220816ccb475b96c52fc0e`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 LlamaParse 本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `parse-public-document` | 提交白名单公共 HTTPS 文档 URL，创建 Parse v2 作业并有限轮询至完成。 | `source_url, tier, version, region, max_pages, custom_prompt, disable_cache, expand` |
+
+`parse-public-document` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_url"
+  ],
+  "properties": {
+    "source_url": {
+      "type": "string",
+      "minLength": 12,
+      "maxLength": 2000,
+      "pattern": "^https://"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "fast",
+        "cost_effective",
+        "agentic",
+        "agentic_plus"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]{4}-[0-9]{2}-[0-9]{2})$"
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "na",
+        "eu"
+      ]
+    },
+    "max_pages": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+    },
+    "custom_prompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "disable_cache": {
+      "type": "boolean"
+    },
+    "expand": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "text",
+          "markdown",
+          "items",
+          "metadata",
+          "job_metadata",
+          "text_full",
+          "markdown_full"
+        ]
+      }
+    }
+  }
+}
+```
+
+| `get-job` | 读取既有 Parse v2 作业的状态和选定结果字段。 | `job_id, region, expand` |
+
+`get-job` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "job_id"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "na",
+        "eu"
+      ]
+    },
+    "expand": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "text",
+          "markdown",
+          "items",
+          "metadata",
+          "job_metadata",
+          "text_full",
+          "markdown_full"
+        ]
+      }
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 302,
+  "create_requests_per_ticket": 1,
+  "poll_timeout_seconds_max": 600,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 5000000,
+  "max_pages": 200,
+  "public_document_host_allowlist": [
+    "raw.githubusercontent.com",
+    "github.com",
+    "arxiv.org",
+    "export.arxiv.org",
+    "openaccess.thecvf.com",
+    "aclanthology.org",
+    "proceedings.neurips.cc",
+    "papers.ssrn.com",
+    "openreview.net",
+    "sec.gov",
+    "www.sec.gov",
+    "annualreports.com",
+    "www.annualreports.com"
+  ],
+  "arbitrary_urls_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "webhooks_allowed": false,
+  "write_operations_allowed": false,
+  "presigned_urls_exposed": false,
   "secret_values_exposed": false
 }
 ```
