@@ -91,13 +91,49 @@ jobs:
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
             -F body=@gcp-comment.md
 
-      - name: Validate and expand unified Google credentials
+      - name: Validate and expand shared Google service account
         id: credentials
         if: >-
           steps.prepare.outputs.accepted == 'true' &&
           steps.duplicate.outcome == 'success'
         continue-on-error: true
-        run: python api-center/google-cloud/unified_google_credentials.py
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from collections.abc import Mapping
+          from pathlib import Path
+
+          secret_name = "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
+          raw = str(os.getenv(secret_name) or "").strip()
+          if not raw:
+              raise RuntimeError(f"missing repository Secret {secret_name}")
+          try:
+              value = json.loads(raw)
+          except json.JSONDecodeError as exc:
+              raise RuntimeError(f"{secret_name} is not valid JSON") from exc
+          if not isinstance(value, Mapping):
+              raise RuntimeError(f"{secret_name} must contain a JSON object")
+          nested = value.get("service_account")
+          service_account = dict(nested) if isinstance(nested, Mapping) else dict(value)
+          service_account.pop("data_commons_api_key", None)
+          required = {
+              "type", "project_id", "private_key_id", "private_key",
+              "client_email", "token_uri",
+          }
+          missing = sorted(required - set(service_account))
+          if missing:
+              raise RuntimeError(f"{secret_name} is missing service-account fields: {missing}")
+          if str(service_account.get("type") or "") != "service_account":
+              raise RuntimeError(f"{secret_name}.type must be service_account")
+          encoded = json.dumps(service_account, ensure_ascii=False, separators=(",", ":"))
+          github_env = Path(os.environ["GITHUB_ENV"])
+          for name in ("BIGQUERY_SERVICE_ACCOUNT_JSON", "EARTH_ENGINE_SERVICE_ACCOUNT_JSON"):
+              marker = f"GOOGLE_SERVICE_ACCOUNT_{name}_EOF"
+              with github_env.open("a", encoding="utf-8") as handle:
+                  handle.write(f"{name}<<{marker}\n{encoded}\n{marker}\n")
+          PY
 
       - name: Create structured unified credential block
         if: >-
