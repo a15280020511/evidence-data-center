@@ -13,8 +13,6 @@ Issue 前缀：`[api]`、`[api-akshare]`、`[api-dc]`、`[api-gcp]`、`[api-aifi
 - `.github/workflows/api-center-image.yml`
 - `.github/workflows/api-center-validate.yml`
 - `.github/workflows/api-ticket.yml`
-- `.github/workflows/data-commons-api-ticket.yml`
-- `.github/workflows/data-commons-provider-validate.yml`
 - `.github/workflows/google-cloud-api-ticket.yml`
 - `.github/workflows/google-cloud-provider-validate.yml`
 

@@ -38,7 +38,6 @@ class GoogleCloudTaskTests(unittest.TestCase):
     def test_catalog_exposes_all_declared_operations(self) -> None:
         catalog = module.load_json(ROOT / "provider-catalog.json")
         providers = {row["provider_id"]: row for row in catalog["providers"]}
-        self.assertEqual(set(providers), {"bigquery", "earth-engine", "data-commons"})
         self.assertEqual(
             set(catalog["required_secret_environment_variables"]),
             {"GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"},
@@ -74,21 +73,6 @@ class GoogleCloudTaskTests(unittest.TestCase):
                 "compute-value-readonly",
             },
         )
-        self.assertEqual(
-            {row["operation_id"] for row in providers["data-commons"]["operations"]},
-            {
-                "catalog-capabilities",
-                "resolve-place",
-                "resolve-indicator",
-                "node-properties",
-                "observations",
-            },
-        )
-        self.assertEqual(providers["data-commons"]["ticket_prefix"], "[api-dc]")
-        self.assertEqual(
-            providers["data-commons"]["required_secret_environment_variable"],
-            "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
-        )
         self.assertFalse(catalog["secret_values_exposed"])
 
     def test_each_google_service_has_one_canonical_credential(self) -> None:
@@ -123,10 +107,6 @@ class GoogleCloudTaskTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "non-allowlisted parameters"):
             module.validate_ticket(ticket)
 
-    def test_data_commons_is_catalogued_but_not_executed_by_google_cloud_runtime(self) -> None:
-        ticket = self.ticket("data-commons", "catalog-capabilities")
-        with self.assertRaisesRegex(ValueError, "not one of"):
-            module.validate_ticket(ticket)
 
     def test_bigquery_sql_allows_only_fully_qualified_readonly_queries(self) -> None:
         sql, projects = module._validate_readonly_sql(

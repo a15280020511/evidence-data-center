@@ -16,7 +16,6 @@
 
 ## Google 例外
 
-Google BigQuery、Earth Engine、Data Commons 等能力由独立托管工作流执行，不经过普通 `[api]` 连接器的单密钥限制。Google 凭据可以按 Google 托管架构单独管理或组合管理；不得影响其他 API 的独立 Secret。
 
 ## 当前独立 API Secret
 

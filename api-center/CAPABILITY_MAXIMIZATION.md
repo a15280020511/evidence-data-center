@@ -39,7 +39,6 @@ API 中心采用 `maximum-safe-readonly` 策略：在不开放任意 URL、任�
 
 - BigQuery：7 个目录和只读 SQL 操作；
 - Earth Engine：6 个 STAC、算法和只读值计算操作；
-- Google Data Commons：5 个解析、知识图谱和统计观测操作；
 - AKShare：17 个目录、股票、ETF、资金流、财务报表、板块和宏观操作；
 - Ashare：1 个规范化行情操作；
 - Wind AIFin Market：17 个操作，其中 15 个对应上游当前公开的全部只读工具，另有能力目录与实时工具目录；

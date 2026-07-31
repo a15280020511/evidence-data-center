@@ -111,17 +111,16 @@ jobs:
           assert catalog['schema_version'] == 'api-catalog-v3'
           assert catalog['connector_count'] == 68
           assert catalog['enabled_connector_count'] == 68
-          assert catalog['managed_provider_count'] == 18
-          assert catalog['enabled_managed_provider_count'] == 18
-          assert catalog['managed_operation_count'] == 150
-          assert catalog['exposed_parameter_count'] >= 900
+          assert catalog['managed_provider_count'] == 17
+          assert catalog['enabled_managed_provider_count'] == 17
+          assert catalog['managed_operation_count'] == 145
+          assert catalog['exposed_parameter_count'] >= 850
           assert catalog['secret_values_exposed'] is False
 
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
           expected_counts = {
               'bigquery': 7,
               'earth-engine': 6,
-              'data-commons': 5,
               'akshare': 17,
               'ashare': 1,
               'aifin-market': 17,
@@ -140,7 +139,7 @@ jobs:
           }
           assert set(providers) == set(expected_counts)
           assert 'tianditu' not in providers
-          assert sum(len(row['operations']) for row in providers.values()) == 150
+          assert sum(len(row['operations']) for row in providers.values()) == 145
           for provider_id, expected in expected_counts.items():
               assert len(providers[provider_id]['operations']) == expected
               assert providers[provider_id]['secret_value_exposed'] is False
@@ -148,7 +147,6 @@ jobs:
           expected_secret_names = {
               'bigquery': 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON',
               'earth-engine': 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON',
-              'data-commons': 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON',
               'aifin-market': 'WIND_API_KEY',
               'yuandian-law': 'YUANDIAN_API_KEY',
               'tianyancha': 'TIANYANCHA_API_TOKEN',
@@ -221,8 +219,8 @@ jobs:
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 18,
-              'managed_operations': 150,
+              'managed_providers': 17,
+              'managed_operations': 145,
               'exposed_parameters': catalog['exposed_parameter_count'],
               'wolfram_operations': 4,
               'llamaparse_operations': 3,
@@ -243,7 +241,6 @@ jobs:
             api-center/krakend.tmpl
             api-center/krakend.validation.json
             api-center/google-cloud/provider-catalog.json
-            api-center/data-commons/provider-catalog.json
             api-center/akshare/provider-catalog.json
             api-center/aifin-market/provider-catalog.json
             api-center/yuandian/provider-catalog.json

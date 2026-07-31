@@ -19,13 +19,13 @@
     "tushare/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "492456f65381928b14af23f64dfbe2fd3b64df5ea8322c701efd9673582c9579",
+  "managed_provider_catalog_sha256": "2af09902f691cdb0217ed9f22a3884290f03ee05b4516010d36beca8af40f0d8",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 18,
-  "enabled_managed_provider_count": 18,
-  "managed_operation_count": 150,
-  "exposed_parameter_count": 902,
+  "managed_provider_count": 17,
+  "enabled_managed_provider_count": 17,
+  "managed_operation_count": 145,
+  "exposed_parameter_count": 891,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -555,188 +555,6 @@
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "90546500a5762ec00c17ea64e49cf60bada2bfe850551587abd8f0e161c73938",
-      "catalog_file": "google-cloud/provider-catalog.json"
-    },
-    {
-      "provider_id": "data-commons",
-      "display_name": "Google Data Commons",
-      "description": "通过Data Commons REST V2只读查询全球公共统计知识图谱，重点支持中国国家、省级、城市及可用更细行政层级的人口、经济、就业、教育、医疗和环境指标。",
-      "enabled": true,
-      "ticket_prefix": "[api-dc]",
-      "catalog_policy": "GPTs先读取data-commons/provider-catalog.json和china-starter-pack.json，再解析地点或统计指标DCID；中国细粒度覆盖取决于原始来源，不得假设所有城市或县均有数据。",
-      "execution_policy": "仅允许固定的resolve、node和observation端点；只提交公开实体、指标和关系表达式；禁止SPARQL、自然语言接口、任意URL和个人数据。",
-      "operation_count": 5,
-      "operations": [
-        {
-          "operation_id": "catalog-capabilities",
-          "description": "读取Data Commons受控能力、限制和中国起步目录，不调用上游。",
-          "parameter_names": [],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {}
-          }
-        },
-        {
-          "operation_id": "resolve-place",
-          "description": "按一个或多个公开地点名称解析Data Commons地点DCID。",
-          "parameter_names": [
-            "nodes_json",
-            "property"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "nodes_json": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              },
-              "property": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              }
-            }
-          }
-        },
-        {
-          "operation_id": "resolve-indicator",
-          "description": "按指标描述解析统计变量或主题DCID。",
-          "parameter_names": [
-            "nodes_json"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "nodes_json": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              }
-            }
-          }
-        },
-        {
-          "operation_id": "node-properties",
-          "description": "按固定关系表达式读取节点属性、相邻实体或行政层级关系。",
-          "parameter_names": [
-            "nodes_json",
-            "property"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "nodes_json": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              },
-              "property": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              }
-            }
-          }
-        },
-        {
-          "operation_id": "observations",
-          "description": "读取指定实体和统计变量的最新、指定日期或完整时间序列观测，并保留facet来源。",
-          "parameter_names": [
-            "entity_dcids_json",
-            "variable_dcids_json",
-            "date",
-            "select_json",
-            "facet_ids_json",
-            "domains_json"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "entity_dcids_json": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              },
-              "variable_dcids_json": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              },
-              "date": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              },
-              "select_json": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              },
-              "facet_ids_json": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              },
-              "domains_json": {
-                "type": [
-                  "string",
-                  "integer",
-                  "number",
-                  "boolean"
-                ]
-              }
-            }
-          }
-        }
-      ],
-      "limits": {
-        "max_nodes": 20,
-        "max_variables": 20,
-        "max_select_fields": 5,
-        "max_relation_expression_characters": 300,
-        "max_response_bytes": 1000000,
-        "timeout_seconds": 60
-      },
-      "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
-      "optional_secret_environment_variable_name": "",
-      "secret_value_exposed": false,
-      "provider_sha256": "6e09d3b4679ee8d5d30441a1fbafd278123dd630fca31a8e146aafc05dc8a3c7",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -15906,5 +15724,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "0f2685730f6685e2716394ed0aac91ded25ecf53576fa95946649d5c598b00e9"
+  "catalog_sha256": "ff00f878cdedacbcca41ceed8ed2b997a7da05e2e08e93addca56535ce7c59ea"
 }

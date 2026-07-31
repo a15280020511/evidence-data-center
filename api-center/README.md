@@ -60,7 +60,6 @@ LLAMA_CLOUD_API_KEY
 
 ## 托管提供方
 
-BigQuery、Earth Engine、Data Commons、AKShare、Wind AIFin、元典法律、企业信息、网页检索、TickFlow、SerpAPI、Tushare、Wolfram|Alpha 和 LlamaParse 等能力使用独立托管工作流，不伪装成普通 KrakenD GET 连接器。
 
 托管提供方共同遵守：
 

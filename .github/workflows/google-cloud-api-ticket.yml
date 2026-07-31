@@ -117,7 +117,6 @@ jobs:
               raise RuntimeError(f"{secret_name} must contain a JSON object")
           nested = value.get("service_account")
           service_account = dict(nested) if isinstance(nested, Mapping) else dict(value)
-          service_account.pop("data_commons_api_key", None)
           required = {
               "type", "project_id", "private_key_id", "private_key",
               "client_email", "token_uri",
