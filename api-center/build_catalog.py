@@ -18,6 +18,7 @@ MANAGED_PROVIDER_CATALOG_PATHS = (
     HERE / "google-cloud/provider-catalog.json",
     HERE / "akshare/provider-catalog.json",
     HERE / "aifin-market/provider-catalog.json",
+    HERE / "yuandian/provider-catalog.json",
 )
 
 
@@ -321,6 +322,8 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
             "akshare/provider-catalog.json",
             "aifin-market/provider-catalog.json",
             "aifin-market/readonly-tools.snapshot.json",
+            "yuandian/provider-catalog.json",
+            "yuandian/readonly-apis.snapshot.json",
             "catalog-metadata.json",
             "connector-manifest.json",
             "connectors/<connector>.connector.json",

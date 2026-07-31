@@ -97,15 +97,15 @@ jobs:
           assert manifest['connector_count'] == len(rows)
           assert manifest['enabled_connector_count'] == len(enabled_rows)
           assert manifest['required_secret_environment_variables'] == expected_secrets
-          assert catalog['schema_version'] == 'api-catalog-v2'
+          assert catalog['schema_version'] == 'api-catalog-v3'
           assert catalog['connector_count'] == manifest['connector_count']
           assert catalog['enabled_connector_count'] == manifest['enabled_connector_count']
-          assert catalog['managed_provider_count'] == 6
-          assert catalog['enabled_managed_provider_count'] == 6
+          assert catalog['managed_provider_count'] == 7
+          assert catalog['enabled_managed_provider_count'] == 7
           assert {row['provider_id'] for row in catalog['managed_providers']} == {
-              'bigquery', 'earth-engine', 'data-commons', 'akshare', 'ashare', 'aifin-market'
+              'bigquery', 'earth-engine', 'data-commons', 'akshare', 'ashare', 'aifin-market', 'yuandian-law'
           }
-          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 31
+          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 93
           assert providers['secret_values_exposed'] is False
           assert {row['provider_id'] for row in providers['providers']} == {
               'bigquery', 'earth-engine', 'data-commons'
@@ -125,8 +125,9 @@ jobs:
               'connectors': manifest['connector_count'],
               'enabled': manifest['enabled_connector_count'],
               'routes': len(validation['endpoints']),
-              'managed_providers': 6,
-              'managed_operations': 31,
+              'managed_providers': 7,
+              'managed_operations': 93,
+              'exposed_parameters': catalog['exposed_parameter_count'],
           }))
           PY
 
@@ -148,5 +149,7 @@ jobs:
             api-center/data-commons/china-starter-pack.json
             api-center/akshare/provider-catalog.json
             api-center/aifin-market/provider-catalog.json
+            api-center/yuandian/provider-catalog.json
+            api-center/yuandian/readonly-apis.snapshot.json
           if-no-files-found: error
           retention-days: 30

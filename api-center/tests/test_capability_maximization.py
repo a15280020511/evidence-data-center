@@ -31,11 +31,13 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_managed_providers_expose_fixed_readonly_operations_only(self) -> None:
         catalog = json.loads((ROOT / "api-catalog.json").read_text(encoding="utf-8"))
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 53)
+        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 93)
         self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
         self.assertEqual(len(providers["akshare"]["operations"]), 17)
         self.assertEqual(len(providers["bigquery"]["operations"]), 7)
         self.assertEqual(len(providers["earth-engine"]["operations"]), 6)
+        self.assertEqual(len(providers["yuandian-law"]["operations"]), 40)
+        self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertFalse(any(row["secret_value_exposed"] for row in providers.values()))
 
     def test_no_unbounded_escape_hatch_is_introduced(self) -> None:
@@ -50,6 +52,13 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(ak_limits["arbitrary_functions_allowed"])
         self.assertFalse(ak_limits["arbitrary_urls_allowed"])
         self.assertFalse(ak_limits["brokerage_execution_allowed"])
+        yuandian = json.loads((ROOT / "yuandian/provider-catalog.json").read_text(encoding="utf-8"))
+        legal_limits = yuandian["providers"][0]["limits"]
+        self.assertFalse(legal_limits["arbitrary_urls_allowed"])
+        self.assertFalse(legal_limits["arbitrary_headers_allowed"])
+        self.assertFalse(legal_limits["write_operations_allowed"])
+        self.assertFalse(legal_limits["secret_values_exposed"])
+        self.assertTrue(legal_limits["direct_personal_identifiers_redacted"])
 
 
 if __name__ == "__main__":
