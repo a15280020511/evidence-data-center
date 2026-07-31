@@ -1,0 +1,69 @@
+name: Temporary owner-only capability patch applicator
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  apply-patch:
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.comment.body == '/apply-capability-patch' &&
+      startsWith(github.event.issue.title, '[maintenance-apply-capability-patch]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      BRANCH_NAME: feat/maximize-api-capabilities-20260731
+      PATCH_SHA256: 708a0c1bdb57e781c32f4167ad9b153097208e0e7a67518ec73f33f1a1b240d6
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Reassemble reviewed patch archive
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments?per_page=100" > /tmp/comments.json
+          python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          rows = json.loads(Path('/tmp/comments.json').read_text(encoding='utf-8'))
+          chunks = {}
+          for row in rows:
+              body = str(row.get('body') or '')
+              match = re.fullmatch(r'PATCH_CHUNK_(\d{2})\n([A-Za-z0-9+/=]+)', body, re.DOTALL)
+              if match:
+                  chunks[int(match.group(1))] = match.group(2)
+          if sorted(chunks) != [1, 2, 3, 4]:
+              raise SystemExit(f'invalid patch chunks: {sorted(chunks)}')
+          Path('/tmp/patch.b64').write_text(''.join(chunks[index] for index in sorted(chunks)), encoding='ascii')
+          PY
+          base64 --decode /tmp/patch.b64 > /tmp/capability-patch.tar.gz
+          echo "${PATCH_SHA256}  /tmp/capability-patch.tar.gz" | sha256sum --check --strict
+
+      - name: Apply patch and remove temporary workflow
+        run: |
+          set -euo pipefail
+          tar -xzf /tmp/capability-patch.tar.gz -C .
+          rm -f .github/workflows/temporary-apply-capability-patch.yml
+          git diff --check
+
+      - name: Commit capability maximization branch
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${BRANCH_NAME}"
+          git add --all
+          git commit -m "feat: maximize safe read-only API capabilities"
+          git push --force-with-lease origin "HEAD:${BRANCH_NAME}"
+          sha="$(git rev-parse HEAD)"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="PATCH_APPLIED_BRANCH=${BRANCH_NAME}\nPATCH_APPLIED_SHA=${sha}"
