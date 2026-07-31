@@ -19,7 +19,7 @@ from jsonschema import Draft202012Validator
 HERE = Path(__file__).resolve().parent
 SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
-SECRET_ENV = "TIANDITU_TOKEN"
+SECRET_ENV = "TIANDITU_API_KEY"
 ENDPOINT = "https://api.tianditu.gov.cn/v2/search"
 PHONE_KEYS = {"phone", "telephone", "tel", "mobile", "mobilephone"}
 QUERY_TYPES = {

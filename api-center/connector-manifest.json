@@ -1,12 +1,11 @@
 {
   "version": 4,
-  "connector_count": 69,
-  "enabled_connector_count": 69,
+  "connector_count": 68,
+  "enabled_connector_count": 68,
   "required_secret_environment_variables": [
     "AMAP_API_KEY",
     "BAIDU_MAP_API_KEY",
-    "NEWSAPI_API_KEY",
-    "TIANDITU_API_KEY"
+    "NEWSAPI_API_KEY"
   ],
   "connector_policy": {
     "default_method": "GET",
@@ -913,22 +912,6 @@
       "connector_sha256": "97150c005ba33ae41fc2ff5c5d88147739c4fb0a485f5eea029e583546c50151"
     },
     {
-      "id": "tianditu-place-search",
-      "file": "connectors/tianditu-place-search.connector.json",
-      "enabled": true,
-      "endpoint": "/data/tianditu/place/search",
-      "method": "GET",
-      "path_parameter_names": [],
-      "write_approved": false,
-      "backend_host": "https://api.tianditu.gov.cn",
-      "secret_environment_variable": "TIANDITU_API_KEY",
-      "secret_injection": "query",
-      "default_circuit_breaker": true,
-      "backend_rate_limit": true,
-      "ssrf_static_policy": "public-host-or-loopback-test-only",
-      "connector_sha256": "b251a928f66892a0fa2c597e15dd99ed56334ece1e77aa6f8987be792e32acef"
-    },
-    {
       "id": "wikidata-claims",
       "file": "connectors/wikidata-claims.connector.json",
       "enabled": true,
@@ -1146,5 +1129,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "validation_config_sha256": "aa9c95a68c186459cfa82d9bb520e03aadb4eedb7e9752330213b3f1d16d4d34"
+  "validation_config_sha256": "3e3783d482ba913d45a0b5ac28fc4623b3775ce2caf88d9ddaac2d82b21cdd2c"
 }

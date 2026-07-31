@@ -11,8 +11,8 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_maximum_safe_readonly_surface_is_registered(self) -> None:
         manifest = json.loads((ROOT / "connector-manifest.json").read_text(encoding="utf-8"))
         rows = manifest["connectors"]
-        self.assertEqual(manifest["connector_count"], 69)
-        self.assertEqual(manifest["enabled_connector_count"], 69)
+        self.assertEqual(manifest["connector_count"], 68)
+        self.assertEqual(manifest["enabled_connector_count"], 68)
         counts = {
             prefix: sum(row["id"].startswith(prefix) for row in rows)
             for prefix in (

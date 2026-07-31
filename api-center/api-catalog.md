@@ -1,11 +1,11 @@
 # API 中心能力目录
 
 - 开放模式：`maximum-safe-readonly`
-- 普通连接器：`69/69` 已启用
+- 普通连接器：`68/68` 已启用
 - 托管提供方：`16/16` 已启用
 - 托管操作总数：`131`
-- 已公开参数总数：`792`
-- 目录 SHA-256：`9096314356480d0cadde3b212986d766065e3b7f5e8bef9c9e76fe8c3fc72f37`
+- 已公开参数总数：`790`
+- 目录 SHA-256：`62ec35d345fb7145092f3a17d27d6d13f9811e6ed4d685d87c6121de788cacd2`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -93,7 +93,6 @@
 | OpenStreetMap 周边商业与公共设施 | `osm-commercial-around` | 启用 | `commercial-spatial-poi` | `GET /data/osm/commercial/around/{latitude}/{longitude}/{radius}` | `3` |
 | OpenStreetMap逆地理编码 | `osm-nominatim-reverse` | 启用 | `geocoding` | `GET /data/osm/nominatim/reverse` | `8` |
 | OpenStreetMap Nominatim 地点搜索 | `osm-nominatim-search` | 启用 | `open-geocoding` | `GET /data/osm/nominatim/search` | `8` |
-| 天地图地名与POI搜索 | `tianditu-place-search` | 启用 | `china-place-search` | `GET /data/tianditu/place/search` | `2` |
 | Wikidata实体声明 | `wikidata-claims` | 启用 | `knowledge-graph` | `GET /data/wikidata/entity/claims` | `5` |
 | Wikidata实体原始JSON | `wikidata-entity-data` | 启用 | `knowledge-graph` | `GET /data/wikidata/entity/{entity_id}` | `1` |
 | Wikidata实体详情 | `wikidata-entity-get` | 启用 | `knowledge-graph` | `GET /data/wikidata/entity/get` | `11` |
@@ -5115,8 +5114,8 @@
 - 目录策略：仅调用天地图官方固定 HTTPS 地名搜索 V2.0 端点；禁止瓦片批量下载、任意 URL、任意请求头、任意代码、写入和账号操作。
 - 执行策略：TIANDITU_TOKEN 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次同步只读请求，并限制坐标范围、周边半径、多边形点数、分页、超时和响应体积，输出中的电话字段自动脱敏。
 - 票据前缀：`[api-tianditu]`
-- Secret环境变量名：`TIANDITU_TOKEN`（仅名称）
-- 提供方SHA-256：`92e850afd24dc650bf09651447a14df0410259c27c921e86c7b6547b3f6ba764`
+- Secret环境变量名：`TIANDITU_API_KEY`（仅名称）
+- 提供方SHA-256：`651a15482cd6683c9af8bcfdbac270984a2b92e865d0ae8c6238cf1329dde372`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -11902,102 +11901,6 @@
 - 结果依赖OpenStreetMap覆盖和名称标注，必须核验名称、地址和geometry
 - 公开服务执行每秒一次限流；不得批量抓取或高频调用
 - 坐标为WGS84经纬度，geometry.coordinates顺序为经度、纬度
-
-## 天地图地名与POI搜索 (`tianditu-place-search`)
-
-- 状态：`启用`
-- 说明：调用天地图地名搜索V2.0固定接口，使用受控postStr查询公开地名、POI、行政区或统计结果。
-- 适用：中国地点与POI核验；行政区和公共设施搜索；空间分析锚点补充
-- 地域：中国；具体覆盖和更新频率以天地图服务为准
-- 新鲜度：请求时读取天地图当前公开数据
-- 成本等级：`provider-key-quota`
-- 详情文件：`connectors/tianditu-place-search.connector.json`
-- Secret环境变量名：`TIANDITU_API_KEY`（仅名称）
-- 连接器SHA-256：`b251a928f66892a0fa2c597e15dd99ed56334ece1e77aa6f8987be792e32acef`
-
-请求契约：
-
-```json
-{
-  "path_parameter_names": [],
-  "path_parameters": {},
-  "query_parameter_names": [
-    "postStr",
-    "type"
-  ],
-  "parameter_rules": {},
-  "parameter_notes": {
-    "postStr": "必填；字符串化JSON。建议普通搜索固定包含keyWord、level、mapBound、queryType、start、count",
-    "type": "必填；固定填写query；tk由服务端Secret注入，不得由客户端提交"
-  },
-  "example_parameters": {
-    "postStr": "{\"keyWord\":\"福州宝龙城市广场\",\"level\":12,\"mapBound\":\"119.20,25.95,119.45,26.20\",\"queryType\":1,\"start\":0,\"count\":10}",
-    "type": "query"
-  },
-  "input_headers": [],
-  "additional_parameters_allowed": false
-}
-```
-
-响应契约：
-
-```json
-{
-  "status_path": "status.infocode",
-  "success_values": [
-    1000
-  ],
-  "error_code_path": "status.infocode",
-  "message_path": "status.cndesc",
-  "any_data_paths": [
-    "pois",
-    "statistics",
-    "area",
-    "lineData",
-    "prompt"
-  ]
-}
-```
-
-安全后端契约：
-
-```json
-{
-  "host": "https://api.tianditu.gov.cn",
-  "url_pattern": "/v2/search",
-  "method": "GET",
-  "encoding": "json",
-  "allowed_response_fields": [
-    "resultType",
-    "count",
-    "keyword",
-    "pois",
-    "statistics",
-    "priorityCitys",
-    "allAdmins",
-    "area",
-    "lineData",
-    "prompt",
-    "status"
-  ],
-  "resilience": {
-    "rate_limit": {
-      "max_rate": 1,
-      "every": "1s",
-      "capacity": 1
-    }
-  },
-  "rate_limit_enabled": true,
-  "circuit_breaker_enabled": true,
-  "ssrf_static_policy": "public-host-or-loopback-test-only"
-}
-```
-
-限制：
-- 需要在天地图开发者控制台申请Key，并配置独立 Repository Secret TIANDITU_API_KEY
-- postStr必须符合天地图官方地名搜索V2.0参数规则；本连接器不接受任意URL
-- POI结果和坐标必须与高德、OpenStreetMap或现场信息交叉核验
-- 配额、许可、坐标体系和使用限制以天地图账户及官方条款为准
 
 ## Wikidata实体声明 (`wikidata-claims`)
 

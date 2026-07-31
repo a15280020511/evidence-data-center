@@ -1,7 +1,7 @@
 {
   "schema_version": "tianditu-provider-catalog-v1",
   "ticket_prefix": "[api-tianditu]",
-  "required_secret_environment_variable": "TIANDITU_TOKEN",
+  "required_secret_environment_variable": "TIANDITU_API_KEY",
   "secret_values_exposed": false,
   "public_non_personal_data_only": true,
   "providers": [
@@ -11,7 +11,7 @@
       "description": "通过国家地理信息公共服务平台天地图地名搜索 V2.0 读取普通、视野、周边、多边形、行政区、分类与统计搜索结果。",
       "enabled": true,
       "ticket_prefix": "[api-tianditu]",
-      "required_secret_environment_variable": "TIANDITU_TOKEN",
+      "required_secret_environment_variable": "TIANDITU_API_KEY",
       "catalog_policy": "仅调用天地图官方固定 HTTPS 地名搜索 V2.0 端点；禁止瓦片批量下载、任意 URL、任意请求头、任意代码、写入和账号操作。",
       "execution_policy": "TIANDITU_TOKEN 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次同步只读请求，并限制坐标范围、周边半径、多边形点数、分页、超时和响应体积，输出中的电话字段自动脱敏。",
       "limits": {
@@ -34,147 +34,550 @@
           "operation_id": "catalog-capabilities",
           "description": "读取天地图适配器本地安全能力目录，不访问上游且不需要密钥。",
           "parameters": [],
-          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}}
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
         },
         {
           "operation_id": "normal-search",
           "description": "执行普通 POI/地名搜索，可限定地图范围、层级和行政区。",
-          "parameters": ["keyword", "map_bound", "level", "specify", "start", "count", "data_types", "show", "place_only"],
+          "parameters": [
+            "keyword",
+            "map_bound",
+            "level",
+            "specify",
+            "start",
+            "count",
+            "data_types",
+            "show",
+            "place_only"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
-            "required": ["keyword", "map_bound", "level"],
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "keyword",
+              "map_bound",
+              "level"
+            ],
             "properties": {
-              "keyword": {"type": "string", "minLength": 1, "maxLength": 200},
-              "map_bound": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}},
-              "level": {"type": "integer", "minimum": 1, "maximum": 18},
-              "specify": {"type": "string", "minLength": 1, "maxLength": 64},
-              "start": {"type": "integer", "minimum": 0, "maximum": 300},
-              "count": {"type": "integer", "minimum": 1, "maximum": 300},
-              "data_types": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}},
-              "show": {"type": "integer", "enum": [1, 2]},
-              "place_only": {"type": "boolean"}
+              "keyword": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "map_bound": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 18
+              },
+              "specify": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 300
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              },
+              "data_types": {
+                "type": "array",
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "show": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              },
+              "place_only": {
+                "type": "boolean"
+              }
             }
           },
-          "result_contract": {"provider": "tianditu", "official_endpoint": "https://api.tianditu.gov.cn/v2/search", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"}
+          "result_contract": {
+            "provider": "tianditu",
+            "official_endpoint": "https://api.tianditu.gov.cn/v2/search",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"
+          }
         },
         {
           "operation_id": "viewport-search",
           "description": "在指定地图视野范围和层级内搜索 POI。",
-          "parameters": ["keyword", "map_bound", "level", "start", "count", "data_types", "show"],
+          "parameters": [
+            "keyword",
+            "map_bound",
+            "level",
+            "start",
+            "count",
+            "data_types",
+            "show"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
-            "required": ["keyword", "map_bound", "level"],
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "keyword",
+              "map_bound",
+              "level"
+            ],
             "properties": {
-              "keyword": {"type": "string", "minLength": 1, "maxLength": 200},
-              "map_bound": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}},
-              "level": {"type": "integer", "minimum": 1, "maximum": 18},
-              "start": {"type": "integer", "minimum": 0, "maximum": 300},
-              "count": {"type": "integer", "minimum": 1, "maximum": 300},
-              "data_types": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}},
-              "show": {"type": "integer", "enum": [1, 2]}
+              "keyword": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "map_bound": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 18
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 300
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              },
+              "data_types": {
+                "type": "array",
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "show": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "tianditu", "official_endpoint": "https://api.tianditu.gov.cn/v2/search", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"}
+          "result_contract": {
+            "provider": "tianditu",
+            "official_endpoint": "https://api.tianditu.gov.cn/v2/search",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"
+          }
         },
         {
           "operation_id": "nearby-search",
           "description": "在指定经纬度中心点周边 10 公里以内搜索 POI。",
-          "parameters": ["keyword", "center", "radius", "level", "start", "count", "data_types", "show"],
+          "parameters": [
+            "keyword",
+            "center",
+            "radius",
+            "level",
+            "start",
+            "count",
+            "data_types",
+            "show"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
-            "required": ["keyword", "center", "radius", "level"],
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "keyword",
+              "center",
+              "radius",
+              "level"
+            ],
             "properties": {
-              "keyword": {"type": "string", "minLength": 1, "maxLength": 200},
-              "center": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}},
-              "radius": {"type": "integer", "minimum": 1, "maximum": 10000},
-              "level": {"type": "integer", "minimum": 1, "maximum": 18},
-              "start": {"type": "integer", "minimum": 0, "maximum": 300},
-              "count": {"type": "integer", "minimum": 1, "maximum": 300},
-              "data_types": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}},
-              "show": {"type": "integer", "enum": [1, 2]}
+              "keyword": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "center": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "radius": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "level": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 18
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 300
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              },
+              "data_types": {
+                "type": "array",
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "show": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "tianditu", "official_endpoint": "https://api.tianditu.gov.cn/v2/search", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"}
+          "result_contract": {
+            "provider": "tianditu",
+            "official_endpoint": "https://api.tianditu.gov.cn/v2/search",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"
+          }
         },
         {
           "operation_id": "polygon-search",
           "description": "在闭合多边形范围内搜索 POI，最多 20 个坐标点。",
-          "parameters": ["keyword", "polygon", "start", "count", "data_types", "show"],
+          "parameters": [
+            "keyword",
+            "polygon",
+            "start",
+            "count",
+            "data_types",
+            "show"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
-            "required": ["keyword", "polygon"],
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "keyword",
+              "polygon"
+            ],
             "properties": {
-              "keyword": {"type": "string", "minLength": 1, "maxLength": 200},
-              "polygon": {"type": "array", "minItems": 4, "maxItems": 20, "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "number"}}},
-              "start": {"type": "integer", "minimum": 0, "maximum": 300},
-              "count": {"type": "integer", "minimum": 1, "maximum": 300},
-              "data_types": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}},
-              "show": {"type": "integer", "enum": [1, 2]}
+              "keyword": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "polygon": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 20,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 300
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              },
+              "data_types": {
+                "type": "array",
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "show": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "tianditu", "official_endpoint": "https://api.tianditu.gov.cn/v2/search", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"}
+          "result_contract": {
+            "provider": "tianditu",
+            "official_endpoint": "https://api.tianditu.gov.cn/v2/search",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"
+          }
         },
         {
           "operation_id": "administrative-search",
           "description": "在指定行政区名称或九位国标码范围内搜索 POI。",
-          "parameters": ["keyword", "specify", "start", "count", "data_types", "show"],
+          "parameters": [
+            "keyword",
+            "specify",
+            "start",
+            "count",
+            "data_types",
+            "show"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
-            "required": ["keyword", "specify"],
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "keyword",
+              "specify"
+            ],
             "properties": {
-              "keyword": {"type": "string", "minLength": 1, "maxLength": 200},
-              "specify": {"type": "string", "minLength": 1, "maxLength": 64},
-              "start": {"type": "integer", "minimum": 0, "maximum": 300},
-              "count": {"type": "integer", "minimum": 1, "maximum": 300},
-              "data_types": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}},
-              "show": {"type": "integer", "enum": [1, 2]}
+              "keyword": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "specify": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 300
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              },
+              "data_types": {
+                "type": "array",
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "show": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "tianditu", "official_endpoint": "https://api.tianditu.gov.cn/v2/search", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"}
+          "result_contract": {
+            "provider": "tianditu",
+            "official_endpoint": "https://api.tianditu.gov.cn/v2/search",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"
+          }
         },
         {
           "operation_id": "category-search",
           "description": "按行政区、地图范围和数据分类检索 POI。",
-          "parameters": ["specify", "map_bound", "start", "count", "data_types", "show"],
+          "parameters": [
+            "specify",
+            "map_bound",
+            "start",
+            "count",
+            "data_types",
+            "show"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
-            "required": ["specify", "map_bound", "data_types"],
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "specify",
+              "map_bound",
+              "data_types"
+            ],
             "properties": {
-              "specify": {"type": "string", "minLength": 1, "maxLength": 64},
-              "map_bound": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "number"}},
-              "start": {"type": "integer", "minimum": 0, "maximum": 300},
-              "count": {"type": "integer", "minimum": 1, "maximum": 300},
-              "data_types": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}},
-              "show": {"type": "integer", "enum": [1, 2]}
+              "specify": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "map_bound": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 300
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300
+              },
+              "data_types": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "show": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "tianditu", "official_endpoint": "https://api.tianditu.gov.cn/v2/search", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"}
+          "result_contract": {
+            "provider": "tianditu",
+            "official_endpoint": "https://api.tianditu.gov.cn/v2/search",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"
+          }
         },
         {
           "operation_id": "statistics-search",
           "description": "按关键字和行政区执行 POI 数量统计搜索。",
-          "parameters": ["keyword", "specify", "data_types", "show"],
+          "parameters": [
+            "keyword",
+            "specify",
+            "data_types",
+            "show"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
-            "required": ["keyword", "specify"],
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "keyword",
+              "specify"
+            ],
             "properties": {
-              "keyword": {"type": "string", "minLength": 1, "maxLength": 200},
-              "specify": {"type": "string", "minLength": 1, "maxLength": 64},
-              "data_types": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 64}},
-              "show": {"type": "integer", "enum": [1, 2]}
+              "keyword": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "specify": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "data_types": {
+                "type": "array",
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                }
+              },
+              "show": {
+                "type": "integer",
+                "enum": [
+                  1,
+                  2
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "tianditu", "official_endpoint": "https://api.tianditu.gov.cn/v2/search", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"}
+          "result_contract": {
+            "provider": "tianditu",
+            "official_endpoint": "https://api.tianditu.gov.cn/v2/search",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://lbs.tianditu.gov.cn/server/search2.html"
+          }
         }
       ]
     }
   ],
-  "replaced_legacy_connectors": []
+  "replaced_legacy_connectors": [
+    {
+      "connector_id": "tianditu-place-search",
+      "replacement": "tianditu managed provider with seven bounded place-search operations"
+    }
+  ]
 }

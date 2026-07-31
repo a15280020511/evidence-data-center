@@ -47,7 +47,7 @@ class TiandituTaskTests(unittest.TestCase):
         catalog = json.loads((ROOT / "provider-catalog.json").read_text(encoding="utf-8"))
         provider = catalog["providers"][0]
         self.assertEqual(provider["provider_id"], "tianditu")
-        self.assertEqual(provider["required_secret_environment_variable"], "TIANDITU_TOKEN")
+        self.assertEqual(provider["required_secret_environment_variable"], "TIANDITU_API_KEY")
         self.assertFalse(catalog["secret_values_exposed"])
         self.assertEqual(len(provider["operations"]), 8)
         self.assertFalse(provider["limits"]["arbitrary_urls_allowed"])
@@ -132,7 +132,7 @@ class TiandituTaskTests(unittest.TestCase):
             self.assertEqual(module.execute(ticket_path, out), 1)
             result = json.loads((out / "result.json").read_text(encoding="utf-8"))
             self.assertEqual(result["status"], "API_TIANDITU_FAILED")
-            self.assertIn("TIANDITU_TOKEN", result["failure"]["message"])
+            self.assertIn("TIANDITU_API_KEY", result["failure"]["message"])
             serialized = json.dumps(result, ensure_ascii=False)
             self.assertNotIn("secret-value", serialized)
             self.assertFalse(result["secret_values_exposed"])
@@ -148,7 +148,7 @@ class TiandituTaskTests(unittest.TestCase):
             {"keyword": "公园", "center": [116.4, 39.9], "radius": 1000, "level": 12},
         )
         with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
-            os.environ, {"TIANDITU_TOKEN": "secret-value"}, clear=True
+            os.environ, {"TIANDITU_API_KEY": "secret-value"}, clear=True
         ), mock.patch.object(module.urllib.request, "urlopen", return_value=FakeResponse(payload)) as mocked:
             ticket_path = Path(tmp) / "ticket.json"
             out = Path(tmp) / "out"
@@ -166,7 +166,7 @@ class TiandituTaskTests(unittest.TestCase):
 
     def test_business_failure_rejects_result(self) -> None:
         payload = {"status": {"infocode": 2001, "cndesc": "请求参数错误"}}
-        with mock.patch.dict(os.environ, {"TIANDITU_TOKEN": "secret-value"}, clear=True), mock.patch.object(
+        with mock.patch.dict(os.environ, {"TIANDITU_API_KEY": "secret-value"}, clear=True), mock.patch.object(
             module.urllib.request, "urlopen", return_value=FakeResponse(payload)
         ):
             with self.assertRaisesRegex(RuntimeError, "business status 2001"):

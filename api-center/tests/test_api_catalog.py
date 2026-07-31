@@ -31,7 +31,7 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["managed_provider_count"], 16)
         self.assertEqual(catalog["enabled_managed_provider_count"], 16)
         self.assertEqual(catalog["managed_operation_count"], 131)
-        self.assertEqual(catalog["exposed_parameter_count"], 792)
+        self.assertEqual(catalog["exposed_parameter_count"], 790)
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
         self.assertEqual(
             set(providers),
@@ -92,7 +92,7 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(providers["firecrawl"]["required_secret_environment_variable_name"], "FIRECRAWL_API_KEY")
         self.assertEqual(providers["tickflow"]["required_secret_environment_variable_name"], "TICKFLOW_API_KEY")
         self.assertEqual(providers["serpapi"]["required_secret_environment_variable_name"], "SERPAPI_API_KEY")
-        self.assertEqual(providers["tianditu"]["required_secret_environment_variable_name"], "TIANDITU_TOKEN")
+        self.assertEqual(providers["tianditu"]["required_secret_environment_variable_name"], "TIANDITU_API_KEY")
         self.assertEqual(providers["tavily"]["ticket_prefix"], "[api-context]")
         self.assertEqual(providers["firecrawl"]["ticket_prefix"], "[api-context]")
         self.assertEqual(providers["tickflow"]["ticket_prefix"], "[api-tickflow]")
