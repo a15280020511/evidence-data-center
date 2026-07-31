@@ -1,0 +1,399 @@
+name: Temporary deterministic API capability finalizer v4
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+env:
+  PATCH_SOURCE_ISSUE: 31
+  PATCH_CLEAN_SOURCE_ISSUE: 34
+  PATCH_B64_LENGTH: 85592
+  PATCH_SHA256: 0000fab8f91e3a4c4d44c54b8ea4fb2958d92e43e1981f8bca3e7b236045f261
+
+jobs:
+  finalize:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[maintenance-finalize-capabilities-v4]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    concurrency:
+      group: api-capability-finalizer
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      WIND_API_KEY: ${{ secrets.WIND_API_KEY }}
+      API_CENTER_SECRETS_JSON: ${{ secrets.API_CENTER_SECRETS_JSON }}
+
+    steps:
+      - name: Report start
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="FINALIZER_V4_RUN_ID=${GITHUB_RUN_ID}\nFINALIZER_V4_STATUS=started"
+
+      - name: Checkout current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Detect current capability state
+        id: detect
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+
+          manifest_path = Path('api-center/connector-manifest.json')
+          wind_path = Path('api-center/aifin-market/provider-catalog.json')
+          expanded = False
+          connector_count = 0
+          wind_operation_count = 0
+          if manifest_path.exists() and wind_path.exists():
+              manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
+              wind = json.loads(wind_path.read_text(encoding='utf-8'))
+              connector_count = int(manifest.get('connector_count', 0))
+              wind_operation_count = len(wind.get('providers', [{}])[0].get('operations', []))
+              expanded = connector_count >= 69 and wind_operation_count >= 17
+          print(f"expanded={'true' if expanded else 'false'}")
+          print(f"connector_count={connector_count}")
+          print(f"wind_operation_count={wind_operation_count}")
+          PY
+
+      - name: Reassemble, recover exact missing character, and verify archive
+        if: steps.detect.outputs.expanded != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PATCH_SOURCE_ISSUE}/comments?per_page=100" > /tmp/legacy-comments.json
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PATCH_CLEAN_SOURCE_ISSUE}/comments?per_page=100" > /tmp/clean-comments.json
+          python - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import multiprocessing as mp
+          import os
+          import re
+          from pathlib import Path
+
+          ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+          LEGACY = ''
+          EXPECTED_SHA = ''
+
+          def read_rows(path):
+              raw = Path(path).read_text(encoding='utf-8')
+              try:
+                  return json.loads(raw)
+              except json.JSONDecodeError:
+                  decoder = json.JSONDecoder()
+                  rows = []
+                  offset = 0
+                  while offset < len(raw):
+                      while offset < len(raw) and raw[offset].isspace():
+                          offset += 1
+                      if offset >= len(raw):
+                          break
+                      value, offset = decoder.raw_decode(raw, offset)
+                      rows.extend(value if isinstance(value, list) else [value])
+                  return rows
+
+          def parse_chunks(rows, marker):
+              chunks = {}
+              pattern = re.compile(
+                  rf'{re.escape(marker)}_(\d{{3}})\s*\n(.*?)(?={re.escape(marker)}_\d{{3}}\s*\n|\Z)',
+                  re.DOTALL,
+              )
+              for row in rows:
+                  body = str(row.get('body') or '')
+                  for match in pattern.finditer(body):
+                      index = int(match.group(1))
+                      payload = re.sub(r'[^A-Za-z0-9+/=]', '', match.group(2))
+                      if payload:
+                          chunks[index] = payload
+              return chunks
+
+          def archive_sha(payload):
+              try:
+                  decoded = base64.b64decode(payload, validate=True)
+              except Exception:
+                  return None
+              return hashlib.sha256(decoded).hexdigest()
+
+          def search_position(position):
+              prefix = LEGACY[:position]
+              suffix = LEGACY[position:]
+              for character in ALPHABET:
+                  candidate = prefix + character + suffix
+                  if archive_sha(candidate) == EXPECTED_SHA:
+                      return position, character
+              return None
+
+          legacy_chunks = parse_chunks(read_rows('/tmp/legacy-comments.json'), 'PATCH_CHUNK')
+          clean_chunks = parse_chunks(read_rows('/tmp/clean-comments.json'), 'PATCH2_CHUNK')
+          if not legacy_chunks:
+              raise SystemExit('no legacy PATCH_CHUNK source found')
+          legacy_indices = list(range(1, max(legacy_chunks) + 1))
+          if sorted(legacy_chunks) != legacy_indices:
+              raise SystemExit(f'non-contiguous legacy chunks: {sorted(legacy_chunks)}')
+          legacy = ''.join(legacy_chunks[index] for index in legacy_indices)
+          lengths = {index: len(legacy_chunks[index]) for index in legacy_indices}
+          print(f'LEGACY_CHUNK_LENGTHS={lengths}')
+          print(f'LEGACY_JOINED_LENGTH={len(legacy)}')
+
+          required_clean = [1, 3, 4, 5, 6, 7, 8, 9]
+          missing_clean = [index for index in required_clean if index not in clean_chunks]
+          if missing_clean:
+              raise SystemExit(f'missing clean reference chunks: {missing_clean}')
+          clean_prefix_missing_one = clean_chunks[1]
+          clean_suffix = ''.join(clean_chunks[index] for index in range(3, 10))
+          if len(clean_prefix_missing_one) != 9999 or len(clean_suffix) != 65592:
+              raise SystemExit(
+                  f'invalid clean references: prefix={len(clean_prefix_missing_one)}, '
+                  f'suffix={len(clean_suffix)}'
+              )
+
+          expected_length = int(os.environ['PATCH_B64_LENGTH'])
+          expected_sha = os.environ['PATCH_SHA256']
+          if len(legacy) != expected_length - 1:
+              raise SystemExit(f'legacy length={len(legacy)}, expected={expected_length - 1}')
+          if legacy[:9999] != clean_prefix_missing_one:
+              raise SystemExit('legacy and clean source do not share the same 9,999-character prefix')
+          if legacy[19999:] != clean_suffix:
+              raise SystemExit('clean suffix does not align after a single deletion before offset 20,000')
+
+          # The legacy transfer chunks show exactly one deficient payload: chunk 2
+          # has 6,999 characters while its adjacent chunks establish a 7,000
+          # character segment. Search that narrow interval first. The predeclared
+          # decoded archive SHA-256 is the sole acceptance oracle.
+          preferred_start = len(legacy_chunks[1])
+          preferred_end = preferred_start + len(legacy_chunks[2]) + 1
+          preferred_positions = list(range(preferred_start, preferred_end + 1))
+          fallback_positions = [
+              position for position in range(0, 20001)
+              if position < preferred_start or position > preferred_end
+          ]
+
+          LEGACY = legacy
+          EXPECTED_SHA = expected_sha
+          repair_position = None
+          repair_character = None
+          context = mp.get_context('fork')
+          workers = max(1, min(4, os.cpu_count() or 1))
+          for label, positions in (
+              ('preferred', preferred_positions),
+              ('fallback', fallback_positions),
+          ):
+              print(f'REPAIR_SEARCH={label},POSITIONS={len(positions)},WORKERS={workers}')
+              pool = context.Pool(processes=workers)
+              try:
+                  for result in pool.imap_unordered(search_position, positions, chunksize=16):
+                      if result is not None:
+                          repair_position, repair_character = result
+                          pool.terminate()
+                          break
+                  else:
+                      pool.close()
+              finally:
+                  pool.join()
+              if repair_position is not None:
+                  break
+
+          if repair_position is None or repair_character is None:
+              raise SystemExit('unable to recover the unique missing Base64 character')
+          repaired = legacy[:repair_position] + repair_character + legacy[repair_position:]
+          if len(repaired) != expected_length:
+              raise SystemExit(f'repaired length={len(repaired)}, expected={expected_length}')
+          if repaired[20000:] != clean_suffix:
+              raise SystemExit('repaired archive conflicts with exact clean suffix')
+          if archive_sha(repaired) != expected_sha:
+              raise SystemExit('repaired archive SHA-256 mismatch')
+          Path('/tmp/patch.b64').write_text(repaired, encoding='ascii')
+          print(f'REPAIR_POSITION={repair_position}')
+          print(f'REPAIR_CHARACTER={repair_character}')
+          print(f'REPAIRED_B64_LENGTH={len(repaired)}')
+          PY
+          base64 --decode /tmp/patch.b64 > /tmp/capability-patch.tar.gz
+          echo "${PATCH_SHA256}  /tmp/capability-patch.tar.gz" | sha256sum --check --strict
+
+      - name: Apply reviewed patch when required
+        if: steps.detect.outputs.expanded != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar -xzf /tmp/capability-patch.tar.gz -C .
+          git diff --check
+
+      - name: Regenerate deterministic contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python api-center/build_config.py
+          python api-center/build_catalog.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
+          catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          wind = json.loads(Path('api-center/aifin-market/provider-catalog.json').read_text(encoding='utf-8'))
+          connector_count = manifest['connector_count']
+          catalog_connector_count = catalog['connector_count']
+          provider_count = catalog['managed_provider_count']
+          operation_count = sum(len(row['operations']) for row in catalog['managed_providers'])
+          wind_operation_count = len(wind['providers'][0]['operations'])
+          assert connector_count == 69, connector_count
+          assert catalog_connector_count == 69, catalog_connector_count
+          assert provider_count == 6, provider_count
+          assert operation_count == 53, operation_count
+          assert wind_operation_count == 17, wind_operation_count
+          print('CONTRACT_COUNTS_OK')
+          PY
+
+      - name: Install validation dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
+          if [[ -f api-center/akshare/requirements.txt ]]; then
+            python -m pip install --disable-pip-version-check --no-input -r api-center/akshare/requirements.txt
+          fi
+          python -m pip check
+
+      - name: Run full zero-write validation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m compileall -q api-center
+          python -m unittest discover -s api-center/tests -v
+          python -m unittest discover -s api-center/aifin-market/tests -v
+          python -m unittest discover -s api-center/akshare/tests -v
+          python -m unittest discover -s api-center/ashare/tests -v
+
+      - name: Resolve Wind key without exposing it
+        shell: bash
+        run: |
+          set -euo pipefail
+          resolved="${WIND_API_KEY:-}"
+          if [[ -z "${resolved}" && -n "${API_CENTER_SECRETS_JSON:-}" ]]; then
+            resolved="$(python - <<'PY'
+          import json
+          import os
+          try:
+              value = json.loads(os.environ.get('API_CENTER_SECRETS_JSON') or '{}').get('WIND_API_KEY') or ''
+          except Exception:
+              value = ''
+          print(str(value), end='')
+          PY
+            )"
+          fi
+          [[ -n "${resolved}" ]] || { echo 'WIND_API_KEY missing'; exit 1; }
+          echo "WIND_API_KEY=${resolved}" >> "$GITHUB_ENV"
+
+      - name: Real Wind expanded-operation smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/wind-smoke
+          mkdir -p /tmp/wind-smoke
+          cat > /tmp/wind-ticket.json <<'JSON'
+          {
+            "task_id": "finalizer-v2-wind-basicinfo-20260731",
+            "objective": "Verify expanded Wind company basic-information operation",
+            "data_policy": {"classification": "public", "contains_personal_data": false},
+            "operation": "stock-basicinfo",
+            "parameters": {"windcode": "600519.SH"}
+          }
+          JSON
+          python api-center/aifin-market/aifin_task.py execute \
+            --ticket /tmp/wind-ticket.json --output-dir /tmp/wind-smoke
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row = json.loads(Path('/tmp/wind-smoke/aifin-snapshot.json').read_text(encoding='utf-8'))
+          assert row['status'] == 'API_AIFIN_COMPLETED', row
+          assert row.get('upstream_called') is True, row
+          assert row.get('result') not in (None, {}, [], ''), row
+          print('WIND_EXPANDED_SMOKE_OK')
+          PY
+
+      - name: Real AKShare expanded-operation smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/akshare-smoke
+          mkdir -p /tmp/akshare-smoke
+          cat > /tmp/akshare-ticket.json <<'JSON'
+          {
+            "task_id": "finalizer-v2-akshare-gdp-20260731",
+            "objective": "Verify expanded AKShare China GDP operation",
+            "data_policy": {"classification": "public", "contains_personal_data": false},
+            "operation": "macro-china-gdp",
+            "parameters": {}
+          }
+          JSON
+          python api-center/akshare/akshare_task.py execute \
+            --ticket /tmp/akshare-ticket.json --output-dir /tmp/akshare-smoke
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row = json.loads(Path('/tmp/akshare-smoke/akshare-snapshot.json').read_text(encoding='utf-8'))
+          assert row['status'] == 'API_AKSHARE_COMPLETED', row
+          assert row.get('upstream_called') is True, row
+          assert row.get('result') not in (None, {}, [], ''), row
+          print('AKSHARE_EXPANDED_SMOKE_OK')
+          PY
+
+      - name: Remove temporary applicators
+        shell: bash
+        run: |
+          rm -f \
+            .github/workflows/temporary-apply-capability-patch.yml \
+            .github/workflows/temporary-apply-capability-patch-v2.yml \
+            .github/workflows/temporary-robust-capability-applicator.yml \
+            .github/workflows/temporary-finalize-capabilities.yml \
+            .github/workflows/temporary-finalize-capabilities-v2.yml \
+            .github/workflows/temporary-finalize-capabilities-v3.yml \
+            .github/workflows/temporary-finalize-capabilities-v4.yml
+          git diff --check
+
+      - name: Commit validated state to main
+        id: publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B main
+          git add --all
+          if git diff --cached --quiet; then
+            sha="$(git rev-parse HEAD)"
+          else
+            git commit -m "feat: maximize safe read-only API capabilities"
+            git push origin HEAD:main
+            sha="$(git rev-parse HEAD)"
+          fi
+          echo "sha=${sha}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish completion receipt and close maintenance issues
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="FINALIZER_V4_STATUS=completed\nMAIN_SHA=${{ steps.publish.outputs.sha }}\nCONNECTORS=69\nMANAGED_PROVIDERS=6\nMANAGED_OPERATIONS=53\nWIND_OPERATIONS=17\nWIND_EXPANDED_SMOKE=passed\nAKSHARE_EXPANDED_SMOKE=passed\nTEMPORARY_WORKFLOWS_REMOVED=true"
+          for issue in $(seq 31 42); do
+            gh issue close "${issue}" --reason completed >/dev/null 2>&1 || true
+          done
+          gh issue close "${{ github.event.issue.number }}" --reason completed >/dev/null 2>&1 || true
+
+      - name: Report structured failure
+        if: failure()
+        shell: bash
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="FINALIZER_V4_RUN_ID=${GITHUB_RUN_ID}\nFINALIZER_V4_STATUS=failed\nNo validated main commit was published by this run."
