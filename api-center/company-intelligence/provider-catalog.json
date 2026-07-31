@@ -1,7 +1,7 @@
 {
-  "schema_version": "company-intelligence-provider-catalog-v2",
-  "ticket_prefix": "[api-company]",
-  "required_secret_environment_variable": "TIANYANCHA_API_TOKEN",
+  "schema_version": "china-commercial-provider-catalog-v1",
+  "ticket_prefix": "",
+  "required_secret_environment_variable": "",
   "secret_values_exposed": false,
   "replaced_legacy_connectors": [],
   "providers": [
@@ -71,6 +71,83 @@
           "discovery_policy": {
             "source": "official-documentation",
             "documentation_url": "https://open.tianyancha.com/open/825"
+          }
+        }
+      ]
+    },
+    {
+      "provider_id": "miaoxiang",
+      "display_name": "东方财富妙想金融 API",
+      "description": "通过东方财富妙想金融能力读取金融资讯、行情与财务数据，并执行只读智能选股。",
+      "enabled": true,
+      "ticket_prefix": "[api-mx]",
+      "required_secret_environment_variable": "MX_APIKEY",
+      "catalog_policy": "仅登记东方财富妙想公开发布的固定只读接口；不接受任意 URL、请求头、代码或未登记路径。",
+      "execution_policy": "每张票据执行一个只读请求；禁止修改自选股、模拟交易、撤单、账户资金和其他写操作。",
+      "limits": {
+        "requests_per_ticket": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 2000000,
+        "max_query_characters": 500,
+        "stock_screen_page_size_max": 100
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取妙想适配器的本地安全能力目录，不访问上游且不需要密钥。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}}
+        },
+        {
+          "operation_id": "financial-search",
+          "description": "调用妙想资讯搜索，检索金融新闻、公告、研报、政策和市场事件。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "result_contract": {
+            "official_endpoint": "https://mkapi2.dfcfs.com/finskillshub/api/claw/news-search",
+            "http_method": "POST",
+            "read_only": true
+          }
+        },
+        {
+          "operation_id": "financial-data",
+          "description": "调用妙想金融数据查询，读取行情、资金、估值、财务、企业关系和经营数据。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "result_contract": {
+            "official_endpoint": "https://mkapi2.dfcfs.com/finskillshub/api/claw/query",
+            "http_method": "POST",
+            "read_only": true
+          }
+        },
+        {
+          "operation_id": "stock-screen",
+          "description": "调用妙想智能选股，根据自然语言条件筛选证券并返回分页结果。",
+          "parameters": ["keyword", "page_no", "page_size"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "keyword": {"type": "string", "minLength": 1, "maxLength": 500},
+              "page_no": {"type": "integer", "minimum": 1, "maximum": 100},
+              "page_size": {"type": "integer", "minimum": 1, "maximum": 100}
+            },
+            "required": ["keyword"]
+          },
+          "result_contract": {
+            "official_endpoint": "https://mkapi2.dfcfs.com/finskillshub/api/claw/stock-screen",
+            "http_method": "POST",
+            "read_only": true
           }
         }
       ]
