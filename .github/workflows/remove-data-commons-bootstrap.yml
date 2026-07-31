@@ -1,0 +1,71 @@
+name: Bootstrap retired provider removal
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: bootstrap-retired-provider-removal
+  cancel-in-progress: false
+
+jobs:
+  run:
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.issue.title == '[maintenance] remove-data-commons'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      TARGET_BRANCH: remove/data-commons-20260801
+    steps:
+      - name: Checkout removal branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Execute branch-local deterministic removal
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input pyyaml
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import yaml
+
+          workflow = yaml.safe_load(Path('.github/workflows/remove-data-commons-branch.yml').read_text(encoding='utf-8'))
+          steps = workflow['jobs']['remove']['steps']
+          executed = 0
+          for step in steps:
+              script = step.get('run')
+              if not script:
+                  continue
+              name = str(step.get('name') or '')
+              print(f'::group::{name}')
+              subprocess.run(['bash', '-lc', script], check=True)
+              print('::endgroup::')
+              executed += 1
+          if executed != 4:
+              raise SystemExit(f'expected 4 executable steps, got {executed}')
+          PY
+
+      - name: Publish receipt
+        if: success()
+        run: |
+          sha=$(git rev-parse HEAD)
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -f body="DATA_COMMONS_REMOVAL_COMPLETED branch=${TARGET_BRANCH} commit=${sha} tests=passed model_calls=0"
+
+      - name: Publish failure
+        if: failure()
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -f body="DATA_COMMONS_REMOVAL_FAILED branch=${TARGET_BRANCH} run=${GITHUB_RUN_ID} model_calls=0"
