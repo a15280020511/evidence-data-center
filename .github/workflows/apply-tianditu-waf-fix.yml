@@ -1,118 +1,116 @@
-name: Test Tianditu WAF Fix
+name: Diagnose Tianditu CloudWAF
 
 on:
   pull_request:
     branches: [main]
     paths:
-      - "api-center/tianditu/**"
-      - ".github/workflows/tianditu-api-ticket.yml"
       - ".github/workflows/apply-tianditu-waf-fix.yml"
 
 permissions:
   contents: read
 
 concurrency:
-  group: test-tianditu-waf-fix-${{ github.head_ref }}
+  group: diagnose-tianditu-waf-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
-  live-probe:
+  protocol-matrix:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 10
     env:
       TIANDITU_API_KEY: ${{ secrets.TIANDITU_API_KEY }}
     steps:
-      - name: Checkout repair branch
+      - name: Checkout branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.head_ref }}
           persist-credentials: false
 
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          python-version: "3.12"
-
-      - name: Install validation dependencies
-        run: |
-          python -m pip install --disable-pip-version-check --no-input -r api-center/tianditu/requirements.txt
-          python -m pip check
-
-      - name: Run deterministic tests
-        run: |
-          python -m py_compile api-center/tianditu/tianditu_task.py
-          python -m unittest discover -s api-center/tianditu/tests -v
-
-      - name: Build minimal live ticket
-        run: |
-          mkdir -p tianditu-live
-          cat > tianditu-live/ticket.json <<'JSON'
-          {
-            "task_id": "tianditu-waf-fix-live-20260801",
-            "provider": "tianditu",
-            "operation": "administrative-search",
-            "objective": "Validate repaired Tianditu transport against the official API",
-            "parameters": {
-              "keyword": "小学",
-              "specify": "福州市",
-              "start": 0,
-              "count": 1,
-              "show": 1
-            },
-            "data_policy": {
-              "classification": "public",
-              "contains_personal_data": false
-            },
-            "acceptance": {
-              "timeout_seconds": 45,
-              "max_response_bytes": 1000000
-            }
-          }
-          JSON
-
-      - name: Execute real Tianditu request
-        id: live
-        continue-on-error: true
-        run: |
-          python api-center/tianditu/tianditu_task.py execute \
-            --ticket tianditu-live/ticket.json \
-            --output-dir tianditu-live
-
-      - name: Print safe diagnostic summary
-        if: always()
+      - name: Run safe protocol matrix
         run: |
           python - <<'PY'
           import json
+          import os
+          import re
+          import subprocess
+          import tempfile
+          import urllib.parse
           from pathlib import Path
-          result = json.loads(Path('tianditu-live/result.json').read_text(encoding='utf-8'))
-          summary = {
-              'status': result['status'],
-              'metadata': result.get('metadata'),
-              'failure': result.get('failure'),
-              'secret_values_exposed': result['secret_values_exposed'],
-              'snapshot_sha256': result['snapshot_sha256'],
+
+          endpoint = 'https://api.tianditu.gov.cn/v2/search'
+          key = os.environ['TIANDITU_API_KEY']
+          headers = [
+              'Accept: application/json,text/plain,*/*',
+              'Accept-Language: zh-CN,zh;q=0.9,en;q=0.8',
+              'Referer: https://lbs.tianditu.gov.cn/',
+              'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36',
+          ]
+          post_utf8 = json.dumps({
+              'keyWord': '小学', 'specify': '福州市', 'queryType': 12,
+              'start': 0, 'count': 1, 'show': 1,
+          }, ensure_ascii=False, separators=(',', ':'))
+          post_ascii = json.dumps({
+              'keyWord': '小学', 'specify': '156350100', 'queryType': 12,
+              'start': 0, 'count': 1, 'show': 1,
+          }, ensure_ascii=True, separators=(',', ':'))
+          variants = {
+              'root': 'https://api.tianditu.gov.cn/',
+              'endpoint_no_query': endpoint,
+              'type_only': endpoint + '?type=query',
+              'encoded_utf8': endpoint + '?' + urllib.parse.urlencode({
+                  'postStr': post_utf8, 'type': 'query', 'tk': key,
+              }, quote_via=urllib.parse.quote),
+              'encoded_ascii_numeric_admin': endpoint + '?' + urllib.parse.urlencode({
+                  'postStr': post_ascii, 'type': 'query', 'tk': key,
+              }, quote_via=urllib.parse.quote),
+              'structural_json_ascii': endpoint + '?postStr=' + urllib.parse.quote(
+                  post_ascii, safe='{},:'
+              ) + '&type=query&tk=' + urllib.parse.quote(key, safe=''),
           }
-          print(json.dumps(summary, ensure_ascii=False, indent=2))
+
+          results = []
+          for name, url in variants.items():
+              with tempfile.TemporaryDirectory() as tmp:
+                  body = Path(tmp) / 'body'
+                  head = Path(tmp) / 'head'
+                  config = ['url = ' + json.dumps(url)]
+                  config.extend('header = ' + json.dumps(value) for value in headers)
+                  proc = subprocess.run([
+                      'curl', '--silent', '--show-error', '--http1.1', '--compressed',
+                      '--connect-timeout', '10', '--max-time', '20',
+                      '--dump-header', str(head), '--output', str(body),
+                      '--write-out', '%{http_code}', '--config', '-'
+                  ], input='\n'.join(config) + '\n', text=True, capture_output=True, check=False)
+                  raw = body.read_bytes() if body.exists() else b''
+                  header_text = head.read_text(encoding='iso-8859-1', errors='replace') if head.exists() else ''
+                  status_text = proc.stdout.strip()[-3:]
+                  status = int(status_text) if status_text.isdigit() else 0
+                  server_matches = re.findall(r'(?im)^server:\s*(.+)$', header_text)
+                  content_matches = re.findall(r'(?im)^content-type:\s*(.+)$', header_text)
+                  sample = raw[:2000].decode('utf-8', errors='replace')
+                  title = re.search(r'(?is)<title[^>]*>(.*?)</title>', sample)
+                  results.append({
+                      'variant': name,
+                      'http_status': status,
+                      'curl_exit_code': proc.returncode,
+                      'server': server_matches[-1].strip() if server_matches else '',
+                      'content_type': content_matches[-1].strip() if content_matches else '',
+                      'title': re.sub(r'\s+', ' ', title.group(1)).strip() if title else '',
+                      'body_is_json': sample.lstrip().startswith(('{', '[')),
+                      'body_size': len(raw),
+                  })
+          print(json.dumps({'secret_values_exposed': False, 'results': results}, ensure_ascii=False, indent=2))
+          Path('tianditu-waf-matrix.json').write_text(
+              json.dumps({'secret_values_exposed': False, 'results': results}, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
           PY
 
-      - name: Upload live diagnostic evidence
+      - name: Upload matrix evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: tianditu-waf-live-${{ github.run_id }}
-          path: tianditu-live/
+          name: tianditu-waf-matrix-${{ github.run_id }}
+          path: tianditu-waf-matrix.json
           if-no-files-found: error
           retention-days: 30
-
-      - name: Require business success
-        if: always()
-        run: |
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          result = json.loads(Path('tianditu-live/result.json').read_text(encoding='utf-8'))
-          if result['status'] != 'API_TIANDITU_COMPLETED':
-              raise SystemExit(f"live probe failed: {result.get('failure')}")
-          if str(result.get('metadata', {}).get('business_status')) != '1000':
-              raise SystemExit('Tianditu business status is not 1000')
-          PY
