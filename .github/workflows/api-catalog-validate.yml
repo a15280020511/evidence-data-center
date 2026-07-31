@@ -97,16 +97,22 @@ jobs:
               for row in enabled_rows
               if row.get('secret_environment_variable')
           })
-          assert manifest['connector_count'] == len(rows) == 69
-          assert manifest['enabled_connector_count'] == len(enabled_rows) == 69
+          connector_ids = {row['id'] for row in rows}
+          assert manifest['connector_count'] == len(rows) == 68
+          assert manifest['enabled_connector_count'] == len(enabled_rows) == 68
           assert manifest['required_secret_environment_variables'] == expected_secrets
+          assert 'tianditu-place-search' not in connector_ids
+          assert 'TIANDITU_API_KEY' not in manifest['required_secret_environment_variables']
+          assert not Path('api-center/connectors/tianditu-place-search.connector.json').exists()
+          assert not Path('api-center/tests/test_tianditu_connector.py').exists()
+
           assert catalog['schema_version'] == 'api-catalog-v3'
-          assert catalog['connector_count'] == 69
-          assert catalog['enabled_connector_count'] == 69
+          assert catalog['connector_count'] == 68
+          assert catalog['enabled_connector_count'] == 68
           assert catalog['managed_provider_count'] == 16
           assert catalog['enabled_managed_provider_count'] == 16
           assert catalog['managed_operation_count'] == 131
-          assert catalog['exposed_parameter_count'] == 792
+          assert catalog['exposed_parameter_count'] == 790
           assert catalog['secret_values_exposed'] is False
 
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
@@ -147,7 +153,7 @@ jobs:
               'firecrawl': 'FIRECRAWL_API_KEY',
               'tickflow': 'TICKFLOW_API_KEY',
               'serpapi': 'SERPAPI_API_KEY',
-              'tianditu': 'TIANDITU_TOKEN',
+              'tianditu': 'TIANDITU_API_KEY',
           }
           for provider_id, secret_name in expected_secret_names.items():
               assert providers[provider_id]['required_secret_environment_variable_name'] == secret_name
@@ -169,14 +175,20 @@ jobs:
           assert limits['direct_phone_fields_redacted'] is True
           assert 'tianditu/provider-catalog.json' in catalog['managed_provider_catalog_files']
           assert 'tianditu/provider-catalog.json' in catalog['detail_reading_order']
+          assert 'TIANDITU_TOKEN' not in json.dumps(tianditu, ensure_ascii=False)
+          assert any(
+              row['connector_id'] == 'tianditu-place-search'
+              for row in catalog['replaced_legacy_connectors']
+          )
 
           print(json.dumps({
               'status': 'PASS',
-              'connectors': 69,
+              'connectors': 68,
               'managed_providers': 16,
               'managed_operations': 131,
-              'exposed_parameters': 792,
+              'exposed_parameters': 790,
               'tianditu_operations': 8,
+              'legacy_tianditu_connector': 'removed',
           }))
           PY
 
