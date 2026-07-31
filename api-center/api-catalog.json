@@ -16,12 +16,12 @@
     "company-intelligence/provider-catalog.json",
     "web-retrieval/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "eaeb7b2860bb1a0ad4350c16f2e0dce6b85fc55b2984b47a816caa87c081617b",
+  "managed_provider_catalog_sha256": "b1b1a7d72b6691d9a2c287ec22cecb9d9631b092d31ba334d747ed5970be1ca7",
   "connector_count": 69,
   "enabled_connector_count": 69,
   "managed_provider_count": 11,
   "enabled_managed_provider_count": 11,
-  "managed_operation_count": 104,
+  "managed_operation_count": 105,
   "exposed_parameter_count": 668,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
@@ -372,10 +372,10 @@
         "hard_max_rows": 5000,
         "query_timeout_ms": 30000
       },
-      "required_secret_environment_variable_name": "BIGQUERY_SERVICE_ACCOUNT_JSON",
+      "required_secret_environment_variable_name": "GOOGLE_CREDENTIALS_JSON",
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
-      "provider_sha256": "8397745c4f05dcf2bb17ecfd2aab9372c1a0bf28831b6d7a731fce29d55595cc",
+      "provider_sha256": "b1a8c325645e8a09b0095278267b2570cf374ebeac671c7b61e76fb3539f7333",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -545,10 +545,10 @@
         "max_algorithm_results": 200,
         "max_dataset_results": 100
       },
-      "required_secret_environment_variable_name": "EARTH_ENGINE_SERVICE_ACCOUNT_JSON",
+      "required_secret_environment_variable_name": "GOOGLE_CREDENTIALS_JSON",
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
-      "provider_sha256": "833e3999ce99340e9db7d2192c6bf7b0614b67581b686f2aefa73741d173ca33",
+      "provider_sha256": "e82d1548e47c49c9c94e36d7d5a820bad8170c8205aaf3e15c0c27e221c04ab4",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -727,10 +727,10 @@
         "max_response_bytes": 1000000,
         "timeout_seconds": 60
       },
-      "required_secret_environment_variable_name": "GOOGLE_DATA_COMMONS_API_KEY",
+      "required_secret_environment_variable_name": "GOOGLE_CREDENTIALS_JSON",
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
-      "provider_sha256": "54da4c493916be4a170264ed85762d702ea4af6008f012346327498cb1a7ade0",
+      "provider_sha256": "3b2841e6d5d97452f8c2989bbe9c1cf97ca10baa7b42c2099780ddfd56e3a6c5",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -4288,118 +4288,6 @@
       }
     },
     {
-      "provider_id": "qichacha",
-      "display_name": "企查查开放平台",
-      "description": "通过企查查官方开放平台读取企业模糊搜索和对外投资等公开企业数据。",
-      "enabled": true,
-      "ticket_prefix": "[api-company]",
-      "catalog_policy": "仅暴露仓库固定登记的企查查官方只读接口，不接受任意 URL、请求头或代码。",
-      "execution_policy": "运行时从单一 JSON Secret 读取 app_key 与 secret_key，动态生成 Timespan 和 MD5 Token；每张票据执行一个只读请求并过滤直接联系方式与个人身份字段。",
-      "operation_count": 3,
-      "operations": [
-        {
-          "operation_id": "catalog-capabilities",
-          "description": "读取企查查适配器本地安全能力目录，不访问上游且不需要密钥。",
-          "parameter_names": [],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {}
-          }
-        },
-        {
-          "operation_id": "company-search",
-          "description": "调用企查查企业模糊搜索，根据企业名、统一社会信用代码、地址、产品等关键词返回最多5个企业候选。",
-          "parameter_names": [
-            "keyword",
-            "page_index"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "keyword": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
-              },
-              "page_index": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 100
-              }
-            },
-            "required": [
-              "keyword"
-            ]
-          },
-          "result_contract": {
-            "provider": "qichacha",
-            "official_endpoint": "https://api.qichacha.com/FuzzySearch/GetList",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation",
-            "documentation_url": "https://openapi.qcc.com/dataApi/886"
-          }
-        },
-        {
-          "operation_id": "company-investments",
-          "description": "调用企查查企业对外投资核查接口，按企业名称或统一社会信用代码读取对外投资企业明细。",
-          "parameter_names": [
-            "keyword",
-            "page_index",
-            "page_size"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "keyword": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 200
-              },
-              "page_index": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 100
-              },
-              "page_size": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 20
-              }
-            },
-            "required": [
-              "keyword"
-            ]
-          },
-          "result_contract": {
-            "provider": "qichacha",
-            "official_endpoint": "https://api.qichacha.com/InvestmentCheck/GetList",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation",
-            "documentation_url": "https://openapi.qcc.com/dataApi/884"
-          }
-        }
-      ],
-      "limits": {
-        "requests_per_ticket": 1,
-        "timeout_seconds_max": 60,
-        "max_response_bytes": 2000000
-      },
-      "required_secret_environment_variable_name": "QICHACHA_CREDENTIALS_JSON",
-      "optional_secret_environment_variable_name": "",
-      "secret_value_exposed": false,
-      "provider_sha256": "85abe40844bb052de018ca38695efc22d520207c35c37712e4d6264da767fb29",
-      "catalog_file": "company-intelligence/provider-catalog.json"
-    },
-    {
       "provider_id": "tianyancha",
       "display_name": "天眼查开放平台",
       "description": "通过天眼查官方开放平台读取企业基本信息和企业年报等公开企业数据。",
@@ -4497,6 +4385,130 @@
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "cfae6391c6824cc14c5d90bbc3c90c2ec5bfe97910735691ff687db980909544",
+      "catalog_file": "company-intelligence/provider-catalog.json"
+    },
+    {
+      "provider_id": "miaoxiang",
+      "display_name": "东方财富妙想金融 API",
+      "description": "通过东方财富妙想金融能力读取金融资讯、行情与财务数据，并执行只读智能选股。",
+      "enabled": true,
+      "ticket_prefix": "[api-mx]",
+      "catalog_policy": "仅登记东方财富妙想公开发布的固定只读接口；不接受任意 URL、请求头、代码或未登记路径。",
+      "execution_policy": "每张票据执行一个只读请求；禁止修改自选股、模拟交易、撤单、账户资金和其他写操作。",
+      "operation_count": 4,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取妙想适配器的本地安全能力目录，不访问上游且不需要密钥。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "financial-search",
+          "description": "调用妙想资讯搜索，检索金融新闻、公告、研报、政策和市场事件。",
+          "parameter_names": [
+            "query"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "official_endpoint": "https://mkapi2.dfcfs.com/finskillshub/api/claw/news-search",
+            "http_method": "POST",
+            "read_only": true
+          }
+        },
+        {
+          "operation_id": "financial-data",
+          "description": "调用妙想金融数据查询，读取行情、资金、估值、财务、企业关系和经营数据。",
+          "parameter_names": [
+            "query"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "official_endpoint": "https://mkapi2.dfcfs.com/finskillshub/api/claw/query",
+            "http_method": "POST",
+            "read_only": true
+          }
+        },
+        {
+          "operation_id": "stock-screen",
+          "description": "调用妙想智能选股，根据自然语言条件筛选证券并返回分页结果。",
+          "parameter_names": [
+            "keyword",
+            "page_no",
+            "page_size"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "keyword": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "page_no": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "page_size": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "keyword"
+            ]
+          },
+          "result_contract": {
+            "official_endpoint": "https://mkapi2.dfcfs.com/finskillshub/api/claw/stock-screen",
+            "http_method": "POST",
+            "read_only": true
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 2000000,
+        "max_query_characters": 500,
+        "stock_screen_page_size_max": 100
+      },
+      "required_secret_environment_variable_name": "MX_APIKEY",
+      "optional_secret_environment_variable_name": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "ccd53455ebe7f9945eae858c350bf635362edf29ccbc98a89dae3f93c0ea2843",
       "catalog_file": "company-intelligence/provider-catalog.json"
     },
     {
@@ -13179,5 +13191,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "acb528e52838243fbcf1d74fecb0253569966ee600ac070ffad308a34eae89aa"
+  "catalog_sha256": "7f294445cde436a76e3c921966a4601da14b4846c9280939fff4c0a7349bec14"
 }

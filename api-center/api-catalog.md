@@ -3,9 +3,9 @@
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`69/69` 已启用
 - 托管提供方：`11/11` 已启用
-- 托管操作总数：`104`
+- 托管操作总数：`105`
 - 已公开参数总数：`668`
-- 目录 SHA-256：`acb528e52838243fbcf1d74fecb0253569966ee600ac070ffad308a34eae89aa`
+- 目录 SHA-256：`7f294445cde436a76e3c921966a4601da14b4846c9280939fff4c0a7349bec14`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -24,8 +24,8 @@
 | Ashare 轻量 A 股行情 | `ashare` | 启用 | `[api-ashare]` | `1` | 否 |
 | Wind AIFin Market 金融数据与能力 | `aifin-market` | 启用 | `[api-aifin]` | `17` | 否 |
 | 元典法律智能开放平台 | `yuandian-law` | 启用 | `[api-yuandian]` | `40` | 否 |
-| 企查查开放平台 | `qichacha` | 启用 | `[api-company]` | `3` | 否 |
 | 天眼查开放平台 | `tianyancha` | 启用 | `[api-company]` | `3` | 否 |
+| 东方财富妙想金融 API | `miaoxiang` | 启用 | `[api-mx]` | `4` | 否 |
 | Jina AI Reader | `jina-reader` | 启用 | `[api-web]` | `2` | 否 |
 | Exa Search API | `exa` | 启用 | `[api-web]` | `3` | 否 |
 
@@ -118,8 +118,8 @@
 - 目录策略：GPTs可读取全部获准项目的目录元数据；默认公共项目为bigquery-public-data、gdelt-bq和patents-public-data。
 - 执行策略：只允许单条SELECT或WITH查询；禁止DDL、DML、脚本、导出、外部查询、远程函数和私有项目访问。
 - 票据前缀：`[api-gcp]`
-- Secret环境变量名：`BIGQUERY_SERVICE_ACCOUNT_JSON`（仅名称）
-- 提供方SHA-256：`8397745c4f05dcf2bb17ecfd2aab9372c1a0bf28831b6d7a731fce29d55595cc`
+- Secret环境变量名：`GOOGLE_CREDENTIALS_JSON`（仅名称）
+- 提供方SHA-256：`b1a8c325645e8a09b0095278267b2570cf374ebeac671c7b61e76fb3539f7333`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -424,8 +424,8 @@
 - 目录策略：GPTs可搜索和读取官方Earth Engine STAC目录，并按名称或说明筛选全部可用算法；优先使用china-topic-packs.json中的已核验全球数据集。
 - 执行策略：只允许返回JSON值的只读计算；禁止导出、写资产、删除、复制、重命名、上传、外部URL和视频或缩略图任务。
 - 票据前缀：`[api-gcp]`
-- Secret环境变量名：`EARTH_ENGINE_SERVICE_ACCOUNT_JSON`（仅名称）
-- 提供方SHA-256：`833e3999ce99340e9db7d2192c6bf7b0614b67581b686f2aefa73741d173ca33`
+- Secret环境变量名：`GOOGLE_CREDENTIALS_JSON`（仅名称）
+- 提供方SHA-256：`e82d1548e47c49c9c94e36d7d5a820bad8170c8205aaf3e15c0c27e221c04ab4`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -596,8 +596,8 @@
 - 目录策略：GPTs先读取data-commons/provider-catalog.json和china-starter-pack.json，再解析地点或统计指标DCID；中国细粒度覆盖取决于原始来源，不得假设所有城市或县均有数据。
 - 执行策略：仅允许固定的resolve、node和observation端点；只提交公开实体、指标和关系表达式；禁止SPARQL、自然语言接口、任意URL和个人数据。
 - 票据前缀：`[api-dc]`
-- Secret环境变量名：`GOOGLE_DATA_COMMONS_API_KEY`（仅名称）
-- 提供方SHA-256：`54da4c493916be4a170264ed85762d702ea4af6008f012346327498cb1a7ade0`
+- Secret环境变量名：`GOOGLE_CREDENTIALS_JSON`（仅名称）
+- 提供方SHA-256：`3b2841e6d5d97452f8c2989bbe9c1cf97ca10baa7b42c2099780ddfd56e3a6c5`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -3824,97 +3824,6 @@
 }
 ```
 
-## 企查查开放平台 (`qichacha`)
-
-- 状态：`启用`
-- 说明：通过企查查官方开放平台读取企业模糊搜索和对外投资等公开企业数据。
-- 目录策略：仅暴露仓库固定登记的企查查官方只读接口，不接受任意 URL、请求头或代码。
-- 执行策略：运行时从单一 JSON Secret 读取 app_key 与 secret_key，动态生成 Timespan 和 MD5 Token；每张票据执行一个只读请求并过滤直接联系方式与个人身份字段。
-- 票据前缀：`[api-company]`
-- Secret环境变量名：`QICHACHA_CREDENTIALS_JSON`（仅名称）
-- 提供方SHA-256：`85abe40844bb052de018ca38695efc22d520207c35c37712e4d6264da767fb29`
-
-| 操作 | 说明 | 参数 |
-|---|---|---|
-| `catalog-capabilities` | 读取企查查适配器本地安全能力目录，不访问上游且不需要密钥。 | `无` |
-
-`catalog-capabilities` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {}
-}
-```
-
-| `company-search` | 调用企查查企业模糊搜索，根据企业名、统一社会信用代码、地址、产品等关键词返回最多5个企业候选。 | `keyword, page_index` |
-
-`company-search` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "keyword": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "page_index": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 100
-    }
-  },
-  "required": [
-    "keyword"
-  ]
-}
-```
-
-| `company-investments` | 调用企查查企业对外投资核查接口，按企业名称或统一社会信用代码读取对外投资企业明细。 | `keyword, page_index, page_size` |
-
-`company-investments` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "keyword": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "page_index": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 100
-    },
-    "page_size": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 20
-    }
-  },
-  "required": [
-    "keyword"
-  ]
-}
-```
-
-限制：
-
-```json
-{
-  "requests_per_ticket": 1,
-  "timeout_seconds_max": 60,
-  "max_response_bytes": 2000000
-}
-```
-
 ## 天眼查开放平台 (`tianyancha`)
 
 - 状态：`启用`
@@ -3993,6 +3902,115 @@
   "requests_per_ticket": 1,
   "timeout_seconds_max": 60,
   "max_response_bytes": 2000000
+}
+```
+
+## 东方财富妙想金融 API (`miaoxiang`)
+
+- 状态：`启用`
+- 说明：通过东方财富妙想金融能力读取金融资讯、行情与财务数据，并执行只读智能选股。
+- 目录策略：仅登记东方财富妙想公开发布的固定只读接口；不接受任意 URL、请求头、代码或未登记路径。
+- 执行策略：每张票据执行一个只读请求；禁止修改自选股、模拟交易、撤单、账户资金和其他写操作。
+- 票据前缀：`[api-mx]`
+- Secret环境变量名：`MX_APIKEY`（仅名称）
+- 提供方SHA-256：`ccd53455ebe7f9945eae858c350bf635362edf29ccbc98a89dae3f93c0ea2843`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取妙想适配器的本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `financial-search` | 调用妙想资讯搜索，检索金融新闻、公告、研报、政策和市场事件。 | `query` |
+
+`financial-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `financial-data` | 调用妙想金融数据查询，读取行情、资金、估值、财务、企业关系和经营数据。 | `query` |
+
+`financial-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `stock-screen` | 调用妙想智能选股，根据自然语言条件筛选证券并返回分页结果。 | `keyword, page_no, page_size` |
+
+`stock-screen` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "page_no": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "keyword"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 2000000,
+  "max_query_characters": 500,
+  "stock_screen_page_size_max": 100
 }
 ```
 
