@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility wrapper that extends the API catalog with market/search providers."""
+"""Compatibility wrapper that extends the API catalog with market/search/Tushare providers."""
 from __future__ import annotations
 
 import argparse
@@ -16,12 +16,12 @@ base = importlib.util.module_from_spec(BASE_SPEC)
 BASE_SPEC.loader.exec_module(base)
 
 MARKET_SEARCH_CATALOG = HERE / "market-search/provider-catalog.json"
-TIANDITU_CATALOG = HERE / "tianditu/provider-catalog.json"
-EXPECTED_EXTENDED_PROVIDERS = {"tickflow": 5, "serpapi": 4, "tianditu": 8}
+TUSHARE_CATALOG = HERE / "tushare/provider-catalog.json"
+EXPECTED_EXTENDED_PROVIDERS = {"tickflow": 5, "serpapi": 4, "tushare": 20}
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
     *base.MANAGED_PROVIDER_CATALOG_PATHS,
     MARKET_SEARCH_CATALOG,
-    TIANDITU_CATALOG,
+    TUSHARE_CATALOG,
 )
 
 load_json = base.load_json
@@ -35,15 +35,19 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         provider = providers.get(provider_id)
         if provider is None or provider["operation_count"] != expected_operations:
             raise ValueError(
-                f"market-search provider invariant failed: {provider_id}/{expected_operations}"
+                f"extended provider invariant failed: {provider_id}/{expected_operations}"
             )
         if provider["secret_value_exposed"] is not False:
-            raise ValueError(f"market-search provider exposes secret values: {provider_id}")
+            raise ValueError(f"extended provider exposes secret values: {provider_id}")
 
     reading_order = list(catalog.get("detail_reading_order") or [])
-    for item in ("market-search/provider-catalog.json", "tianditu/provider-catalog.json"):
+    for item in ("market-search/provider-catalog.json", "tushare/provider-catalog.json"):
         if item not in reading_order:
-            insert_at = reading_order.index("catalog-metadata.json") if "catalog-metadata.json" in reading_order else len(reading_order)
+            insert_at = (
+                reading_order.index("catalog-metadata.json")
+                if "catalog-metadata.json" in reading_order
+                else len(reading_order)
+            )
             reading_order.insert(insert_at, item)
     catalog["detail_reading_order"] = reading_order
     catalog.pop("catalog_sha256", None)
