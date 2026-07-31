@@ -26,26 +26,24 @@ jobs:
           persist-credentials: true
           fetch-depth: 0
 
-      - name: Decode reviewed bundle
+      - name: Verify and decode reviewed bundle
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
           import base64
           import hashlib
-          import json
-          import os
           import zipfile
           from pathlib import Path
 
-          event = json.loads(Path(os.environ['GITHUB_EVENT_PATH']).read_text(encoding='utf-8'))
-          body = json.loads(event['issue']['body'])
-          if body.get('branch') != 'feat/jina-exa-web-retrieval':
-              raise SystemExit('unexpected integration branch')
-          raw = base64.b64decode(body['bundle_zip_base64'])
+          parts = sorted(Path('.integration').glob('web-retrieval.bundle.part*'))
+          if [path.name for path in parts] != [f'web-retrieval.bundle.part{i:02d}' for i in range(6)]:
+              raise SystemExit('expected six ordered bundle parts')
+          encoded = ''.join(path.read_text(encoding='utf-8').strip() for path in parts)
+          raw = base64.b64decode(encoded, validate=True)
           digest = hashlib.sha256(raw).hexdigest()
-          if digest != body['bundle_sha256']:
-              raise SystemExit('bundle SHA256 mismatch')
+          if digest != '656b7868284471c501d221abcef14ef73fc561e3b5df85808b929b102700388f':
+              raise SystemExit(f'bundle SHA256 mismatch: {digest}')
           bundle = Path('/tmp/web-retrieval-bundle.zip')
           bundle.write_bytes(raw)
           with zipfile.ZipFile(bundle) as archive:
@@ -57,6 +55,7 @@ jobs:
           PY
           python integrate.py
           rm -f integrate.py
+          rm -rf .integration
 
       - name: Install pinned dependencies
         run: |
@@ -100,7 +99,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add api-center .github/workflows
+          git add -A api-center .github/workflows .integration
           git commit -m "feat: integrate Jina Reader and Exa web retrieval providers"
           git push origin HEAD:feat/jina-exa-web-retrieval
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
