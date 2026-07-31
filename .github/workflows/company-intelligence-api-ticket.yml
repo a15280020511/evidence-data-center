@@ -24,7 +24,6 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
-      QICHACHA_CREDENTIALS_JSON: ${{ secrets.QICHACHA_CREDENTIALS_JSON }}
       TIANYANCHA_API_TOKEN: ${{ secrets.TIANYANCHA_API_TOKEN }}
     steps:
       - name: Checkout pinned source
@@ -46,9 +45,7 @@ jobs:
           python -m pip check
 
       - name: Compile managed provider control plane
-        run: |
-          python -m py_compile \
-            api-center/company-intelligence/company_intelligence_task.py
+        run: python -m py_compile api-center/company-intelligence/company_intelligence_task.py
 
       - name: Parse and authorize company intelligence ticket
         id: prepare
