@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`69/69` 已启用
-- 托管提供方：`13/13` 已启用
-- 托管操作总数：`114`
-- 已公开参数总数：`714`
-- 目录 SHA-256：`c899220fc0beacb364df51c750f68eb1b75828a695b58792d7248a292f40a8ae`
+- 托管提供方：`15/15` 已启用
+- 托管操作总数：`123`
+- 已公开参数总数：`746`
+- 目录 SHA-256：`29ab6e14eeb046f146dd54eb234df2b5f9203373476dde71b584d2342a74530c`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -30,6 +30,8 @@
 | Exa Search API | `exa` | 启用 | `[api-web]` | `3` | 否 |
 | Tavily Context API | `tavily` | 启用 | `[api-context]` | `5` | 否 |
 | Firecrawl Context API（火行者） | `firecrawl` | 启用 | `[api-context]` | `4` | 否 |
+| TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
+| SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
 
 ## 普通连接器
 
@@ -4695,6 +4697,413 @@
   "actions_allowed": false,
   "arbitrary_headers_allowed": false,
   "async_crawl_allowed": false
+}
+```
+
+## TickFlow 金融行情 API (`tickflow`)
+
+- 状态：`启用`
+- 说明：读取 A 股、ETF、美股和港股的实时行情、历史 K 线、日内 K 线及标的元数据。
+- 目录策略：只允许调用 TickFlow 官方固定只读 REST 端点；禁止 WebSocket、交易、账户、订单、任意 URL、任意请求头和任意代码。
+- 执行策略：TICKFLOW_API_KEY 仅在后端 x-api-key 请求头注入；每张票据最多执行一次同步只读请求，并限制标的数量、K 线数量、超时和响应体积。
+- 票据前缀：`[api-tickflow]`
+- Secret环境变量名：`TICKFLOW_API_KEY`（仅名称）
+- 提供方SHA-256：`36b2bb448fe84eb74a83051deafaa1514f290d6d89c13588d3e6d3ba4c72c671`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 TickFlow 本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `quotes` | 读取一个或多个标的、或受支持标的池的实时行情快照。 | `symbols, universes` |
+
+`quotes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 32
+      }
+    },
+    "universes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "CN_Equity_A",
+          "CN_ETF",
+          "CN_Index",
+          "US_Equity",
+          "HK_Equity"
+        ]
+      }
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "symbols"
+      ]
+    },
+    {
+      "required": [
+        "universes"
+      ]
+    }
+  ]
+}
+```
+
+| `klines` | 读取单个标的的历史 K 线，支持分钟、日、周、月、季和年周期及复权。 | `symbol, period, count, start_time, end_time, adjust` |
+
+`klines` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "symbol"
+  ],
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 32
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m",
+        "10m",
+        "15m",
+        "30m",
+        "60m",
+        "1d",
+        "1w",
+        "1M",
+        "1Q",
+        "1Y"
+      ]
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "start_time": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "end_time": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "adjust": {
+      "type": "string",
+      "enum": [
+        "forward",
+        "backward",
+        "forward_additive",
+        "backward_additive",
+        "none"
+      ]
+    }
+  }
+}
+```
+
+| `intraday-klines` | 读取单个标的的当日分钟 K 线。 | `symbol, period, count` |
+
+`intraday-klines` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "symbol"
+  ],
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 32
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m",
+        "10m",
+        "15m",
+        "30m",
+        "60m"
+      ]
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2000
+    }
+  }
+}
+```
+
+| `instruments` | 读取最多 100 个标的的名称、交易所、地区、类型及上市信息等元数据。 | `symbols` |
+
+`instruments` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "symbols"
+  ],
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 32
+      }
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 3000000,
+  "symbols_max": 100,
+  "kline_count_max": 10000,
+  "write_or_trade_allowed": false,
+  "websocket_allowed": false
+}
+```
+
+## SerpAPI 搜索结果 API (`serpapi`)
+
+- 状态：`启用`
+- 说明：通过 SerpAPI 官方同步接口读取结构化 Google 网页、Google News 和 Google Scholar 搜索结果。
+- 目录策略：只暴露固定的 Google、Google News 和 Google Scholar 同步 JSON 搜索；禁止异步任务、搜索归档、HTML 输出、任意引擎、任意端点和任意请求头。
+- 执行策略：SERPAPI_API_KEY 仅在后端 api_key 查询参数注入且不会写入日志或 Artifact；每张票据执行一次同步搜索，固定 JSON 输出并限制分页、地区、语言和响应体积。
+- 票据前缀：`[api-serpapi]`
+- Secret环境变量名：`SERPAPI_API_KEY`（仅名称）
+- 提供方SHA-256：`058e437fae61170070a799442456adabaace2c0daa7521e6f9813c27e71ea27f`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 SerpAPI 本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `google-search` | 执行同步 Google 网页搜索并返回结构化 JSON 结果。 | `query, location, gl, hl, start, device, safe, time_range` |
+
+`google-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "gl": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "hl": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 90,
+      "multipleOf": 10
+    },
+    "device": {
+      "type": "string",
+      "enum": [
+        "desktop",
+        "tablet",
+        "mobile"
+      ]
+    },
+    "safe": {
+      "type": "string",
+      "enum": [
+        "active",
+        "off"
+      ]
+    },
+    "time_range": {
+      "type": "string",
+      "enum": [
+        "day",
+        "week",
+        "month",
+        "year"
+      ]
+    }
+  }
+}
+```
+
+| `google-news` | 执行同步 Google News 搜索并返回结构化 JSON 结果。 | `query, gl, hl, sort_by_date, start, time_range` |
+
+`google-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "gl": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "hl": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "sort_by_date": {
+      "type": "boolean"
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 90,
+      "multipleOf": 10
+    },
+    "time_range": {
+      "type": "string",
+      "enum": [
+        "day",
+        "week",
+        "month",
+        "year"
+      ]
+    }
+  }
+}
+```
+
+| `google-scholar` | 执行同步 Google Scholar 文献搜索并返回结构化 JSON 结果。 | `query, hl, start, year_low, year_high, sort_by_date` |
+
+`google-scholar` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "hl": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 90,
+      "multipleOf": 10
+    },
+    "year_low": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "year_high": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "sort_by_date": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 3000000,
+  "result_offset_max": 90,
+  "async_allowed": false,
+  "html_output_allowed": false,
+  "arbitrary_engine_allowed": false
 }
 ```
 
