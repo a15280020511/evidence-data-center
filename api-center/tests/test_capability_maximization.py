@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            150,
+            145,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)

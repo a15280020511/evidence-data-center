@@ -18,7 +18,6 @@ SPEC.loader.exec_module(build_catalog)
 EXPECTED_OPERATION_COUNTS = {
     "bigquery": 7,
     "earth-engine": 6,
-    "data-commons": 5,
     "akshare": 17,
     "ashare": 1,
     "aifin-market": 17,
@@ -56,10 +55,10 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 18)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 18)
-        self.assertEqual(catalog["managed_operation_count"], 150)
-        self.assertGreaterEqual(catalog["exposed_parameter_count"], 900)
+        self.assertEqual(catalog["managed_provider_count"], 17)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 17)
+        self.assertEqual(catalog["managed_operation_count"], 145)
+        self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
@@ -79,7 +78,6 @@ class ApiCatalogTests(unittest.TestCase):
         expected_secret_names = {
             "bigquery": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
             "earth-engine": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
-            "data-commons": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
             "aifin-market": "WIND_API_KEY",
             "yuandian-law": "YUANDIAN_API_KEY",
             "tianyancha": "TIANYANCHA_API_TOKEN",

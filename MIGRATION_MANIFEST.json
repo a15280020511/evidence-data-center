@@ -51,18 +51,6 @@
       "sha256": "16fb41e38382afd3adce37f1d9dab1a0a7fe9082ce94929b99c45001ade39606"
     },
     {
-      "source_path": ".github/workflows/data-commons-api-ticket.yml",
-      "target_path": ".github/workflows/data-commons-api-ticket.yml",
-      "size_bytes": 5077,
-      "sha256": "ab0f1c25cad6e720720e736f4a997cabd17c16225f54c22adc3ad3b1bbec32ee"
-    },
-    {
-      "source_path": ".github/workflows/data-commons-provider-validate.yml",
-      "target_path": ".github/workflows/data-commons-provider-validate.yml",
-      "size_bytes": 5534,
-      "sha256": "c7595f08ac6b7bf8fb3c1879860756527adc73e03bfd06d567432e97398e9125"
-    },
-    {
       "source_path": ".github/workflows/google-cloud-api-ticket.yml",
       "target_path": ".github/workflows/google-cloud-api-ticket.yml",
       "size_bytes": 5066,
@@ -349,54 +337,6 @@
       "target_path": "api-center/connectors/worldbank-indicator-jsonstat.connector.json",
       "size_bytes": 1316,
       "sha256": "3856b4498811593adab7b0ab125dcc082aa2aca3deda036ff743ba5a718c538e"
-    },
-    {
-      "source_path": "api-center/data-commons/README.md",
-      "target_path": "api-center/data-commons/README.md",
-      "size_bytes": 1832,
-      "sha256": "1cc14ce7ab6dad0a56225d05e6b7e4949dfd3c7ffd4a110f3e09079f63287c1f"
-    },
-    {
-      "source_path": "api-center/data-commons/china-starter-pack.json",
-      "target_path": "api-center/data-commons/china-starter-pack.json",
-      "size_bytes": 2059,
-      "sha256": "aedd4ac51315c9dbef8b971c4d94e94baa2e6c7402858135953a30107bc76e3d"
-    },
-    {
-      "source_path": "api-center/data-commons/data_commons_task.py",
-      "target_path": "api-center/data-commons/data_commons_task.py",
-      "size_bytes": 19014,
-      "sha256": "cf52eadb503f20be18cb8e72b8244c1724548319af02f2c2a32227dd174ad6b4"
-    },
-    {
-      "source_path": "api-center/data-commons/duplicate_guard.py",
-      "target_path": "api-center/data-commons/duplicate_guard.py",
-      "size_bytes": 4538,
-      "sha256": "3a695983f9e0789bab16e27ac7f30e0ae857b64813d1c322d1c71e5743807c72"
-    },
-    {
-      "source_path": "api-center/data-commons/provider-catalog.json",
-      "target_path": "api-center/data-commons/provider-catalog.json",
-      "size_bytes": 1986,
-      "sha256": "d37b3bc412b72f12bebf86ef63dcaab48f6e6738bd356ecd510eadd4eb22f23f"
-    },
-    {
-      "source_path": "api-center/data-commons/requirements.txt",
-      "target_path": "api-center/data-commons/requirements.txt",
-      "size_bytes": 36,
-      "sha256": "9c857ea59d2f368cb8549f0f2546a8fc1d0393f2290a2b80f356ce01d43ead95"
-    },
-    {
-      "source_path": "api-center/data-commons/tests/test_data_commons_task.py",
-      "target_path": "api-center/data-commons/tests/test_data_commons_task.py",
-      "size_bytes": 6411,
-      "sha256": "38790a4856a2c7e7ffd99880fca98ba910a234db7e82aca12101e1777a800736"
-    },
-    {
-      "source_path": "api-center/data-commons/ticket.schema.json",
-      "target_path": "api-center/data-commons/ticket.schema.json",
-      "size_bytes": 1684,
-      "sha256": "4f11d61d80a1714035599f5c35d380ab491681e80bd2f1462de5eb1a2b0bd01d"
     },
     {
       "source_path": "api-center/docker-compose.yml",
