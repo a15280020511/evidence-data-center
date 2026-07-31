@@ -1,5 +1,6 @@
 name: Validate Wolfram and LlamaParse Providers
 
+# This workflow validates contracts without calling either paid upstream service.
 on:
   pull_request:
     paths:
