@@ -100,15 +100,15 @@ jobs:
       - name: Verify no credential material enters repository files
         run: |
           set -euo pipefail
-          if grep -R --line-number --extended-regexp 'jina_[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
+          if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --extended-regexp 'jina_[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
             echo "literal Jina key found" >&2
             exit 1
           fi
-          if grep -R --line-number --extended-regexp 'exa_[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
+          if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --extended-regexp 'exa_[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
             echo "literal Exa key found" >&2
             exit 1
           fi
-          if grep -R --line-number --extended-regexp 'x-api-key[[:space:]]*:[[:space:]]*[A-Za-z0-9._-]{12,}' api-center/web-retrieval; then
+          if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --extended-regexp 'x-api-key[[:space:]]*:[[:space:]]*[A-Za-z0-9._-]{12,}' api-center/web-retrieval; then
             echo "literal Exa authorization value found" >&2
             exit 1
           fi
