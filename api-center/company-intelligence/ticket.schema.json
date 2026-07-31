@@ -7,8 +7,8 @@
   "required": ["task_id", "provider", "operation", "parameters", "data_policy"],
   "properties": {
     "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{5,127}$"},
-    "provider": {"type": "string", "enum": ["qichacha", "tianyancha"]},
-    "operation": {"type": "string", "enum": ["catalog-capabilities", "company-search", "company-investments", "company-basic", "company-annual-reports"]},
+    "provider": {"const": "tianyancha"},
+    "operation": {"type": "string", "enum": ["catalog-capabilities", "company-basic", "company-annual-reports"]},
     "objective": {"type": "string", "maxLength": 1000},
     "parameters": {"type": "object", "maxProperties": 10},
     "data_policy": {
