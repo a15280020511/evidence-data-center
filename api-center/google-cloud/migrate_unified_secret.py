@@ -2,11 +2,42 @@
 """One-time repository migration for the unified Google credential Secret."""
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
 OLD_SECRET = "GOOGLE_CREDENTIALS_JSON"
 NEW_SECRET = "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
+
+
+def publish_start_receipt() -> None:
+    repository = str(os.getenv("GITHUB_REPOSITORY") or "").strip()
+    issue_number = str(os.getenv("ISSUE_NUMBER") or "").strip()
+    run_id = str(os.getenv("GITHUB_RUN_ID") or "").strip()
+    if not repository or not issue_number:
+        return
+    body = "\n".join(
+        [
+            "## GOOGLE_CREDENTIAL_MIGRATION_STARTED",
+            "",
+            f"- Run ID: `{run_id or 'unknown'}`",
+            f"- Target Secret: `{NEW_SECRET}`",
+            "- Model calls: `0`",
+            "- Secret values exposed: `false`",
+        ]
+    )
+    subprocess.run(
+        [
+            "gh",
+            "api",
+            "--method",
+            "POST",
+            f"repos/{repository}/issues/{issue_number}/comments",
+            "-f",
+            f"body={body}",
+        ],
+        check=True,
+    )
 
 
 def replace_secret_name() -> None:
@@ -108,6 +139,7 @@ def add_compact_bundle_test() -> None:
 
 
 def main() -> int:
+    publish_start_receipt()
     replace_secret_name()
     support_compact_bundle()
     add_compact_bundle_test()
