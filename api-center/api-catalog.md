@@ -5,7 +5,7 @@
 - 托管提供方：`7/7` 已启用
 - 托管操作总数：`93`
 - 已公开参数总数：`647`
-- 目录 SHA-256：`fd566165cab7bdef19cd60d855ca4d1073e6b7ad5dcd94115570fbc4f56503ed`
+- 目录 SHA-256：`0453e0b42b2122027b2ea8d85270131256bc57565e2b9aa782f1e2f57fcc6b09`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -93,7 +93,7 @@
 | 世界银行单一经济体元数据 | `worldbank-country` | 启用 | `international-development` | `GET /data/worldbank/country/{country_code}` | `2` |
 | 世界银行收入组目录 | `worldbank-income-levels` | 启用 | `international-development` | `GET /data/worldbank/income-levels` | `3` |
 | 世界银行发展指标时间序列 | `worldbank-indicator-jsonstat` | 启用 | `global-development-indicators` | `GET /data/worldbank/indicator/{country_code}/{indicator_code}` | `14` |
-| 世界银行单一指标元数据 | `worldbank-indicator` | 启用 | `international-development` | `GET /data/worldbank/indicator/{indicator_code}` | `2` |
+| 世界银行单一指标元数据 | `worldbank-indicator` | 启用 | `international-development` | `GET /data/worldbank/indicator-metadata/{indicator_code}` | `2` |
 | 世界银行指标目录 | `worldbank-indicators` | 启用 | `international-development` | `GET /data/worldbank/indicators` | `4` |
 | 世界银行贷款类型目录 | `worldbank-lending-types` | 启用 | `international-development` | `GET /data/worldbank/lending-types` | `3` |
 | 世界银行数据源目录 | `worldbank-sources` | 启用 | `international-development` | `GET /data/worldbank/sources` | `3` |
@@ -10957,7 +10957,7 @@
 - 成本等级：`free-public`
 - 详情文件：`connectors/worldbank-indicator.connector.json`
 - Secret环境变量名：`无`（仅名称）
-- 连接器SHA-256：`896a6b7d571fb827b4f1cd3cb3b8042bf42c3d4ff0292253a5ab504f18b9ef74`
+- 连接器SHA-256：`a45f3f705bd2c3d5273aaf00c6415e7ebf185e9e5a43667e204bb028f3bd3ff3`
 
 请求契约：
 

@@ -5,7 +5,7 @@
   "source_manifest_file": "connector-manifest.json",
   "source_metadata_file": "catalog-metadata.json",
   "source_manifest_version": 4,
-  "source_manifest_sha256": "c48f814164e41c433eee2c598bdbeb9dd1fd1424da547a19453d56f6f068c942",
+  "source_manifest_sha256": "1ebec87749943c8034b546f4589c5445fb5dc256fc17d12205ab8b75ca7d160e",
   "source_metadata_sha256": "9ec9a9798e34b51dd9a624fe62a79f50c8e136c492780bc3285b30b01cf8613d",
   "managed_provider_catalog_file": "managed-provider-index",
   "managed_provider_catalog_files": [
@@ -12305,7 +12305,7 @@
         "按指标代码读取名称、定义、来源和主题。"
       ],
       "enabled": true,
-      "endpoint": "/data/worldbank/indicator/{indicator_code}",
+      "endpoint": "/data/worldbank/indicator-metadata/{indicator_code}",
       "method": "GET",
       "output_encoding": "json",
       "timeout": "25s",
@@ -12380,7 +12380,7 @@
       "metadata_pointer": "catalog-metadata.json#/connectors/worldbank-indicator",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "896a6b7d571fb827b4f1cd3cb3b8042bf42c3d4ff0292253a5ab504f18b9ef74"
+      "connector_sha256": "a45f3f705bd2c3d5273aaf00c6415e7ebf185e9e5a43667e204bb028f3bd3ff3"
     },
     {
       "connector_id": "worldbank-indicators",
@@ -12722,5 +12722,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "fd566165cab7bdef19cd60d855ca4d1073e6b7ad5dcd94115570fbc4f56503ed"
+  "catalog_sha256": "0453e0b42b2122027b2ea8d85270131256bc57565e2b9aa782f1e2f57fcc6b09"
 }

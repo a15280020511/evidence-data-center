@@ -1067,7 +1067,7 @@
       "id": "worldbank-indicator",
       "file": "connectors/worldbank-indicator.connector.json",
       "enabled": true,
-      "endpoint": "/data/worldbank/indicator/{indicator_code}",
+      "endpoint": "/data/worldbank/indicator-metadata/{indicator_code}",
       "method": "GET",
       "path_parameter_names": [
         "indicator_code"
@@ -1079,7 +1079,7 @@
       "default_circuit_breaker": true,
       "backend_rate_limit": true,
       "ssrf_static_policy": "public-host-or-loopback-test-only",
-      "connector_sha256": "896a6b7d571fb827b4f1cd3cb3b8042bf42c3d4ff0292253a5ab504f18b9ef74"
+      "connector_sha256": "a45f3f705bd2c3d5273aaf00c6415e7ebf185e9e5a43667e204bb028f3bd3ff3"
     },
     {
       "id": "worldbank-indicators",
@@ -1146,5 +1146,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "validation_config_sha256": "9e3673aeedc6cdd7c71e8ca44f93b7a5ceb26de02221fdd6b4e202dcb1c61506"
+  "validation_config_sha256": "aa9c95a68c186459cfa82d9bb520e03aadb4eedb7e9752330213b3f1d16d4d34"
 }
