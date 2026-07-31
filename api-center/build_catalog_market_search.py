@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compatibility wrapper that extends the API catalog with market/search/Tushare providers."""
+"""Compatibility wrapper that extends the API catalog with managed providers."""
 from __future__ import annotations
 
 import argparse
@@ -17,11 +17,19 @@ BASE_SPEC.loader.exec_module(base)
 
 MARKET_SEARCH_CATALOG = HERE / "market-search/provider-catalog.json"
 TUSHARE_CATALOG = HERE / "tushare/provider-catalog.json"
-EXPECTED_EXTENDED_PROVIDERS = {"tickflow": 5, "serpapi": 4, "tushare": 20}
+KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
+EXPECTED_EXTENDED_PROVIDERS = {
+    "tickflow": 5,
+    "serpapi": 4,
+    "tushare": 20,
+    "wolfram-alpha": 4,
+    "llamaparse": 3,
+}
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
     *base.MANAGED_PROVIDER_CATALOG_PATHS,
     MARKET_SEARCH_CATALOG,
     TUSHARE_CATALOG,
+    KNOWLEDGE_TOOLS_CATALOG,
 )
 
 load_json = base.load_json
@@ -41,7 +49,11 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
             raise ValueError(f"extended provider exposes secret values: {provider_id}")
 
     reading_order = list(catalog.get("detail_reading_order") or [])
-    for item in ("market-search/provider-catalog.json", "tushare/provider-catalog.json"):
+    for item in (
+        "market-search/provider-catalog.json",
+        "tushare/provider-catalog.json",
+        "knowledge-tools/provider-catalog.json",
+    ):
         if item not in reading_order:
             insert_at = (
                 reading_order.index("catalog-metadata.json")
