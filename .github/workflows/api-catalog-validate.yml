@@ -111,10 +111,10 @@ jobs:
           assert catalog['schema_version'] == 'api-catalog-v3'
           assert catalog['connector_count'] == 68
           assert catalog['enabled_connector_count'] == 68
-          assert catalog['managed_provider_count'] == 16
-          assert catalog['enabled_managed_provider_count'] == 16
-          assert catalog['managed_operation_count'] == 143
-          assert catalog['exposed_parameter_count'] >= 850
+          assert catalog['managed_provider_count'] == 18
+          assert catalog['enabled_managed_provider_count'] == 18
+          assert catalog['managed_operation_count'] == 152
+          assert catalog['exposed_parameter_count'] >= 886
           assert catalog['secret_values_exposed'] is False
 
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
@@ -135,10 +135,12 @@ jobs:
               'tickflow': 5,
               'serpapi': 4,
               'tushare': 20,
+              'wolframalpha': 5,
+              'llamaparse': 4,
           }
           assert set(providers) == set(expected_counts)
           assert 'tianditu' not in providers
-          assert sum(len(row['operations']) for row in providers.values()) == 143
+          assert sum(len(row['operations']) for row in providers.values()) == 152
           for provider_id, expected in expected_counts.items():
               assert len(providers[provider_id]['operations']) == expected
               assert providers[provider_id]['secret_value_exposed'] is False
@@ -157,6 +159,8 @@ jobs:
               'tickflow': 'TICKFLOW_API_KEY',
               'serpapi': 'SERPAPI_API_KEY',
               'tushare': 'TUSHARE_API_TOKEN',
+              'wolframalpha': 'WOLFRAMALPHA_APP_ID',
+              'llamaparse': 'LLAMA_CLOUD_API_KEY',
           }
           for provider_id, secret_name in expected_secret_names.items():
               assert providers[provider_id]['required_secret_environment_variable_name'] == secret_name
@@ -177,8 +181,27 @@ jobs:
           assert limits['write_operations_allowed'] is False
           assert limits['trading_or_order_execution_allowed'] is False
           assert limits['secret_values_exposed'] is False
+
+          wolfram = providers['wolframalpha']
+          assert wolfram['ticket_prefix'] == '[api-wolframalpha]'
+          assert {row['operation_id'] for row in wolfram['operations']} == {
+              'catalog-capabilities', 'llm-query', 'full-results-json',
+              'short-answer', 'query-recognizer',
+          }
+          assert wolfram['limits']['arbitrary_urls_allowed'] is False
+
+          llamaparse = providers['llamaparse']
+          assert llamaparse['ticket_prefix'] == '[api-llamaparse]'
+          assert {row['operation_id'] for row in llamaparse['operations']} == {
+              'catalog-capabilities', 'create-parse-job',
+              'list-parse-jobs', 'get-parse-result',
+          }
+          assert llamaparse['limits']['private_or_loopback_sources_allowed'] is False
+
           assert 'tushare/provider-catalog.json' in catalog['managed_provider_catalog_files']
+          assert 'knowledge-document/provider-catalog.json' in catalog['managed_provider_catalog_files']
           assert 'tushare/provider-catalog.json' in catalog['detail_reading_order']
+          assert 'knowledge-document/provider-catalog.json' in catalog['detail_reading_order']
           assert 'tianditu/provider-catalog.json' not in catalog['managed_provider_catalog_files']
           serialized = json.dumps(catalog, ensure_ascii=False)
           assert 'TIANDITU_API_KEY' not in serialized
@@ -187,10 +210,11 @@ jobs:
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 16,
-              'managed_operations': 143,
+              'managed_providers': 18,
+              'managed_operations': 152,
               'exposed_parameters': catalog['exposed_parameter_count'],
-              'tushare_operations': 20,
+              'wolframalpha_operations': 5,
+              'llamaparse_operations': 4,
               'tianditu': 'removed',
           }))
           PY
@@ -218,5 +242,7 @@ jobs:
             api-center/market-search/provider-catalog.json
             api-center/tushare/provider-catalog.json
             api-center/tushare/ticket.schema.json
+            api-center/knowledge-document/provider-catalog.json
+            api-center/knowledge-document/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
