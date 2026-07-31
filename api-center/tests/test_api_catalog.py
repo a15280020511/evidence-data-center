@@ -28,10 +28,10 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
         self.assertEqual(catalog["maintenance_owner"], "web-gpt-github-plugin")
         self.assertEqual(catalog["schema_version"], "api-catalog-v3")
-        self.assertEqual(catalog["managed_provider_count"], 15)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 15)
-        self.assertEqual(catalog["managed_operation_count"], 123)
-        self.assertEqual(catalog["exposed_parameter_count"], 746)
+        self.assertEqual(catalog["managed_provider_count"], 16)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 16)
+        self.assertEqual(catalog["managed_operation_count"], 131)
+        self.assertEqual(catalog["exposed_parameter_count"], 792)
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
         self.assertEqual(
             set(providers),
@@ -39,6 +39,7 @@ class ApiCatalogTests(unittest.TestCase):
                 "bigquery", "earth-engine", "data-commons", "akshare", "ashare",
                 "aifin-market", "yuandian-law", "tianyancha", "miaoxiang",
                 "jina-reader", "exa", "tavily", "firecrawl", "tickflow", "serpapi",
+                "tianditu",
             },
         )
         expected_operation_counts = {
@@ -57,6 +58,7 @@ class ApiCatalogTests(unittest.TestCase):
             "firecrawl": 4,
             "tickflow": 5,
             "serpapi": 4,
+            "tianditu": 8,
         }
         for provider_id, expected in expected_operation_counts.items():
             self.assertEqual(len(providers[provider_id]["operations"]), expected)
@@ -90,10 +92,12 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(providers["firecrawl"]["required_secret_environment_variable_name"], "FIRECRAWL_API_KEY")
         self.assertEqual(providers["tickflow"]["required_secret_environment_variable_name"], "TICKFLOW_API_KEY")
         self.assertEqual(providers["serpapi"]["required_secret_environment_variable_name"], "SERPAPI_API_KEY")
+        self.assertEqual(providers["tianditu"]["required_secret_environment_variable_name"], "TIANDITU_TOKEN")
         self.assertEqual(providers["tavily"]["ticket_prefix"], "[api-context]")
         self.assertEqual(providers["firecrawl"]["ticket_prefix"], "[api-context]")
         self.assertEqual(providers["tickflow"]["ticket_prefix"], "[api-tickflow]")
         self.assertEqual(providers["serpapi"]["ticket_prefix"], "[api-serpapi]")
+        self.assertEqual(providers["tianditu"]["ticket_prefix"], "[api-tianditu]")
         self.assertEqual(
             {row["operation_id"] for row in providers["tavily"]["operations"]},
             {"catalog-capabilities", "search", "extract", "map", "crawl"},
@@ -109,6 +113,14 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(
             {row["operation_id"] for row in providers["serpapi"]["operations"]},
             {"catalog-capabilities", "google-search", "google-news", "google-scholar"},
+        )
+        self.assertEqual(
+            {row["operation_id"] for row in providers["tianditu"]["operations"]},
+            {
+                "catalog-capabilities", "normal-search", "viewport-search",
+                "nearby-search", "polygon-search", "administrative-search",
+                "category-search", "statistics-search",
+            },
         )
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertEqual(

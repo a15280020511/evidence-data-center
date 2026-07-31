@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`69/69` 已启用
-- 托管提供方：`15/15` 已启用
-- 托管操作总数：`123`
-- 已公开参数总数：`746`
-- 目录 SHA-256：`29ab6e14eeb046f146dd54eb234df2b5f9203373476dde71b584d2342a74530c`
+- 托管提供方：`16/16` 已启用
+- 托管操作总数：`131`
+- 已公开参数总数：`792`
+- 目录 SHA-256：`9096314356480d0cadde3b212986d766065e3b7f5e8bef9c9e76fe8c3fc72f37`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -32,6 +32,7 @@
 | Firecrawl Context API（火行者） | `firecrawl` | 启用 | `[api-context]` | `4` | 否 |
 | TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
+| 天地图地名搜索 API | `tianditu` | 启用 | `[api-tianditu]` | `8` | 否 |
 
 ## 普通连接器
 
@@ -5104,6 +5105,472 @@
   "async_allowed": false,
   "html_output_allowed": false,
   "arbitrary_engine_allowed": false
+}
+```
+
+## 天地图地名搜索 API (`tianditu`)
+
+- 状态：`启用`
+- 说明：通过国家地理信息公共服务平台天地图地名搜索 V2.0 读取普通、视野、周边、多边形、行政区、分类与统计搜索结果。
+- 目录策略：仅调用天地图官方固定 HTTPS 地名搜索 V2.0 端点；禁止瓦片批量下载、任意 URL、任意请求头、任意代码、写入和账号操作。
+- 执行策略：TIANDITU_TOKEN 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次同步只读请求，并限制坐标范围、周边半径、多边形点数、分页、超时和响应体积，输出中的电话字段自动脱敏。
+- 票据前缀：`[api-tianditu]`
+- Secret环境变量名：`TIANDITU_TOKEN`（仅名称）
+- 提供方SHA-256：`92e850afd24dc650bf09651447a14df0410259c27c921e86c7b6547b3f6ba764`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取天地图适配器本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `normal-search` | 执行普通 POI/地名搜索，可限定地图范围、层级和行政区。 | `keyword, map_bound, level, specify, start, count, data_types, show, place_only` |
+
+`normal-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyword",
+    "map_bound",
+    "level"
+  ],
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "map_bound": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number"
+      }
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 18
+    },
+    "specify": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 300
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 300
+    },
+    "data_types": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    },
+    "show": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    },
+    "place_only": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+| `viewport-search` | 在指定地图视野范围和层级内搜索 POI。 | `keyword, map_bound, level, start, count, data_types, show` |
+
+`viewport-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyword",
+    "map_bound",
+    "level"
+  ],
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "map_bound": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number"
+      }
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 18
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 300
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 300
+    },
+    "data_types": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    },
+    "show": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    }
+  }
+}
+```
+
+| `nearby-search` | 在指定经纬度中心点周边 10 公里以内搜索 POI。 | `keyword, center, radius, level, start, count, data_types, show` |
+
+`nearby-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyword",
+    "center",
+    "radius",
+    "level"
+  ],
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "center": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "type": "number"
+      }
+    },
+    "radius": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "level": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 18
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 300
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 300
+    },
+    "data_types": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    },
+    "show": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    }
+  }
+}
+```
+
+| `polygon-search` | 在闭合多边形范围内搜索 POI，最多 20 个坐标点。 | `keyword, polygon, start, count, data_types, show` |
+
+`polygon-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyword",
+    "polygon"
+  ],
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "polygon": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 20,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "number"
+        }
+      }
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 300
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 300
+    },
+    "data_types": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    },
+    "show": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    }
+  }
+}
+```
+
+| `administrative-search` | 在指定行政区名称或九位国标码范围内搜索 POI。 | `keyword, specify, start, count, data_types, show` |
+
+`administrative-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyword",
+    "specify"
+  ],
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "specify": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 300
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 300
+    },
+    "data_types": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    },
+    "show": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    }
+  }
+}
+```
+
+| `category-search` | 按行政区、地图范围和数据分类检索 POI。 | `specify, map_bound, start, count, data_types, show` |
+
+`category-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "specify",
+    "map_bound",
+    "data_types"
+  ],
+  "properties": {
+    "specify": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "map_bound": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number"
+      }
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 300
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 300
+    },
+    "data_types": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    },
+    "show": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    }
+  }
+}
+```
+
+| `statistics-search` | 按关键字和行政区执行 POI 数量统计搜索。 | `keyword, specify, data_types, show` |
+
+`statistics-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "keyword",
+    "specify"
+  ],
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "specify": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "data_types": {
+      "type": "array",
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      }
+    },
+    "show": {
+      "type": "integer",
+      "enum": [
+        1,
+        2
+      ]
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 3000000,
+  "start_max": 300,
+  "count_max": 300,
+  "start_plus_count_max": 500,
+  "nearby_radius_meters_max": 10000,
+  "polygon_points_max": 20,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "tile_bulk_download_allowed": false,
+  "write_operations_allowed": false,
+  "direct_phone_fields_redacted": true
 }
 ```
 
