@@ -1,0 +1,126 @@
+name: Validate Web Retrieval Providers
+
+on:
+  pull_request:
+    paths:
+      - "api-center/web-retrieval/**"
+      - "api-center/build_catalog.py"
+      - "api-center/api-catalog.json"
+      - "api-center/api-catalog.md"
+      - "api-center/tests/test_api_catalog.py"
+      - "api-center/tests/test_capability_maximization.py"
+      - ".github/workflows/web-retrieval-api-ticket.yml"
+      - ".github/workflows/web-retrieval-provider-validate.yml"
+      - ".github/workflows/api-catalog-validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "api-center/web-retrieval/**"
+      - "api-center/build_catalog.py"
+      - "api-center/api-catalog.json"
+      - "api-center/api-catalog.md"
+      - "api-center/tests/test_api_catalog.py"
+      - "api-center/tests/test_capability_maximization.py"
+      - ".github/workflows/web-retrieval-api-ticket.yml"
+      - ".github/workflows/web-retrieval-provider-validate.yml"
+      - ".github/workflows/api-catalog-validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-web-retrieval-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-web-retrieval:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout pinned source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up isolated Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements-dev.txt
+            api-center/web-retrieval/requirements.txt
+
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r requirements-dev.txt \
+            -r api-center/web-retrieval/requirements.txt
+          python -m pip check
+
+      - name: Audit provider dependencies
+        run: python -m pip_audit -r api-center/web-retrieval/requirements.txt
+
+      - name: Compile and run provider tests
+        run: |
+          python -m py_compile \
+            api-center/web-retrieval/web_retrieval_task.py \
+            api-center/web-retrieval/tests/*.py
+          coverage erase
+          coverage run --source=api-center/web-retrieval -m unittest discover \
+            -s api-center/web-retrieval/tests -p 'test_*.py' -v
+          coverage report --skip-empty
+          coverage json -o web-retrieval-coverage.json
+
+      - name: Validate schemas and provider catalog
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+
+          root = Path('api-center/web-retrieval')
+          schema = json.loads((root / 'ticket.schema.json').read_text(encoding='utf-8'))
+          catalog = json.loads((root / 'provider-catalog.json').read_text(encoding='utf-8'))
+          Draft202012Validator.check_schema(schema)
+          assert catalog['schema_version'] == 'web-retrieval-provider-catalog-v1'
+          assert catalog['secret_values_exposed'] is False
+          providers = {row['provider_id']: row for row in catalog['providers']}
+          assert set(providers) == {'jina-reader', 'exa'}
+          assert all(row['enabled'] is True for row in providers.values())
+          assert providers['jina-reader']['required_secret_environment_variable'] == ''
+          assert providers['jina-reader']['optional_secret_environment_variable'] == 'JINA_API_KEY'
+          assert providers['exa']['required_secret_environment_variable'] == 'EXA_API_KEY'
+          assert len(providers['jina-reader']['operations']) == 2
+          assert len(providers['exa']['operations']) == 3
+          print(json.dumps({'status': 'PASS', 'providers': 2, 'operations': 5}))
+          PY
+
+      - name: Verify no credential material enters repository files
+        run: |
+          set -euo pipefail
+          if grep -R --line-number --extended-regexp 'jina_[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
+            echo "literal Jina key found" >&2
+            exit 1
+          fi
+          if grep -R --line-number --extended-regexp 'exa_[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
+            echo "literal Exa key found" >&2
+            exit 1
+          fi
+          if grep -R --line-number --extended-regexp 'x-api-key[[:space:]]*:[[:space:]]*[A-Za-z0-9._-]{12,}' api-center/web-retrieval; then
+            echo "literal Exa authorization value found" >&2
+            exit 1
+          fi
+
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: web-retrieval-provider-validation-${{ github.run_id }}
+          path: |
+            web-retrieval-coverage.json
+            api-center/web-retrieval/provider-catalog.json
+            api-center/web-retrieval/ticket.schema.json
+          if-no-files-found: warn
+          retention-days: 30
