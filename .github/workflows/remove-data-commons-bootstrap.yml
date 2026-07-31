@@ -83,13 +83,15 @@ jobs:
           fi
           git diff --check
 
-      - name: Commit removal branch
+      - name: Commit non-workflow removal
         id: commit
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
+          git reset -- .github/workflows
+          git diff --cached --check
           git commit -m 'refactor(api-center): remove Data Commons provider'
           git push origin HEAD:${TARGET_BRANCH}
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -98,7 +100,7 @@ jobs:
         if: success()
         run: |
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -f body="DATA_COMMONS_REMOVAL_COMPLETED branch=${TARGET_BRANCH} commit=${{ steps.commit.outputs.sha }} tests=passed model_calls=0"
+            -f body="DATA_COMMONS_REMOVAL_CORE_COMPLETED branch=${TARGET_BRANCH} commit=${{ steps.commit.outputs.sha }} tests=passed workflow_finalization=pending model_calls=0"
 
       - name: Publish failure
         if: failure()
