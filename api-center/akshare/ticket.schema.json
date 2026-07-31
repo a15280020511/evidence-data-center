@@ -39,7 +39,7 @@
         "anyOf": [
           {
             "type": "string",
-            "maxLength": 4096
+            "maxLength": 20000
           },
           {
             "type": "integer"

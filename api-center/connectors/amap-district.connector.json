@@ -1,0 +1,69 @@
+{
+  "id": "amap-district",
+  "enabled": true,
+  "endpoint": "/data/amap/district",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "12s",
+  "input_query_strings": [
+    "keywords",
+    "subdistrict",
+    "showbiz",
+    "extensions",
+    "filter"
+  ],
+  "secret_query": {
+    "name": "key",
+    "env": "AMAP_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "1"
+    ],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": [
+      "districts"
+    ]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v3/config/district",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "info",
+      "infocode",
+      "count",
+      "districts"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "keywords": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 200
+      },
+      "subdistrict": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 3
+      }
+    },
+    "required_any_of": [
+      [
+        "keywords"
+      ]
+    ]
+  }
+}

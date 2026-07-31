@@ -1,0 +1,84 @@
+{
+  "id": "amap-direction-transit",
+  "enabled": true,
+  "endpoint": "/data/amap/direction/transit",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "12s",
+  "input_query_strings": [
+    "origin",
+    "destination",
+    "city1",
+    "city2",
+    "strategy",
+    "nightflag",
+    "date",
+    "time",
+    "show_fields"
+  ],
+  "secret_query": {
+    "name": "key",
+    "env": "AMAP_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "1"
+    ],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": [
+      "route"
+    ]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v5/direction/transit/integrated",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "info",
+      "infocode",
+      "count",
+      "route"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "origin": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      },
+      "destination": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      },
+      "strategy": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 8
+      }
+    },
+    "required_any_of": [
+      [
+        "origin"
+      ],
+      [
+        "destination"
+      ],
+      [
+        "city1"
+      ]
+    ]
+  }
+}

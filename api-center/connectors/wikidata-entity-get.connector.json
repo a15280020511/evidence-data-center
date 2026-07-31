@@ -1,0 +1,46 @@
+{
+  "id": "wikidata-entity-get",
+  "enabled": true,
+  "endpoint": "/data/wikidata/entity/get",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "20s",
+  "input_query_strings": [
+    "action",
+    "ids",
+    "sites",
+    "titles",
+    "props",
+    "languages",
+    "sitefilter",
+    "languagefallback",
+    "normalize",
+    "redirects",
+    "format"
+  ],
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "entities"
+    ]
+  },
+  "backend": {
+    "host": "https://www.wikidata.org",
+    "url_pattern": "/w/api.php",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "entities",
+      "claims",
+      "success",
+      "error"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  }
+}

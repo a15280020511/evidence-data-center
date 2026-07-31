@@ -1,0 +1,97 @@
+{
+  "id": "openmeteo-seasonal",
+  "enabled": true,
+  "endpoint": "/data/openmeteo/seasonal",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "25s",
+  "input_query_strings": [
+    "latitude",
+    "longitude",
+    "daily",
+    "models",
+    "forecast_days",
+    "timezone",
+    "timeformat",
+    "temperature_unit",
+    "wind_speed_unit",
+    "precipitation_unit"
+  ],
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "daily"
+    ]
+  },
+  "backend": {
+    "host": "https://seasonal-api.open-meteo.com",
+    "url_pattern": "/v1/seasonal",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "latitude",
+      "longitude",
+      "generationtime_ms",
+      "utc_offset_seconds",
+      "timezone",
+      "timezone_abbreviation",
+      "elevation",
+      "current_units",
+      "current",
+      "hourly_units",
+      "hourly",
+      "daily_units",
+      "daily",
+      "results",
+      "reason",
+      "error"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "latitude": {
+        "type": "number",
+        "minimum": -90,
+        "maximum": 90
+      },
+      "longitude": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      },
+      "daily": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 2000
+      },
+      "models": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 2000
+      },
+      "forecast_days": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 365
+      }
+    },
+    "required_any_of": [
+      [
+        "latitude"
+      ],
+      [
+        "longitude"
+      ],
+      [
+        "daily"
+      ]
+    ]
+  }
+}

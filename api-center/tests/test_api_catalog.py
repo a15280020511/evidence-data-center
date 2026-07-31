@@ -27,7 +27,7 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(catalog["secret_values_exposed"])
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
         self.assertEqual(catalog["maintenance_owner"], "web-gpt-github-plugin")
-        self.assertEqual(catalog["schema_version"], "api-catalog-v2")
+        self.assertEqual(catalog["schema_version"], "api-catalog-v3")
         self.assertEqual(catalog["managed_provider_count"], 6)
         self.assertEqual(catalog["enabled_managed_provider_count"], 6)
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
@@ -38,9 +38,9 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(len(providers["bigquery"]["operations"]), 7)
         self.assertEqual(len(providers["earth-engine"]["operations"]), 6)
         self.assertEqual(len(providers["data-commons"]["operations"]), 5)
-        self.assertEqual(len(providers["akshare"]["operations"]), 5)
+        self.assertEqual(len(providers["akshare"]["operations"]), 17)
         self.assertEqual(len(providers["ashare"]["operations"]), 1)
-        self.assertEqual(len(providers["aifin-market"]["operations"]), 7)
+        self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
         self.assertEqual(providers["akshare"]["required_secret_environment_variable_name"], "")
         self.assertEqual(
             providers["data-commons"]["required_secret_environment_variable_name"],
@@ -62,6 +62,15 @@ class ApiCatalogTests(unittest.TestCase):
                 "baidu-geocode",
                 "baidu-place-search",
                 "baidu-direction-driving",
+                "amap-place-around",
+                "amap-direction-transit",
+                "baidu-routematrix-driving",
+                "openmeteo-air-quality",
+                "openmeteo-archive",
+                "worldbank-indicators",
+                "wikidata-entity-get",
+                "dbnomics-search",
+                "osm-nominatim-reverse",
             }.issubset(connector_map)
         )
         for connector_id in (

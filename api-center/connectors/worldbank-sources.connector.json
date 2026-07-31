@@ -1,0 +1,35 @@
+{
+  "id": "worldbank-sources",
+  "enabled": true,
+  "endpoint": "/data/worldbank/sources",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "25s",
+  "input_query_strings": [
+    "format",
+    "per_page",
+    "page"
+  ],
+  "input_headers": [
+    "User-Agent"
+  ],
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "1"
+    ]
+  },
+  "backend": {
+    "host": "https://api.worldbank.org",
+    "url_pattern": "/v2/source",
+    "method": "GET",
+    "encoding": "json",
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 2,
+        "every": "1s",
+        "capacity": 2
+      }
+    }
+  }
+}

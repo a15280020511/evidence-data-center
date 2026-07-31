@@ -1,5 +1,5 @@
 {
-  "schema_version": "aifin-provider-catalog-v1",
+  "schema_version": "aifin-provider-catalog-v2",
   "ticket_prefix": "[api-aifin]",
   "required_secret_environment_variable": "WIND_API_KEY",
   "secret_values_exposed": false,
@@ -8,41 +8,114 @@
     {
       "provider_id": "aifin-market",
       "display_name": "Wind AIFin Market 金融数据与能力",
-      "description": "通过万得官方MCP端点，以固定、只读、限量操作访问股票、金融新闻、宏观经济和通用金融数据。",
+      "description": "通过万得官方MCP固定端点，开放当前目录发现的全部15个只读工具，覆盖证券行情、技术面、基本面、股东、事件、公告新闻、宏观经济和综合金融计算。",
       "enabled": true,
-      "catalog_policy": "GPTs可读取固定操作目录和参数名称；不得提交任意MCP端点、server_type、tool_name、脚本或密钥。",
-      "execution_policy": "每张票据只执行一个固定只读操作；先初始化MCP，再调用白名单工具；限制响应大小；不下单、不写入、不执行任意代码。",
+      "catalog_policy": "GPTs可读取四个固定Wind MCP服务的实时工具目录，并选择本目录登记的全部只读工具；不得提交任意MCP端点、server_type、tool_name、脚本或密钥。",
+      "execution_policy": "每张票据只执行一个固定只读操作；先初始化MCP，再调用固定映射工具；限制输入、日期、条数和响应大小；不下单、不写入、不执行任意代码。",
       "operations": [
         {
           "operation_id": "catalog-capabilities",
-          "description": "读取本地AIFin Market固定能力与限制，不访问上游。",
+          "description": "读取本地AIFin Market完整安全能力、固定端点和限制，不访问上游。",
           "parameters": []
         },
         {
           "operation_id": "catalog-tools",
-          "description": "列出指定受支持Wind MCP服务当前公开工具目录。",
+          "description": "列出指定受支持Wind MCP服务当前公开工具目录及输入Schema。",
           "parameters": [
             "server_type"
           ]
         },
         {
-          "operation_id": "stock-quote",
-          "description": "读取单只A股、港股或美股标的的最新行情快照。",
-          "parameters": [
-            "windcode"
-          ]
-        },
-        {
           "operation_id": "stock-price-indicators",
-          "description": "读取单只股票指定价格指标。",
+          "description": "读取一个或多个证券的最新价格、估值、盘口、资金流和技术快照指标。",
           "parameters": [
             "windcode",
             "indexes"
           ]
         },
         {
+          "operation_id": "risk-metrics",
+          "description": "读取股票Beta、Alpha、波动率、夏普比率、最大回撤、VaR及财务安全比率。",
+          "parameters": [
+            "question"
+          ]
+        },
+        {
+          "operation_id": "stock-events",
+          "description": "读取IPO、增发、配股、并购重组、分红、解禁、监管、诉讼和股权激励等公司事件。",
+          "parameters": [
+            "question"
+          ]
+        },
+        {
+          "operation_id": "stock-kline",
+          "description": "读取股票分钟、日、周、月、季、半年或年K线，并支持复权和日期范围。",
+          "parameters": [
+            "windcode",
+            "begin_date",
+            "end_date",
+            "count",
+            "period",
+            "aftype",
+            "issusp",
+            "afdate"
+          ]
+        },
+        {
+          "operation_id": "stock-basicinfo",
+          "description": "读取公司名称、注册地址、主营业务、行业分类、概念、上市与摘牌等基本档案。",
+          "parameters": [
+            "question"
+          ]
+        },
+        {
+          "operation_id": "stock-equity-holders",
+          "description": "读取股本结构、前十大股东、机构持仓、实际控制人和限售解禁。",
+          "parameters": [
+            "question"
+          ]
+        },
+        {
+          "operation_id": "stock-fundamentals",
+          "description": "读取财务报表、盈利能力、成长、现金流、杠杆、估值和银行业专项指标。",
+          "parameters": [
+            "question"
+          ]
+        },
+        {
+          "operation_id": "stock-quote",
+          "description": "读取单只A股、港股或美股标的的分钟行情或指定时间范围行情。",
+          "parameters": [
+            "windcode",
+            "begin",
+            "end"
+          ]
+        },
+        {
+          "operation_id": "stock-technicals",
+          "description": "读取历史行情、技术指标、融资融券、龙虎榜、涨跌停和阶段高低点。",
+          "parameters": [
+            "question"
+          ]
+        },
+        {
+          "operation_id": "stock-search",
+          "description": "按市值、行业、价格、涨跌、技术或基本面条件筛选A股。",
+          "parameters": [
+            "question"
+          ]
+        },
+        {
+          "operation_id": "company-announcements",
+          "description": "检索上市公司、债券发行人和金融工具发行人的官方公告与监管文件。",
+          "parameters": [
+            "query",
+            "top_k"
+          ]
+        },
+        {
           "operation_id": "financial-news",
-          "description": "按查询词读取有限条数的万得金融新闻结果。",
+          "description": "按对象、主题和时间范围检索第三方财经新闻。",
           "parameters": [
             "query",
             "top_k"
@@ -50,7 +123,7 @@
         },
         {
           "operation_id": "economic-data",
-          "description": "按自然语言查询Wind EDB宏观或行业经济指标。",
+          "description": "通过自然语言或EDB代码搜索并提取宏观、行业经济指标时间序列。",
           "parameters": [
             "executionMode",
             "question",
@@ -60,8 +133,22 @@
           ]
         },
         {
+          "operation_id": "economic-data-direct",
+          "description": "使用结构化条件直接搜索和提取宏观指标，支持频率、量级、币种和搜索模式。",
+          "parameters": [
+            "metricIdsStr",
+            "beginDate",
+            "endDate",
+            "freq",
+            "magnitude",
+            "currency",
+            "searchType",
+            "ifUnion"
+          ]
+        },
+        {
           "operation_id": "analytics-query",
-          "description": "在专项工具无法覆盖时执行单个通用结构化金融取数问题。",
+          "description": "执行单个只读金融数据聚合、比较、排名、加权平均或复合指标计算问题。",
           "parameters": [
             "question"
           ]
@@ -69,8 +156,18 @@
       ],
       "limits": {
         "max_operations_per_ticket": 1,
-        "max_response_bytes": 200000,
+        "max_response_bytes": 1000000,
         "timeout_seconds": 60,
+        "max_document_results": 20,
+        "max_kline_count": 5000,
+        "max_parameter_characters": 20000,
+        "fixed_server_types": [
+          "stock_data",
+          "financial_docs",
+          "economic_data",
+          "analytics_data"
+        ],
+        "upstream_tools_exposed": 15,
         "arbitrary_server_types_allowed": false,
         "arbitrary_tool_names_allowed": false,
         "arbitrary_urls_allowed": false,

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/a15280020511/test/api-center/connector.schema.json",
+  "$id": "https://github.com/a15280020511/evidence-data-center/api-center/connector.schema.json",
   "title": "Independent API Center Connector",
   "type": "object",
   "additionalProperties": false,

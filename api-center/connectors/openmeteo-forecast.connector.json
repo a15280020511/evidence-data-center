@@ -75,9 +75,30 @@
           "iso8601",
           "unixtime"
         ]
+      },
+      "current": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 2000
+      },
+      "hourly": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 2000
+      },
+      "daily": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 2000
       }
     },
     "required_any_of": [
+      [
+        "latitude"
+      ],
+      [
+        "longitude"
+      ],
       [
         "current",
         "hourly",

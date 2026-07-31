@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "connectors": {
     "amap-direction-driving": {
       "display_name": "高德驾车路线规划",
@@ -666,6 +666,1104 @@
         "需要BAIDU_MAP_API_KEY",
         "实时交通能力和配额取决于百度账户及接口返回",
         "坐标顺序和坐标系必须在调用前核验"
+      ]
+    },
+    "amap-place-around": {
+      "display_name": "高德周边POI搜索",
+      "description": "按中心点和半径搜索餐饮、商业、交通、公共服务等POI。",
+      "data_category": "poi",
+      "use_cases": [
+        "按中心点和半径搜索餐饮、商业、交通、公共服务等POI。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "keywords": "高德官方参数；按接口文档填写",
+        "types": "高德官方参数；按接口文档填写",
+        "location": "高德官方参数；按接口文档填写",
+        "radius": "高德官方参数；按接口文档填写",
+        "sortrule": "高德官方参数；按接口文档填写",
+        "region": "高德官方参数；按接口文档填写",
+        "show_fields": "高德官方参数；按接口文档填写",
+        "page_size": "高德官方参数；按接口文档填写",
+        "page_num": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-place-polygon": {
+      "display_name": "高德多边形POI搜索",
+      "description": "在指定多边形范围内搜索POI。",
+      "data_category": "poi",
+      "use_cases": [
+        "在指定多边形范围内搜索POI。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "polygon": "高德官方参数；按接口文档填写",
+        "keywords": "高德官方参数；按接口文档填写",
+        "types": "高德官方参数；按接口文档填写",
+        "show_fields": "高德官方参数；按接口文档填写",
+        "page_size": "高德官方参数；按接口文档填写",
+        "page_num": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-place-detail": {
+      "display_name": "高德POI详情",
+      "description": "按高德POI ID读取地址、坐标、分类和扩展详情。",
+      "data_category": "poi",
+      "use_cases": [
+        "按高德POI ID读取地址、坐标、分类和扩展详情。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "id": "高德官方参数；按接口文档填写",
+        "show_fields": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-direction-transit": {
+      "display_name": "高德公交综合路径规划",
+      "description": "取得公交、地铁等公共交通换乘方案。",
+      "data_category": "routing",
+      "use_cases": [
+        "取得公交、地铁等公共交通换乘方案。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origin": "高德官方参数；按接口文档填写",
+        "destination": "高德官方参数；按接口文档填写",
+        "city1": "高德官方参数；按接口文档填写",
+        "city2": "高德官方参数；按接口文档填写",
+        "strategy": "高德官方参数；按接口文档填写",
+        "nightflag": "高德官方参数；按接口文档填写",
+        "date": "高德官方参数；按接口文档填写",
+        "time": "高德官方参数；按接口文档填写",
+        "show_fields": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-direction-bicycling": {
+      "display_name": "高德骑行路线规划",
+      "description": "取得自行车路线、距离、预计时间和步骤。",
+      "data_category": "routing",
+      "use_cases": [
+        "取得自行车路线、距离、预计时间和步骤。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origin": "高德官方参数；按接口文档填写",
+        "destination": "高德官方参数；按接口文档填写",
+        "show_fields": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-district": {
+      "display_name": "高德行政区域查询",
+      "description": "按名称或行政编码读取省、市、区县、街道层级及边界。",
+      "data_category": "administrative",
+      "use_cases": [
+        "按名称或行政编码读取省、市、区县、街道层级及边界。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "keywords": "高德官方参数；按接口文档填写",
+        "subdistrict": "高德官方参数；按接口文档填写",
+        "showbiz": "高德官方参数；按接口文档填写",
+        "extensions": "高德官方参数；按接口文档填写",
+        "filter": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-inputtips": {
+      "display_name": "高德输入提示",
+      "description": "根据关键词、城市和位置返回POI、公交站或线路建议词。",
+      "data_category": "poi",
+      "use_cases": [
+        "根据关键词、城市和位置返回POI、公交站或线路建议词。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "keywords": "高德官方参数；按接口文档填写",
+        "type": "高德官方参数；按接口文档填写",
+        "location": "高德官方参数；按接口文档填写",
+        "city": "高德官方参数；按接口文档填写",
+        "citylimit": "高德官方参数；按接口文档填写",
+        "datatype": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-ip-location": {
+      "display_name": "高德IP定位",
+      "description": "将中国大陆IP地址解析到省市和矩形范围。",
+      "data_category": "geolocation",
+      "use_cases": [
+        "将中国大陆IP地址解析到省市和矩形范围。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "ip": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "精度通常为城市级，不得用于个人精确定位"
+      ]
+    },
+    "amap-coordinate-convert": {
+      "display_name": "高德坐标转换",
+      "description": "将GPS、百度、图吧等坐标批量转换为高德坐标。",
+      "data_category": "geospatial",
+      "use_cases": [
+        "将GPS、百度、图吧等坐标批量转换为高德坐标。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "locations": "高德官方参数；按接口文档填写",
+        "coordsys": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-traffic-circle": {
+      "display_name": "高德圆形范围路况",
+      "description": "按中心点和半径读取实时道路拥堵状态。",
+      "data_category": "traffic",
+      "use_cases": [
+        "按中心点和半径读取实时道路拥堵状态。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "location": "高德官方参数；按接口文档填写",
+        "radius": "高德官方参数；按接口文档填写",
+        "level": "高德官方参数；按接口文档填写",
+        "extensions": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-traffic-rectangle": {
+      "display_name": "高德矩形范围路况",
+      "description": "按矩形范围读取实时道路拥堵状态。",
+      "data_category": "traffic",
+      "use_cases": [
+        "按矩形范围读取实时道路拥堵状态。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "rectangle": "高德官方参数；按接口文档填写",
+        "level": "高德官方参数；按接口文档填写",
+        "extensions": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "amap-traffic-road": {
+      "display_name": "高德指定道路路况",
+      "description": "按道路名称和行政编码读取实时道路拥堵状态。",
+      "data_category": "traffic",
+      "use_cases": [
+        "按道路名称和行政编码读取实时道路拥堵状态。"
+      ],
+      "geographic_coverage": "中国大陆",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "name": "高德官方参数；按接口文档填写",
+        "adcode": "高德官方参数；按接口文档填写",
+        "level": "高德官方参数；按接口文档填写",
+        "extensions": "高德官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受高德账户配额、权限和上游数据覆盖限制"
+      ]
+    },
+    "baidu-regeocode": {
+      "display_name": "百度逆地理编码",
+      "description": "将坐标解析为结构化地址、行政区和周边POI。",
+      "data_category": "geocoding",
+      "use_cases": [
+        "将坐标解析为结构化地址、行政区和周边POI。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "location": "百度地图官方参数；按接口文档填写",
+        "coordtype": "百度地图官方参数；按接口文档填写",
+        "ret_coordtype": "百度地图官方参数；按接口文档填写",
+        "pois": "百度地图官方参数；按接口文档填写",
+        "poi_types": "百度地图官方参数；按接口文档填写",
+        "radius": "百度地图官方参数；按接口文档填写",
+        "extensions_poi": "百度地图官方参数；按接口文档填写",
+        "extensions_road": "百度地图官方参数；按接口文档填写",
+        "extensions_town": "百度地图官方参数；按接口文档填写",
+        "language": "百度地图官方参数；按接口文档填写",
+        "language_auto": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-direction-walking": {
+      "display_name": "百度walking路线规划",
+      "description": "取得walking方式的路线、距离、时间和步骤。",
+      "data_category": "routing",
+      "use_cases": [
+        "取得walking方式的路线、距离、时间和步骤。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origin": "百度地图官方参数；按接口文档填写",
+        "destination": "百度地图官方参数；按接口文档填写",
+        "coord_type": "百度地图官方参数；按接口文档填写",
+        "ret_coordtype": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-direction-riding": {
+      "display_name": "百度riding路线规划",
+      "description": "取得riding方式的路线、距离、时间和步骤。",
+      "data_category": "routing",
+      "use_cases": [
+        "取得riding方式的路线、距离、时间和步骤。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origin": "百度地图官方参数；按接口文档填写",
+        "destination": "百度地图官方参数；按接口文档填写",
+        "coord_type": "百度地图官方参数；按接口文档填写",
+        "ret_coordtype": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-direction-transit": {
+      "display_name": "百度transit路线规划",
+      "description": "取得transit方式的路线、距离、时间和步骤。",
+      "data_category": "routing",
+      "use_cases": [
+        "取得transit方式的路线、距离、时间和步骤。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origin": "百度地图官方参数；按接口文档填写",
+        "destination": "百度地图官方参数；按接口文档填写",
+        "coord_type": "百度地图官方参数；按接口文档填写",
+        "ret_coordtype": "百度地图官方参数；按接口文档填写",
+        "region": "百度地图官方参数；按接口文档填写",
+        "tactics": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-routematrix-driving": {
+      "display_name": "百度driving批量算路",
+      "description": "批量计算多个起点和终点的driving距离与耗时。",
+      "data_category": "routing",
+      "use_cases": [
+        "批量计算多个起点和终点的driving距离与耗时。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origins": "百度地图官方参数；按接口文档填写",
+        "destinations": "百度地图官方参数；按接口文档填写",
+        "tactics": "百度地图官方参数；按接口文档填写",
+        "coord_type": "百度地图官方参数；按接口文档填写",
+        "ret_coordtype": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-routematrix-walking": {
+      "display_name": "百度walking批量算路",
+      "description": "批量计算多个起点和终点的walking距离与耗时。",
+      "data_category": "routing",
+      "use_cases": [
+        "批量计算多个起点和终点的walking距离与耗时。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origins": "百度地图官方参数；按接口文档填写",
+        "destinations": "百度地图官方参数；按接口文档填写",
+        "tactics": "百度地图官方参数；按接口文档填写",
+        "coord_type": "百度地图官方参数；按接口文档填写",
+        "ret_coordtype": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-routematrix-riding": {
+      "display_name": "百度riding批量算路",
+      "description": "批量计算多个起点和终点的riding距离与耗时。",
+      "data_category": "routing",
+      "use_cases": [
+        "批量计算多个起点和终点的riding距离与耗时。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "origins": "百度地图官方参数；按接口文档填写",
+        "destinations": "百度地图官方参数；按接口文档填写",
+        "tactics": "百度地图官方参数；按接口文档填写",
+        "coord_type": "百度地图官方参数；按接口文档填写",
+        "ret_coordtype": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-place-detail": {
+      "display_name": "百度地点详情",
+      "description": "按POI UID读取名称、地址、坐标、分类和详情。",
+      "data_category": "poi",
+      "use_cases": [
+        "按POI UID读取名称、地址、坐标、分类和详情。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "uid": "百度地图官方参数；按接口文档填写",
+        "scope": "百度地图官方参数；按接口文档填写",
+        "output": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-place-suggestion": {
+      "display_name": "百度地点联想",
+      "description": "按关键词和区域返回地点输入联想。",
+      "data_category": "poi",
+      "use_cases": [
+        "按关键词和区域返回地点输入联想。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "query": "百度地图官方参数；按接口文档填写",
+        "region": "百度地图官方参数；按接口文档填写",
+        "city_limit": "百度地图官方参数；按接口文档填写",
+        "output": "百度地图官方参数；按接口文档填写",
+        "ret_coordtype": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-coordinate-convert": {
+      "display_name": "百度坐标转换",
+      "description": "在WGS84、GCJ02、百度经纬度和墨卡托坐标之间转换。",
+      "data_category": "geospatial",
+      "use_cases": [
+        "在WGS84、GCJ02、百度经纬度和墨卡托坐标之间转换。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "coords": "百度地图官方参数；按接口文档填写",
+        "from": "百度地图官方参数；按接口文档填写",
+        "to": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-weather": {
+      "display_name": "百度天气查询",
+      "description": "按行政区或坐标读取实况、预报、生活指数和预警。",
+      "data_category": "weather",
+      "use_cases": [
+        "按行政区或坐标读取实况、预报、生活指数和预警。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "district_id": "百度地图官方参数；按接口文档填写",
+        "location": "百度地图官方参数；按接口文档填写",
+        "data_type": "百度地图官方参数；按接口文档填写",
+        "coordtype": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "受百度地图账户权限、配额和数据覆盖限制"
+      ]
+    },
+    "baidu-ip-location": {
+      "display_name": "百度IP定位",
+      "description": "将IP地址解析为城市、坐标和地址信息。",
+      "data_category": "geolocation",
+      "use_cases": [
+        "将IP地址解析为城市、坐标和地址信息。"
+      ],
+      "geographic_coverage": "中国大陆；部分位置服务支持全球",
+      "freshness": "请求时返回",
+      "cost_class": "provider-quota",
+      "parameter_notes": {
+        "ip": "百度地图官方参数；按接口文档填写",
+        "coor": "百度地图官方参数；按接口文档填写"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "精度通常为城市级，不得用于个人精确定位"
+      ]
+    },
+    "openmeteo-archive": {
+      "display_name": "Open-Meteo历史天气",
+      "description": "读取1940年以来可用的历史天气和再分析时间序列。",
+      "data_category": "historical-weather",
+      "use_cases": [
+        "读取1940年以来可用的历史天气和再分析时间序列。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "openmeteo-air-quality": {
+      "display_name": "Open-Meteo空气质量",
+      "description": "读取PM2.5、PM10、臭氧、二氧化氮、花粉和空气质量指数。",
+      "data_category": "environment",
+      "use_cases": [
+        "读取PM2.5、PM10、臭氧、二氧化氮、花粉和空气质量指数。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "current": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "domains": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "openmeteo-marine": {
+      "display_name": "Open-Meteo海洋预报",
+      "description": "读取海浪、涌浪、海温、潮汐和海洋气象变量。",
+      "data_category": "marine",
+      "use_cases": [
+        "读取海浪、涌浪、海温、潮汐和海洋气象变量。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "current": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "wave_height_min": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "wave_height_max": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "openmeteo-flood": {
+      "display_name": "Open-Meteo洪水与河流流量",
+      "description": "读取历史和预测河流流量、分位数及集合成员。",
+      "data_category": "hydrology",
+      "use_cases": [
+        "读取历史和预测河流流量、分位数及集合成员。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "ensemble": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "5公里分辨率可能无法精确匹配小河流"
+      ]
+    },
+    "openmeteo-geocoding": {
+      "display_name": "Open-Meteo全球地理编码",
+      "description": "按地名或邮编搜索全球地点及行政区、坐标和时区。",
+      "data_category": "geocoding",
+      "use_cases": [
+        "按地名或邮编搜索全球地点及行政区、坐标和时区。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "name": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "count": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "language": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "countryCode": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "format": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "openmeteo-elevation": {
+      "display_name": "Open-Meteo海拔查询",
+      "description": "按一个或多个坐标读取地形海拔。",
+      "data_category": "terrain",
+      "use_cases": [
+        "按一个或多个坐标读取地形海拔。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "openmeteo-climate": {
+      "display_name": "Open-Meteo气候变化情景",
+      "description": "读取CMIP气候模型的历史和未来情景变量。",
+      "data_category": "climate",
+      "use_cases": [
+        "读取CMIP气候模型的历史和未来情景变量。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "models": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "openmeteo-ensemble": {
+      "display_name": "Open-Meteo集合预报",
+      "description": "读取多个集合预报成员和不确定性范围。",
+      "data_category": "weather",
+      "use_cases": [
+        "读取多个集合预报成员和不确定性范围。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "models": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "openmeteo-seasonal": {
+      "display_name": "Open-Meteo季节预报",
+      "description": "读取数月尺度的季节集合预报。",
+      "data_category": "climate",
+      "use_cases": [
+        "读取数月尺度的季节集合预报。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "models": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "openmeteo-historical-forecast": {
+      "display_name": "Open-Meteo历史预报存档",
+      "description": "读取过去发布的天气预报，用于回测预测误差。",
+      "data_category": "historical-weather",
+      "use_cases": [
+        "读取过去发布的天气预报，用于回测预测误差。"
+      ],
+      "geographic_coverage": "全球；具体覆盖依赖模型",
+      "freshness": "请求时返回；更新频率依模型而定",
+      "cost_class": "free-public-or-provider-policy",
+      "parameter_notes": {
+        "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+        "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "不同模型的空间分辨率、时间范围和更新频率不同"
+      ]
+    },
+    "dbnomics-search": {
+      "display_name": "DBnomics全球经济序列搜索",
+      "description": "在全球统计机构的标准化经济时间序列中按关键词检索。",
+      "data_category": "macroeconomics",
+      "use_cases": [
+        "在全球统计机构的标准化经济时间序列中按关键词检索。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随原始统计机构更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "q": "DBnomics API参数",
+        "limit": "DBnomics API参数",
+        "offset": "DBnomics API参数",
+        "facets": "DBnomics API参数"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "保留原提供方代码和缺失值；数据频率与修订规则依来源而异"
+      ]
+    },
+    "dbnomics-dataset": {
+      "display_name": "DBnomics数据集目录",
+      "description": "读取指定提供方数据集的维度、系列目录和元数据。",
+      "data_category": "macroeconomics",
+      "use_cases": [
+        "读取指定提供方数据集的维度、系列目录和元数据。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随原始统计机构更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "observations": "DBnomics API参数",
+        "facets": "DBnomics API参数",
+        "metadata": "DBnomics API参数",
+        "limit": "DBnomics API参数",
+        "offset": "DBnomics API参数"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "保留原提供方代码和缺失值；数据频率与修订规则依来源而异"
+      ]
+    },
+    "worldbank-countries": {
+      "display_name": "世界银行国家与经济体目录",
+      "description": "读取国家、地区、收入组、经纬度和资本信息。",
+      "data_category": "international-development",
+      "use_cases": [
+        "读取国家、地区、收入组、经纬度和资本信息。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随世界银行数据发布更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "format": "世界银行API参数；建议format=json",
+        "per_page": "世界银行API参数；建议format=json",
+        "page": "世界银行API参数；建议format=json"
+      },
+      "example_parameters": {
+        "format": "json"
+      },
+      "limitations": [
+        "部分指标存在发布滞后、缺失值和口径差异"
+      ]
+    },
+    "worldbank-country": {
+      "display_name": "世界银行单一经济体元数据",
+      "description": "按国家或地区代码读取经济体元数据。",
+      "data_category": "international-development",
+      "use_cases": [
+        "按国家或地区代码读取经济体元数据。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随世界银行数据发布更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "format": "世界银行API参数；建议format=json"
+      },
+      "example_parameters": {
+        "format": "json"
+      },
+      "limitations": [
+        "部分指标存在发布滞后、缺失值和口径差异"
+      ]
+    },
+    "worldbank-indicators": {
+      "display_name": "世界银行指标目录",
+      "description": "分页读取指标代码、名称、来源和说明。",
+      "data_category": "international-development",
+      "use_cases": [
+        "分页读取指标代码、名称、来源和说明。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随世界银行数据发布更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "format": "世界银行API参数；建议format=json",
+        "source": "世界银行API参数；建议format=json",
+        "per_page": "世界银行API参数；建议format=json",
+        "page": "世界银行API参数；建议format=json"
+      },
+      "example_parameters": {
+        "format": "json"
+      },
+      "limitations": [
+        "部分指标存在发布滞后、缺失值和口径差异"
+      ]
+    },
+    "worldbank-indicator": {
+      "display_name": "世界银行单一指标元数据",
+      "description": "按指标代码读取名称、定义、来源和主题。",
+      "data_category": "international-development",
+      "use_cases": [
+        "按指标代码读取名称、定义、来源和主题。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随世界银行数据发布更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "format": "世界银行API参数；建议format=json"
+      },
+      "example_parameters": {
+        "format": "json"
+      },
+      "limitations": [
+        "部分指标存在发布滞后、缺失值和口径差异"
+      ]
+    },
+    "worldbank-sources": {
+      "display_name": "世界银行数据源目录",
+      "description": "读取数据库来源、更新时间和元数据。",
+      "data_category": "international-development",
+      "use_cases": [
+        "读取数据库来源、更新时间和元数据。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随世界银行数据发布更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "format": "世界银行API参数；建议format=json",
+        "per_page": "世界银行API参数；建议format=json",
+        "page": "世界银行API参数；建议format=json"
+      },
+      "example_parameters": {
+        "format": "json"
+      },
+      "limitations": [
+        "部分指标存在发布滞后、缺失值和口径差异"
+      ]
+    },
+    "worldbank-topics": {
+      "display_name": "世界银行主题目录",
+      "description": "读取经济、社会、环境和治理主题。",
+      "data_category": "international-development",
+      "use_cases": [
+        "读取经济、社会、环境和治理主题。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随世界银行数据发布更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "format": "世界银行API参数；建议format=json",
+        "per_page": "世界银行API参数；建议format=json",
+        "page": "世界银行API参数；建议format=json"
+      },
+      "example_parameters": {
+        "format": "json"
+      },
+      "limitations": [
+        "部分指标存在发布滞后、缺失值和口径差异"
+      ]
+    },
+    "worldbank-income-levels": {
+      "display_name": "世界银行收入组目录",
+      "description": "读取低收入、中等收入和高收入分组。",
+      "data_category": "international-development",
+      "use_cases": [
+        "读取低收入、中等收入和高收入分组。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随世界银行数据发布更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "format": "世界银行API参数；建议format=json",
+        "per_page": "世界银行API参数；建议format=json",
+        "page": "世界银行API参数；建议format=json"
+      },
+      "example_parameters": {
+        "format": "json"
+      },
+      "limitations": [
+        "部分指标存在发布滞后、缺失值和口径差异"
+      ]
+    },
+    "worldbank-lending-types": {
+      "display_name": "世界银行贷款类型目录",
+      "description": "读取IDA、IBRD等贷款分类。",
+      "data_category": "international-development",
+      "use_cases": [
+        "读取IDA、IBRD等贷款分类。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随世界银行数据发布更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "format": "世界银行API参数；建议format=json",
+        "per_page": "世界银行API参数；建议format=json",
+        "page": "世界银行API参数；建议format=json"
+      },
+      "example_parameters": {
+        "format": "json"
+      },
+      "limitations": [
+        "部分指标存在发布滞后、缺失值和口径差异"
+      ]
+    },
+    "wikidata-entity-get": {
+      "display_name": "Wikidata实体详情",
+      "description": "按QID、站点标题或页面标题读取标签、描述、别名、声明和站点链接。",
+      "data_category": "knowledge-graph",
+      "use_cases": [
+        "按QID、站点标题或页面标题读取标签、描述、别名、声明和站点链接。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "实时读取Wikidata当前版本",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "action": "Wikidata Action API参数",
+        "ids": "Wikidata Action API参数",
+        "sites": "Wikidata Action API参数",
+        "titles": "Wikidata Action API参数",
+        "props": "Wikidata Action API参数",
+        "languages": "Wikidata Action API参数",
+        "sitefilter": "Wikidata Action API参数",
+        "languagefallback": "Wikidata Action API参数",
+        "normalize": "Wikidata Action API参数",
+        "redirects": "Wikidata Action API参数",
+        "format": "Wikidata Action API参数"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "开放协作数据需核验来源与修订历史；不开放任意SPARQL查询"
+      ]
+    },
+    "wikidata-claims": {
+      "display_name": "Wikidata实体声明",
+      "description": "按实体和可选属性读取结构化声明。",
+      "data_category": "knowledge-graph",
+      "use_cases": [
+        "按实体和可选属性读取结构化声明。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "实时读取Wikidata当前版本",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "action": "Wikidata Action API参数",
+        "entity": "Wikidata Action API参数",
+        "property": "Wikidata Action API参数",
+        "rank": "Wikidata Action API参数",
+        "format": "Wikidata Action API参数"
+      },
+      "example_parameters": {},
+      "limitations": [
+        "开放协作数据需核验来源与修订历史；不开放任意SPARQL查询"
+      ]
+    },
+    "wikidata-entity-data": {
+      "display_name": "Wikidata实体原始JSON",
+      "description": "按QID读取完整实体JSON文档。",
+      "data_category": "knowledge-graph",
+      "use_cases": [
+        "按QID读取完整实体JSON文档。"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "实时读取Wikidata当前版本",
+      "cost_class": "free-public",
+      "parameter_notes": {},
+      "example_parameters": {},
+      "limitations": [
+        "开放协作数据需核验来源与修订历史；不开放任意SPARQL查询"
+      ]
+    },
+    "osm-nominatim-reverse": {
+      "display_name": "OpenStreetMap逆地理编码",
+      "description": "将坐标解析为OSM地址、行政区和对象信息。",
+      "data_category": "geocoding",
+      "use_cases": [
+        "坐标归属地核验",
+        "行政区识别"
+      ],
+      "geographic_coverage": "全球",
+      "freshness": "随OSM社区更新",
+      "cost_class": "free-public",
+      "parameter_notes": {
+        "lat": "Nominatim参数",
+        "lon": "Nominatim参数",
+        "format": "Nominatim参数",
+        "zoom": "Nominatim参数",
+        "addressdetails": "Nominatim参数",
+        "extratags": "Nominatim参数",
+        "namedetails": "Nominatim参数",
+        "accept-language": "Nominatim参数"
+      },
+      "example_parameters": {
+        "lat": 26.0745,
+        "lon": 119.2965,
+        "format": "jsonv2"
+      },
+      "limitations": [
+        "公共Nominatim限流严格；不得批量高频调用"
       ]
     }
   }

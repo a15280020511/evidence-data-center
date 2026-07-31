@@ -1,0 +1,71 @@
+{
+  "id": "openmeteo-geocoding",
+  "enabled": true,
+  "endpoint": "/data/openmeteo/geocoding",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "25s",
+  "input_query_strings": [
+    "name",
+    "count",
+    "language",
+    "countryCode",
+    "format"
+  ],
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "results"
+    ]
+  },
+  "backend": {
+    "host": "https://geocoding-api.open-meteo.com",
+    "url_pattern": "/v1/search",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "latitude",
+      "longitude",
+      "generationtime_ms",
+      "utc_offset_seconds",
+      "timezone",
+      "timezone_abbreviation",
+      "elevation",
+      "current_units",
+      "current",
+      "hourly_units",
+      "hourly",
+      "daily_units",
+      "daily",
+      "results",
+      "reason",
+      "error"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "name": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 200
+      },
+      "count": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required_any_of": [
+      [
+        "name"
+      ]
+    ]
+  }
+}

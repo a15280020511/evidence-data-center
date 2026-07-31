@@ -1,0 +1,70 @@
+{
+  "id": "amap-coordinate-convert",
+  "enabled": true,
+  "endpoint": "/data/amap/coordinate/convert",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "12s",
+  "input_query_strings": [
+    "locations",
+    "coordsys"
+  ],
+  "secret_query": {
+    "name": "key",
+    "env": "AMAP_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "1"
+    ],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": [
+      "locations"
+    ]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v3/assistant/coordinate/convert",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "info",
+      "infocode",
+      "count",
+      "locations"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "locations": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 4096
+      },
+      "coordsys": {
+        "type": "string",
+        "enum": [
+          "gps",
+          "mapbar",
+          "baidu",
+          "autonavi"
+        ]
+      }
+    },
+    "required_any_of": [
+      [
+        "locations"
+      ]
+    ]
+  }
+}

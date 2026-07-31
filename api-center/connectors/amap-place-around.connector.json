@@ -1,0 +1,83 @@
+{
+  "id": "amap-place-around",
+  "enabled": true,
+  "endpoint": "/data/amap/place/around",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "12s",
+  "input_query_strings": [
+    "keywords",
+    "types",
+    "location",
+    "radius",
+    "sortrule",
+    "region",
+    "show_fields",
+    "page_size",
+    "page_num"
+  ],
+  "secret_query": {
+    "name": "key",
+    "env": "AMAP_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "1"
+    ],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": [
+      "pois"
+    ]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v5/place/around",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "info",
+      "infocode",
+      "count",
+      "pois"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "location": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      },
+      "radius": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50000
+      },
+      "page_size": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 25
+      },
+      "page_num": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 100
+      }
+    },
+    "required_any_of": [
+      [
+        "location"
+      ]
+    ]
+  }
+}

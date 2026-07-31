@@ -1,5 +1,5 @@
 {
-  "schema_version": "akshare-provider-catalog-v1",
+  "schema_version": "akshare-provider-catalog-v2",
   "ticket_prefix": "[api-akshare]",
   "required_secret_environment_variable": "",
   "secret_values_exposed": false,
@@ -8,10 +8,10 @@
     {
       "provider_id": "akshare",
       "display_name": "AKShare 中国金融公开数据",
-      "description": "通过固定、只读、限量的AKShare函数读取中国A股行情、历史K线、公司资料和财务指标。",
+      "description": "通过固定、只读、限量的AKShare函数读取A股、ETF、资金流、财务报表、板块与中国宏观经济公共数据。",
       "enabled": true,
-      "catalog_policy": "GPTs可读取完整固定操作目录，但不能提交任意AKShare函数名、URL或Python代码。",
-      "execution_policy": "每张票据只执行一个固定只读函数；限制行数、日期范围和响应大小；不连接券商、不下单。",
+      "catalog_policy": "GPTs可读取完整固定操作目录并选择高价值只读能力；不得提交任意AKShare函数名、URL、Python代码或动态导入目标。",
+      "execution_policy": "每张票据只执行一个固定白名单函数；严格校验证券代码、市场、周期、日期、报表类型、指标枚举、行数和超时；不连接券商、不下单。",
       "operations": [
         {
           "operation_id": "catalog-capabilities",
@@ -20,7 +20,7 @@
         },
         {
           "operation_id": "stock-a-share-spot",
-          "description": "读取A股实时行情总表，可按证券代码过滤并限制返回行数。",
+          "description": "读取A股实时行情总表，可按证券代码过滤。",
           "parameters": [
             "symbols",
             "max_rows"
@@ -28,7 +28,7 @@
         },
         {
           "operation_id": "stock-a-share-history",
-          "description": "按证券代码、周期、日期和复权方式读取A股历史行情。",
+          "description": "读取单只A股日、周、月历史行情与复权数据。",
           "parameters": [
             "symbol",
             "period",
@@ -49,10 +49,107 @@
         },
         {
           "operation_id": "stock-financial-indicators",
-          "description": "读取单只A股公开财务分析指标。",
+          "description": "读取单只A股财务分析指标。",
           "parameters": [
             "symbol",
             "indicator",
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "stock-financial-report",
+          "description": "读取单只A股资产负债表、利润表或现金流量表历史数据。",
+          "parameters": [
+            "symbol",
+            "market",
+            "statement_type",
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "stock-fund-flow",
+          "description": "读取单只A股近百个交易日资金流向。",
+          "parameters": [
+            "symbol",
+            "market",
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "stock-fund-flow-ranking",
+          "description": "读取A股今日、3日、5日或10日资金流排名。",
+          "parameters": [
+            "indicator",
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "stock-industry-boards",
+          "description": "读取A股行业板块实时行情目录。",
+          "parameters": [
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "stock-industry-constituents",
+          "description": "读取指定行业板块成份股。",
+          "parameters": [
+            "board_name",
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "fund-etf-spot",
+          "description": "读取沪深ETF实时行情总表。",
+          "parameters": [
+            "symbols",
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "fund-etf-history",
+          "description": "读取单只ETF日、周、月历史行情与复权数据。",
+          "parameters": [
+            "symbol",
+            "period",
+            "start_date",
+            "end_date",
+            "adjust",
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "macro-china-gdp",
+          "description": "读取中国国内生产总值时间序列。",
+          "parameters": [
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "macro-china-cpi",
+          "description": "读取中国居民消费价格指数时间序列。",
+          "parameters": [
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "macro-china-ppi",
+          "description": "读取中国工业品出厂价格指数时间序列。",
+          "parameters": [
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "macro-china-pmi",
+          "description": "读取中国采购经理人指数时间序列。",
+          "parameters": [
+            "max_rows"
+          ]
+        },
+        {
+          "operation_id": "macro-china-lpr",
+          "description": "读取中国贷款市场报价利率时间序列。",
+          "parameters": [
             "max_rows"
           ]
         }
@@ -64,7 +161,9 @@
         "timeout_seconds_hard": 60,
         "arbitrary_functions_allowed": false,
         "arbitrary_urls_allowed": false,
-        "brokerage_execution_allowed": false
+        "brokerage_execution_allowed": false,
+        "fixed_akshare_functions": 16,
+        "max_response_bytes": 5000000
       }
     },
     {

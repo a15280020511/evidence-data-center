@@ -73,12 +73,22 @@ def run_identity() -> dict[str, str | None]:
 
 
 def _path_get(value: Any, path: str) -> tuple[bool, Any]:
+    """Read an allowlisted dotted path from mappings or JSON arrays.
+
+    Numeric path tokens select sequence indexes, which is required for public
+    APIs such as World Bank that return ``[metadata, rows]`` at the root.
+    """
     current = value
     for token in path.split("."):
         if isinstance(current, Mapping) and token in current:
             current = current[token]
-        else:
-            return False, None
+            continue
+        if isinstance(current, (list, tuple)) and token.isdigit():
+            index = int(token)
+            if 0 <= index < len(current):
+                current = current[index]
+                continue
+        return False, None
     return True, current
 
 
@@ -96,11 +106,11 @@ def evaluate_response_contract(
     *,
     allow_empty: bool,
 ) -> dict[str, Any]:
-    if not isinstance(payload, Mapping):
+    if not isinstance(payload, (Mapping, list, tuple)):
         return {
             "success": False,
             "state": "invalid_payload",
-            "message": "response payload is not a JSON object",
+            "message": "response payload is not a JSON object or array",
             "business_status": None,
             "business_code": None,
             "data_present": False,

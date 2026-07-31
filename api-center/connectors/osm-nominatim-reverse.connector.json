@@ -1,0 +1,88 @@
+{
+  "id": "osm-nominatim-reverse",
+  "enabled": true,
+  "endpoint": "/data/osm/nominatim/reverse",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "20s",
+  "input_query_strings": [
+    "lat",
+    "lon",
+    "format",
+    "zoom",
+    "addressdetails",
+    "extratags",
+    "namedetails",
+    "accept-language"
+  ],
+  "input_headers": [
+    "User-Agent"
+  ],
+  "parameter_rules": {
+    "properties": {
+      "lat": {
+        "type": "number",
+        "minimum": -90,
+        "maximum": 90
+      },
+      "lon": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      },
+      "zoom": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 18
+      }
+    },
+    "required_any_of": [
+      [
+        "lat"
+      ],
+      [
+        "lon"
+      ]
+    ]
+  },
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "place_id",
+      "display_name",
+      "address"
+    ]
+  },
+  "backend": {
+    "host": "https://nominatim.openstreetmap.org",
+    "url_pattern": "/reverse",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "place_id",
+      "licence",
+      "osm_type",
+      "osm_id",
+      "lat",
+      "lon",
+      "class",
+      "type",
+      "place_rank",
+      "importance",
+      "addresstype",
+      "name",
+      "display_name",
+      "address",
+      "boundingbox",
+      "extratags",
+      "namedetails"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  }
+}

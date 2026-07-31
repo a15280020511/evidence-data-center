@@ -53,7 +53,7 @@
     },
     "parameters": {
       "type": "object",
-      "maxProperties": 20,
+      "maxProperties": 30,
       "propertyNames": {
         "pattern": "^[A-Za-z0-9._~-]{1,64}$"
       },
@@ -61,7 +61,7 @@
         "anyOf": [
           {
             "type": "string",
-            "maxLength": 4096
+            "maxLength": 20000
           },
           {
             "type": "integer"

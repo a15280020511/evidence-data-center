@@ -37,6 +37,7 @@ SYMBOL_RE = re.compile(r"^[0-9]{6}$")
 ASHARE_SYMBOL_RE = re.compile(r"^(?:sh|sz)[0-9]{6}$")
 DATE_RE = re.compile(r"^[0-9]{8}$")
 ISO_DATE_RE = re.compile(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
+BOARD_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,100}$")
 
 
 def canonical_sha(value: Any) -> str:
@@ -73,14 +74,19 @@ def _symbol(value: Any) -> str:
     return symbol
 
 
-def validate_ticket(ticket: Mapping[str, Any]) -> None:
-    validator = Draft202012Validator(SCHEMA)
-    errors = sorted(validator.iter_errors(ticket), key=lambda item: list(item.absolute_path))
+def _validate_schema(ticket: Mapping[str, Any]) -> None:
+    errors = sorted(
+        Draft202012Validator(SCHEMA).iter_errors(ticket),
+        key=lambda item: list(item.absolute_path),
+    )
     if errors:
         raise ValueError("; ".join(
             f"{'.'.join(str(x) for x in error.absolute_path) or '$'}: {error.message}"
             for error in errors[:20]
         ))
+
+
+def _validate_operation_contract(ticket: Mapping[str, Any]) -> tuple[str, Mapping[str, Any]]:
     provider = str(ticket["provider"])
     operation = str(ticket["operation"])
     row = OPERATIONS.get(operation)
@@ -88,41 +94,66 @@ def validate_ticket(ticket: Mapping[str, Any]) -> None:
         raise ValueError(f"unsupported managed A-share operation: {operation}")
     expected_provider = OPERATION_PROVIDERS.get(operation)
     if provider != expected_provider:
-        raise ValueError(
-            f"operation {operation} belongs to provider {expected_provider}, not {provider}"
-        )
-    allowed = {str(item) for item in row.get("parameters") or []}
-    unexpected = sorted(set(ticket.get("parameters") or {}) - allowed)
+        raise ValueError(f"operation {operation} belongs to provider {expected_provider}, not {provider}")
+    params = ticket.get("parameters") or {}
+    unexpected = sorted(set(params) - {str(item) for item in row.get("parameters") or []})
     if unexpected:
         raise ValueError(f"non-allowlisted parameters: {unexpected}")
-    params = ticket.get("parameters") or {}
-    if operation in {"stock-a-share-history", "stock-company-info", "stock-financial-indicators"}:
+    return operation, params
+
+
+def _validate_history(params: Mapping[str, Any]) -> None:
+    if str(params.get("period") or "daily") not in {"daily", "weekly", "monthly"}:
+        raise ValueError("period must be daily, weekly, or monthly")
+    if str(params.get("adjust") or "") not in {"", "qfq", "hfq"}:
+        raise ValueError("adjust must be empty, qfq, or hfq")
+    for name in ("start_date", "end_date"):
+        if name in params and not DATE_RE.fullmatch(str(params[name])):
+            raise ValueError(f"{name} must use YYYYMMDD")
+
+
+def _validate_akshare_parameters(operation: str, params: Mapping[str, Any]) -> None:
+    symbol_operations = {
+        "stock-a-share-history", "stock-company-info", "stock-financial-indicators",
+        "stock-financial-report", "stock-fund-flow", "fund-etf-history",
+    }
+    if operation in symbol_operations:
         _symbol(params.get("symbol"))
-    if operation == "stock-a-share-history":
-        if str(params.get("period") or "daily") not in {"daily", "weekly", "monthly"}:
-            raise ValueError("period must be daily, weekly, or monthly")
-        if str(params.get("adjust") or "") not in {"", "qfq", "hfq"}:
-            raise ValueError("adjust must be empty, qfq, or hfq")
-        for name in ("start_date", "end_date"):
-            if name in params and not DATE_RE.fullmatch(str(params[name])):
-                raise ValueError(f"{name} must use YYYYMMDD")
+    if operation in {"stock-a-share-history", "fund-etf-history"}:
+        _validate_history(params)
+    if operation in {"stock-financial-report", "stock-fund-flow"} and str(params.get("market") or "") not in {"sh", "sz", "bj"}:
+        raise ValueError("market must be sh, sz, or bj")
+    if operation == "stock-financial-report" and str(params.get("statement_type") or "") not in {"资产负债表", "利润表", "现金流量表"}:
+        raise ValueError("statement_type must be 资产负债表, 利润表, or 现金流量表")
+    if operation == "stock-fund-flow-ranking" and str(params.get("indicator") or "今日") not in {"今日", "3日", "5日", "10日"}:
+        raise ValueError("indicator must be 今日, 3日, 5日, or 10日")
+    if operation == "stock-industry-constituents" and not BOARD_RE.fullmatch(str(params.get("board_name") or "")):
+        raise ValueError("board_name must contain 1 to 100 safe characters")
+    _bounded_int(params.get("max_rows"), 500, 1, 5000, "max_rows")
+    _bounded_int(params.get("timeout_seconds"), 20, 5, 60, "timeout_seconds")
+
+
+def _validate_ashare_parameters(params: Mapping[str, Any]) -> None:
+    if not ASHARE_SYMBOL_RE.fullmatch(str(params.get("symbol") or "")):
+        raise ValueError("symbol must use sh600000 or sz000001 format")
+    if str(params.get("frequency") or "1d") not in {"1d", "1w", "1M", "1m", "5m", "15m", "30m", "60m"}:
+        raise ValueError("unsupported Ashare frequency")
+    if str(params.get("source") or "auto") not in {"auto", "tencent", "sina"}:
+        raise ValueError("source must be auto, tencent, or sina")
+    end_date = str(params.get("end_date") or "")
+    if end_date and not ISO_DATE_RE.fullmatch(end_date):
+        raise ValueError("end_date must use YYYY-MM-DD")
+    _bounded_int(params.get("count"), 120, 1, 1000, "count")
+    _bounded_int(params.get("timeout_seconds"), 15, 5, 30, "timeout_seconds")
+
+
+def validate_ticket(ticket: Mapping[str, Any]) -> None:
+    _validate_schema(ticket)
+    operation, params = _validate_operation_contract(ticket)
     if operation == "ashare-get-price":
-        if not ASHARE_SYMBOL_RE.fullmatch(str(params.get("symbol") or "")):
-            raise ValueError("symbol must use sh600000 or sz000001 format")
-        if str(params.get("frequency") or "1d") not in {
-            "1d", "1w", "1M", "1m", "5m", "15m", "30m", "60m"
-        }:
-            raise ValueError("unsupported Ashare frequency")
-        if str(params.get("source") or "auto") not in {"auto", "tencent", "sina"}:
-            raise ValueError("source must be auto, tencent, or sina")
-        end_date = str(params.get("end_date") or "")
-        if end_date and not ISO_DATE_RE.fullmatch(end_date):
-            raise ValueError("end_date must use YYYY-MM-DD")
-        _bounded_int(params.get("count"), 120, 1, 1000, "count")
-        _bounded_int(params.get("timeout_seconds"), 15, 5, 30, "timeout_seconds")
+        _validate_ashare_parameters(params)
     else:
-        _bounded_int(params.get("max_rows"), 500, 1, 5000, "max_rows")
-        _bounded_int(params.get("timeout_seconds"), 20, 5, 60, "timeout_seconds")
+        _validate_akshare_parameters(operation, params)
 
 
 def prepare(event_path: Path, output_dir: Path) -> int:
@@ -289,58 +320,125 @@ def _ashare_get_price(params: Mapping[str, Any]) -> dict[str, Any]:
             failures.append({"source": name, "error_type": type(exc).__name__, "message": str(exc)})
     raise RuntimeError(f"all fixed Ashare sources failed: {failures}")
 
+def _filter_symbol_frame(frame: Any, raw_symbols: Any) -> Any:
+    symbols = {item.strip() for item in str(raw_symbols or "").split(",") if item.strip()}
+    invalid = sorted(item for item in symbols if not SYMBOL_RE.fullmatch(item))
+    if invalid:
+        raise ValueError(f"invalid symbols: {invalid}")
+    if symbols and hasattr(frame, "columns") and "代码" in list(frame.columns):
+        frame = frame[frame["代码"].astype(str).isin(symbols)]
+    return frame
+
+
+def _ak_stock_spot(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = timeout
+    return _filter_symbol_frame(ak.stock_zh_a_spot_em(), params.get("symbols"))
+
+
+def _ak_stock_history(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    return ak.stock_zh_a_hist(
+        symbol=_symbol(params.get("symbol")), period=str(params.get("period") or "daily"),
+        start_date=str(params.get("start_date") or "19700101"),
+        end_date=str(params.get("end_date") or "20500101"), adjust=str(params.get("adjust") or ""),
+        timeout=timeout,
+    )
+
+
+def _ak_company_info(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    return ak.stock_individual_info_em(symbol=_symbol(params.get("symbol")), timeout=timeout)
+
+
+def _ak_financial_indicators(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = timeout
+    return ak.stock_financial_analysis_indicator_em(
+        symbol=_symbol(params.get("symbol")), indicator=str(params.get("indicator") or "按报告期")
+    )
+
+
+def _ak_financial_report(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = timeout
+    return ak.stock_financial_report_sina(
+        stock=f"{str(params.get('market'))}{_symbol(params.get('symbol'))}",
+        symbol=str(params.get("statement_type")),
+    )
+
+
+def _ak_fund_flow(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = timeout
+    return ak.stock_individual_fund_flow(stock=_symbol(params.get("symbol")), market=str(params.get("market")))
+
+
+def _ak_fund_flow_ranking(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = timeout
+    return ak.stock_individual_fund_flow_rank(indicator=str(params.get("indicator") or "今日"))
+
+
+def _ak_industry_boards(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = (params, timeout)
+    return ak.stock_board_industry_name_em()
+
+
+def _ak_industry_constituents(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = timeout
+    return ak.stock_board_industry_cons_em(symbol=str(params.get("board_name")))
+
+
+def _ak_etf_spot(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = timeout
+    return _filter_symbol_frame(ak.fund_etf_spot_em(), params.get("symbols"))
+
+
+def _ak_etf_history(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+    _ = timeout
+    return ak.fund_etf_hist_em(
+        symbol=_symbol(params.get("symbol")), period=str(params.get("period") or "daily"),
+        start_date=str(params.get("start_date") or "19700101"),
+        end_date=str(params.get("end_date") or "20500101"), adjust=str(params.get("adjust") or ""),
+    )
+
+
+def _ak_macro(function_name: str):
+    def execute(ak: Any, params: Mapping[str, Any], timeout: int) -> Any:
+        _ = (params, timeout)
+        return getattr(ak, function_name)()
+    return execute
+
+
+AKSHARE_EXECUTORS = {
+    "stock-a-share-spot": _ak_stock_spot,
+    "stock-a-share-history": _ak_stock_history,
+    "stock-company-info": _ak_company_info,
+    "stock-financial-indicators": _ak_financial_indicators,
+    "stock-financial-report": _ak_financial_report,
+    "stock-fund-flow": _ak_fund_flow,
+    "stock-fund-flow-ranking": _ak_fund_flow_ranking,
+    "stock-industry-boards": _ak_industry_boards,
+    "stock-industry-constituents": _ak_industry_constituents,
+    "fund-etf-spot": _ak_etf_spot,
+    "fund-etf-history": _ak_etf_history,
+    "macro-china-gdp": _ak_macro("macro_china_gdp"),
+    "macro-china-cpi": _ak_macro("macro_china_cpi"),
+    "macro-china-ppi": _ak_macro("macro_china_ppi"),
+    "macro-china-pmi": _ak_macro("macro_china_pmi"),
+    "macro-china-lpr": _ak_macro("macro_china_lpr"),
+}
+
+
 def _execute_operation(operation: str, params: Mapping[str, Any]) -> dict[str, Any]:
-    max_rows = _bounded_int(params.get("max_rows"), 500, 1, 5000, "max_rows")
-    timeout = _bounded_int(params.get("timeout_seconds"), 20, 5, 60, "timeout_seconds")
     if operation == "catalog-capabilities":
         return {"provider": "akshare", "catalog": CATALOG}
     if operation == "ashare-get-price":
         return _ashare_get_price(params)
-    import akshare as ak
-    if operation == "stock-a-share-spot":
-        frame = ak.stock_zh_a_spot_em()
-        symbols = {
-            item.strip() for item in str(params.get("symbols") or "").split(",") if item.strip()
-        }
-        if symbols:
-            invalid = sorted(item for item in symbols if not SYMBOL_RE.fullmatch(item))
-            if invalid:
-                raise ValueError(f"invalid symbols: {invalid}")
-            if hasattr(frame, "columns") and "代码" in list(frame.columns):
-                frame = frame[frame["代码"].astype(str).isin(symbols)]
-        rows = _records(frame, max_rows)
-    elif operation == "stock-a-share-history":
-        rows = _records(
-            ak.stock_zh_a_hist(
-                symbol=_symbol(params.get("symbol")),
-                period=str(params.get("period") or "daily"),
-                start_date=str(params.get("start_date") or "19700101"),
-                end_date=str(params.get("end_date") or "20500101"),
-                adjust=str(params.get("adjust") or ""),
-                timeout=timeout,
-            ),
-            max_rows,
-        )
-    elif operation == "stock-company-info":
-        rows = _records(
-            ak.stock_individual_info_em(symbol=_symbol(params.get("symbol")), timeout=timeout),
-            max_rows,
-        )
-    elif operation == "stock-financial-indicators":
-        rows = _records(
-            ak.stock_financial_analysis_indicator_em(
-                symbol=_symbol(params.get("symbol")),
-                indicator=str(params.get("indicator") or "按报告期"),
-            ),
-            max_rows,
-        )
-    else:
+    executor = AKSHARE_EXECUTORS.get(operation)
+    if executor is None:
         raise ValueError(f"unsupported AKShare operation: {operation}")
+    import akshare as ak
+    max_rows = _bounded_int(params.get("max_rows"), 500, 1, 5000, "max_rows")
+    timeout = _bounded_int(params.get("timeout_seconds"), 20, 5, 60, "timeout_seconds")
+    rows = _records(executor(ak, params, timeout), max_rows)
     return {
-        "provider": OPERATION_PROVIDERS[operation],
-        "operation": operation,
-        "row_count": len(rows),
-        "rows": rows,
+        "provider": OPERATION_PROVIDERS[operation], "operation": operation,
+        "row_count": len(rows), "rows": rows,
     }
 
 

@@ -1,0 +1,70 @@
+{
+  "id": "baidu-direction-transit",
+  "enabled": true,
+  "endpoint": "/data/baidu/direction/transit",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "15s",
+  "input_query_strings": [
+    "origin",
+    "destination",
+    "coord_type",
+    "ret_coordtype",
+    "region",
+    "tactics"
+  ],
+  "secret_query": {
+    "name": "ak",
+    "env": "BAIDU_MAP_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      0
+    ],
+    "message_path": "message",
+    "any_data_paths": [
+      "result"
+    ]
+  },
+  "backend": {
+    "host": "https://api.map.baidu.com",
+    "url_pattern": "/directionlite/v1/transit",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "message",
+      "result"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "origin": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      },
+      "destination": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      }
+    },
+    "required_any_of": [
+      [
+        "origin"
+      ],
+      [
+        "destination"
+      ]
+    ]
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "id": "wikidata-claims",
+  "enabled": true,
+  "endpoint": "/data/wikidata/entity/claims",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "20s",
+  "input_query_strings": [
+    "action",
+    "entity",
+    "property",
+    "rank",
+    "format"
+  ],
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "claims"
+    ]
+  },
+  "backend": {
+    "host": "https://www.wikidata.org",
+    "url_pattern": "/w/api.php",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "entities",
+      "claims",
+      "success",
+      "error"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  }
+}

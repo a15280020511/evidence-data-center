@@ -30,8 +30,8 @@ class AMapConnectorContractTests(unittest.TestCase):
             endpoint for endpoint in config["endpoints"]
             if endpoint["endpoint"].startswith("/data/amap/")
         ]
-        self.assertEqual(len(amap_rows), 7)
-        self.assertEqual(len(amap_endpoints), 7)
+        self.assertEqual(len(amap_rows), 19)
+        self.assertEqual(len(amap_endpoints), 19)
         self.assertTrue(all(row["enabled"] for row in amap_rows))
         self.assertTrue(all(row["method"] == "GET" for row in amap_rows))
         self.assertTrue(all(row["backend_host"] == "https://restapi.amap.com" for row in amap_rows))
@@ -45,7 +45,7 @@ class AMapConnectorContractTests(unittest.TestCase):
             endpoint for endpoint in config["endpoints"]
             if endpoint["endpoint"].startswith("/data/amap/")
         ]
-        self.assertEqual(len(amap_endpoints), 7)
+        self.assertEqual(len(amap_endpoints), 19)
         for endpoint in amap_endpoints:
             self.assertNotIn("key", endpoint.get("input_query_strings", []))
             modifier = endpoint["backend"][0]["extra_config"]["modifier/martian"]

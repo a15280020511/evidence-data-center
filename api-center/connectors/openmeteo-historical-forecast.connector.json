@@ -1,0 +1,113 @@
+{
+  "id": "openmeteo-historical-forecast",
+  "enabled": true,
+  "endpoint": "/data/openmeteo/historical-forecast",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "25s",
+  "input_query_strings": [
+    "latitude",
+    "longitude",
+    "hourly",
+    "daily",
+    "timezone",
+    "start_date",
+    "end_date",
+    "past_days",
+    "forecast_days",
+    "timeformat",
+    "temperature_unit",
+    "wind_speed_unit",
+    "precipitation_unit"
+  ],
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "hourly",
+      "daily"
+    ]
+  },
+  "backend": {
+    "host": "https://historical-forecast-api.open-meteo.com",
+    "url_pattern": "/v1/forecast",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "latitude",
+      "longitude",
+      "generationtime_ms",
+      "utc_offset_seconds",
+      "timezone",
+      "timezone_abbreviation",
+      "elevation",
+      "current_units",
+      "current",
+      "hourly_units",
+      "hourly",
+      "daily_units",
+      "daily",
+      "results",
+      "reason",
+      "error"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "latitude": {
+        "type": "number",
+        "minimum": -90,
+        "maximum": 90
+      },
+      "longitude": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      },
+      "start_date": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "max_length": 10
+      },
+      "end_date": {
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "max_length": 10
+      },
+      "hourly": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 2000
+      },
+      "daily": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 2000
+      },
+      "forecast_days": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 365
+      },
+      "past_days": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 365
+      }
+    },
+    "required_any_of": [
+      [
+        "latitude"
+      ],
+      [
+        "longitude"
+      ]
+    ]
+  }
+}

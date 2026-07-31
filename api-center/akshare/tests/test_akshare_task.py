@@ -45,10 +45,37 @@ class AkshareTaskTests(unittest.TestCase):
 
     def test_catalog_and_allowlist(self):
         module.validate_ticket(self.ticket())
-        bad = self.ticket()
-        bad["operation"] = "arbitrary-python"
-        with self.assertRaisesRegex(ValueError, "unsupported"):
-            module.validate_ticket(bad)
+        catalog = json.loads((ROOT / "provider-catalog.json").read_text(encoding="utf-8"))
+        akshare = next(row for row in catalog["providers"] if row["provider_id"] == "akshare")
+        self.assertEqual(len(akshare["operations"]), 17)
+        self.assertFalse(akshare["limits"]["arbitrary_functions_allowed"])
+        bad = self.ticket(); bad["operation"] = "arbitrary-python"
+        with self.assertRaisesRegex(ValueError, "unsupported"): module.validate_ticket(bad)
+
+    def test_extended_validators_reject_unsafe_or_invalid_parameters(self):
+        module.validate_ticket(self.ticket("stock-financial-report", {
+            "symbol":"600519", "market":"sh", "statement_type":"利润表", "max_rows":20
+        }))
+        with self.assertRaisesRegex(ValueError, "statement_type"):
+            module.validate_ticket(self.ticket("stock-financial-report", {
+                "symbol":"600519", "market":"sh", "statement_type":"任意报表"
+            }))
+        with self.assertRaisesRegex(ValueError, "board_name"):
+            module.validate_ticket(self.ticket("stock-industry-constituents", {"board_name":""}))
+
+    def test_extended_operation_calls_only_fixed_function(self):
+        fake = types.SimpleNamespace(
+            stock_individual_fund_flow=mock.Mock(return_value=FakeFrame([{"日期":"2026-01-01"}])),
+            macro_china_gdp=mock.Mock(return_value=FakeFrame([{"季度":"2026Q1"}])),
+        )
+        with mock.patch.dict(sys.modules, {"akshare": fake}):
+            flow = module._execute_operation("stock-fund-flow", {
+                "symbol":"600519", "market":"sh", "max_rows":10
+            })
+            macro = module._execute_operation("macro-china-gdp", {"max_rows":10})
+        self.assertEqual(flow["row_count"], 1); self.assertEqual(macro["row_count"], 1)
+        fake.stock_individual_fund_flow.assert_called_once_with(stock="600519", market="sh")
+        fake.macro_china_gdp.assert_called_once_with()
 
     def test_history_calls_only_fixed_function(self):
         fake = types.SimpleNamespace(

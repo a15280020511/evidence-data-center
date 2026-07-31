@@ -1,0 +1,54 @@
+{
+  "id": "dbnomics-search",
+  "enabled": true,
+  "endpoint": "/data/dbnomics/search",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "30s",
+  "input_query_strings": [
+    "q",
+    "limit",
+    "offset",
+    "facets"
+  ],
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "series.docs"
+    ]
+  },
+  "backend": {
+    "host": "https://api.db.nomics.world",
+    "url_pattern": "/v22/series",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "_meta",
+      "datasets",
+      "providers",
+      "series",
+      "errors"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 1,
+        "every": "1s",
+        "capacity": 1
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "q": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 200
+      }
+    },
+    "required_any_of": [
+      [
+        "q"
+      ]
+    ]
+  }
+}

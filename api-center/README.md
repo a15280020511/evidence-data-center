@@ -2,6 +2,12 @@
 
 API 接入中心是三个业务中心中的受控取数层。它与专家团中心、计算中心不共享依赖、任务状态、运行目录或业务逻辑，也不能直接调用它们。自定义 GPTs 是唯一使用中心和唯一跨中心中继；普通网页 GPT + GitHub 插件是维修中心。
 
+## 最大安全能力策略
+
+当前 API 中心执行 `maximum-safe-readonly`：在固定官方后端、固定只读能力、参数白名单、费用/响应上限和 Secret 隔离不变的前提下，最大化暴露已接入上游的高价值公共数据能力。详细能力规模、边界和维护规则见 `CAPABILITY_MAXIMIZATION.md`。
+
+当前统一目录包含 `69` 个普通只读连接器和 `6` 个托管提供方、`53` 个固定操作。目录是运行时选择面，不把任意 URL、任意函数、任意脚本、写入或交易能力开放给 GPTs。
+
 ## GPTs 能力目录
 
 GPTs 使用 API 中心前应先读取：
@@ -192,7 +198,6 @@ Open-Meteo以无密钥普通连接器接入，提供按经纬度读取当前、�
 
 ## Wind AIFin Market
 
-AIFin Market采用独立托管提供方，不伪装成普通KrakenD GET接口。正式票据前缀为
-`[api-aifin]`，只允许固定的MCP服务与工具白名单，使用`WIND_API_KEY`认证。
-密钥可配置为独立Repository Secret `WIND_API_KEY`，也可作为同名键放入
-`API_CENTER_SECRETS_JSON`。适配器禁止任意server_type、tool_name、URL、交易执行和写操作。
+AIFin Market采用独立托管提供方，不伪装成普通KrakenD GET接口。正式票据前缀为 `[api-aifin]`，使用 `WIND_API_KEY` 认证。适配器已经把四个官方 MCP 服务当前目录发现的全部 `15` 个只读工具映射为固定操作，覆盖行情、K线、技术面、基本面、股东、事件、风险、公告、新闻、宏观经济和综合金融计算；另提供本地能力目录和实时工具目录。
+
+密钥可配置为独立 Repository Secret `WIND_API_KEY`，也可作为同名键放入 `API_CENTER_SECRETS_JSON`。执行仍禁止任意 `server_type`、任意 `tool_name`、任意 URL、交易、写入和代码执行。

@@ -1,0 +1,53 @@
+{
+  "id": "baidu-ip-location",
+  "enabled": true,
+  "endpoint": "/data/baidu/ip/location",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "15s",
+  "input_query_strings": [
+    "ip",
+    "coor"
+  ],
+  "secret_query": {
+    "name": "ak",
+    "env": "BAIDU_MAP_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      0
+    ],
+    "message_path": "message",
+    "any_data_paths": [
+      "content"
+    ]
+  },
+  "backend": {
+    "host": "https://api.map.baidu.com",
+    "url_pattern": "/location/ip",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "message",
+      "content"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "ip": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 64
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/a15280020511/test/api-center/google-cloud/ticket.schema.json",
+  "$id": "https://github.com/a15280020511/evidence-data-center/api-center/google-cloud/ticket.schema.json",
   "title": "Google Cloud Managed API Ticket",
   "type": "object",
   "additionalProperties": false,

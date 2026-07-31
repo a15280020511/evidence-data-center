@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/a15280020511/test/api-center/api-ticket.schema.json",
+  "$id": "https://github.com/a15280020511/evidence-data-center/api-center/api-ticket.schema.json",
   "title": "Independent API Center Ticket",
   "description": "A public-data API request prepared by GPTs. API, compute, and expert centers never call each other directly.",
   "type": "object",

@@ -1,0 +1,70 @@
+{
+  "id": "amap-inputtips",
+  "enabled": true,
+  "endpoint": "/data/amap/inputtips",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "12s",
+  "input_query_strings": [
+    "keywords",
+    "type",
+    "location",
+    "city",
+    "citylimit",
+    "datatype"
+  ],
+  "secret_query": {
+    "name": "key",
+    "env": "AMAP_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "1"
+    ],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": [
+      "tips"
+    ]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v3/assistant/inputtips",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "info",
+      "infocode",
+      "count",
+      "tips"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "keywords": {
+        "type": "string",
+        "min_length": 1,
+        "max_length": 200
+      },
+      "location": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      }
+    },
+    "required_any_of": [
+      [
+        "keywords"
+      ]
+    ]
+  }
+}

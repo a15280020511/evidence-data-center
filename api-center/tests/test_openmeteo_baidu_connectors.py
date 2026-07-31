@@ -19,6 +19,10 @@ class OpenMeteoAndBaiduConnectorTests(unittest.TestCase):
     def test_openmeteo_is_enabled_secretless_and_bounded(self) -> None:
         config, rows, env_names = build_config.build()
         row_map = {row["id"]: row for row in rows}
+        openmeteo_rows = [row for row in rows if row["id"].startswith("openmeteo-")]
+        self.assertEqual(len(openmeteo_rows), 11)
+        self.assertTrue(all(row["enabled"] for row in openmeteo_rows))
+        self.assertTrue(all(row["secret_environment_variable"] is None for row in openmeteo_rows))
         row = row_map["openmeteo-forecast"]
         self.assertTrue(row["enabled"])
         self.assertEqual(row["backend_host"], "https://api.open-meteo.com")
@@ -35,11 +39,8 @@ class OpenMeteoAndBaiduConnectorTests(unittest.TestCase):
     def test_baidu_connectors_share_backend_only_secret(self) -> None:
         config, rows, env_names = build_config.build()
         row_map = {row["id"]: row for row in rows}
-        expected = {
-            "baidu-geocode",
-            "baidu-place-search",
-            "baidu-direction-driving",
-        }
+        expected = {row["id"] for row in rows if row["id"].startswith("baidu-")}
+        self.assertEqual(len(expected), 15)
         self.assertTrue(expected.issubset(row_map))
         self.assertIn("BAIDU_MAP_API_KEY", env_names)
         for connector_id in expected:
@@ -56,6 +57,9 @@ class OpenMeteoAndBaiduConnectorTests(unittest.TestCase):
         self.assertIn("/data/baidu/geocode", endpoint_paths)
         self.assertIn("/data/baidu/place/search", endpoint_paths)
         self.assertIn("/data/baidu/direction/driving", endpoint_paths)
+        self.assertIn("/data/baidu/routematrix/driving", endpoint_paths)
+        self.assertIn("/data/baidu/weather", endpoint_paths)
+        self.assertIn("/data/baidu/regeocode", endpoint_paths)
 
 
 if __name__ == "__main__":

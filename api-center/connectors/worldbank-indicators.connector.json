@@ -1,0 +1,36 @@
+{
+  "id": "worldbank-indicators",
+  "enabled": true,
+  "endpoint": "/data/worldbank/indicators",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "25s",
+  "input_query_strings": [
+    "format",
+    "source",
+    "per_page",
+    "page"
+  ],
+  "input_headers": [
+    "User-Agent"
+  ],
+  "response_contract": {
+    "success_when_data_present": true,
+    "any_data_paths": [
+      "1"
+    ]
+  },
+  "backend": {
+    "host": "https://api.worldbank.org",
+    "url_pattern": "/v2/indicator",
+    "method": "GET",
+    "encoding": "json",
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 2,
+        "every": "1s",
+        "capacity": 2
+      }
+    }
+  }
+}

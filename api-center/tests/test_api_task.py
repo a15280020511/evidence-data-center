@@ -76,6 +76,22 @@ class ApiTaskTests(unittest.TestCase):
             ],
         }
 
+    def test_contract_supports_root_arrays_and_numeric_paths(self) -> None:
+        payload = [{"page": 1}, [{"id": "CHN"}]]
+        result = api_task.evaluate_response_contract(
+            payload,
+            {"success_when_data_present": True, "any_data_paths": ["1"]},
+            allow_empty=False,
+        )
+        self.assertTrue(result["success"])
+        self.assertTrue(result["data_present"])
+        missing = api_task.evaluate_response_contract(
+            [{"page": 1}, []],
+            {"success_when_data_present": True, "any_data_paths": ["1"]},
+            allow_empty=False,
+        )
+        self.assertFalse(missing["success"])
+
     def test_contract_detects_success_and_empty(self) -> None:
         contract = self.plan()["requests"][0]["response_contract"]
         ok = api_task.evaluate_response_contract(

@@ -1,0 +1,62 @@
+{
+  "id": "amap-traffic-rectangle",
+  "enabled": true,
+  "endpoint": "/data/amap/traffic/rectangle",
+  "method": "GET",
+  "output_encoding": "json",
+  "timeout": "12s",
+  "input_query_strings": [
+    "rectangle",
+    "level",
+    "extensions"
+  ],
+  "secret_query": {
+    "name": "key",
+    "env": "AMAP_API_KEY"
+  },
+  "response_contract": {
+    "status_path": "status",
+    "success_values": [
+      "1"
+    ],
+    "error_code_path": "infocode",
+    "message_path": "info",
+    "any_data_paths": [
+      "trafficinfo"
+    ]
+  },
+  "backend": {
+    "host": "https://restapi.amap.com",
+    "url_pattern": "/v3/traffic/status/rectangle",
+    "method": "GET",
+    "encoding": "json",
+    "allow": [
+      "status",
+      "info",
+      "infocode",
+      "count",
+      "trafficinfo"
+    ],
+    "resilience": {
+      "rate_limit": {
+        "max_rate": 5,
+        "every": "1s",
+        "capacity": 5
+      }
+    }
+  },
+  "parameter_rules": {
+    "properties": {
+      "rectangle": {
+        "type": "string",
+        "min_length": 3,
+        "max_length": 200
+      }
+    },
+    "required_any_of": [
+      [
+        "rectangle"
+      ]
+    ]
+  }
+}
