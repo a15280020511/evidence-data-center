@@ -92,17 +92,20 @@ jobs:
           assert providers['miaoxiang']['required_secret_environment_variable'] == 'MX_APIKEY'
           assert len(providers['tianyancha']['operations']) == 3
           assert len(providers['miaoxiang']['operations']) == 4
-          schema_provider = schema['properties']['provider']
-          assert schema_provider == {'const': 'tianyancha'}
+          assert schema['properties']['provider'] == {'const': 'tianyancha'}
           print(json.dumps({'status': 'PASS', 'providers': 2, 'operations': 7, 'qichacha': 'removed'}))
           PY
 
-      - name: Verify Qichacha and credential material are absent
+      - name: Verify Qichacha runtime and credential material are absent
         run: |
           set -euo pipefail
-          if grep -R --line-number --ignore-case --extended-regexp 'qichacha|QICHACHA_CREDENTIALS_JSON|api\.qichacha\.com' \
-            api-center/company-intelligence .github/workflows/company-intelligence-api-ticket.yml; then
-            echo "Qichacha runtime reference remains" >&2
+          if grep --line-number --ignore-case --extended-regexp \
+            'qichacha|QICHACHA_CREDENTIALS_JSON|api\.qichacha\.com' \
+            api-center/company-intelligence/company_intelligence_task.py \
+            api-center/company-intelligence/provider-catalog.json \
+            api-center/company-intelligence/ticket.schema.json \
+            .github/workflows/company-intelligence-api-ticket.yml; then
+            echo "Qichacha production reference remains" >&2
             exit 1
           fi
           if grep -R --line-number --extended-regexp -- '-----BEGIN (RSA )?PRIVATE KEY-----' api-center/company-intelligence; then
