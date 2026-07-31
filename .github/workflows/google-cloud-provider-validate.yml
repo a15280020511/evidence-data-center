@@ -107,7 +107,8 @@ jobs:
       - name: Verify no shared credential or credential material enters repository files
         run: |
           set -euo pipefail
-          if grep -R --line-number --fixed-strings 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' \
+          shared_google_secret='GOOGLE_CLOUD'"_SERVICE_ACCOUNT_JSON"
+          if grep -R --line-number --fixed-strings "$shared_google_secret" \
             api-center .github/workflows; then
             echo "shared Google credential entry found" >&2
             exit 1
