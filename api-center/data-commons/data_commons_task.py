@@ -187,6 +187,21 @@ def _relation_expression(value: Any, *, required: bool) -> str:
     return text
 
 
+def _validate_api_key(value: Any) -> str:
+    text = str(value or "").strip()
+    if not text:
+        raise RuntimeError(f"missing repository Secret {API_KEY_ENV}")
+    if not 8 <= len(text) <= 512:
+        raise RuntimeError(
+            f"invalid repository Secret {API_KEY_ENV}: expected 8 to 512 visible ASCII characters"
+        )
+    if any(ord(character) < 0x21 or ord(character) > 0x7E for character in text):
+        raise RuntimeError(
+            f"invalid repository Secret {API_KEY_ENV}: only visible ASCII characters are allowed"
+        )
+    return text
+
+
 def _request_json(endpoint: str, *, api_key: str, body: Mapping[str, Any], timeout: int, max_bytes: int) -> tuple[dict[str, Any], dict[str, Any]]:
     if endpoint not in ALLOWED_ENDPOINTS:
         raise ValueError(f"endpoint is not allowlisted: {endpoint}")
@@ -319,9 +334,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
             data = local_data
             metadata = {"http_status": 200, "catalog_source": "repository-policy"}
         else:
-            api_key = str(os.getenv(API_KEY_ENV) or "").strip()
-            if not api_key:
-                raise RuntimeError(f"missing repository Secret {API_KEY_ENV}")
+            api_key = _validate_api_key(os.getenv(API_KEY_ENV))
             data, metadata = _request_json(
                 endpoint,
                 api_key=api_key,
@@ -335,10 +348,18 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         status = "API_DATA_COMMONS_COMPLETED"
     except RuntimeError as exc:
         text = str(exc)
-        blocked = text.startswith("missing repository Secret")
+        missing = text.startswith("missing repository Secret")
+        invalid = text.startswith("invalid repository Secret")
+        blocked = missing or invalid
         status = "API_DATA_COMMONS_BLOCKED" if blocked else "API_DATA_COMMONS_FAILED"
+        if missing:
+            code = "DATA_COMMONS_API_KEY_MISSING"
+        elif invalid:
+            code = "DATA_COMMONS_API_KEY_INVALID"
+        else:
+            code = "DATA_COMMONS_UPSTREAM_ERROR"
         failure = {
-            "code": "DATA_COMMONS_API_KEY_MISSING" if blocked else "DATA_COMMONS_UPSTREAM_ERROR",
+            "code": code,
             "message": text,
             "retryable": not blocked,
         }
