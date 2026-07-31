@@ -123,7 +123,7 @@ jobs:
   integrate-web-retrieval:
     if: >-
       github.actor == github.repository_owner &&
-      startsWith(github.event.issue.title, '[maintenance-integrate-web-v5]')
+      startsWith(github.event.issue.title, '[maintenance-integrate-web-v6]')
     permissions:
       contents: write
       issues: write
@@ -207,7 +207,18 @@ jobs:
           )
           PY
 
-      - name: Commit feature branch
+      - name: Stage workflow patch artifact
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/web-workflow-patch/.github/workflows
+          cp .github/workflows/api-catalog-validate.yml /tmp/web-workflow-patch/.github/workflows/
+          cp .github/workflows/web-retrieval-api-ticket.yml /tmp/web-workflow-patch/.github/workflows/
+          cp .github/workflows/web-retrieval-provider-validate.yml /tmp/web-workflow-patch/.github/workflows/
+          git restore .github/workflows/api-catalog-validate.yml
+          rm .github/workflows/web-retrieval-api-ticket.yml
+          rm .github/workflows/web-retrieval-provider-validate.yml
+
+      - name: Commit non-workflow implementation
         id: commit
         run: |
           set -euo pipefail
@@ -218,10 +229,21 @@ jobs:
           git push origin "HEAD:${BRANCH_NAME}"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Upload workflow patch
+        id: upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: web-retrieval-workflow-patch-${{ github.run_id }}
+          path: /tmp/web-workflow-patch/
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Publish completion receipt
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
           result=$(cat /tmp/web-result.txt)
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -f body="STATUS=completed SHA=${{ steps.commit.outputs.sha }} ${result} JINA_OPTIONAL_SECRET=JINA_API_KEY EXA_SECRET=EXA_API_KEY SECRET_VALUES_READ=false"
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -f body="STATUS=completed SHA=${{ steps.commit.outputs.sha }} ${result} WORKFLOW_PATCH=${ARTIFACT_URL} JINA_OPTIONAL_SECRET=JINA_API_KEY EXA_SECRET=EXA_API_KEY SECRET_VALUES_READ=false"
 
       - name: Publish failure receipt
         if: failure()
