@@ -86,18 +86,18 @@ jobs:
           dc_catalog = json.loads(Path('api-center/data-commons/provider-catalog.json').read_text(encoding='utf-8'))
           Draft202012Validator.check_schema(schema)
           assert catalog['schema_version'] == 'google-cloud-provider-catalog-v3'
-          assert catalog['required_secret_environment_variables'] == ['GOOGLE_CREDENTIALS_JSON']
-          assert catalog['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
+          assert catalog['required_secret_environment_variables'] == ['GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON']
+          assert catalog['required_secret_environment_variable'] == 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON'
           assert catalog['credential_bundle_contract']['required'] == ['service_account', 'data_commons_api_key']
           assert catalog['secret_values_exposed'] is False
           providers = {row['provider_id']: row for row in catalog['providers']}
           assert set(providers) == {'bigquery', 'earth-engine', 'data-commons'}
           assert all(row['enabled'] is True for row in providers.values())
-          assert all(row['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON' for row in providers.values())
+          assert all(row['required_secret_environment_variable'] == 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' for row in providers.values())
           assert len(providers['bigquery']['operations']) == 7
           assert len(providers['earth-engine']['operations']) == 6
           assert len(providers['data-commons']['operations']) == 5
-          assert dc_catalog['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
+          assert dc_catalog['required_secret_environment_variable'] == 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON'
           assert dc_catalog['credential_bundle_field'] == 'data_commons_api_key'
           assert 'patents-public-data' in providers['bigquery']['default_public_projects']
           assert {row['connector_id'] for row in catalog['replaced_legacy_connectors']} == {
@@ -115,7 +115,7 @@ jobs:
               exit 1
             fi
           done
-          count=$(grep -R --line-number --fixed-strings 'secrets.GOOGLE_CREDENTIALS_JSON' \
+          count=$(grep -R --line-number --fixed-strings 'secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' \
             .github/workflows/google-cloud-api-ticket.yml \
             .github/workflows/data-commons-api-ticket.yml | wc -l)
           test "$count" -eq 2
