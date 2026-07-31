@@ -36,6 +36,31 @@ jobs:
       - name: Apply deterministic integration patch
         run: |
           set -euo pipefail
+          python - <<'PY'
+          import base64
+          import hashlib
+          import zipfile
+          from pathlib import Path
+
+          parts = sorted(Path('.integration').glob('web-retrieval.bundle.part*'))
+          expected = [f'web-retrieval.bundle.part{i:02d}' for i in range(6)]
+          if [item.name for item in parts] != expected:
+              raise SystemExit('bundle parts are incomplete')
+          encoded = ''.join(item.read_text(encoding='utf-8').strip() for item in parts)
+          raw = base64.b64decode(encoded, validate=True)
+          digest = hashlib.sha256(raw).hexdigest()
+          expected_digest = '656b7868284471c501d221abcef14ef73fc561e3b5df85808b929b102700388f'
+          if digest != expected_digest:
+              raise SystemExit(f'bundle digest mismatch: {digest}')
+          target = Path('/tmp/web-retrieval-bundle.zip')
+          target.write_bytes(raw)
+          with zipfile.ZipFile(target) as archive:
+              for member in archive.infolist():
+                  path = Path(member.filename)
+                  if path.is_absolute() or '..' in path.parts:
+                      raise SystemExit('unsafe archive path')
+              archive.extractall('.')
+          PY
           python integrate.py
           rm -f integrate.py
           rm -rf .integration
