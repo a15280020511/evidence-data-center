@@ -72,6 +72,15 @@ jobs:
               text = text.replace(anchor, addition, 1)
           test.write_text(text, encoding='utf-8')
 
+          capability = Path('api-center/tests/test_capability_maximization.py')
+          text = capability.read_text(encoding='utf-8')
+          old_count = 'self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 93)'
+          new_count = 'self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 99)'
+          if old_count not in text and new_count not in text:
+              raise SystemExit('test_capability_maximization.py count anchor not found')
+          text = text.replace(old_count, new_count, 1)
+          capability.write_text(text, encoding='utf-8')
+
           temporary = Path('.github/workflows/temporary-yuandian-anonymous-probe.yml')
           if temporary.exists():
               temporary.unlink()
@@ -100,11 +109,12 @@ jobs:
           assert catalog['managed_provider_count'] == 9
           assert catalog['enabled_managed_provider_count'] == 9
           assert catalog['managed_operation_count'] == 99
+          assert catalog['exposed_parameter_count'] == 655
           assert {'qichacha', 'tianyancha'}.issubset(providers)
           assert providers['qichacha']['required_secret_environment_variable_name'] == 'QICHACHA_CREDENTIALS_JSON'
           assert providers['tianyancha']['required_secret_environment_variable_name'] == 'TIANYANCHA_API_TOKEN'
           assert catalog['secret_values_exposed'] is False
-          print(json.dumps({'providers': 9, 'operations': 99, 'status': 'PASS'}))
+          print(json.dumps({'providers': 9, 'operations': 99, 'parameters': 655, 'status': 'PASS'}))
           PY
 
       - name: Commit integrated source and generated catalog
@@ -125,7 +135,7 @@ jobs:
       - name: Publish completion receipt
         run: |
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -f body="STATUS=completed\nBRANCH=${BRANCH_NAME}\nSHA=${{ steps.commit.outputs.sha }}\nMANAGED_PROVIDERS=9\nMANAGED_OPERATIONS=99\nQICHACHA_SECRET=QICHACHA_CREDENTIALS_JSON\nTIANYANCHA_SECRET=TIANYANCHA_API_TOKEN\nSECRET_VALUES_READ=false"
+            -f body="STATUS=completed\nBRANCH=${BRANCH_NAME}\nSHA=${{ steps.commit.outputs.sha }}\nMANAGED_PROVIDERS=9\nMANAGED_OPERATIONS=99\nEXPOSED_PARAMETERS=655\nQICHACHA_SECRET=QICHACHA_CREDENTIALS_JSON\nTIANYANCHA_SECRET=TIANYANCHA_API_TOKEN\nSECRET_VALUES_READ=false"
 
       - name: Publish structured failure
         if: failure()
