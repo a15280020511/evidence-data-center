@@ -16,10 +16,10 @@ SPEC.loader.exec_module(module)
 
 
 class FakeResponse:
-    def __init__(self, payload: dict) -> None:
+    def __init__(self, payload: dict, *, server: str = "Tianditu") -> None:
         self.status = 200
         self._raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-        self.headers = {"Content-Type": "application/json", "Server": "Tianditu"}
+        self.headers = {"Content-Type": "application/json", "Server": server}
 
     def read(self, _size: int) -> bytes:
         return self._raw
@@ -225,6 +225,53 @@ class TiandituTaskTests(unittest.TestCase):
             self.assertIn("Mozilla/5.0", request.headers["User-agent"])
             self.assertEqual(request.headers["Referer"], "https://lbs.tianditu.gov.cn/")
             self.assertNotIn("+", request.full_url.split("postStr=", 1)[1].split("&type=", 1)[0])
+
+    def test_cloudwaf_server_header_on_success_is_not_treated_as_a_block(self) -> None:
+        payload = {"count": "0", "status": {"infocode": 1000, "cndesc": "服务正常"}}
+        with mock.patch.dict(os.environ, {"TIANDITU_API_KEY": "secret-value"}, clear=True), mock.patch.object(
+            module.urllib.request,
+            "urlopen",
+            return_value=FakeResponse(payload, server="CloudWAF"),
+        ), mock.patch.object(module, "curl_response") as curl:
+            data, metadata = module.call_tianditu(
+                "administrative-search",
+                {"keyword": "学校", "specify": "福州市", "count": 1},
+                30,
+                1000000,
+            )
+            self.assertEqual(data["count"], "0")
+            self.assertFalse(metadata["waf_blocked"])
+            curl.assert_not_called()
+
+    def test_curl_unavailable_preserves_first_upstream_call(self) -> None:
+        first_meta = {
+            "upstream_called": True,
+            "transport": "python-urllib",
+            "transport_attempts": ["python-urllib"],
+            "server": "CloudWAF",
+            "content_type": "text/html",
+        }
+        unavailable = module.TiandituRequestError(
+            "TIANDITU_CURL_UNAVAILABLE",
+            "curl transport is unavailable",
+            {"upstream_called": False, "transport": "curl-http1.1"},
+        )
+        with mock.patch.dict(os.environ, {"TIANDITU_API_KEY": "secret-value"}, clear=True), mock.patch.object(
+            module,
+            "read_response",
+            return_value=(418, "访问被拦截".encode("utf-8"), first_meta),
+        ), mock.patch.object(module, "curl_response", side_effect=unavailable):
+            with self.assertRaises(module.TiandituRequestError) as raised:
+                module.call_tianditu(
+                    "administrative-search",
+                    {"keyword": "学校", "specify": "福州市", "count": 1},
+                    30,
+                    1000000,
+                )
+            self.assertEqual(raised.exception.code, "TIANDITU_CURL_UNAVAILABLE")
+            self.assertTrue(raised.exception.metadata["upstream_called"])
+            self.assertTrue(raised.exception.metadata["waf_blocked"])
+            self.assertEqual(raised.exception.metadata["first_http_status"], 418)
 
 
 if __name__ == "__main__":
