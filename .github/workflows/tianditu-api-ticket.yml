@@ -18,7 +18,7 @@ jobs:
     if: >-
       github.actor == github.repository_owner &&
       startsWith(github.event.issue.title, '[api-tianditu]')
-    runs-on: ubuntu-24.04
+    runs-on: ${{ vars.TIANDITU_RUNNER_LABEL || 'ubuntu-24.04' }}
     timeout-minutes: 20
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
