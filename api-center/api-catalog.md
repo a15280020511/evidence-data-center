@@ -3,9 +3,9 @@
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
 - 托管提供方：`16/16` 已启用
-- 托管操作总数：`131`
-- 已公开参数总数：`790`
-- 目录 SHA-256：`099be9ddae941147a9d9789c6372e2f9f4536a027605d824621831eb197a2e21`
+- 托管操作总数：`143`
+- 已公开参数总数：`877`
+- 目录 SHA-256：`6ec123d1efe66b4ddd77f192c7475ef0ec5feb38a4ea6c481ee2a343b0cdbe70`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -32,7 +32,7 @@
 | Firecrawl Context API（火行者） | `firecrawl` | 启用 | `[api-context]` | `4` | 否 |
 | TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
-| 天地图地名搜索 API | `tianditu` | 启用 | `[api-tianditu]` | `8` | 否 |
+| Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
 
 ## 普通连接器
 
@@ -5107,19 +5107,19 @@
 }
 ```
 
-## 天地图地名搜索 API (`tianditu`)
+## Tushare Pro 中国金融数据 API (`tushare`)
 
 - 状态：`启用`
-- 说明：通过国家地理信息公共服务平台天地图地名搜索 V2.0 读取普通、视野、周边、多边形、行政区、分类与统计搜索结果。
-- 目录策略：仅调用天地图官方固定 HTTPS 地名搜索 V2.0 端点；禁止瓦片批量下载、任意 URL、任意请求头、任意代码、写入和账号操作。
-- 执行策略：TIANDITU_API_KEY 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次业务请求，遇到 CloudWAF 418 时仅追加一次固定 curl HTTP/1.1 兼容重试；记录真实 upstream_called、HTTP 状态、WAF 分类与传输尝试。若 GitHub 托管出口仍被拦截，可通过仓库变量 TIANDITU_RUNNER_LABEL 切换到中国大陆自托管 Runner。
-- 票据前缀：`[api-tianditu]`
-- Secret环境变量名：`TIANDITU_API_KEY`（仅名称）
-- 提供方SHA-256：`e7d8d183ceb0cd0fe74f38a1c6cbc50865feeaafd89cc287821156969d125d19`
+- 说明：通过 Tushare Pro 官方 HTTPS JSON API 读取中国股票、指数、基金、财务、资金流和交易日历数据。实际可用范围由账户积分和接口权限决定。
+- 目录策略：仅开放显式登记的 Tushare Pro 只读 api_name；禁止任意 API 名称、任意 URL、交易、下单、账户操作、写入和自定义请求头。
+- 执行策略：TUSHARE_API_TOKEN 仅在后端 HTTPS POST JSON 中注入，不写入日志、Issue 或 Artifact；每张票据最多一次正常请求和一次瞬态故障重试，并限制参数、超时、响应体积和分页。
+- 票据前缀：`[api-tushare]`
+- Secret环境变量名：`TUSHARE_API_TOKEN`（仅名称）
+- 提供方SHA-256：`17b75ee3179f49be521afbdd4bb310f963983cc17161a6a806a5119f81a460eb`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
-| `catalog-capabilities` | 读取天地图适配器本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+| `catalog-capabilities` | 读取本地安全能力目录，不访问上游且不需要 Token。 | `无` |
 
 `catalog-capabilities` 参数Schema：
 
@@ -5131,423 +5131,1023 @@
 }
 ```
 
-| `normal-search` | 执行普通 POI/地名搜索，可限定地图范围、层级和行政区。 | `keyword, map_bound, level, specify, start, count, data_types, show, place_only` |
+| `trade-calendar` | 读取各交易所交易日历。 | `exchange, start_date, end_date, is_open, fields` |
 
-`normal-search` 参数Schema：
+`trade-calendar` 参数Schema：
 
 ```json
 {
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "keyword",
-    "map_bound",
-    "level"
-  ],
   "properties": {
-    "keyword": {
+    "exchange": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 200
+      "maxLength": 16
     },
-    "map_bound": {
-      "type": "array",
-      "minItems": 4,
-      "maxItems": 4,
-      "items": {
-        "type": "number"
-      }
+    "start_date": {
+      "$ref": "#/$defs/date"
     },
-    "level": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 18
+    "end_date": {
+      "$ref": "#/$defs/date"
     },
-    "specify": {
+    "is_open": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 64
-    },
-    "start": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 300
-    },
-    "count": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 300
-    },
-    "data_types": {
-      "type": "array",
-      "maxItems": 10,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
-      }
-    },
-    "show": {
-      "type": "integer",
       "enum": [
-        1,
-        2
+        "0",
+        "1"
       ]
     },
-    "place_only": {
-      "type": "boolean"
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
     }
   }
 }
 ```
 
-| `viewport-search` | 在指定地图视野范围和层级内搜索 POI。 | `keyword, map_bound, level, start, count, data_types, show` |
+| `stock-basic` | 读取 A 股证券基础信息和上市状态。 | `ts_code, name, market, exchange, list_status, is_hs, fields` |
 
-`viewport-search` 参数Schema：
+`stock-basic` 参数Schema：
 
 ```json
 {
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "keyword",
-    "map_bound",
-    "level"
-  ],
   "properties": {
-    "keyword": {
+    "ts_code": {
+      "$ref": "#/$defs/code"
+    },
+    "name": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 200
+      "maxLength": 80
     },
-    "map_bound": {
-      "type": "array",
-      "minItems": 4,
-      "maxItems": 4,
-      "items": {
-        "type": "number"
-      }
+    "market": {
+      "type": "string",
+      "maxLength": 40
     },
-    "level": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 18
+    "exchange": {
+      "type": "string",
+      "maxLength": 16
     },
-    "start": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 300
-    },
-    "count": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 300
-    },
-    "data_types": {
-      "type": "array",
-      "maxItems": 10,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
-      }
-    },
-    "show": {
-      "type": "integer",
+    "list_status": {
+      "type": "string",
       "enum": [
-        1,
-        2
+        "L",
+        "D",
+        "P"
       ]
+    },
+    "is_hs": {
+      "type": "string",
+      "enum": [
+        "N",
+        "H",
+        "S"
+      ]
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
     }
   }
 }
 ```
 
-| `nearby-search` | 在指定经纬度中心点周边 10 公里以内搜索 POI。 | `keyword, center, radius, level, start, count, data_types, show` |
+| `daily-quotes` | 读取 A 股日线行情。 | `ts_code, trade_date, start_date, end_date, offset, limit, fields` |
 
-`nearby-search` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "keyword",
-    "center",
-    "radius",
-    "level"
-  ],
-  "properties": {
-    "keyword": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "center": {
-      "type": "array",
-      "minItems": 2,
-      "maxItems": 2,
-      "items": {
-        "type": "number"
-      }
-    },
-    "radius": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 10000
-    },
-    "level": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 18
-    },
-    "start": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 300
-    },
-    "count": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 300
-    },
-    "data_types": {
-      "type": "array",
-      "maxItems": 10,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
-      }
-    },
-    "show": {
-      "type": "integer",
-      "enum": [
-        1,
-        2
-      ]
-    }
-  }
-}
-```
-
-| `polygon-search` | 在闭合多边形范围内搜索 POI，最多 20 个坐标点。 | `keyword, polygon, start, count, data_types, show` |
-
-`polygon-search` 参数Schema：
+`daily-quotes` 参数Schema：
 
 ```json
 {
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "keyword",
-    "polygon"
-  ],
-  "properties": {
-    "keyword": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "polygon": {
-      "type": "array",
-      "minItems": 4,
-      "maxItems": 20,
-      "items": {
-        "type": "array",
-        "minItems": 2,
-        "maxItems": 2,
-        "items": {
-          "type": "number"
+  "$ref": "#/$defs/marketQuery",
+  "$defs": {
+    "marketQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "trade_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
         }
       }
     },
-    "start": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 300
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
     },
-    "count": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 300
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
     },
-    "data_types": {
-      "type": "array",
-      "maxItems": 10,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
-      }
-    },
-    "show": {
-      "type": "integer",
-      "enum": [
-        1,
-        2
-      ]
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
     }
   }
 }
 ```
 
-| `administrative-search` | 在指定行政区名称或九位国标码范围内搜索 POI。 | `keyword, specify, start, count, data_types, show` |
+| `weekly-quotes` | 读取 A 股周线行情。 | `ts_code, trade_date, start_date, end_date, offset, limit, fields` |
 
-`administrative-search` 参数Schema：
+`weekly-quotes` 参数Schema：
 
 ```json
 {
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "keyword",
-    "specify"
-  ],
-  "properties": {
-    "keyword": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
-    },
-    "specify": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 64
-    },
-    "start": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 300
-    },
-    "count": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 300
-    },
-    "data_types": {
-      "type": "array",
-      "maxItems": 10,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
+  "$ref": "#/$defs/marketQuery",
+  "$defs": {
+    "marketQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "trade_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
       }
     },
-    "show": {
-      "type": "integer",
-      "enum": [
-        1,
-        2
-      ]
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
     }
   }
 }
 ```
 
-| `category-search` | 按行政区、地图范围和数据分类检索 POI。 | `specify, map_bound, start, count, data_types, show` |
+| `monthly-quotes` | 读取 A 股月线行情。 | `ts_code, trade_date, start_date, end_date, offset, limit, fields` |
 
-`category-search` 参数Schema：
+`monthly-quotes` 参数Schema：
 
 ```json
 {
-  "type": "object",
-  "additionalProperties": false,
-  "required": [
-    "specify",
-    "map_bound",
-    "data_types"
-  ],
-  "properties": {
-    "specify": {
+  "$ref": "#/$defs/marketQuery",
+  "$defs": {
+    "marketQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "trade_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
+      }
+    },
+    "date": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 64
+      "pattern": "^[0-9]{8}$"
     },
-    "map_bound": {
-      "type": "array",
-      "minItems": 4,
-      "maxItems": 4,
-      "items": {
-        "type": "number"
-      }
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
     },
-    "start": {
-      "type": "integer",
-      "minimum": 0,
-      "maximum": 300
-    },
-    "count": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 300
-    },
-    "data_types": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 10,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
-      }
-    },
-    "show": {
-      "type": "integer",
-      "enum": [
-        1,
-        2
-      ]
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
     }
   }
 }
 ```
 
-| `statistics-search` | 按关键字和行政区执行 POI 数量统计搜索。 | `keyword, specify, data_types, show` |
+| `adjust-factor` | 读取 A 股复权因子。 | `ts_code, trade_date, start_date, end_date, offset, limit, fields` |
 
-`statistics-search` 参数Schema：
+`adjust-factor` 参数Schema：
+
+```json
+{
+  "$ref": "#/$defs/marketQuery",
+  "$defs": {
+    "marketQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "trade_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `daily-basic` | 读取每日估值、市值、换手率和股本指标。 | `ts_code, trade_date, start_date, end_date, offset, limit, fields` |
+
+`daily-basic` 参数Schema：
+
+```json
+{
+  "$ref": "#/$defs/marketQuery",
+  "$defs": {
+    "marketQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "trade_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `money-flow` | 读取个股资金流向。 | `ts_code, trade_date, start_date, end_date, offset, limit, fields` |
+
+`money-flow` 参数Schema：
+
+```json
+{
+  "$ref": "#/$defs/marketQuery",
+  "$defs": {
+    "marketQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "trade_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `margin-summary` | 读取融资融券交易汇总。 | `trade_date, exchange_id, start_date, end_date, fields` |
+
+`margin-summary` 参数Schema：
 
 ```json
 {
   "type": "object",
   "additionalProperties": false,
-  "required": [
-    "keyword",
-    "specify"
-  ],
   "properties": {
-    "keyword": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 200
+    "trade_date": {
+      "$ref": "#/$defs/date"
     },
-    "specify": {
+    "exchange_id": {
       "type": "string",
-      "minLength": 1,
-      "maxLength": 64
+      "maxLength": 16
     },
-    "data_types": {
-      "type": "array",
-      "maxItems": 10,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 64
+    "start_date": {
+      "$ref": "#/$defs/date"
+    },
+    "end_date": {
+      "$ref": "#/$defs/date"
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `top-list` | 读取龙虎榜每日明细。 | `trade_date, ts_code, fields` |
+
+`top-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trade_date": {
+      "$ref": "#/$defs/date"
+    },
+    "ts_code": {
+      "$ref": "#/$defs/code"
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `income-statement` | 读取上市公司利润表。 | `ts_code, ann_date, start_date, end_date, period, report_type, comp_type, offset, limit, fields` |
+
+`income-statement` 参数Schema：
+
+```json
+{
+  "$ref": "#/$defs/financeQuery",
+  "$defs": {
+    "financeQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "ann_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "period": {
+          "$ref": "#/$defs/date"
+        },
+        "report_type": {
+          "type": "string",
+          "maxLength": 8
+        },
+        "comp_type": {
+          "type": "string",
+          "maxLength": 8
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
       }
     },
-    "show": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `balance-sheet` | 读取上市公司资产负债表。 | `ts_code, ann_date, start_date, end_date, period, report_type, comp_type, offset, limit, fields` |
+
+`balance-sheet` 参数Schema：
+
+```json
+{
+  "$ref": "#/$defs/financeQuery",
+  "$defs": {
+    "financeQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "ann_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "period": {
+          "$ref": "#/$defs/date"
+        },
+        "report_type": {
+          "type": "string",
+          "maxLength": 8
+        },
+        "comp_type": {
+          "type": "string",
+          "maxLength": 8
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `cash-flow-statement` | 读取上市公司现金流量表。 | `ts_code, ann_date, start_date, end_date, period, report_type, comp_type, offset, limit, fields` |
+
+`cash-flow-statement` 参数Schema：
+
+```json
+{
+  "$ref": "#/$defs/financeQuery",
+  "$defs": {
+    "financeQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "ann_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "period": {
+          "$ref": "#/$defs/date"
+        },
+        "report_type": {
+          "type": "string",
+          "maxLength": 8
+        },
+        "comp_type": {
+          "type": "string",
+          "maxLength": 8
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `financial-indicator` | 读取上市公司财务指标。 | `ts_code, ann_date, start_date, end_date, period, offset, limit, fields` |
+
+`financial-indicator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ts_code": {
+      "$ref": "#/$defs/code"
+    },
+    "ann_date": {
+      "$ref": "#/$defs/date"
+    },
+    "start_date": {
+      "$ref": "#/$defs/date"
+    },
+    "end_date": {
+      "$ref": "#/$defs/date"
+    },
+    "period": {
+      "$ref": "#/$defs/date"
+    },
+    "offset": {
       "type": "integer",
-      "enum": [
-        1,
-        2
-      ]
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `index-basic` | 读取指数基础信息。 | `ts_code, name, market, publisher, category, fields` |
+
+`index-basic` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ts_code": {
+      "$ref": "#/$defs/code"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "market": {
+      "type": "string",
+      "maxLength": 32
+    },
+    "publisher": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "category": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `index-daily` | 读取指数日线行情。 | `ts_code, trade_date, start_date, end_date, offset, limit, fields` |
+
+`index-daily` 参数Schema：
+
+```json
+{
+  "$ref": "#/$defs/marketQuery",
+  "$defs": {
+    "marketQuery": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "ts_code": {
+          "$ref": "#/$defs/code"
+        },
+        "trade_date": {
+          "$ref": "#/$defs/date"
+        },
+        "start_date": {
+          "$ref": "#/$defs/date"
+        },
+        "end_date": {
+          "$ref": "#/$defs/date"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        },
+        "fields": {
+          "$ref": "#/$defs/fields"
+        }
+      }
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `fund-basic` | 读取公募基金基础信息。 | `market, status, fields` |
+
+`fund-basic` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "market": {
+      "type": "string",
+      "maxLength": 16
+    },
+    "status": {
+      "type": "string",
+      "maxLength": 16
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `fund-nav` | 读取公募基金净值。 | `ts_code, ann_date, nav_date, market, start_date, end_date, offset, limit, fields` |
+
+`fund-nav` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ts_code": {
+      "$ref": "#/$defs/code"
+    },
+    "ann_date": {
+      "$ref": "#/$defs/date"
+    },
+    "nav_date": {
+      "$ref": "#/$defs/date"
+    },
+    "market": {
+      "type": "string",
+      "maxLength": 16
+    },
+    "start_date": {
+      "$ref": "#/$defs/date"
+    },
+    "end_date": {
+      "$ref": "#/$defs/date"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
+    }
+  }
+}
+```
+
+| `hk-hold` | 读取沪深港通持股明细。 | `trade_date, ts_code, exchange, start_date, end_date, offset, limit, fields` |
+
+`hk-hold` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "trade_date": {
+      "$ref": "#/$defs/date"
+    },
+    "ts_code": {
+      "$ref": "#/$defs/code"
+    },
+    "exchange": {
+      "type": "string",
+      "maxLength": 16
+    },
+    "start_date": {
+      "$ref": "#/$defs/date"
+    },
+    "end_date": {
+      "$ref": "#/$defs/date"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "fields": {
+      "$ref": "#/$defs/fields"
+    }
+  },
+  "$defs": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_,]*$",
+      "maxLength": 2000
     }
   }
 }
@@ -5557,23 +6157,17 @@
 
 ```json
 {
-  "requests_per_ticket": 1,
+  "requests_per_ticket_max": 2,
   "timeout_seconds_max": 60,
-  "max_response_bytes": 3000000,
-  "start_max": 300,
-  "count_max": 300,
-  "start_plus_count_max": 500,
-  "nearby_radius_meters_max": 10000,
-  "polygon_points_max": 20,
+  "max_response_bytes": 5000000,
+  "limit_max": 5000,
+  "offset_max": 1000000,
+  "arbitrary_api_names_allowed": false,
   "arbitrary_urls_allowed": false,
   "arbitrary_headers_allowed": false,
-  "tile_bulk_download_allowed": false,
   "write_operations_allowed": false,
-  "direct_phone_fields_redacted": true,
-  "transport_attempts_max": 2,
-  "cloud_waf_detection": true,
-  "arbitrary_proxy_urls_allowed": false,
-  "self_hosted_runner_supported": true
+  "trading_or_order_execution_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 
