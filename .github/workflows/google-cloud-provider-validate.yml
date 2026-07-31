@@ -80,11 +80,16 @@ jobs:
           catalog = json.loads((root / 'provider-catalog.json').read_text(encoding='utf-8'))
           Draft202012Validator.check_schema(schema)
           assert catalog['schema_version'] == 'google-cloud-provider-catalog-v2'
-          assert catalog['required_secret_environment_variable'] == 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON'
+          assert set(catalog['required_secret_environment_variables']) == {
+              'BIGQUERY_SERVICE_ACCOUNT_JSON',
+              'EARTH_ENGINE_SERVICE_ACCOUNT_JSON',
+          }
           assert catalog['secret_values_exposed'] is False
           providers = {row['provider_id']: row for row in catalog['providers']}
           assert set(providers) == {'bigquery', 'earth-engine', 'data-commons'}
           assert all(row['enabled'] is True for row in providers.values())
+          assert providers['bigquery']['required_secret_environment_variable'] == 'BIGQUERY_SERVICE_ACCOUNT_JSON'
+          assert providers['earth-engine']['required_secret_environment_variable'] == 'EARTH_ENGINE_SERVICE_ACCOUNT_JSON'
           assert len(providers['bigquery']['operations']) == 7
           assert len(providers['earth-engine']['operations']) == 6
           assert len(providers['data-commons']['operations']) == 5
@@ -99,9 +104,14 @@ jobs:
           print(json.dumps({'status': 'PASS', 'managed_providers': 3, 'operations': 18}))
           PY
 
-      - name: Verify no credential material enters repository files
+      - name: Verify no shared credential or credential material enters repository files
         run: |
           set -euo pipefail
+          if grep -R --line-number --fixed-strings 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' \
+            api-center .github/workflows; then
+            echo "shared Google credential entry found" >&2
+            exit 1
+          fi
           if grep -R --line-number --fixed-strings '"private_key"' api-center/google-cloud; then
             echo "service-account private_key field found in repository files" >&2
             exit 1
