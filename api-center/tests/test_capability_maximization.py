@@ -31,7 +31,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_managed_providers_expose_fixed_readonly_operations_only(self) -> None:
         catalog = json.loads((ROOT / "api-catalog.json").read_text(encoding="utf-8"))
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 105)
+        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 114)
         self.assertNotIn("qichacha", providers)
         self.assertEqual(len(providers["miaoxiang"]["operations"]), 4)
         self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
@@ -41,6 +41,8 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertEqual(len(providers["yuandian-law"]["operations"]), 40)
         self.assertEqual(len(providers["jina-reader"]["operations"]), 2)
         self.assertEqual(len(providers["exa"]["operations"]), 3)
+        self.assertEqual(len(providers["tavily"]["operations"]), 5)
+        self.assertEqual(len(providers["firecrawl"]["operations"]), 4)
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertFalse(any(row["secret_value_exposed"] for row in providers.values()))
 
@@ -79,6 +81,19 @@ class CapabilityMaximizationTests(unittest.TestCase):
             self.assertNotIn("trade", operation_id)
             self.assertNotIn("order", operation_id)
             self.assertNotIn("watchlist", operation_id)
+
+        web = json.loads((ROOT / "web-retrieval/provider-catalog.json").read_text(encoding="utf-8"))
+        providers = {row["provider_id"]: row for row in web["providers"]}
+        tavily_limits = providers["tavily"]["limits"]
+        firecrawl_limits = providers["firecrawl"]["limits"]
+        self.assertFalse(tavily_limits["research_allowed"])
+        self.assertFalse(tavily_limits["auto_parameters_allowed"])
+        self.assertEqual(tavily_limits["crawl_pages_max"], 20)
+        self.assertEqual(tavily_limits["crawl_depth_max"], 2)
+        self.assertFalse(firecrawl_limits["browser_interaction_allowed"])
+        self.assertFalse(firecrawl_limits["actions_allowed"])
+        self.assertFalse(firecrawl_limits["arbitrary_headers_allowed"])
+        self.assertFalse(firecrawl_limits["async_crawl_allowed"])
 
 
 if __name__ == "__main__":

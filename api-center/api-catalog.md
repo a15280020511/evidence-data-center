@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`69/69` 已启用
-- 托管提供方：`11/11` 已启用
-- 托管操作总数：`105`
-- 已公开参数总数：`668`
-- 目录 SHA-256：`7f294445cde436a76e3c921966a4601da14b4846c9280939fff4c0a7349bec14`
+- 托管提供方：`13/13` 已启用
+- 托管操作总数：`114`
+- 已公开参数总数：`714`
+- 目录 SHA-256：`c899220fc0beacb364df51c750f68eb1b75828a695b58792d7248a292f40a8ae`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -28,6 +28,8 @@
 | 东方财富妙想金融 API | `miaoxiang` | 启用 | `[api-mx]` | `4` | 否 |
 | Jina AI Reader | `jina-reader` | 启用 | `[api-web]` | `2` | 否 |
 | Exa Search API | `exa` | 启用 | `[api-web]` | `3` | 否 |
+| Tavily Context API | `tavily` | 启用 | `[api-context]` | `5` | 否 |
+| Firecrawl Context API（火行者） | `firecrawl` | 启用 | `[api-context]` | `4` | 否 |
 
 ## 普通连接器
 
@@ -4209,6 +4211,490 @@
   "max_response_bytes": 5000000,
   "search_results_max": 10,
   "content_urls_max": 5
+}
+```
+
+## Tavily Context API (`tavily`)
+
+- 状态：`启用`
+- 说明：使用 Tavily 官方 Search、Extract、Map 与 Crawl API 获取面向大模型的实时公开网页证据。
+- 目录策略：只暴露 Tavily 固定只读端点；禁止 Research、异步研究任务、自动参数升级、任意请求头、任意代码和非公开 URL。
+- 执行策略：TAVILY_API_KEY 仅在后端 Authorization Bearer 头注入；每张票据执行一次请求；Search 默认 basic 且关闭自动参数和生成式答案；Extract 最多5个 URL；Map 最多50个链接；Crawl 最多20页且深度最多2。
+- 票据前缀：`[api-context]`
+- Secret环境变量名：`TAVILY_API_KEY`（仅名称）
+- 提供方SHA-256：`c8e9b195cf48b60dd7657f55a575745b00cee16dda1b6fa52c76e10deb6365a0`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 Tavily 本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `search` | 调用 Tavily /search 搜索公开网页，固定关闭自动参数和生成式答案。 | `query, search_depth, topic, max_results, time_range, include_domains, exclude_domains, country, include_raw_content` |
+
+`search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "search_depth": {
+      "type": "string",
+      "enum": [
+        "basic",
+        "fast",
+        "ultra-fast",
+        "advanced"
+      ]
+    },
+    "topic": {
+      "type": "string",
+      "enum": [
+        "general",
+        "news",
+        "finance"
+      ]
+    },
+    "max_results": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "time_range": {
+      "type": "string",
+      "enum": [
+        "day",
+        "week",
+        "month",
+        "year"
+      ]
+    },
+    "include_domains": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 253
+      }
+    },
+    "exclude_domains": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 253
+      }
+    },
+    "country": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "include_raw_content": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `extract` | 调用 Tavily /extract 提取最多5个公开 HTTPS URL 的 Markdown 或纯文本。 | `urls, extract_depth, query, format, include_images` |
+
+`extract` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "urls": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 9,
+        "maxLength": 2048,
+        "pattern": "^https://"
+      }
+    },
+    "extract_depth": {
+      "type": "string",
+      "enum": [
+        "basic",
+        "advanced"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "markdown",
+        "text"
+      ]
+    },
+    "include_images": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "urls"
+  ]
+}
+```
+
+| `map` | 调用 Tavily /map 发现一个公开站点的受限 URL 结构，不允许外部域名。 | `url, instructions, max_depth, max_breadth, limit, select_paths, exclude_paths` |
+
+`map` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "instructions": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "max_depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+    },
+    "max_breadth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "select_paths": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "exclude_paths": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+| `crawl` | 调用 Tavily /crawl 对一个公开站点执行受限同步爬取，最多20页、深度最多2。 | `url, instructions, max_depth, max_breadth, limit, select_paths, exclude_paths, extract_depth, format` |
+
+`crawl` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "instructions": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "max_depth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2
+    },
+    "max_breadth": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "select_paths": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "exclude_paths": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    },
+    "extract_depth": {
+      "type": "string",
+      "enum": [
+        "basic",
+        "advanced"
+      ]
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "markdown",
+        "text"
+      ]
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 150,
+  "max_response_bytes": 5000000,
+  "search_results_max": 10,
+  "extract_urls_max": 5,
+  "map_links_max": 50,
+  "crawl_pages_max": 20,
+  "crawl_depth_max": 2,
+  "research_allowed": false,
+  "auto_parameters_allowed": false
+}
+```
+
+## Firecrawl Context API（火行者） (`firecrawl`)
+
+- 状态：`启用`
+- 说明：使用 Firecrawl v2 Search、Scrape 与 Map API 搜索公开网页、提取正文并发现站点 URL。
+- 目录策略：只暴露 Firecrawl v2 固定只读 Search、Scrape、Map；禁止 Crawl 异步任务、Agent、Browser、Interact、Actions、任意请求头、Cookie、登录态和非公开 URL。
+- 执行策略：FIRECRAWL_API_KEY 仅在后端 Authorization Bearer 头注入；每张票据执行一次请求；Search最多10条；Scrape仅允许Markdown和Links并启用零数据保留；Map最多100个链接且默认不含子域名。
+- 票据前缀：`[api-context]`
+- Secret环境变量名：`FIRECRAWL_API_KEY`（仅名称）
+- 提供方SHA-256：`a44c4d567f550e422b27f53ae4531d69e2096d249e590d953835c16fedc56375`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 Firecrawl 本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `search` | 调用 Firecrawl v2 /search 搜索公开网页，可选择返回受限 Markdown。 | `query, limit, country, time_range, include_markdown` |
+
+`search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "country": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "time_range": {
+      "type": "string",
+      "enum": [
+        "day",
+        "week",
+        "month",
+        "year"
+      ]
+    },
+    "include_markdown": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `scrape` | 调用 Firecrawl v2 /scrape 读取一个公开 HTTPS URL，仅返回 Markdown 和/或链接。 | `url, formats, only_main_content, max_age_ms, timeout_ms` |
+
+`scrape` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "formats": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "markdown",
+          "links"
+        ]
+      }
+    },
+    "only_main_content": {
+      "type": "boolean"
+    },
+    "max_age_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 604800000
+    },
+    "timeout_ms": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 60000
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+| `map` | 调用 Firecrawl v2 /map 获取一个公开站点的受限 URL 列表。 | `url, search, sitemap, include_subdomains, ignore_query_parameters, limit` |
+
+`map` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "search": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "sitemap": {
+      "type": "string",
+      "enum": [
+        "skip",
+        "include",
+        "only"
+      ]
+    },
+    "include_subdomains": {
+      "type": "boolean"
+    },
+    "ignore_query_parameters": {
+      "type": "boolean"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 150,
+  "max_response_bytes": 5000000,
+  "search_results_max": 10,
+  "scrape_urls_max": 1,
+  "map_links_max": 100,
+  "browser_interaction_allowed": false,
+  "actions_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "async_crawl_allowed": false
 }
 ```
 
