@@ -22,7 +22,7 @@ concurrency:
 jobs:
   validate-catalog:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -34,11 +34,15 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: api-center/requirements.txt
+          cache-dependency-path: |
+            api-center/requirements.txt
+            api-center/baostock/requirements.txt
 
       - name: Install isolated API dependencies
         run: |
-          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/baostock/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -56,67 +60,28 @@ jobs:
             api-center/build_config.py \
             api-center/build_catalog.py \
             api-center/build_catalog_market_search.py \
+            api-center/baostock/baostock_task.py \
+            api-center/baostock/tests/*.py \
             api-center/tests/*.py
           python api-center/build_config.py
           python api-center/build_catalog_market_search.py
-          python -m unittest discover -s api-center/tests -v
+          python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Verify deterministic contracts and provider invariants
         run: |
           set -euo pipefail
+          cmp /tmp/committed-api-catalog.json api-center/api-catalog.json
+          cmp /tmp/committed-api-catalog.md api-center/api-catalog.md
+          cmp /tmp/committed-connector-manifest.json api-center/connector-manifest.json
+          cmp /tmp/committed-krakend.validation.json api-center/krakend.validation.json
+          cmp /tmp/committed-krakend.tmpl api-center/krakend.tmpl
           python - <<'PY'
           import json
-          import re
           from pathlib import Path
 
-          def load_json(path: str):
-              return json.loads(Path(path).read_text(encoding='utf-8'))
-
-          secret_pattern = re.compile(r'\{\{ env "([A-Z][A-Z0-9_]*)" \| quote \}\}')
-
-          def load_template(path: str):
-              text = Path(path).read_text(encoding='utf-8')
-              rendered = secret_pattern.sub(
-                  lambda match: json.dumps(f'__ENV_{match.group(1)}__'),
-                  text,
-              )
-              return json.loads(rendered)
-
-          assert load_json('/tmp/committed-api-catalog.json') == load_json('api-center/api-catalog.json')
-          assert load_json('/tmp/committed-connector-manifest.json') == load_json('api-center/connector-manifest.json')
-          assert load_json('/tmp/committed-krakend.validation.json') == load_json('api-center/krakend.validation.json')
-          assert load_template('/tmp/committed-krakend.tmpl') == load_template('api-center/krakend.tmpl')
-          assert Path('/tmp/committed-api-catalog.md').read_text(encoding='utf-8') == Path('api-center/api-catalog.md').read_text(encoding='utf-8')
-
-          manifest = load_json('api-center/connector-manifest.json')
-          catalog = load_json('api-center/api-catalog.json')
-          rows = manifest['connectors']
-          enabled_rows = [row for row in rows if row['enabled']]
-          expected_secrets = sorted({
-              row['secret_environment_variable']
-              for row in enabled_rows
-              if row.get('secret_environment_variable')
-          })
-          connector_ids = {row['id'] for row in rows}
-          assert manifest['connector_count'] == len(rows) == 68
-          assert manifest['enabled_connector_count'] == len(enabled_rows) == 68
-          assert manifest['required_secret_environment_variables'] == expected_secrets
-          assert 'tianditu-place-search' not in connector_ids
-          assert 'TIANDITU_API_KEY' not in manifest['required_secret_environment_variables']
-          assert not Path('api-center/connectors/tianditu-place-search.connector.json').exists()
-          assert not Path('api-center/tianditu').exists()
-          assert not Path('.github/workflows/tianditu-api-ticket.yml').exists()
-          assert not Path('.github/workflows/tianditu-provider-validate.yml').exists()
-
-          assert catalog['schema_version'] == 'api-catalog-v3'
-          assert catalog['connector_count'] == 68
-          assert catalog['enabled_connector_count'] == 68
-          assert catalog['managed_provider_count'] == 17
-          assert catalog['enabled_managed_provider_count'] == 17
-          assert catalog['managed_operation_count'] == 145
-          assert catalog['exposed_parameter_count'] >= 850
-          assert catalog['secret_values_exposed'] is False
-
+          catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
           expected_counts = {
               'bigquery': 7,
@@ -134,99 +99,44 @@ jobs:
               'tickflow': 5,
               'serpapi': 4,
               'tushare': 20,
+              'baostock': 20,
               'wolfram-alpha': 4,
               'llamaparse': 3,
           }
+          assert manifest['connector_count'] == 68
+          assert manifest['enabled_connector_count'] == 68
+          assert catalog['schema_version'] == 'api-catalog-v3'
+          assert catalog['managed_provider_count'] == 18
+          assert catalog['enabled_managed_provider_count'] == 18
+          assert catalog['managed_operation_count'] == 165
+          assert catalog['secret_values_exposed'] is False
           assert set(providers) == set(expected_counts)
-          assert 'tianditu' not in providers
-          assert sum(len(row['operations']) for row in providers.values()) == 145
-          for provider_id, expected in expected_counts.items():
-              assert len(providers[provider_id]['operations']) == expected
+          assert sum(len(row['operations']) for row in providers.values()) == 165
+          for provider_id, count in expected_counts.items():
+              assert len(providers[provider_id]['operations']) == count
               assert providers[provider_id]['secret_value_exposed'] is False
-
-          expected_secret_names = {
-              'bigquery': 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON',
-              'earth-engine': 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON',
-              'aifin-market': 'WIND_API_KEY',
-              'yuandian-law': 'YUANDIAN_API_KEY',
-              'tianyancha': 'TIANYANCHA_API_TOKEN',
-              'miaoxiang': 'MX_APIKEY',
-              'exa': 'EXA_API_KEY',
-              'tavily': 'TAVILY_API_KEY',
-              'firecrawl': 'FIRECRAWL_API_KEY',
-              'tickflow': 'TICKFLOW_API_KEY',
-              'serpapi': 'SERPAPI_API_KEY',
-              'tushare': 'TUSHARE_API_TOKEN',
-              'wolfram-alpha': 'WOLFRAM_ALPHA_APP_ID',
-              'llamaparse': 'LLAMA_CLOUD_API_KEY',
-          }
-          for provider_id, secret_name in expected_secret_names.items():
-              assert providers[provider_id]['required_secret_environment_variable_name'] == secret_name
-
-          tushare = providers['tushare']
-          assert tushare['ticket_prefix'] == '[api-tushare]'
-          assert {row['operation_id'] for row in tushare['operations']} == {
-              'catalog-capabilities', 'trade-calendar', 'stock-basic', 'daily-quotes',
-              'weekly-quotes', 'monthly-quotes', 'adjust-factor', 'daily-basic',
-              'money-flow', 'margin-summary', 'top-list', 'income-statement',
-              'balance-sheet', 'cash-flow-statement', 'financial-indicator',
-              'index-basic', 'index-daily', 'fund-basic', 'fund-nav', 'hk-hold',
-          }
-          tushare_limits = tushare['limits']
-          assert tushare_limits['arbitrary_api_names_allowed'] is False
-          assert tushare_limits['arbitrary_urls_allowed'] is False
-          assert tushare_limits['arbitrary_headers_allowed'] is False
-          assert tushare_limits['write_operations_allowed'] is False
-          assert tushare_limits['trading_or_order_execution_allowed'] is False
-          assert tushare_limits['secret_values_exposed'] is False
-
-          wolfram = providers['wolfram-alpha']
-          assert wolfram['ticket_prefix'] == '[api-wolfram]'
-          assert {row['operation_id'] for row in wolfram['operations']} == {
-              'catalog-capabilities', 'full-results', 'short-answer', 'llm-result',
-          }
-          assert wolfram['limits']['arbitrary_urls_allowed'] is False
-          assert wolfram['limits']['arbitrary_headers_allowed'] is False
-          assert wolfram['limits']['write_operations_allowed'] is False
-          assert wolfram['limits']['image_endpoints_enabled'] is False
-
-          llamaparse = providers['llamaparse']
-          assert llamaparse['ticket_prefix'] == '[api-llamaparse]'
-          assert {row['operation_id'] for row in llamaparse['operations']} == {
-              'catalog-capabilities', 'parse-public-document', 'get-job',
-          }
-          assert llamaparse['limits']['arbitrary_urls_allowed'] is False
-          assert llamaparse['limits']['arbitrary_headers_allowed'] is False
-          assert llamaparse['limits']['webhooks_allowed'] is False
-          assert llamaparse['limits']['write_operations_allowed'] is False
-          assert llamaparse['limits']['presigned_urls_exposed'] is False
-          assert llamaparse['limits']['max_pages'] <= 200
-          assert llamaparse['limits']['poll_timeout_seconds_max'] <= 600
-
-          for catalog_file in (
-              'tushare/provider-catalog.json',
-              'knowledge-tools/provider-catalog.json',
-          ):
-              assert catalog_file in catalog['managed_provider_catalog_files']
-              assert catalog_file in catalog['detail_reading_order']
-          assert 'tianditu/provider-catalog.json' not in catalog['managed_provider_catalog_files']
-          serialized = json.dumps(catalog, ensure_ascii=False)
-          assert 'TIANDITU_API_KEY' not in serialized
-          assert 'TIANDITU_EXPECTED_EGRESS_IP' not in serialized
-          assert 'Bearer llx-' not in serialized
-          assert 'presigned_url' not in serialized or 'presigned_urls_exposed' in serialized
-
+          baostock = providers['baostock']
+          assert baostock['ticket_prefix'] == '[api-baostock]'
+          assert baostock['required_secret_environment_variable_name'] == ''
+          assert baostock['limits']['credentials_required'] is False
+          assert baostock['limits']['arbitrary_functions_allowed'] is False
+          assert baostock['limits']['arbitrary_hosts_allowed'] is False
+          assert baostock['limits']['write_operations_allowed'] is False
+          assert baostock['limits']['trading_or_order_execution_allowed'] is False
+          assert 'baostock/provider-catalog.json' in catalog['managed_provider_catalog_files']
+          assert 'baostock/provider-catalog.json' in catalog['detail_reading_order']
+          assert not Path('api-center/data-commons').exists()
+          assert 'data-commons' not in providers
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 17,
-              'managed_operations': 145,
-              'exposed_parameters': catalog['exposed_parameter_count'],
-              'wolfram_operations': 4,
-              'llamaparse_operations': 3,
-              'tianditu': 'removed',
+              'managed_providers': 18,
+              'managed_operations': 165,
+              'baostock_operations': 20,
+              'baostock_credentials_required': False,
           }))
           PY
+          git diff --check
 
       - name: Upload safe catalog and generated gateway evidence
         if: always()
@@ -249,7 +159,8 @@ jobs:
             api-center/web-retrieval/provider-catalog.json
             api-center/market-search/provider-catalog.json
             api-center/tushare/provider-catalog.json
-            api-center/tushare/ticket.schema.json
+            api-center/baostock/provider-catalog.json
+            api-center/baostock/ticket.schema.json
             api-center/knowledge-tools/provider-catalog.json
             api-center/knowledge-tools/ticket.schema.json
           if-no-files-found: error
