@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only Qichacha and Tianyancha managed-provider execution."""
+"""Read-only Tianyancha managed-provider execution."""
 from __future__ import annotations
 
 import argparse
@@ -20,26 +20,17 @@ from jsonschema import Draft202012Validator
 HERE = Path(__file__).resolve().parent
 SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
-QICHACHA_CREDENTIALS_ENV = "QICHACHA_CREDENTIALS_JSON"
 TIANYANCHA_TOKEN_ENV = "TIANYANCHA_API_TOKEN"
 
 OPERATION_PROVIDER = {
-    "catalog-capabilities": {"qichacha", "tianyancha"},
-    "company-search": {"qichacha"},
-    "company-investments": {"qichacha"},
+    "catalog-capabilities": {"tianyancha"},
     "company-basic": {"tianyancha"},
     "company-annual-reports": {"tianyancha"},
-}
-
-QCC_ENDPOINTS = {
-    "company-search": "https://api.qichacha.com/FuzzySearch/GetList",
-    "company-investments": "https://api.qichacha.com/InvestmentCheck/GetList",
 }
 TYC_ENDPOINTS = {
     "company-basic": "https://open.api.tianyancha.com/services/open/ic/baseinfoV2/2.0",
     "company-annual-reports": "https://open.api.tianyancha.com/services/open/ic/annualreport/2.0",
 }
-
 SENSITIVE_KEY_RE = re.compile(
     r"(?:phone|mobile|tel|email|mail|idcard|identity|passport|contact|opername|"
     r"legalperson|legal_person|personname|person_name|humanname|human_name)",
@@ -93,9 +84,9 @@ def _catalog_operations() -> dict[tuple[str, str], Mapping[str, Any]]:
 
 
 def validate_ticket(ticket: Mapping[str, Any]) -> None:
-    validator = Draft202012Validator(load_json(SCHEMA_PATH))
     errors = sorted(
-        validator.iter_errors(ticket), key=lambda item: list(item.absolute_path)
+        Draft202012Validator(load_json(SCHEMA_PATH)).iter_errors(ticket),
+        key=lambda item: list(item.absolute_path),
     )
     if errors:
         rendered = "; ".join(
@@ -107,15 +98,13 @@ def validate_ticket(ticket: Mapping[str, Any]) -> None:
     operation = str(ticket["operation"])
     if provider not in OPERATION_PROVIDER.get(operation, set()):
         raise ValueError(f"operation {operation} is not available for provider {provider}")
-    operation_contract = _catalog_operations().get((provider, operation))
-    if operation_contract is None:
+    contract = _catalog_operations().get((provider, operation))
+    if contract is None:
         raise ValueError(f"unsupported provider operation: {provider}/{operation}")
-    schema = operation_contract.get("parameter_schema")
+    schema = contract.get("parameter_schema")
     if isinstance(schema, Mapping):
         parameter_errors = sorted(
-            Draft202012Validator(dict(schema)).iter_errors(
-                ticket.get("parameters") or {}
-            ),
+            Draft202012Validator(dict(schema)).iter_errors(ticket.get("parameters") or {}),
             key=lambda item: list(item.absolute_path),
         )
         if parameter_errors:
@@ -148,7 +137,7 @@ def prepare(event_path: Path, output_dir: Path) -> int:
     except (json.JSONDecodeError, ValueError) as exc:
         reason = str(exc)
     status = {
-        "schema_version": "company-intelligence-ticket-status-v1",
+        "schema_version": "company-intelligence-ticket-status-v2",
         "accepted": accepted,
         "reason": reason,
         "task_id": str((ticket or {}).get("task_id") or ""),
@@ -183,37 +172,6 @@ def _require_text(value: Any, name: str, maximum: int = 200) -> str:
     if not text or len(text) > maximum:
         raise ValueError(f"{name} must contain 1 to {maximum} characters")
     return text
-
-
-def _qcc_credentials() -> tuple[str, str]:
-    raw = str(os.getenv(QICHACHA_CREDENTIALS_ENV) or "").strip()
-    if not raw:
-        raise RuntimeError(f"missing repository Secret {QICHACHA_CREDENTIALS_ENV}")
-    try:
-        value = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise RuntimeError(f"{QICHACHA_CREDENTIALS_ENV} is not valid JSON") from exc
-    if not isinstance(value, Mapping):
-        raise RuntimeError(f"{QICHACHA_CREDENTIALS_ENV} must contain a JSON object")
-    app_key = str(value.get("app_key") or value.get("key") or "").strip()
-    secret_key = str(
-        value.get("secret_key") or value.get("secretKey") or ""
-    ).strip()
-    if not app_key or not secret_key:
-        raise RuntimeError(
-            f"{QICHACHA_CREDENTIALS_ENV} must contain app_key and secret_key"
-        )
-    return app_key, secret_key
-
-
-def _qcc_auth(
-    app_key: str, secret_key: str, timestamp: int | None = None
-) -> tuple[str, str]:
-    timespan = str(int(time.time()) if timestamp is None else int(timestamp))
-    token = hashlib.md5(
-        f"{app_key}{timespan}{secret_key}".encode("utf-8")
-    ).hexdigest().upper()
-    return timespan, token
 
 
 def _tyc_token() -> str:
@@ -253,7 +211,7 @@ def _http_json(
         request_url,
         headers={
             "Accept": "application/json",
-            "User-Agent": "gpts-company-intelligence-api-center/1",
+            "User-Agent": "gpts-company-intelligence-api-center/2",
             **dict(headers),
         },
         method="GET",
@@ -266,80 +224,23 @@ def _http_json(
     except urllib.error.HTTPError as exc:
         status = int(exc.code)
         raw = exc.read(max_bytes + 1)
-        content_type = (
-            str(exc.headers.get("Content-Type") or "") if exc.headers else ""
-        )
+        content_type = str(exc.headers.get("Content-Type") or "") if exc.headers else ""
     if len(raw) > max_bytes:
-        raise RuntimeError(
-            f"response exceeds acceptance.max_response_bytes={max_bytes}"
-        )
+        raise RuntimeError(f"response exceeds acceptance.max_response_bytes={max_bytes}")
     try:
         payload = json.loads(raw.decode("utf-8")) if raw else {}
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise RuntimeError(f"upstream returned non-JSON HTTP {status}") from exc
     if not isinstance(payload, Mapping):
         raise RuntimeError("upstream JSON root must be an object")
-    metadata = {
+    if not 200 <= status < 300:
+        raise RuntimeError(f"upstream HTTP {status}")
+    return dict(payload), {
         "http_status": status,
         "content_type": content_type,
         "request_origin": urllib.parse.urlsplit(url).netloc,
         "request_path": urllib.parse.urlsplit(url).path,
     }
-    if not 200 <= status < 300:
-        raise RuntimeError(f"upstream HTTP {status}")
-    return dict(payload), metadata
-
-
-def _qichacha(
-    operation: str,
-    parameters: Mapping[str, Any],
-    timeout: int,
-    max_bytes: int,
-) -> tuple[Any, dict[str, Any]]:
-    app_key, secret_key = _qcc_credentials()
-    timespan, token = _qcc_auth(app_key, secret_key)
-    keyword = _require_text(parameters.get("keyword"), "keyword")
-    query: dict[str, Any] = {"key": app_key, "searchKey": keyword}
-    if operation == "company-search":
-        query["pageIndex"] = _bounded_int(
-            parameters.get("page_index"),
-            default=1,
-            minimum=1,
-            maximum=100,
-            name="page_index",
-        )
-    elif operation == "company-investments":
-        query["pageIndex"] = _bounded_int(
-            parameters.get("page_index"),
-            default=1,
-            minimum=1,
-            maximum=100,
-            name="page_index",
-        )
-        query["pageSize"] = _bounded_int(
-            parameters.get("page_size"),
-            default=10,
-            minimum=1,
-            maximum=20,
-            name="page_size",
-        )
-    else:
-        raise ValueError(f"unsupported Qichacha operation: {operation}")
-    payload, metadata = _http_json(
-        QCC_ENDPOINTS[operation],
-        headers={"Token": token, "Timespan": timespan},
-        params=query,
-        timeout=timeout,
-        max_bytes=max_bytes,
-    )
-    business_status = str(payload.get("Status") or "")
-    metadata["business_status"] = business_status
-    if business_status != "200":
-        message = str(payload.get("Message") or "upstream business request failed")
-        raise RuntimeError(
-            f"Qichacha business status {business_status or 'unknown'}: {message}"
-        )
-    return sanitize_payload(payload), metadata
 
 
 def _tianyancha(
@@ -350,10 +251,7 @@ def _tianyancha(
 ) -> tuple[Any, dict[str, Any]]:
     keyword = _require_text(parameters.get("keyword"), "keyword")
     query: dict[str, Any] = {"keyword": keyword}
-    if operation == "company-annual-reports" and parameters.get("year") not in (
-        None,
-        "",
-    ):
+    if operation == "company-annual-reports" and parameters.get("year") not in (None, ""):
         query["year"] = _bounded_int(
             parameters.get("year"),
             default=2025,
@@ -414,14 +312,9 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
                 row for row in catalog["providers"] if row["provider_id"] == provider
             )
             metadata = {"source": "repository-catalog", "http_status": None}
-        elif provider == "qichacha":
-            credential_secret_name = QICHACHA_CREDENTIALS_ENV
-            data, metadata = _qichacha(operation, parameters, timeout, max_bytes)
-        elif provider == "tianyancha":
+        else:
             credential_secret_name = TIANYANCHA_TOKEN_ENV
             data, metadata = _tianyancha(operation, parameters, timeout, max_bytes)
-        else:
-            raise ValueError(f"unsupported provider: {provider}")
         encoded = json.dumps(data, ensure_ascii=False, allow_nan=False).encode("utf-8")
         if len(encoded) > max_bytes:
             raise RuntimeError(
@@ -433,11 +326,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         blocked = text.startswith("missing repository Secret")
         status = "API_COMPANY_BLOCKED" if blocked else "API_COMPANY_FAILED"
         failure = {
-            "code": (
-                "COMPANY_CREDENTIALS_MISSING"
-                if blocked
-                else "COMPANY_UPSTREAM_ERROR"
-            ),
+            "code": "COMPANY_CREDENTIALS_MISSING" if blocked else "COMPANY_UPSTREAM_ERROR",
             "message": text,
             "retryable": not blocked,
         }
@@ -448,7 +337,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
             "retryable": False,
         }
     snapshot = {
-        "schema_version": "company-intelligence-api-snapshot-v1",
+        "schema_version": "company-intelligence-api-snapshot-v2",
         "status": status,
         "created_at": utc_now(),
         "started_at": started_at,
@@ -466,7 +355,6 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         "security": {
             "secret_values_included": False,
             "authorization_headers_recorded": False,
-            "credential_query_values_recorded": False,
             "arbitrary_url_allowed": False,
             "write_operations_allowed": False,
             "direct_contact_fields_removed": True,
@@ -479,7 +367,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
     write_json(
         output_dir / "company-diagnostics.json",
         {
-            "schema_version": "company-intelligence-api-diagnostics-v1",
+            "schema_version": "company-intelligence-api-diagnostics-v2",
             "status": status,
             "provider": provider,
             "operation": operation,
@@ -510,7 +398,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
     write_json(
         output_dir / "artifact-manifest.json",
         {
-            "schema_version": "company-intelligence-artifact-manifest-v1",
+            "schema_version": "company-intelligence-artifact-manifest-v2",
             "files": [
                 "ticket.json",
                 "ticket-status.json",
