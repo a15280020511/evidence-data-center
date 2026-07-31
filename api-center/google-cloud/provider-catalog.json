@@ -4,7 +4,6 @@
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "ticket_prefix": "[api-gcp]",
-  "required_secret_environment_variable": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
   "secret_values_exposed": false,
   "public_non_personal_data_only": true,
   "topic_catalog_files": [
@@ -33,32 +32,62 @@
         {
           "operation_id": "catalog-datasets",
           "description": "列出指定获准项目中的全部可见数据集。",
-          "parameters": ["project_id", "max_results", "page_token"]
+          "parameters": [
+            "project_id",
+            "max_results",
+            "page_token"
+          ]
         },
         {
           "operation_id": "catalog-tables",
           "description": "列出指定数据集中的表、视图、外部表和物化视图。",
-          "parameters": ["project_id", "dataset_id", "max_results", "page_token"]
+          "parameters": [
+            "project_id",
+            "dataset_id",
+            "max_results",
+            "page_token"
+          ]
         },
         {
           "operation_id": "catalog-table",
           "description": "读取指定表的完整安全元数据和字段结构，不读取表中数据。",
-          "parameters": ["project_id", "dataset_id", "table_id"]
+          "parameters": [
+            "project_id",
+            "dataset_id",
+            "table_id"
+          ]
         },
         {
           "operation_id": "catalog-routines",
           "description": "列出指定数据集中的用户定义函数和存储过程目录。",
-          "parameters": ["project_id", "dataset_id", "max_results", "page_token"]
+          "parameters": [
+            "project_id",
+            "dataset_id",
+            "max_results",
+            "page_token"
+          ]
         },
         {
           "operation_id": "catalog-models",
           "description": "列出指定数据集中的BigQuery ML模型目录。",
-          "parameters": ["project_id", "dataset_id", "max_results", "page_token"]
+          "parameters": [
+            "project_id",
+            "dataset_id",
+            "max_results",
+            "page_token"
+          ]
         },
         {
           "operation_id": "query-readonly",
           "description": "先dry-run估算扫描量，再执行只读GoogleSQL并返回有限行数和费用证据。",
-          "parameters": ["sql", "location", "maximum_bytes_billed", "max_rows", "timeout_ms", "query_parameters_json"]
+          "parameters": [
+            "sql",
+            "location",
+            "maximum_bytes_billed",
+            "max_rows",
+            "timeout_ms",
+            "query_parameters_json"
+          ]
         }
       ],
       "limits": {
@@ -67,7 +96,8 @@
         "default_max_rows": 1000,
         "hard_max_rows": 5000,
         "query_timeout_ms": 30000
-      }
+      },
+      "required_secret_environment_variable": "BIGQUERY_SERVICE_ACCOUNT_JSON"
     },
     {
       "provider_id": "earth-engine",
@@ -90,22 +120,35 @@
         {
           "operation_id": "catalog-dataset-search",
           "description": "在官方STAC对象名称中搜索数据集，并返回可继续读取的对象路径。",
-          "parameters": ["search", "max_results", "page_token"]
+          "parameters": [
+            "search",
+            "max_results",
+            "page_token"
+          ]
         },
         {
           "operation_id": "catalog-dataset",
           "description": "按官方STAC对象路径读取一个数据集或子目录的完整元数据。",
-          "parameters": ["object_path"]
+          "parameters": [
+            "object_path"
+          ]
         },
         {
           "operation_id": "catalog-algorithms",
           "description": "从Earth Engine API读取全部算法的名称、说明、返回类型和参数，并支持搜索和分页。",
-          "parameters": ["search", "offset", "max_results"]
+          "parameters": [
+            "search",
+            "offset",
+            "max_results"
+          ]
         },
         {
           "operation_id": "compute-value-readonly",
           "description": "执行经过结构和算法安全校验的Earth Engine序列表达式，只返回JSON值。",
-          "parameters": ["expression_json", "workload_tag"]
+          "parameters": [
+            "expression_json",
+            "workload_tag"
+          ]
         }
       ],
       "limits": {
@@ -114,7 +157,8 @@
         "max_expression_depth": 30,
         "max_algorithm_results": 200,
         "max_dataset_results": 100
-      }
+      },
+      "required_secret_environment_variable": "EARTH_ENGINE_SERVICE_ACCOUNT_JSON"
     },
     {
       "provider_id": "data-commons",
@@ -134,22 +178,37 @@
         {
           "operation_id": "resolve-place",
           "description": "按一个或多个公开地点名称解析Data Commons地点DCID。",
-          "parameters": ["nodes_json", "property"]
+          "parameters": [
+            "nodes_json",
+            "property"
+          ]
         },
         {
           "operation_id": "resolve-indicator",
           "description": "按指标描述解析统计变量或主题DCID。",
-          "parameters": ["nodes_json"]
+          "parameters": [
+            "nodes_json"
+          ]
         },
         {
           "operation_id": "node-properties",
           "description": "按固定关系表达式读取节点属性、相邻实体或行政层级关系。",
-          "parameters": ["nodes_json", "property"]
+          "parameters": [
+            "nodes_json",
+            "property"
+          ]
         },
         {
           "operation_id": "observations",
           "description": "读取指定实体和统计变量的最新、指定日期或完整时间序列观测，并保留facet来源。",
-          "parameters": ["entity_dcids_json", "variable_dcids_json", "date", "select_json", "facet_ids_json", "domains_json"]
+          "parameters": [
+            "entity_dcids_json",
+            "variable_dcids_json",
+            "date",
+            "select_json",
+            "facet_ids_json",
+            "domains_json"
+          ]
         }
       ],
       "limits": {
@@ -175,5 +234,9 @@
       "connector_id": "worldpop-population-stats",
       "replacement": "earth-engine catalog and compute using WorldPop/GP/100m/pop"
     }
+  ],
+  "required_secret_environment_variables": [
+    "BIGQUERY_SERVICE_ACCOUNT_JSON",
+    "EARTH_ENGINE_SERVICE_ACCOUNT_JSON"
   ]
 }

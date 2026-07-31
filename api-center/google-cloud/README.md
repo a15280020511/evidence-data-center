@@ -25,13 +25,14 @@ GPTs 应先读取：
 
 ## 必需配置
 
-GitHub Repository Secret：
+GitHub Repository Secrets：
 
 ```text
-GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON
+BIGQUERY_SERVICE_ACCOUNT_JSON
+EARTH_ENGINE_SERVICE_ACCOUNT_JSON
 ```
 
-Secret 值是完整的 Google Cloud 服务账号 JSON。不得把内容写入 Issue、代码、日志或 Artifact。
+两个 Secret 分别保存 BigQuery 与 Earth Engine 的完整 Google Cloud 服务账号 JSON。后台不得把两项服务的凭证合并到同一个 Secret；它们可以由不同服务账号签发，并应独立轮换、撤销和审计。Secret 内容不得写入 Issue、代码、日志或 Artifact。
 
 对应 Google Cloud 项目必须：
 

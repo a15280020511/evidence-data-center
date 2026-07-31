@@ -14,7 +14,7 @@
     "aifin-market/provider-catalog.json",
     "yuandian/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "606fd349df19271ea58a52d38448dea371f48c4037089ec8bff0faed7ec45dd7",
+  "managed_provider_catalog_sha256": "96dc0287b3939ee1a99fe598336acf4b149eab387914234fdd4ed9ea2595b269",
   "connector_count": 69,
   "enabled_connector_count": 69,
   "managed_provider_count": 7,
@@ -370,9 +370,9 @@
         "hard_max_rows": 5000,
         "query_timeout_ms": 30000
       },
-      "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
+      "required_secret_environment_variable_name": "BIGQUERY_SERVICE_ACCOUNT_JSON",
       "secret_value_exposed": false,
-      "provider_sha256": "2817ce97b80e6e2095ac6f52a9177ce77dd8161de543dfc0784b016531b3b625",
+      "provider_sha256": "8397745c4f05dcf2bb17ecfd2aab9372c1a0bf28831b6d7a731fce29d55595cc",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -542,9 +542,9 @@
         "max_algorithm_results": 200,
         "max_dataset_results": 100
       },
-      "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
+      "required_secret_environment_variable_name": "EARTH_ENGINE_SERVICE_ACCOUNT_JSON",
       "secret_value_exposed": false,
-      "provider_sha256": "f08a995b8368618b4bf3bd78cfb66185fc480d758b1271a978671e94caf16904",
+      "provider_sha256": "833e3999ce99340e9db7d2192c6bf7b0614b67581b686f2aefa73741d173ca33",
       "catalog_file": "google-cloud/provider-catalog.json"
     },
     {
@@ -12722,5 +12722,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "4e9008f4867803b88795c1abec945367d51f7e53ac305e910b9bd344fdd38cd7"
+  "catalog_sha256": "1b92a227c6e18a6d1b76acaf3395668b5ca045c739eebac25fec4c445d03faa2"
 }

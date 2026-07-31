@@ -38,7 +38,11 @@ class ApiArchitectureTests(unittest.TestCase):
         self.assertNotIn("curl --get 'https://", workflow)
 
     def test_aggregated_or_alias_secret_names_are_forbidden(self) -> None:
-        forbidden = ("API_CENTER" + "_SECRETS_JSON", "YD" + "_API_KEY")
+        forbidden = (
+            "API_CENTER" + "_SECRETS_JSON",
+            "YD" + "_API_KEY",
+            "GOOGLE_CLOUD" + "_SERVICE_ACCOUNT_JSON",
+        )
         roots = [API, REPO / ".github/workflows"]
         matches = []
         for root in roots:

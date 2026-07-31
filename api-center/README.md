@@ -58,7 +58,7 @@ GPTs读取统一api-catalog.json
 
 托管目录开放数据集、表、字段、例程、模型、STAC数据集和Earth Engine算法信息；
 执行仍严格只读，并受公共项目、扫描量、返回行数、表达式复杂度和资产权限限制。
-认证Secret名称为`GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`，值不进入目录或Artifact。
+认证Secret名称为`BIGQUERY_SERVICE_ACCOUNT_JSON` 与 `EARTH_ENGINE_SERVICE_ACCOUNT_JSON`，值不进入目录或Artifact。
 
 被BigQuery或Earth Engine等价替代的GDELT、NASA夜间灯光元数据和WorldPop普通连接器已删除，
 避免重复维护。地图、路线、POI、天气和其他独立数据源继续保留。
