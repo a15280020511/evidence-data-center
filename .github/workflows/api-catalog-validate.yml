@@ -84,7 +84,8 @@ jobs:
 
           manifest = load_json('api-center/connector-manifest.json')
           catalog = load_json('api-center/api-catalog.json')
-          providers = load_json('api-center/google-cloud/provider-catalog.json')
+          google_providers = load_json('api-center/google-cloud/provider-catalog.json')
+          company_providers = load_json('api-center/company-intelligence/provider-catalog.json')
           validation = load_json('api-center/krakend.validation.json')
           rows = manifest['connectors']
           enabled_rows = [row for row in rows if row['enabled']]
@@ -94,21 +95,28 @@ jobs:
               if row.get('secret_environment_variable')
           })
           connector_ids = {row['id'] for row in rows}
+          managed_provider_ids = {row['provider_id'] for row in catalog['managed_providers']}
           assert manifest['connector_count'] == len(rows)
           assert manifest['enabled_connector_count'] == len(enabled_rows)
           assert manifest['required_secret_environment_variables'] == expected_secrets
           assert catalog['schema_version'] == 'api-catalog-v3'
           assert catalog['connector_count'] == manifest['connector_count']
           assert catalog['enabled_connector_count'] == manifest['enabled_connector_count']
-          assert catalog['managed_provider_count'] == 7
-          assert catalog['enabled_managed_provider_count'] == 7
-          assert {row['provider_id'] for row in catalog['managed_providers']} == {
-              'bigquery', 'earth-engine', 'data-commons', 'akshare', 'ashare', 'aifin-market', 'yuandian-law'
+          assert catalog['managed_provider_count'] == 9
+          assert catalog['enabled_managed_provider_count'] == 9
+          assert managed_provider_ids == {
+              'bigquery', 'earth-engine', 'data-commons', 'akshare', 'ashare',
+              'aifin-market', 'yuandian-law', 'qichacha', 'tianyancha'
           }
-          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 93
-          assert providers['secret_values_exposed'] is False
-          assert {row['provider_id'] for row in providers['providers']} == {
+          assert sum(len(row['operations']) for row in catalog['managed_providers']) == 99
+          assert catalog['exposed_parameter_count'] == 655
+          assert google_providers['secret_values_exposed'] is False
+          assert {row['provider_id'] for row in google_providers['providers']} == {
               'bigquery', 'earth-engine', 'data-commons'
+          }
+          assert company_providers['secret_values_exposed'] is False
+          assert {row['provider_id'] for row in company_providers['providers']} == {
+              'qichacha', 'tianyancha'
           }
           assert len(validation['endpoints']) == len(enabled_rows)
           assert {
@@ -125,8 +133,8 @@ jobs:
               'connectors': manifest['connector_count'],
               'enabled': manifest['enabled_connector_count'],
               'routes': len(validation['endpoints']),
-              'managed_providers': 7,
-              'managed_operations': 93,
+              'managed_providers': 9,
+              'managed_operations': 99,
               'exposed_parameters': catalog['exposed_parameter_count'],
           }))
           PY
@@ -151,5 +159,7 @@ jobs:
             api-center/aifin-market/provider-catalog.json
             api-center/yuandian/provider-catalog.json
             api-center/yuandian/readonly-apis.snapshot.json
+            api-center/company-intelligence/provider-catalog.json
+            api-center/company-intelligence/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
