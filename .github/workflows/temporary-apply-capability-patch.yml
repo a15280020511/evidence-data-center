@@ -49,6 +49,10 @@ jobs:
               match = re.fullmatch(r'PATCH2_CHUNK_(\d{3})\n([A-Za-z0-9+/=]+)', body, re.DOTALL)
               if match:
                   chunks[int(match.group(1))] = match.group(2)
+          diagnostics = [f"recognized={sorted(chunks)}"]
+          diagnostics.extend(f"chunk_{index:03d}_length={len(chunks[index])}" for index in sorted(chunks))
+          diagnostics.append(f"joined_length={sum(len(value) for value in chunks.values())}")
+          Path('/tmp/patch-diagnostics.txt').write_text('\n'.join(diagnostics), encoding='utf-8')
           expected = list(range(1, 10))
           if sorted(chunks) != expected:
               raise SystemExit(f'invalid patch2 chunks: {sorted(chunks)}')
@@ -93,5 +97,6 @@ jobs:
       - name: Report structured failure
         if: failure()
         run: |
+          diagnostics="$(cat /tmp/patch-diagnostics.txt 2>/dev/null || true)"
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
-            -f body="PATCH_RUN_ID=${GITHUB_RUN_ID}\nPATCH_RUN_STATUS=failed\ncheckout=${{ steps.checkout.outcome }}\nreassemble=${{ steps.reassemble.outcome }}\napply=${{ steps.apply.outcome }}\npublish=${{ steps.publish.outcome }}"
+            -f body="PATCH_RUN_ID=${GITHUB_RUN_ID}\nPATCH_RUN_STATUS=failed\ncheckout=${{ steps.checkout.outcome }}\nreassemble=${{ steps.reassemble.outcome }}\napply=${{ steps.apply.outcome }}\npublish=${{ steps.publish.outcome }}\n${diagnostics}"
