@@ -1,8 +1,8 @@
 name: Temporary owner-only capability patch applicator
 
 on:
-  issue_comment:
-    types: [created]
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
@@ -12,13 +12,13 @@ jobs:
   apply-patch:
     if: >-
       github.actor == github.repository_owner &&
-      startsWith(github.event.comment.body, '/apply-capability-patch') &&
-      startsWith(github.event.issue.title, '[maintenance-apply-capability-patch]')
+      startsWith(github.event.issue.title, '[maintenance-apply-capability-patch-run]')
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       BRANCH_NAME: feat/maximize-api-capabilities-20260731
+      PATCH_SOURCE_ISSUE: 31
       PATCH_SHA256: 0000fab8f91e3a4c4d44c54b8ea4fb2958d92e43e1981f8bca3e7b236045f261
     steps:
       - name: Report execution start
@@ -37,7 +37,7 @@ jobs:
         id: reassemble
         run: |
           set -euo pipefail
-          gh api "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments?per_page=100" > /tmp/comments.json
+          gh api "repos/${GITHUB_REPOSITORY}/issues/${PATCH_SOURCE_ISSUE}/comments?per_page=100" > /tmp/comments.json
           python - <<'PY'
           import json, re
           from pathlib import Path
