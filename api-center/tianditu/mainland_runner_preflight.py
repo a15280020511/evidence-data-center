@@ -102,6 +102,7 @@ def verify(
         "public_ipv4_sha256": digest,
         "reflector_origin": urllib.parse.urlsplit(reflector).hostname,
         "raw_public_ipv4_stored": False,
+        "failure": None,
     }
 
 
@@ -127,6 +128,7 @@ def main() -> int:
     parser.add_argument("--output", required=True)
     parser.add_argument("--timeout", type=int, default=10)
     args = parser.parse_args()
+    output_path = Path(args.output)
     try:
         result = verify(
             args.expected_ip,
@@ -136,11 +138,28 @@ def main() -> int:
             timeout=max(3, min(args.timeout, 20)),
         )
     except RuntimeError as exc:
+        result = {
+            "schema_version": "tianditu-egress-verification-v1",
+            "verified": False,
+            "verified_at": utc_now(),
+            "runner_environment": args.runner_environment,
+            "runner_os": args.runner_os,
+            "runner_arch": args.runner_arch,
+            "public_ipv4_sha256": None,
+            "reflector_origin": None,
+            "raw_public_ipv4_stored": False,
+            "failure": {
+                "code": "TIANDITU_FIXED_EGRESS_REJECTED",
+                "message": str(exc),
+            },
+        }
+        write_json(output_path, result)
         print(f"Tianditu fixed-egress verification failed: {exc}")
         write_output("egress_verified", "false")
+        write_output("failure_message", str(exc))
         return 1
     print("::add-mask::" + args.expected_ip.strip())
-    write_json(Path(args.output), result)
+    write_json(output_path, result)
     write_output("egress_verified", "true")
     write_output("public_ipv4_sha256", str(result["public_ipv4_sha256"]))
     print("Tianditu fixed mainland egress verified.")
