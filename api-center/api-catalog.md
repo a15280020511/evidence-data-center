@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`69/69` 已启用
-- 托管提供方：`9/9` 已启用
-- 托管操作总数：`99`
-- 已公开参数总数：`655`
-- 目录 SHA-256：`e5adf36847c878b4725d9b36c5f7285abb5001b6190ec0faa58031d48cda9a2e`
+- 托管提供方：`11/11` 已启用
+- 托管操作总数：`104`
+- 已公开参数总数：`668`
+- 目录 SHA-256：`acb528e52838243fbcf1d74fecb0253569966ee600ac070ffad308a34eae89aa`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -26,6 +26,8 @@
 | 元典法律智能开放平台 | `yuandian-law` | 启用 | `[api-yuandian]` | `40` | 否 |
 | 企查查开放平台 | `qichacha` | 启用 | `[api-company]` | `3` | 否 |
 | 天眼查开放平台 | `tianyancha` | 启用 | `[api-company]` | `3` | 否 |
+| Jina AI Reader | `jina-reader` | 启用 | `[api-web]` | `2` | 否 |
+| Exa Search API | `exa` | 启用 | `[api-web]` | `3` | 否 |
 
 ## 普通连接器
 
@@ -3991,6 +3993,204 @@
   "requests_per_ticket": 1,
   "timeout_seconds_max": 60,
   "max_response_bytes": 2000000
+}
+```
+
+## Jina AI Reader (`jina-reader`)
+
+- 状态：`启用`
+- 说明：使用 Jina Reader 将公开网页或公开 PDF 转换为适合大模型使用的 Markdown/JSON 内容。
+- 目录策略：只允许读取调用方明确提供的公开 HTTPS URL；禁止内网、回环、链路本地、保留地址、登录态 Cookie、任意请求头和任意代码。
+- 执行策略：无 Key 时使用 Jina Reader 官方匿名基础额度；配置 JINA_API_KEY 时仅在后端 Authorization Bearer 头注入以提高额度。每张票据最多读取一个 URL。
+- 票据前缀：`[api-web]`
+- Secret环境变量名：`无`（仅名称）
+- 提供方SHA-256：`44e58ffbc0199c0920a3f86db7093bd389aef67fb7a2d1a95f14dd669d18f4b6`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 Jina Reader 本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `read-url` | 通过 r.jina.ai 读取一个公开 HTTPS 网页或 PDF，返回 LLM 友好的正文。 | `url, max_tokens, no_cache` |
+
+`read-url` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "max_tokens": {
+      "type": "integer",
+      "minimum": 500,
+      "maximum": 20000
+    },
+    "no_cache": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 5000000,
+  "max_tokens": 20000
+}
+```
+
+## Exa Search API (`exa`)
+
+- 状态：`启用`
+- 说明：使用 Exa 官方搜索与 Contents API 搜索公开网页并提取干净、适合大模型使用的内容。
+- 目录策略：只暴露固定的 Exa /search 与 /contents 只读接口；禁止 Answer、Agent、Research、Websets、联系人富集、任意 URL 主机和任意请求头。
+- 执行策略：EXA_API_KEY 仅在后端 x-api-key 头注入；每张票据只执行一次调用；搜索最多10条，Contents最多5个公开 HTTPS URL，不启用摘要或联系人富集。
+- 票据前缀：`[api-web]`
+- Secret环境变量名：`EXA_API_KEY`（仅名称）
+- 提供方SHA-256：`9ae67e37ccc9cb17e849551300f7c87b705415ff90d759e972cc9c5d3d4164ce`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 Exa 本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `search` | 调用 Exa /search 搜索公开网页，可返回结果元数据及受限的 highlights 或正文。 | `query, num_results, search_type, content_mode, max_characters` |
+
+`search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "num_results": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "search_type": {
+      "type": "string",
+      "enum": [
+        "auto",
+        "fast",
+        "instant"
+      ]
+    },
+    "content_mode": {
+      "type": "string",
+      "enum": [
+        "none",
+        "highlights",
+        "text"
+      ]
+    },
+    "max_characters": {
+      "type": "integer",
+      "minimum": 500,
+      "maximum": 20000
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `contents` | 调用 Exa /contents 读取最多5个已知公开 HTTPS URL 的正文或 highlights。 | `urls, content_mode, highlight_query, max_characters, max_age_hours` |
+
+`contents` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "urls": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 9,
+        "maxLength": 2048,
+        "pattern": "^https://"
+      }
+    },
+    "content_mode": {
+      "type": "string",
+      "enum": [
+        "highlights",
+        "text"
+      ]
+    },
+    "highlight_query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "max_characters": {
+      "type": "integer",
+      "minimum": 500,
+      "maximum": 20000
+    },
+    "max_age_hours": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 720
+    }
+  },
+  "required": [
+    "urls"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 5000000,
+  "search_results_max": 10,
+  "content_urls_max": 5
 }
 ```
 

@@ -31,12 +31,14 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_managed_providers_expose_fixed_readonly_operations_only(self) -> None:
         catalog = json.loads((ROOT / "api-catalog.json").read_text(encoding="utf-8"))
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 99)
+        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 104)
         self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
         self.assertEqual(len(providers["akshare"]["operations"]), 17)
         self.assertEqual(len(providers["bigquery"]["operations"]), 7)
         self.assertEqual(len(providers["earth-engine"]["operations"]), 6)
         self.assertEqual(len(providers["yuandian-law"]["operations"]), 40)
+        self.assertEqual(len(providers["jina-reader"]["operations"]), 2)
+        self.assertEqual(len(providers["exa"]["operations"]), 3)
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertFalse(any(row["secret_value_exposed"] for row in providers.values()))
 
