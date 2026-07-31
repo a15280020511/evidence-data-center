@@ -73,7 +73,7 @@ jobs:
           packs = json.loads(Path('api-center/google-cloud/china-topic-packs.json').read_text())
 
           assert dc['schema_version'] == 'data-commons-provider-catalog-v2'
-          assert dc['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
+          assert dc['required_secret_environment_variable'] == 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON'
           assert dc['credential_bundle_field'] == 'data_commons_api_key'
           assert dc['secret_values_exposed'] is False
           assert set(dc['allowed_endpoints']) == {'/resolve', '/node', '/observation'}
@@ -84,8 +84,8 @@ jobs:
           providers = {row['provider_id']: row for row in google['providers']}
           assert {'bigquery', 'earth-engine', 'data-commons'} <= set(providers)
           assert providers['data-commons']['ticket_prefix'] == '[api-dc]'
-          assert providers['data-commons']['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
-          assert all(row['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON' for row in providers.values())
+          assert providers['data-commons']['required_secret_environment_variable'] == 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON'
+          assert all(row['required_secret_environment_variable'] == 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' for row in providers.values())
           assert 'patents-public-data' in providers['bigquery']['default_public_projects']
 
           assert packs['schema_version'] == 'google-china-topic-packs-v2'
@@ -121,7 +121,7 @@ jobs:
           assert 'data-commons' in providers
           assert providers['data-commons']['enabled'] is True
           assert providers['data-commons']['ticket_prefix'] == '[api-dc]'
-          assert providers['data-commons']['required_secret_environment_variable_name'] == 'GOOGLE_CREDENTIALS_JSON'
+          assert providers['data-commons']['required_secret_environment_variable_name'] == 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON'
           assert providers['data-commons']['secret_value_exposed'] is False
           print(json.dumps({'status': 'PASS', 'managed_provider_count': catalog['managed_provider_count']}))
           PY
