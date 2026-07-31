@@ -11,15 +11,16 @@
   "managed_provider_catalog_files": [
     "google-cloud/provider-catalog.json",
     "akshare/provider-catalog.json",
-    "aifin-market/provider-catalog.json"
+    "aifin-market/provider-catalog.json",
+    "yuandian/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "952b796b4833b11b27fe62b159fab4635565bd76b1c904c31558e651d45cd283",
+  "managed_provider_catalog_sha256": "606fd349df19271ea58a52d38448dea371f48c4037089ec8bff0faed7ec45dd7",
   "connector_count": 69,
   "enabled_connector_count": 69,
-  "managed_provider_count": 6,
-  "enabled_managed_provider_count": 6,
-  "managed_operation_count": 53,
-  "exposed_parameter_count": 530,
+  "managed_provider_count": 7,
+  "enabled_managed_provider_count": 7,
+  "managed_operation_count": 93,
+  "exposed_parameter_count": 647,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -30,6 +31,8 @@
     "akshare/provider-catalog.json",
     "aifin-market/provider-catalog.json",
     "aifin-market/readonly-tools.snapshot.json",
+    "yuandian/provider-catalog.json",
+    "yuandian/readonly-apis.snapshot.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -1999,6 +2002,2281 @@
       "secret_value_exposed": false,
       "provider_sha256": "b630c7bf2699e4ff10856cc68063f54bbb5d64e14de27273f38dded0aa6ff819",
       "catalog_file": "aifin-market/provider-catalog.json"
+    },
+    {
+      "provider_id": "yuandian-law",
+      "display_name": "元典法律智能开放平台",
+      "description": "通过元典官方开放平台读取中国法律法规、案例文书、企业公开信息和法律幻觉校验数据；冻结37项只读API，并通过官方实时目录自动发现后续安全只读能力。",
+      "enabled": true,
+      "ticket_prefix": "[api-yuandian]",
+      "catalog_policy": "GPTs可读取冻结API快照和官方实时JSON目录；固定操作直接映射冻结routeKey，通用调用只允许官方目录当前登记的GET/POST接口。",
+      "execution_policy": "每张票据只执行一个只读调用；固定https://open.chineselaw.com主机，使用后端X-API-Key；限制参数深度、条数、超时和响应大小；过滤密钥和直接个人标识字段。",
+      "operation_count": 40,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取元典适配器的本地完整安全目录、37项冻结只读API和限制，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "catalog-live",
+          "description": "从元典官方公开JSON目录读取当前API、方法、分类、价格及请求/响应参数元数据；不需要业务API密钥。",
+          "parameter_names": [
+            "category_id",
+            "page_size"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "category_id": {
+                "type": "integer",
+                "enum": [
+                  6,
+                  7,
+                  9,
+                  10
+                ]
+              },
+              "page_size": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              }
+            }
+          }
+        },
+        {
+          "operation_id": "invoke-readonly-api",
+          "description": "按元典官方实时目录选择任一GET/POST只读API并调用；固定官方主机，不接受任意URL、请求头或代码。",
+          "parameter_names": [
+            "route_key",
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "route_key": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_]{2,95}$"
+              },
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            },
+            "required": [
+              "route_key"
+            ]
+          }
+        },
+        {
+          "operation_id": "yuandian-law-vector-search",
+          "description": "法律法规语义检索：按自然语言查询检索法条，支持时效性、效力级别和实施日期过滤。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "law_vector_search",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/law_vector_search.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-ft-detail",
+          "description": "法条详情：按法条ID，或法规名称与条号查询单条法条详情。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_ft_detail",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_ft_detail.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-fg-detail",
+          "description": "法规详情：按法规ID或法规名称查询法规详情和指定日期版本。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_fg_detail",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_fg_detail.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-ft-search",
+          "description": "法条关键词检索：按关键词及法规、效力、时效、地域和日期条件检索法条。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_ft_search",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_ft_search.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-fg-search",
+          "description": "法规关键词检索：按关键词及名称、效力、时效、地域和日期条件检索法规。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_fg_search",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_fg_search.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-case-vector-search",
+          "description": "案例语义检索：按自然语言查询进行案例语义检索，并支持案件类别、案由、法院、地域和日期过滤。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "case_vector_search",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/case_vector_search.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-case-details",
+          "description": "案例详情：按案例ID或案号查询普通案例或权威案例详情。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_case_details",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_case_details.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-qwal-search",
+          "description": "权威案例关键词检索：检索指导、典型、参考等权威案例。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_qwal_search",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_qwal_search.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-ptal-search",
+          "description": "普通案例关键词检索：检索普通裁判案例，支持案号、企业、案由、法院、地域、日期、全文和援引法条过滤。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_ptal_search",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_ptal_search.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-ssgsgg-search",
+          "description": "上市公司公告关键词检索：按标题、公司、股票简称、交易所、地区、分类、日期和全文关键词检索公告。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_ssgsgg_search",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_ssgsgg_search.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-annual-report",
+          "description": "企业年报详情：按企业ID或统一社会信用代码和年份查询企业年报。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseAnnualReport",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseAnnualReport.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-aggregation-summary",
+          "description": "企业聚合总览：按企业ID或统一社会信用代码查询多模块统计总览。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseAggregationSummary",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseAggregationSummary.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-search",
+          "description": "企业检索：按企业名称关键词检索企业候选。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseSearch",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseSearch.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-base-info",
+          "description": "企业基本信息：查询企业基本信息、股东、成员和分支机构。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseBaseInfo",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseBaseInfo.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-out-invest",
+          "description": "企业对外投资：分页查询企业对外投资。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseOutInvest",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseOutInvest.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-brand",
+          "description": "企业商标：分页查询企业商标。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseBrand",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseBrand.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-patent",
+          "description": "企业专利：分页查询企业专利。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterprisePatent",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterprisePatent.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-soft-right",
+          "description": "企业软件著作权：分页查询企业软件著作权。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseSoftRight",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseSoftRight.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-works-right",
+          "description": "企业作品著作权：分页查询企业作品著作权。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseWorksRight",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseWorksRight.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-icp",
+          "description": "企业网站备案：分页查询企业网站备案。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseIcp",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseIcp.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-change-info",
+          "description": "企业变更记录：分页查询企业变更记录。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseChangeInfo",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseChangeInfo.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-writ-agg",
+          "description": "企业涉诉统计：查询企业涉诉信息多维统计。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseWritAgg",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseWritAgg.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-writ-list",
+          "description": "企业涉诉文书：分页查询企业涉诉文书摘要。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseWritList",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseWritList.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-court-session-notice",
+          "description": "企业开庭公告：分页查询企业开庭公告。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseCourtSessionNotice",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseCourtSessionNotice.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-court-notice",
+          "description": "企业法院公告：分页查询企业法院公告。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseCourtNotice",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseCourtNotice.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-executions",
+          "description": "企业失信被执行人：分页查询企业失信被执行人记录。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseExecutions",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseExecutions.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-executed-person",
+          "description": "企业被执行人：分页查询企业被执行人记录。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseExecutedPerson",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseExecutedPerson.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-frozen-equity",
+          "description": "企业股权冻结：分页查询企业股权冻结。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseFrozenEquity",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseFrozenEquity.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-punishment",
+          "description": "企业行政处罚：分页查询企业行政处罚。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterprisePunishment",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterprisePunishment.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-pledge",
+          "description": "企业股权出质：分页查询企业股权出质。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterprisePledge",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterprisePledge.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-guaranty",
+          "description": "企业对外担保：分页查询企业对外担保。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseGuaranty",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseGuaranty.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-abnormal-operation",
+          "description": "企业经营异常：分页查询企业经营异常记录。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseAbnormalOperation",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseAbnormalOperation.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-corporate-tax",
+          "description": "企业欠税公告：分页查询企业欠税公告。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseCorporateTax",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseCorporateTax.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-enterprise-serious-illegal",
+          "description": "企业严重违法：分页查询企业严重违法记录。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_enterpriseSeriousIllegal",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_enterpriseSeriousIllegal.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-company-detail",
+          "description": "企业聚合详情：按企业ID或统一社会信用代码查询企业聚合详情。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_company_detail",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_company_detail.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-rh-company-info",
+          "description": "企业名称详情检索：按企业名称、曾用名或股票简称检索候选企业详情。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "rh_company_info",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/rh_company_info.html"
+          }
+        },
+        {
+          "operation_id": "yuandian-hall-detect",
+          "description": "法律幻觉校验：校验文本中的法规、法条和案号引用，返回时效性与权威原文核验结果。",
+          "parameter_names": [
+            "arguments",
+            "timeout_seconds",
+            "max_response_bytes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arguments": {
+                "type": "object",
+                "maxProperties": 60,
+                "additionalProperties": true
+              },
+              "timeout_seconds": {
+                "type": "integer",
+                "minimum": 5,
+                "maximum": 120
+              },
+              "max_response_bytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 5000000
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "yuandian-law",
+            "route_key": "hall_detect",
+            "http_method": "POST",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "repository-snapshot-and-official-live-catalog",
+            "full_contract_url": "https://open.chineselaw.com/api-docs/hall_detect.html"
+          }
+        }
+      ],
+      "limits": {
+        "max_operations_per_ticket": 1,
+        "max_response_bytes_default": 1000000,
+        "max_response_bytes_hard": 5000000,
+        "timeout_seconds_default": 60,
+        "timeout_seconds_hard": 120,
+        "max_argument_properties": 60,
+        "max_argument_depth": 6,
+        "max_array_items": 200,
+        "fixed_origin": "https://open.chineselaw.com",
+        "snapshot_api_count": 37,
+        "live_catalog_page_size_hard": 200,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "arbitrary_code_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false,
+        "direct_personal_identifiers_redacted": true,
+        "billing_unit": "POINT",
+        "documented_cost_range_points_per_call": [
+          1,
+          50
+        ]
+      },
+      "required_secret_environment_variable_name": "YUANDIAN_API_KEY",
+      "secret_value_exposed": false,
+      "provider_sha256": "209bcddd432ce325bb04568aa8404881ec8e42ec6995648166a0a3182ceea80e",
+      "catalog_file": "yuandian/provider-catalog.json",
+      "discovered_readonly_tool_count": 37,
+      "discovered_readonly_tools_by_server": {
+        "法律法规": 5,
+        "案例文书": 4,
+        "企业信息": 27,
+        "幻觉检测": 1
+      },
+      "readonly_tool_snapshot_file": "yuandian/readonly-apis.snapshot.json",
+      "readonly_tool_snapshot": {
+        "schema_version": "yuandian-readonly-api-snapshot-v1",
+        "snapshot_date": "2026-07-31",
+        "official_origin": "https://open.chineselaw.com",
+        "official_catalog_url": "https://open.chineselaw.com/api/apis?pageNum=1&pageSize=200&sortBy=latest",
+        "official_documentation_url": "https://open.chineselaw.com/docs/",
+        "discovery_mode": "official-public-json-catalog-with-repository-fallback",
+        "documented_api_count": 37,
+        "categories": {
+          "法律法规": 5,
+          "案例文书": 4,
+          "企业信息": 27,
+          "幻觉检测": 1
+        },
+        "secret_values_exposed": false,
+        "apis": [
+          {
+            "operation_id": "yuandian-law-vector-search",
+            "route_key": "law_vector_search",
+            "http_method": "POST",
+            "category": "法律法规",
+            "display_name": "法律法规语义检索",
+            "description": "按自然语言查询检索法条，支持时效性、效力级别和实施日期过滤。",
+            "endpoint": "https://open.chineselaw.com/open/law_vector_search",
+            "known_parameter_names": [
+              "query",
+              "rewrite_flag",
+              "fatiao_filter",
+              "return_num"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/law_vector_search.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-ft-detail",
+            "route_key": "rh_ft_detail",
+            "http_method": "POST",
+            "category": "法律法规",
+            "display_name": "法条详情",
+            "description": "按法条ID，或法规名称与条号查询单条法条详情。",
+            "endpoint": "https://open.chineselaw.com/open/rh_ft_detail",
+            "known_parameter_names": [
+              "id",
+              "fgmc",
+              "ftnum",
+              "refer_date"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_ft_detail.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-fg-detail",
+            "route_key": "rh_fg_detail",
+            "http_method": "POST",
+            "category": "法律法规",
+            "display_name": "法规详情",
+            "description": "按法规ID或法规名称查询法规详情和指定日期版本。",
+            "endpoint": "https://open.chineselaw.com/open/rh_fg_detail",
+            "known_parameter_names": [
+              "id",
+              "fgmc",
+              "refer_date"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_fg_detail.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-ft-search",
+            "route_key": "rh_ft_search",
+            "http_method": "POST",
+            "category": "法律法规",
+            "display_name": "法条关键词检索",
+            "description": "按关键词及法规、效力、时效、地域和日期条件检索法条。",
+            "endpoint": "https://open.chineselaw.com/open/rh_ft_search",
+            "known_parameter_names": [
+              "keyword",
+              "fgmc",
+              "effect1",
+              "sxx",
+              "area",
+              "publish_start",
+              "publish_end",
+              "implement_start",
+              "implement_end",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_ft_search.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-fg-search",
+            "route_key": "rh_fg_search",
+            "http_method": "POST",
+            "category": "法律法规",
+            "display_name": "法规关键词检索",
+            "description": "按关键词及名称、效力、时效、地域和日期条件检索法规。",
+            "endpoint": "https://open.chineselaw.com/open/rh_fg_search",
+            "known_parameter_names": [
+              "keyword",
+              "fgmc",
+              "effect1",
+              "sxx",
+              "area",
+              "publish_start",
+              "publish_end",
+              "implement_start",
+              "implement_end",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_fg_search.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-case-vector-search",
+            "route_key": "case_vector_search",
+            "http_method": "POST",
+            "category": "案例文书",
+            "display_name": "案例语义检索",
+            "description": "按自然语言查询进行案例语义检索，并支持案件类别、案由、法院、地域和日期过滤。",
+            "endpoint": "https://open.chineselaw.com/open/case_vector_search",
+            "known_parameter_names": [
+              "query",
+              "rewrite_flag",
+              "wenshu_filter",
+              "return_num"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/case_vector_search.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-case-details",
+            "route_key": "rh_case_details",
+            "http_method": "GET",
+            "category": "案例文书",
+            "display_name": "案例详情",
+            "description": "按案例ID或案号查询普通案例或权威案例详情。",
+            "endpoint": "https://open.chineselaw.com/open/rh_case_details",
+            "known_parameter_names": [
+              "id",
+              "ah",
+              "type"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_case_details.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-qwal-search",
+            "route_key": "rh_qwal_search",
+            "http_method": "POST",
+            "category": "案例文书",
+            "display_name": "权威案例关键词检索",
+            "description": "检索指导、典型、参考等权威案例。",
+            "endpoint": "https://open.chineselaw.com/open/rh_qwal_search",
+            "known_parameter_names": [
+              "ah",
+              "title",
+              "ay",
+              "court",
+              "area",
+              "wslx",
+              "ajlx",
+              "cp_start",
+              "cp_end",
+              "keyword",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_qwal_search.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-ptal-search",
+            "route_key": "rh_ptal_search",
+            "http_method": "POST",
+            "category": "案例文书",
+            "display_name": "普通案例关键词检索",
+            "description": "检索普通裁判案例，支持案号、企业、案由、法院、地域、日期、全文和援引法条过滤。",
+            "endpoint": "https://open.chineselaw.com/open/rh_ptal_search",
+            "known_parameter_names": [
+              "ah",
+              "title",
+              "company",
+              "ay",
+              "court",
+              "area",
+              "wslx",
+              "ajlx",
+              "cp_start",
+              "cp_end",
+              "ja_start",
+              "ja_end",
+              "keyword",
+              "analysis_keyword",
+              "law_reference",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_ptal_search.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-ssgsgg-search",
+            "route_key": "rh_ssgsgg_search",
+            "http_method": "POST",
+            "category": "企业信息",
+            "display_name": "上市公司公告关键词检索",
+            "description": "按标题、公司、股票简称、交易所、地区、分类、日期和全文关键词检索公告。",
+            "endpoint": "https://open.chineselaw.com/open/rh_ssgsgg_search",
+            "known_parameter_names": [
+              "title",
+              "company_name",
+              "stock_name",
+              "exchange",
+              "area",
+              "category",
+              "publish_start",
+              "publish_end",
+              "keyword",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_ssgsgg_search.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-annual-report",
+            "route_key": "rh_enterpriseAnnualReport",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业年报详情",
+            "description": "按企业ID或统一社会信用代码和年份查询企业年报。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseAnnualReport",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "year"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseAnnualReport.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-aggregation-summary",
+            "route_key": "rh_enterpriseAggregationSummary",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业聚合总览",
+            "description": "按企业ID或统一社会信用代码查询多模块统计总览。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseAggregationSummary",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseAggregationSummary.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-search",
+            "route_key": "rh_enterpriseSearch",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业检索",
+            "description": "按企业名称关键词检索企业候选。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseSearch",
+            "known_parameter_names": [
+              "name",
+              "top_k"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseSearch.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-base-info",
+            "route_key": "rh_enterpriseBaseInfo",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业基本信息",
+            "description": "查询企业基本信息、股东、成员和分支机构。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseBaseInfo",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseBaseInfo.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-out-invest",
+            "route_key": "rh_enterpriseOutInvest",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业对外投资",
+            "description": "分页查询企业对外投资。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseOutInvest",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseOutInvest.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-brand",
+            "route_key": "rh_enterpriseBrand",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业商标",
+            "description": "分页查询企业商标。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseBrand",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseBrand.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-patent",
+            "route_key": "rh_enterprisePatent",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业专利",
+            "description": "分页查询企业专利。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterprisePatent",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterprisePatent.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-soft-right",
+            "route_key": "rh_enterpriseSoftRight",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业软件著作权",
+            "description": "分页查询企业软件著作权。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseSoftRight",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseSoftRight.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-works-right",
+            "route_key": "rh_enterpriseWorksRight",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业作品著作权",
+            "description": "分页查询企业作品著作权。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseWorksRight",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseWorksRight.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-icp",
+            "route_key": "rh_enterpriseIcp",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业网站备案",
+            "description": "分页查询企业网站备案。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseIcp",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseIcp.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-change-info",
+            "route_key": "rh_enterpriseChangeInfo",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业变更记录",
+            "description": "分页查询企业变更记录。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseChangeInfo",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseChangeInfo.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-writ-agg",
+            "route_key": "rh_enterpriseWritAgg",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业涉诉统计",
+            "description": "查询企业涉诉信息多维统计。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseWritAgg",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseWritAgg.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-writ-list",
+            "route_key": "rh_enterpriseWritList",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业涉诉文书",
+            "description": "分页查询企业涉诉文书摘要。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseWritList",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseWritList.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-court-session-notice",
+            "route_key": "rh_enterpriseCourtSessionNotice",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业开庭公告",
+            "description": "分页查询企业开庭公告。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseCourtSessionNotice",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseCourtSessionNotice.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-court-notice",
+            "route_key": "rh_enterpriseCourtNotice",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业法院公告",
+            "description": "分页查询企业法院公告。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseCourtNotice",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseCourtNotice.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-executions",
+            "route_key": "rh_enterpriseExecutions",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业失信被执行人",
+            "description": "分页查询企业失信被执行人记录。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseExecutions",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseExecutions.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-executed-person",
+            "route_key": "rh_enterpriseExecutedPerson",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业被执行人",
+            "description": "分页查询企业被执行人记录。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseExecutedPerson",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseExecutedPerson.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-frozen-equity",
+            "route_key": "rh_enterpriseFrozenEquity",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业股权冻结",
+            "description": "分页查询企业股权冻结。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseFrozenEquity",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseFrozenEquity.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-punishment",
+            "route_key": "rh_enterprisePunishment",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业行政处罚",
+            "description": "分页查询企业行政处罚。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterprisePunishment",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterprisePunishment.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-pledge",
+            "route_key": "rh_enterprisePledge",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业股权出质",
+            "description": "分页查询企业股权出质。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterprisePledge",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterprisePledge.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-guaranty",
+            "route_key": "rh_enterpriseGuaranty",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业对外担保",
+            "description": "分页查询企业对外担保。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseGuaranty",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseGuaranty.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-abnormal-operation",
+            "route_key": "rh_enterpriseAbnormalOperation",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业经营异常",
+            "description": "分页查询企业经营异常记录。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseAbnormalOperation",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseAbnormalOperation.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-corporate-tax",
+            "route_key": "rh_enterpriseCorporateTax",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业欠税公告",
+            "description": "分页查询企业欠税公告。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseCorporateTax",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseCorporateTax.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-enterprise-serious-illegal",
+            "route_key": "rh_enterpriseSeriousIllegal",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业严重违法",
+            "description": "分页查询企业严重违法记录。",
+            "endpoint": "https://open.chineselaw.com/open/rh_enterpriseSeriousIllegal",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm",
+              "pageNo",
+              "pageSize"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_enterpriseSeriousIllegal.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-company-detail",
+            "route_key": "rh_company_detail",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业聚合详情",
+            "description": "按企业ID或统一社会信用代码查询企业聚合详情。",
+            "endpoint": "https://open.chineselaw.com/open/rh_company_detail",
+            "known_parameter_names": [
+              "id",
+              "tyshxydm"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_company_detail.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-rh-company-info",
+            "route_key": "rh_company_info",
+            "http_method": "GET",
+            "category": "企业信息",
+            "display_name": "企业名称详情检索",
+            "description": "按企业名称、曾用名或股票简称检索候选企业详情。",
+            "endpoint": "https://open.chineselaw.com/open/rh_company_info",
+            "known_parameter_names": [
+              "name",
+              "num"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/rh_company_info.html",
+            "read_only": true
+          },
+          {
+            "operation_id": "yuandian-hall-detect",
+            "route_key": "hall_detect",
+            "http_method": "POST",
+            "category": "幻觉检测",
+            "display_name": "法律幻觉校验",
+            "description": "校验文本中的法规、法条和案号引用，返回时效性与权威原文核验结果。",
+            "endpoint": "https://open.chineselaw.com/open/hall_detect",
+            "known_parameter_names": [
+              "text"
+            ],
+            "full_contract_discovery": "https://open.chineselaw.com/api-docs/hall_detect.html",
+            "read_only": true
+          }
+        ]
+      }
     }
   ],
   "replaced_legacy_connectors": [
@@ -10444,5 +12722,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "844ab799ec02b8bf7b3865d1a5b76dde9d348b342612b0d01b099407555d42e7"
+  "catalog_sha256": "fd566165cab7bdef19cd60d855ca4d1073e6b7ad5dcd94115570fbc4f56503ed"
 }
