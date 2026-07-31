@@ -10,6 +10,7 @@ on:
       - "api-center/tests/test_api_catalog.py"
       - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/web-retrieval-api-ticket.yml"
+      - ".github/workflows/context-retrieval-api-ticket.yml"
       - ".github/workflows/web-retrieval-provider-validate.yml"
       - ".github/workflows/api-catalog-validate.yml"
   push:
@@ -22,6 +23,7 @@ on:
       - "api-center/tests/test_api_catalog.py"
       - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/web-retrieval-api-ticket.yml"
+      - ".github/workflows/context-retrieval-api-ticket.yml"
       - ".github/workflows/web-retrieval-provider-validate.yml"
       - ".github/workflows/api-catalog-validate.yml"
   workflow_dispatch:
@@ -66,6 +68,7 @@ jobs:
         run: |
           python -m py_compile \
             api-center/web-retrieval/web_retrieval_task.py \
+            api-center/web-retrieval/context_retrieval_task.py \
             api-center/web-retrieval/tests/*.py
           coverage erase
           coverage run --source=api-center/web-retrieval -m unittest discover \
@@ -81,23 +84,38 @@ jobs:
           from jsonschema import Draft202012Validator
 
           root = Path('api-center/web-retrieval')
-          schema = json.loads((root / 'ticket.schema.json').read_text(encoding='utf-8'))
+          legacy_schema = json.loads((root / 'ticket.schema.json').read_text(encoding='utf-8'))
+          context_schema = json.loads((root / 'context-ticket.schema.json').read_text(encoding='utf-8'))
           catalog = json.loads((root / 'provider-catalog.json').read_text(encoding='utf-8'))
-          Draft202012Validator.check_schema(schema)
-          assert catalog['schema_version'] == 'web-retrieval-provider-catalog-v1'
+          Draft202012Validator.check_schema(legacy_schema)
+          Draft202012Validator.check_schema(context_schema)
+          assert catalog['schema_version'] == 'web-retrieval-provider-catalog-v2'
           assert catalog['secret_values_exposed'] is False
           providers = {row['provider_id']: row for row in catalog['providers']}
-          assert set(providers) == {'jina-reader', 'exa'}
+          assert set(providers) == {'jina-reader', 'exa', 'tavily', 'firecrawl'}
           assert all(row['enabled'] is True for row in providers.values())
           assert providers['jina-reader']['required_secret_environment_variable'] == ''
           assert providers['jina-reader']['optional_secret_environment_variable'] == 'JINA_API_KEY'
           assert providers['exa']['required_secret_environment_variable'] == 'EXA_API_KEY'
+          assert providers['tavily']['required_secret_environment_variable'] == 'TAVILY_API_KEY'
+          assert providers['firecrawl']['required_secret_environment_variable'] == 'FIRECRAWL_API_KEY'
+          assert providers['tavily']['ticket_prefix'] == '[api-context]'
+          assert providers['firecrawl']['ticket_prefix'] == '[api-context]'
           assert len(providers['jina-reader']['operations']) == 2
           assert len(providers['exa']['operations']) == 3
-          print(json.dumps({'status': 'PASS', 'providers': 2, 'operations': 5}))
+          assert len(providers['tavily']['operations']) == 5
+          assert len(providers['firecrawl']['operations']) == 4
+          assert {row['operation_id'] for row in providers['tavily']['operations']} == {
+              'catalog-capabilities', 'search', 'extract', 'map', 'crawl'
+          }
+          assert {row['operation_id'] for row in providers['firecrawl']['operations']} == {
+              'catalog-capabilities', 'search', 'scrape', 'map'
+          }
+          assert context_schema['properties']['provider']['enum'] == ['tavily', 'firecrawl']
+          print(json.dumps({'status': 'PASS', 'providers': 4, 'operations': 14}))
           PY
 
-      - name: Verify no credential material enters repository files
+      - name: Verify no credential material or unsafe operations enter repository files
         run: |
           set -euo pipefail
           if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --extended-regexp 'jina_[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
@@ -108,8 +126,17 @@ jobs:
             echo "literal Exa key found" >&2
             exit 1
           fi
-          if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --extended-regexp 'x-api-key[[:space:]]*:[[:space:]]*[A-Za-z0-9._-]{12,}' api-center/web-retrieval; then
-            echo "literal Exa authorization value found" >&2
+          if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --extended-regexp 'tvly-[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
+            echo "literal Tavily key found" >&2
+            exit 1
+          fi
+          if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --extended-regexp 'fc-[A-Za-z0-9_-]{12,}' api-center/web-retrieval; then
+            echo "literal Firecrawl key found" >&2
+            exit 1
+          fi
+          if grep -R --line-number --exclude-dir=tests --exclude-dir=__pycache__ --ignore-case --extended-regexp '(interact|browser session|submit[_ -]?form|login cookie|arbitrary headers)' \
+            api-center/web-retrieval/context_retrieval_task.py; then
+            echo "unsafe context operation implementation found" >&2
             exit 1
           fi
 
@@ -122,5 +149,6 @@ jobs:
             web-retrieval-coverage.json
             api-center/web-retrieval/provider-catalog.json
             api-center/web-retrieval/ticket.schema.json
+            api-center/web-retrieval/context-ticket.schema.json
           if-no-files-found: warn
           retention-days: 30
