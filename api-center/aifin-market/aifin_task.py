@@ -269,7 +269,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         else:
             api_key = os.environ.get("WIND_API_KEY", "").strip()
             if not api_key:
-                raise RuntimeError("WIND_API_KEY_MISSING: configure repository secret WIND_API_KEY or the same key in API_CENTER_SECRETS_JSON")
+                raise RuntimeError("WIND_API_KEY_MISSING: configure dedicated Repository Secret WIND_API_KEY")
             cleaned = sanitize_parameters(operation, parameters)
             if operation == "catalog-tools":
                 server_type = cleaned["server_type"]; initialize(server_type, api_key); result = mcp_request(server_type, "tools/list", {}, api_key); tool_name = "tools/list"

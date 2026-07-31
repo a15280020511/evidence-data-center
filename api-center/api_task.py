@@ -332,7 +332,6 @@ def validate_gateway_base_url(base_url: str, mode: str) -> str:
 def resolve_mode(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     remote_url = str(os.getenv("API_GATEWAY_BASE_URL") or "").strip()
     remote_token = str(os.getenv("API_GATEWAY_AUTH_TOKEN") or "").strip()
-    bundle_raw = str(os.getenv("API_CENTER_SECRETS_JSON") or "").strip()
     required = [str(item) for item in plan.get("required_secret_environment_variables", [])]
     result: dict[str, Any]
     if remote_url and remote_token:
@@ -341,6 +340,7 @@ def resolve_mode(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "base_url": validate_gateway_base_url(remote_url, "remote"),
             "reason": "configured authenticated remote API gateway",
             "required_secret_count": len(required),
+            "secret_source": "remote_gateway",
         }
     elif remote_url and not remote_token:
         result = {
@@ -348,40 +348,25 @@ def resolve_mode(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "base_url": "",
             "reason": "remote API gateway is configured without API_GATEWAY_AUTH_TOKEN",
             "required_secret_count": len(required),
+            "secret_source": "remote_gateway",
         }
     else:
-        bundle: Mapping[str, Any] = {}
-        bundle_status = "not_configured"
-        if bundle_raw:
-            try:
-                parsed = json.loads(bundle_raw)
-                if not isinstance(parsed, Mapping):
-                    raise ValueError("API_CENTER_SECRETS_JSON must be a JSON object")
-                bundle = parsed
-                bundle_status = "valid"
-            except (json.JSONDecodeError, ValueError):
-                # A malformed optional bundle must not block connectors that need no
-                # secrets. Required secrets may still be supplied as dedicated
-                # environment variables; otherwise the request is blocked below.
-                bundle = {}
-                bundle_status = "invalid_ignored"
         resolved: dict[str, str] = {}
         for name in required:
+            if not ENV_NAME_RE.fullmatch(name):
+                raise ValueError(f"invalid secret environment variable name: {name}")
             direct = os.getenv(name)
-            bundled = bundle.get(name)
             if isinstance(direct, str) and direct:
                 resolved[name] = direct
-            elif isinstance(bundled, str) and bundled:
-                resolved[name] = bundled
         missing = [name for name in required if name not in resolved]
         if missing:
             result = {
                 "mode": "blocked",
                 "base_url": "",
-                "reason": "missing required API-center Secret values",
+                "reason": "missing dedicated Repository Secret values",
                 "missing_secret_environment_variables": missing,
                 "required_secret_count": len(required),
-                "secret_bundle_status": bundle_status,
+                "secret_source": "dedicated_environment_variables",
             }
         else:
             temp_root = Path(os.getenv("RUNNER_TEMP") or "/tmp")
@@ -390,8 +375,6 @@ def resolve_mode(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             env_file = temp_root / f"api-center-runtime-{suffix}.env"
             lines: list[str] = []
             for name in required:
-                if not ENV_NAME_RE.fullmatch(name):
-                    raise ValueError(f"invalid secret environment variable name: {name}")
                 value = resolved[name]
                 if "\n" in value or "\r" in value or "\x00" in value:
                     raise ValueError(f"secret {name} contains a forbidden control character")
@@ -401,10 +384,10 @@ def resolve_mode(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             result = {
                 "mode": "ephemeral",
                 "base_url": "http://127.0.0.1:18080",
-                "reason": "ephemeral loopback gateway",
+                "reason": "ephemeral loopback gateway with dedicated Repository Secrets",
                 "env_file": str(env_file),
                 "required_secret_count": len(required),
-                "secret_bundle_status": bundle_status,
+                "secret_source": "dedicated_environment_variables",
             }
     public_result = {key: value for key, value in result.items() if key != "env_file"}
     write_json(output_dir / "gateway-mode.json", public_result)

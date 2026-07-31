@@ -179,22 +179,7 @@ def prepare(event_path: Path, output_dir: Path) -> int:
 
 
 def _resolve_api_key() -> str:
-    for name in ("YUANDIAN_API_KEY", "YD_API_KEY"):
-        value = str(os.getenv(name) or "").strip()
-        if value:
-            return value
-    raw = str(os.getenv("API_CENTER_SECRETS_JSON") or "")
-    if raw:
-        try:
-            data = json.loads(raw)
-        except json.JSONDecodeError:
-            data = {}
-        if isinstance(data, Mapping):
-            for name in ("YUANDIAN_API_KEY", "YD_API_KEY"):
-                value = str(data.get(name) or "").strip()
-                if value:
-                    return value
-    return ""
+    return str(os.getenv("YUANDIAN_API_KEY") or "").strip()
 
 
 def _fixed_url(route_key: str) -> str:

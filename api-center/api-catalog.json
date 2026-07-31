@@ -6,7 +6,7 @@
   "source_metadata_file": "catalog-metadata.json",
   "source_manifest_version": 4,
   "source_manifest_sha256": "1ebec87749943c8034b546f4589c5445fb5dc256fc17d12205ab8b75ca7d160e",
-  "source_metadata_sha256": "9ec9a9798e34b51dd9a624fe62a79f50c8e136c492780bc3285b30b01cf8613d",
+  "source_metadata_sha256": "d6fd2c8888d4cec5be3b952779496a1bc33d297b3e773a6403a809019b1dba30",
   "managed_provider_catalog_file": "managed-provider-index",
   "managed_provider_catalog_files": [
     "google-cloud/provider-catalog.json",
@@ -11481,7 +11481,7 @@
       "freshness": "请求时读取天地图当前公开数据",
       "cost_class": "provider-key-quota",
       "limitations": [
-        "需要在天地图开发者控制台申请Key，并在仓库API_CENTER_SECRETS_JSON中配置TIANDITU_API_KEY",
+        "需要在天地图开发者控制台申请Key，并配置独立 Repository Secret TIANDITU_API_KEY",
         "postStr必须符合天地图官方地名搜索V2.0参数规则；本连接器不接受任意URL",
         "POI结果和坐标必须与高德、OpenStreetMap或现场信息交叉核验",
         "配额、许可、坐标体系和使用限制以天地图账户及官方条款为准"
@@ -12722,5 +12722,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "0453e0b42b2122027b2ea8d85270131256bc57565e2b9aa782f1e2f57fcc6b09"
+  "catalog_sha256": "4e9008f4867803b88795c1abec945367d51f7e53ac305e910b9bd344fdd38cd7"
 }
