@@ -40,6 +40,18 @@ class GoogleCloudTaskTests(unittest.TestCase):
         providers = {row["provider_id"]: row for row in catalog["providers"]}
         self.assertEqual(set(providers), {"bigquery", "earth-engine", "data-commons"})
         self.assertEqual(
+            set(catalog["required_secret_environment_variables"]),
+            {"BIGQUERY_SERVICE_ACCOUNT_JSON", "EARTH_ENGINE_SERVICE_ACCOUNT_JSON"},
+        )
+        self.assertEqual(
+            providers["bigquery"]["required_secret_environment_variable"],
+            "BIGQUERY_SERVICE_ACCOUNT_JSON",
+        )
+        self.assertEqual(
+            providers["earth-engine"]["required_secret_environment_variable"],
+            "EARTH_ENGINE_SERVICE_ACCOUNT_JSON",
+        )
+        self.assertEqual(
             {row["operation_id"] for row in providers["bigquery"]["operations"]},
             {
                 "catalog-projects",
@@ -78,6 +90,27 @@ class GoogleCloudTaskTests(unittest.TestCase):
             "GOOGLE_DATA_COMMONS_API_KEY",
         )
         self.assertFalse(catalog["secret_values_exposed"])
+
+    def test_each_google_service_has_one_canonical_credential(self) -> None:
+        self.assertEqual(
+            module._credential_secret_name("bigquery", "catalog-projects"),
+            "BIGQUERY_SERVICE_ACCOUNT_JSON",
+        )
+        self.assertEqual(
+            module._credential_secret_name("earth-engine", "catalog-algorithms"),
+            "EARTH_ENGINE_SERVICE_ACCOUNT_JSON",
+        )
+        self.assertEqual(
+            module._credential_secret_name("earth-engine", "compute-value-readonly"),
+            "EARTH_ENGINE_SERVICE_ACCOUNT_JSON",
+        )
+        self.assertIsNone(
+            module._credential_secret_name("earth-engine", "catalog-dataset-search")
+        )
+        self.assertNotEqual(
+            module._credential_secret_name("bigquery", "catalog-projects"),
+            module._credential_secret_name("earth-engine", "catalog-algorithms"),
+        )
 
     def test_ticket_validation_rejects_unknown_operation_or_parameter(self) -> None:
         ticket = self.ticket()
@@ -244,10 +277,39 @@ class GoogleCloudTaskTests(unittest.TestCase):
                 (output_dir / "gcp-snapshot.json").read_text(encoding="utf-8")
             )
             self.assertEqual(snapshot["status"], "API_GCP_BLOCKED")
+            diagnostics = json.loads(
+                (output_dir / "gcp-diagnostics.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(
+                diagnostics["credential_secret_name"],
+                "BIGQUERY_SERVICE_ACCOUNT_JSON",
+            )
             self.assertEqual(
                 snapshot["failure"]["code"], "GOOGLE_CLOUD_CREDENTIALS_MISSING"
             )
             self.assertFalse(snapshot["security"]["secret_values_included"])
+
+    def test_earth_engine_authenticated_operation_requires_its_own_secret(self) -> None:
+        ticket = self.ticket("earth-engine", "catalog-algorithms")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ticket_path = root / "ticket.json"
+            output_dir = root / "out"
+            ticket_path.write_text(json.dumps(ticket), encoding="utf-8")
+            with mock.patch.dict(os.environ, {}, clear=True):
+                rc = module.execute(ticket_path, output_dir)
+            self.assertEqual(rc, 1)
+            snapshot = json.loads(
+                (output_dir / "gcp-snapshot.json").read_text(encoding="utf-8")
+            )
+            diagnostics = json.loads(
+                (output_dir / "gcp-diagnostics.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(snapshot["status"], "API_GCP_BLOCKED")
+            self.assertEqual(
+                diagnostics["credential_secret_name"],
+                "EARTH_ENGINE_SERVICE_ACCOUNT_JSON",
+            )
 
     def test_stac_paths_are_strictly_allowlisted(self) -> None:
         self.assertEqual(

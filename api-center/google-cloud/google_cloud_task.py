@@ -24,7 +24,8 @@ from jsonschema import Draft202012Validator
 HERE = Path(__file__).resolve().parent
 SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
-SERVICE_ACCOUNT_ENV = "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
+BIGQUERY_SERVICE_ACCOUNT_ENV = "BIGQUERY_SERVICE_ACCOUNT_JSON"
+EARTH_ENGINE_SERVICE_ACCOUNT_ENV = "EARTH_ENGINE_SERVICE_ACCOUNT_JSON"
 DEFAULT_BIGQUERY_PROJECTS = {"bigquery-public-data", "gdelt-bq", "patents-public-data"}
 PROJECT_ID_RE = re.compile(r"^[a-z][a-z0-9-]{4,61}[a-z0-9]$")
 RESOURCE_ID_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_-]{0,1023}$")
@@ -164,26 +165,43 @@ def prepare(event_path: Path, output_dir: Path) -> int:
     return 0 if accepted else 1
 
 
-def _credentials() -> tuple[service_account.Credentials, str]:
-    raw = str(os.getenv(SERVICE_ACCOUNT_ENV) or "").strip()
+def _credential_secret_name(provider: str, operation: str) -> str | None:
+    if provider == "bigquery":
+        return BIGQUERY_SERVICE_ACCOUNT_ENV
+    if provider == "earth-engine" and operation in {
+        "catalog-algorithms",
+        "compute-value-readonly",
+    }:
+        return EARTH_ENGINE_SERVICE_ACCOUNT_ENV
+    return None
+
+
+def _credentials(secret_name: str) -> tuple[service_account.Credentials, str]:
+    if secret_name not in {
+        BIGQUERY_SERVICE_ACCOUNT_ENV,
+        EARTH_ENGINE_SERVICE_ACCOUNT_ENV,
+    }:
+        raise ValueError(f"unsupported Google credential secret: {secret_name}")
+    raw = str(os.getenv(secret_name) or "").strip()
     if not raw:
-        raise RuntimeError(f"missing repository Secret {SERVICE_ACCOUNT_ENV}")
+        raise RuntimeError(f"missing repository Secret {secret_name}")
     try:
         info = json.loads(raw)
     except json.JSONDecodeError as exc:
-        raise RuntimeError(f"{SERVICE_ACCOUNT_ENV} is not valid JSON") from exc
+        raise RuntimeError(f"{secret_name} is not valid JSON") from exc
     if not isinstance(info, Mapping):
-        raise RuntimeError(f"{SERVICE_ACCOUNT_ENV} must contain a service-account JSON object")
+        raise RuntimeError(f"{secret_name} must contain a service-account JSON object")
     project_id = str(info.get("project_id") or "")
     if not PROJECT_ID_RE.fullmatch(project_id):
-        raise RuntimeError("service-account JSON has no valid project_id")
+        raise RuntimeError(f"{secret_name} has no valid project_id")
+    scopes = ["https://www.googleapis.com/auth/cloud-platform.read-only"]
+    if secret_name == BIGQUERY_SERVICE_ACCOUNT_ENV:
+        scopes.append("https://www.googleapis.com/auth/bigquery.readonly")
+    else:
+        scopes.append("https://www.googleapis.com/auth/earthengine.readonly")
     credentials = service_account.Credentials.from_service_account_info(
         dict(info),
-        scopes=[
-            "https://www.googleapis.com/auth/cloud-platform.read-only",
-            "https://www.googleapis.com/auth/bigquery.readonly",
-            "https://www.googleapis.com/auth/earthengine.readonly",
-        ],
+        scopes=scopes,
     )
     credentials.refresh(GoogleAuthRequest())
     if not credentials.token:
@@ -662,12 +680,12 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
     data: Any = None
     metadata: dict[str, Any] = {}
     failure: dict[str, Any] | None = None
+    credential_secret_name = _credential_secret_name(provider, operation)
     try:
         token: str | None = None
         billing_project: str | None = None
-        needs_auth = provider == "bigquery" or operation in {"catalog-algorithms", "compute-value-readonly"}
-        if needs_auth:
-            credentials, billing_project = _credentials()
+        if credential_secret_name:
+            credentials, billing_project = _credentials(credential_secret_name)
             token = str(credentials.token)
         if provider == "bigquery":
             assert token and billing_project
@@ -727,7 +745,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         "provider": provider,
         "operation": operation,
         "failure": failure,
-        "credential_secret_name": SERVICE_ACCOUNT_ENV if provider == "bigquery" or operation in {"catalog-algorithms", "compute-value-readonly"} else None,
+        "credential_secret_name": credential_secret_name,
         "credential_secret_value_exposed": False,
     }
     write_json(output_dir / "gcp-diagnostics.json", diagnostics)
