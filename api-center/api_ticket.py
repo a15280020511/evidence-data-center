@@ -247,13 +247,21 @@ def _validate_parameter_rules(
                 if pattern and re.fullmatch(str(pattern), value) is None:
                     raise ValueError(f"request {request_id} parameter {name} does not match its pattern")
     for group in rules.get("required_any_of") or []:
-        present = [str(name) for name in group if str(name) in parameters and parameters[str(name)] not in ("", None)]
+        present = [
+            str(name)
+            for name in group
+            if str(name) in parameters and parameters[str(name)] not in ("", None)
+        ]
         if not present:
             raise ValueError(
                 f"request {request_id} requires at least one of {list(group)}"
             )
     for group in rules.get("mutually_exclusive") or []:
-        present = [str(name) for name in group if str(name) in parameters and parameters[str(name)] not in ("", None)]
+        present = [
+            str(name)
+            for name in group
+            if str(name) in parameters and parameters[str(name)] not in ("", None)
+        ]
         if len(present) > 1:
             raise ValueError(
                 f"request {request_id} parameters are mutually exclusive: {present}"
@@ -341,6 +349,14 @@ def _validate_and_plan(packet: Mapping[str, Any], root: Path = HERE) -> dict[str
             }
         )
 
+    if len(required_secrets) > 1:
+        raise ValueError(
+            "ordinary [api] tickets may use only one keyed upstream API service; "
+            "split cross-provider requests into separate tickets. Google managed "
+            "provider tickets use their dedicated workflow and are exempt"
+        )
+    selected_secret = next(iter(required_secrets), "")
+
     acceptance = dict(packet["acceptance"])
     request_count = len(planned)
     minimum = int(acceptance["minimum_successful_requests"])
@@ -367,6 +383,8 @@ def _validate_and_plan(packet: Mapping[str, Any], root: Path = HERE) -> dict[str
                 acceptance.get("max_response_bytes_per_request", 100_000)
             ),
         },
+        "secret_isolation_policy": "one-keyed-upstream-per-ticket",
+        "required_secret_environment_variable": selected_secret,
         "required_secret_environment_variables": sorted(required_secrets),
         "requests": planned,
     }
@@ -444,9 +462,14 @@ def prepare(args: argparse.Namespace) -> int:
             current_comments = list(
                 _trusted_comments(os.getenv("GITHUB_REPOSITORY", ""), issue_number)
             )
-            if any(body.startswith(("## API_COMPLETED", "## API_PARTIAL")) for body in current_comments):
+            if any(
+                body.startswith(("## API_COMPLETED", "## API_PARTIAL"))
+                for body in current_comments
+            ):
                 errors.append("this API Issue already completed")
-            elif any(body.startswith("## API_ACCEPTED") for body in current_comments) and not any(
+            elif any(
+                body.startswith("## API_ACCEPTED") for body in current_comments
+            ) and not any(
                 body.startswith(("## API_FAILED", "## API_BLOCKED"))
                 for body in current_comments
             ):
@@ -487,6 +510,13 @@ def prepare(args: argparse.Namespace) -> int:
     for name in ("accepted", "reason", "task_id", "ticket_sha256", "request_count"):
         value = status.get(name, "")
         _write_output(name, str(value).lower() if isinstance(value, bool) else value)
+    selected_secret = ""
+    required_secret_count = 0
+    if isinstance(plan, Mapping):
+        selected_secret = str(plan.get("required_secret_environment_variable") or "")
+        required_secret_count = len(plan.get("required_secret_environment_variables") or [])
+    _write_output("required_secret_environment_variable", selected_secret)
+    _write_output("required_secret_count", required_secret_count)
     return 0 if accepted else 2
 
 
