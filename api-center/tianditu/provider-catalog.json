@@ -13,7 +13,7 @@
       "ticket_prefix": "[api-tianditu]",
       "required_secret_environment_variable": "TIANDITU_API_KEY",
       "catalog_policy": "仅调用天地图官方固定 HTTPS 地名搜索 V2.0 端点；禁止瓦片批量下载、任意 URL、任意请求头、任意代码、写入和账号操作。",
-      "execution_policy": "TIANDITU_TOKEN 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次同步只读请求，并限制坐标范围、周边半径、多边形点数、分页、超时和响应体积，输出中的电话字段自动脱敏。",
+      "execution_policy": "TIANDITU_API_KEY 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次同步只读请求，并限制坐标范围、周边半径、多边形点数、分页、超时和响应体积，输出中的电话字段自动脱敏。",
       "limits": {
         "requests_per_ticket": 1,
         "timeout_seconds_max": 60,

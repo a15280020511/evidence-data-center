@@ -18,7 +18,7 @@
     "market-search/provider-catalog.json",
     "tianditu/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "ce2ef27cbd594764a68edefc2f6cfe37f46d7943dd06b57461aa53ece481be2c",
+  "managed_provider_catalog_sha256": "1ae32b39afa239f9aac8996d7d3a9a448af3c9a0467639596c4c4fbf3c67bce7",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 16,
@@ -5849,7 +5849,7 @@
       "enabled": true,
       "ticket_prefix": "[api-tianditu]",
       "catalog_policy": "仅调用天地图官方固定 HTTPS 地名搜索 V2.0 端点；禁止瓦片批量下载、任意 URL、任意请求头、任意代码、写入和账号操作。",
-      "execution_policy": "TIANDITU_TOKEN 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次同步只读请求，并限制坐标范围、周边半径、多边形点数、分页、超时和响应体积，输出中的电话字段自动脱敏。",
+      "execution_policy": "TIANDITU_API_KEY 仅在后端 tk 查询参数注入且不会写入日志或 Artifact；每张票据最多执行一次同步只读请求，并限制坐标范围、周边半径、多边形点数、分页、超时和响应体积，输出中的电话字段自动脱敏。",
       "operation_count": 8,
       "operations": [
         {
@@ -6412,7 +6412,7 @@
       "required_secret_environment_variable_name": "TIANDITU_API_KEY",
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
-      "provider_sha256": "651a15482cd6683c9af8bcfdbac270984a2b92e865d0ae8c6238cf1329dde372",
+      "provider_sha256": "f78530d70a8829e5df5a4cf2050a1662f1ec3af13109bac070a974c1537ae9e7",
       "catalog_file": "tianditu/provider-catalog.json"
     }
   ],
@@ -14754,5 +14754,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "62ec35d345fb7145092f3a17d27d6d13f9811e6ed4d685d87c6121de788cacd2"
+  "catalog_sha256": "41ce83ddea32ee2a8dfa11a28316e912d71bc7b73ca3db9f8241ae79db535e06"
 }
