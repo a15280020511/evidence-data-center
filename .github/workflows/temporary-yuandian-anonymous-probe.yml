@@ -1,0 +1,117 @@
+name: Temporary YuanDian Anonymous Probe
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  probe:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[maintenance-test-yuandian-anonymous]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - name: Execute anonymous requests without credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p probe
+          python - <<'PY'
+          import json
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+
+          tests = [
+              {
+                  'name': 'law-search',
+                  'url': 'https://open.chineselaw.com/open/rh_ft_search',
+                  'method': 'POST',
+                  'body': {'keyword': '民法典', 'pageNo': 1, 'pageSize': 1},
+              },
+              {
+                  'name': 'enterprise-search',
+                  'url': 'https://open.chineselaw.com/open/rh_enterpriseSearch?' + urllib.parse.urlencode({'name': '腾讯', 'top_k': 1}),
+                  'method': 'GET',
+                  'body': None,
+              },
+          ]
+          results = []
+          for test in tests:
+              headers = {'Accept': 'application/json', 'User-Agent': 'evidence-data-center-anonymous-probe/1'}
+              data = None
+              if test['body'] is not None:
+                  data = json.dumps(test['body'], ensure_ascii=False).encode('utf-8')
+                  headers['Content-Type'] = 'application/json'
+              request = urllib.request.Request(test['url'], data=data, headers=headers, method=test['method'])
+              status = None
+              raw = b''
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      status = response.status
+                      raw = response.read(200000)
+              except urllib.error.HTTPError as exc:
+                  status = exc.code
+                  raw = exc.read(200000)
+              except Exception as exc:
+                  results.append({'name': test['name'], 'http_status': None, 'usable': False, 'error': type(exc).__name__ + ': ' + str(exc), 'credential_header_sent': False})
+                  continue
+              try:
+                  payload = json.loads(raw.decode('utf-8')) if raw else None
+              except Exception:
+                  payload = {'non_json_excerpt': raw[:500].decode('utf-8', errors='replace')}
+              code = None
+              message = ''
+              data_present = False
+              if isinstance(payload, dict):
+                  code = payload.get('code', payload.get('status', payload.get('error_code')))
+                  message = str(payload.get('message', payload.get('msg', payload.get('reason', ''))) or '')
+                  data_present = any(payload.get(k) not in (None, [], {}, '') for k in ('data', 'result', 'results', 'list', 'items'))
+              usable = bool(status and 200 <= status < 300 and data_present)
+              results.append({
+                  'name': test['name'],
+                  'http_status': status,
+                  'business_code': code,
+                  'message': message[:500],
+                  'data_present': data_present,
+                  'usable': usable,
+                  'credential_header_sent': False,
+                  'response_sha256': __import__('hashlib').sha256(raw).hexdigest(),
+              })
+          report = {'tests': results, 'all_usable_without_key': all(x['usable'] for x in results), 'secret_values_included': False}
+          Path('probe/report.json').write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding='utf-8')
+          lines = ['## YUANDIAN_ANONYMOUS_PROBE', '']
+          for row in results:
+              lines.append(f"- {row['name']}: HTTP `{row.get('http_status')}`, usable=`{str(row['usable']).lower()}`, data_present=`{str(row.get('data_present', False)).lower()}`")
+              if row.get('business_code') is not None:
+                  lines.append(f"  - Business code: `{row['business_code']}`")
+              if row.get('message'):
+                  lines.append(f"  - Message: {row['message']}")
+              if row.get('error'):
+                  lines.append(f"  - Error: {row['error']}")
+          lines.extend(['', f"- All business calls usable without key: `{str(report['all_usable_without_key']).lower()}`", '- Authentication header sent: `false`', '- Secret values exposed: `false`'])
+          Path('probe/comment.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+      - name: Upload evidence
+        id: upload
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: yuandian-anonymous-probe-${{ github.run_id }}
+          path: probe/
+          if-no-files-found: error
+          retention-days: 7
+      - name: Publish result
+        if: always()
+        run: |
+          printf '\n- Run: https://github.com/%s/actions/runs/%s\n- Artifact: %s\n' "$GITHUB_REPOSITORY" "$GITHUB_RUN_ID" '${{ steps.upload.outputs.artifact-url }}' >> probe/comment.md
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@probe/comment.md
