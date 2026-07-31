@@ -18,13 +18,14 @@ jobs:
     if: >-
       github.actor == github.repository_owner &&
       startsWith(github.event.issue.title, '[api-tianditu]')
-    runs-on: ${{ vars.TIANDITU_RUNNER_LABEL || 'ubuntu-24.04' }}
+    runs-on: ${{ vars.TIANDITU_RUNNER_LABEL || 'tianditu-mainland-egress' }}
     timeout-minutes: 20
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       TIANDITU_API_KEY: ${{ secrets.TIANDITU_API_KEY }}
+      TIANDITU_EXPECTED_EGRESS_IP: ${{ vars.TIANDITU_EXPECTED_EGRESS_IP }}
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -38,17 +39,52 @@ jobs:
           cache: pip
           cache-dependency-path: api-center/tianditu/requirements.txt
 
+      - name: Verify mainland fixed public egress
+        id: egress
+        continue-on-error: true
+        run: |
+          python api-center/tianditu/mainland_runner_preflight.py \
+            --expected-ip "$TIANDITU_EXPECTED_EGRESS_IP" \
+            --runner-environment "${{ runner.environment }}" \
+            --runner-os "${{ runner.os }}" \
+            --runner-arch "${{ runner.arch }}" \
+            --output tianditu-artifacts/egress-verification.json
+
+      - name: Comment rejected fixed egress
+        if: steps.egress.outputs.egress_verified != 'true'
+        env:
+          FAILURE_MESSAGE: ${{ steps.egress.outputs.failure_message }}
+        run: |
+          python - <<'PY' > tianditu-egress-comment.md
+          import os
+          print("## API_TIANDITU_INFRASTRUCTURE_REJECTED\n")
+          print("- Fixed mainland egress verified: `false`")
+          print("- Error code: `TIANDITU_FIXED_EGRESS_REJECTED`")
+          print(f"- Message: {os.environ.get('FAILURE_MESSAGE') or 'fixed-egress preflight failed'}")
+          print("- Tianditu upstream request executed: `false`")
+          print("- Secret values exposed: `false`")
+          print("- Model calls: `0`")
+          PY
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -F body=@tianditu-egress-comment.md
+
       - name: Install pinned dependencies
+        if: steps.egress.outputs.egress_verified == 'true'
         run: |
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/tianditu/requirements.txt
           python -m pip check
 
       - name: Compile managed provider control plane
-        run: python -m py_compile api-center/tianditu/tianditu_task.py
+        if: steps.egress.outputs.egress_verified == 'true'
+        run: |
+          python -m py_compile \
+            api-center/tianditu/mainland_runner_preflight.py \
+            api-center/tianditu/tianditu_task.py
 
       - name: Parse and authorize Tianditu ticket
         id: prepare
+        if: steps.egress.outputs.egress_verified == 'true'
         continue-on-error: true
         run: |
           python api-center/tianditu/tianditu_task.py prepare \
@@ -56,7 +92,9 @@ jobs:
             --output-dir tianditu-artifacts
 
       - name: Comment accepted ticket
-        if: steps.prepare.outputs.accepted == 'true'
+        if: >-
+          steps.egress.outputs.egress_verified == 'true' &&
+          steps.prepare.outputs.accepted == 'true'
         run: |
           python api-center/tianditu/tianditu_task.py render \
             --output-dir tianditu-artifacts --phase accepted > tianditu-comment.md
@@ -64,7 +102,9 @@ jobs:
             -F body=@tianditu-comment.md
 
       - name: Comment rejected ticket
-        if: steps.prepare.outputs.accepted != 'true'
+        if: >-
+          steps.egress.outputs.egress_verified == 'true' &&
+          steps.prepare.outputs.accepted != 'true'
         run: |
           python api-center/tianditu/tianditu_task.py render \
             --output-dir tianditu-artifacts --phase rejected > tianditu-comment.md
@@ -73,8 +113,14 @@ jobs:
 
       - name: Execute bounded read-only Tianditu operation
         id: execute
-        if: steps.prepare.outputs.accepted == 'true'
+        if: >-
+          steps.egress.outputs.egress_verified == 'true' &&
+          steps.prepare.outputs.accepted == 'true'
         continue-on-error: true
+        env:
+          RUNNER_ENVIRONMENT: ${{ runner.environment }}
+          TIANDITU_FIXED_EGRESS_VERIFIED: ${{ steps.egress.outputs.egress_verified }}
+          TIANDITU_EGRESS_IP_SHA256: ${{ steps.egress.outputs.public_ipv4_sha256 }}
         run: |
           python api-center/tianditu/tianditu_task.py execute \
             --ticket tianditu-artifacts/ticket.json \
@@ -92,7 +138,10 @@ jobs:
           retention-days: 30
 
       - name: Publish verified result or structured failure
-        if: always() && steps.prepare.outputs.accepted == 'true'
+        if: >-
+          always() &&
+          steps.egress.outputs.egress_verified == 'true' &&
+          steps.prepare.outputs.accepted == 'true'
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
@@ -106,7 +155,8 @@ jobs:
       - name: Mark rejected or failed execution
         if: >-
           always() &&
-          (steps.prepare.outputs.accepted != 'true' ||
+          (steps.egress.outputs.egress_verified != 'true' ||
+           steps.prepare.outputs.accepted != 'true' ||
            steps.execute.outputs.status != 'API_TIANDITU_COMPLETED' ||
            steps.upload.outcome != 'success')
         run: |
