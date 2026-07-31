@@ -28,12 +28,31 @@ class ApiArchitectureTests(unittest.TestCase):
         ]
         self.assertEqual([str(path) for path in required if not path.is_file()], [])
 
-    def test_workflow_is_generic_and_has_no_connector_specific_secret(self) -> None:
+    def test_workflow_injects_each_api_secret_independently(self) -> None:
         workflow = (REPO / ".github/workflows/api-ticket.yml").read_text(encoding="utf-8")
-        self.assertIn("API_CENTER_SECRETS_JSON", workflow)
+        manifest = json.loads((API / "connector-manifest.json").read_text(encoding="utf-8"))
         self.assertIn("API_GATEWAY_AUTH_TOKEN", workflow)
-        self.assertNotIn("AMAP_API_KEY", workflow)
+        for secret_name in manifest["required_secret_environment_variables"]:
+            self.assertIn(f"{secret_name}: ${{{{ secrets.{secret_name} }}}}", workflow)
+        self.assertNotIn("API_CENTER" + "_SECRETS_JSON", workflow)
         self.assertNotIn("curl --get 'https://", workflow)
+
+    def test_aggregated_or_alias_secret_names_are_forbidden(self) -> None:
+        forbidden = ("API_CENTER" + "_SECRETS_JSON", "YD" + "_API_KEY")
+        roots = [API, REPO / ".github/workflows"]
+        matches = []
+        for root in roots:
+            for path in root.rglob("*"):
+                if not path.is_file() or path.suffix in {".pyc", ".zip", ".gz"}:
+                    continue
+                try:
+                    content = path.read_text(encoding="utf-8")
+                except UnicodeDecodeError:
+                    continue
+                for name in forbidden:
+                    if name in content:
+                        matches.append(f"{path.relative_to(REPO)}:{name}")
+        self.assertEqual(matches, [])
 
     def test_all_enabled_get_connectors_have_response_contract(self) -> None:
         manifest = json.loads((API / "connector-manifest.json").read_text(encoding="utf-8"))

@@ -104,47 +104,44 @@ class ApiTaskTests(unittest.TestCase):
         self.assertFalse(empty["success"])
         self.assertEqual(empty["state"], "empty")
 
-    def test_resolve_mode_writes_only_required_secrets(self) -> None:
+    def test_resolve_mode_writes_only_required_dedicated_secrets(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             with mock.patch.dict(
                 os.environ,
                 {
                     "API_GATEWAY_BASE_URL": "",
-                    "API_CENTER_SECRETS_JSON": json.dumps(
-                        {"DEMO_API_KEY": "test-value", "UNUSED_KEY": "ignore-me"}
-                    ),
+                    "API_GATEWAY_AUTH_TOKEN": "",
+                    "DEMO_API_KEY": "test-value",
+                    "UNUSED_KEY": "ignore-me",
                 },
                 clear=False,
             ):
                 result = api_task.resolve_mode(self.plan(), root)
             self.assertEqual(result["mode"], "ephemeral")
+            self.assertEqual(result["secret_source"], "dedicated_environment_variables")
             env_text = Path(result["env_file"]).read_text(encoding="utf-8")
-            self.assertIn("DEMO_API_KEY=test-value", env_text)
+            self.assertEqual(env_text, "DEMO_API_KEY=test-value\n")
             self.assertNotIn("UNUSED_KEY", env_text)
             public = (root / "gateway-mode.json").read_text(encoding="utf-8")
             self.assertNotIn("test-value", public)
 
-    def test_malformed_optional_bundle_does_not_block_keyless_plan(self) -> None:
+    def test_keyless_plan_creates_empty_runtime_secret_file(self) -> None:
         plan = self.plan()
         plan["required_secret_environment_variables"] = []
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             with mock.patch.dict(
                 os.environ,
-                {
-                    "API_GATEWAY_BASE_URL": "",
-                    "API_GATEWAY_AUTH_TOKEN": "",
-                    "API_CENTER_SECRETS_JSON": "not-valid-json trailing",
-                },
+                {"API_GATEWAY_BASE_URL": "", "API_GATEWAY_AUTH_TOKEN": ""},
                 clear=False,
             ):
                 result = api_task.resolve_mode(plan, root)
             self.assertEqual(result["mode"], "ephemeral")
-            self.assertEqual(result["secret_bundle_status"], "invalid_ignored")
+            self.assertEqual(result["secret_source"], "dedicated_environment_variables")
             self.assertEqual(Path(result["env_file"]).read_text(encoding="utf-8"), "")
 
-    def test_dedicated_secret_overrides_malformed_bundle(self) -> None:
+    def test_missing_dedicated_secret_is_structured_block(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             with mock.patch.dict(
@@ -152,36 +149,15 @@ class ApiTaskTests(unittest.TestCase):
                 {
                     "API_GATEWAY_BASE_URL": "",
                     "API_GATEWAY_AUTH_TOKEN": "",
-                    "API_CENTER_SECRETS_JSON": "not-valid-json trailing",
-                    "DEMO_API_KEY": "direct-test-value",
-                },
-                clear=False,
-            ):
-                result = api_task.resolve_mode(self.plan(), root)
-            self.assertEqual(result["mode"], "ephemeral")
-            self.assertEqual(result["secret_bundle_status"], "invalid_ignored")
-            env_text = Path(result["env_file"]).read_text(encoding="utf-8")
-            self.assertEqual(env_text, "DEMO_API_KEY=direct-test-value\n")
-            public = (root / "gateway-mode.json").read_text(encoding="utf-8")
-            self.assertNotIn("direct-test-value", public)
-
-    def test_malformed_bundle_with_missing_required_secret_is_structured_block(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            with mock.patch.dict(
-                os.environ,
-                {
-                    "API_GATEWAY_BASE_URL": "",
-                    "API_GATEWAY_AUTH_TOKEN": "",
-                    "API_CENTER_SECRETS_JSON": "not-valid-json trailing",
                     "DEMO_API_KEY": "",
                 },
                 clear=False,
             ):
                 result = api_task.resolve_mode(self.plan(), root)
             self.assertEqual(result["mode"], "blocked")
-            self.assertEqual(result["secret_bundle_status"], "invalid_ignored")
+            self.assertEqual(result["secret_source"], "dedicated_environment_variables")
             self.assertEqual(result["missing_secret_environment_variables"], ["DEMO_API_KEY"])
+
 
     def test_execute_and_finalize(self) -> None:
         server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)

@@ -5,7 +5,7 @@
 - 托管提供方：`7/7` 已启用
 - 托管操作总数：`93`
 - 已公开参数总数：`647`
-- 目录 SHA-256：`0453e0b42b2122027b2ea8d85270131256bc57565e2b9aa782f1e2f57fcc6b09`
+- 目录 SHA-256：`4e9008f4867803b88795c1abec945367d51f7e53ac305e910b9bd344fdd38cd7`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -10240,7 +10240,7 @@
 ```
 
 限制：
-- 需要在天地图开发者控制台申请Key，并在仓库API_CENTER_SECRETS_JSON中配置TIANDITU_API_KEY
+- 需要在天地图开发者控制台申请Key，并配置独立 Repository Secret TIANDITU_API_KEY
 - postStr必须符合天地图官方地名搜索V2.0参数规则；本连接器不接受任意URL
 - POI结果和坐标必须与高德、OpenStreetMap或现场信息交叉核验
 - 配额、许可、坐标体系和使用限制以天地图账户及官方条款为准

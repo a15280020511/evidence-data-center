@@ -77,18 +77,16 @@ NewsAPI作为普通只读连接器接入，开放官方三项能力：
 NEWSAPI_API_KEY
 ```
 
-密钥通过后端`X-Api-Key`请求头注入，GPTs和正式票据不能提交、读取或覆盖密钥。使用GitHub Actions临时网关时，应将它加入现有Repository Secret `API_CENTER_SECRETS_JSON`，例如：
+密钥通过后端`X-Api-Key`请求头注入，GPTs和正式票据不能提交、读取或覆盖密钥。后台实行“一项外部 API 服务对应一个独立 Repository Secret”，不得把多家密钥组合进JSON、文本或单一总Secret。当前普通连接器使用：
 
-```json
-{
-  "AMAP_API_KEY": "已有高德密钥",
-  "TIANDITU_API_KEY": "已有天地图密钥",
-  "NEWSAPI_API_KEY": "NewsAPI密钥",
-  "BAIDU_MAP_API_KEY": "百度地图开放平台服务端AK"
-}
+```text
+AMAP_API_KEY
+BAIDU_MAP_API_KEY
+NEWSAPI_API_KEY
+TIANDITU_API_KEY
 ```
 
-不要删除JSON中仍在使用的其他键，也不要把真实密钥写入仓库、Issue或Artifact。
+每个Secret在GitHub后台单独建立、单独轮换、单独撤销；真实值不能写入仓库、Issue或Artifact。
 
 NewsAPI只返回标题、来源、URL、摘要和受限正文片段，不提供完整文章正文。套餐限制、延迟、历史范围、请求配额和生产使用许可由NewsAPI账户决定；GPTs必须把返回内容作为新闻线索，并打开原始文章进行来源与日期核验。
 
@@ -125,10 +123,10 @@ GitHub可以验证并构建KrakenD镜像。需要低延迟直接访问时，仓�
 ## 执行模式
 
 1. 同时配置 `API_GATEWAY_BASE_URL` 和 `API_GATEWAY_AUTH_TOKEN`：使用远程HTTPS网关；
-2. 未配置远程网关：使用 `API_CENTER_SECRETS_JSON` 启动临时回环网关；
+2. 未配置远程网关：只读取本次连接器声明的独立 Repository Secret，启动临时回环网关；
 3. 所需配置或Secret缺失：返回 `API_BLOCKED`，不伪造数据。
 
-`API_CENTER_SECRETS_JSON` 是GitHub Actions Repository Secret，内容为环境变量名到值的JSON对象。运行时只提取本次请求所需的键，写入Runner临时目录，并在任务结束前删除。该文件不得进入Artifact。
+每个外部 API 服务使用唯一、规范的 Repository Secret 名称。运行时只把本次请求所需的独立Secret写入Runner临时环境文件，并在任务结束前删除；任何Secret值都不得进入仓库、Issue或Artifact。
 
 ## 连接器
 
@@ -193,14 +191,13 @@ AKShare使用独立`[api-akshare]`票据和固定函数白名单。它不需要A
 
 Open-Meteo以无密钥普通连接器接入，提供按经纬度读取当前、小时和逐日天气能力。
 百度地图以三个后端注入密钥的普通连接器接入：地址转坐标、POI搜索和驾车路线规划。
-百度地图密钥环境变量名为`BAIDU_MAP_API_KEY`，实际值只能存入Repository Secret
-`API_CENTER_SECRETS_JSON`，不能写入Issue、仓库或Artifact。
+百度地图密钥环境变量名为独立 Repository Secret `BAIDU_MAP_API_KEY`，不能写入Issue、仓库或Artifact。
 
 ## Wind AIFin Market
 
 AIFin Market采用独立托管提供方，不伪装成普通KrakenD GET接口。正式票据前缀为 `[api-aifin]`，使用 `WIND_API_KEY` 认证。适配器已经把四个官方 MCP 服务当前目录发现的全部 `15` 个只读工具映射为固定操作，覆盖行情、K线、技术面、基本面、股东、事件、风险、公告、新闻、宏观经济和综合金融计算；另提供本地能力目录和实时工具目录。
 
-密钥可配置为独立 Repository Secret `WIND_API_KEY`，也可作为同名键放入 `API_CENTER_SECRETS_JSON`。执行仍禁止任意 `server_type`、任意 `tool_name`、任意 URL、交易、写入和代码执行。
+密钥只能配置为独立 Repository Secret `WIND_API_KEY`。执行仍禁止任意 `server_type`、任意 `tool_name`、任意 URL、交易、写入和代码执行。
 ## 元典法律智能开放平台
 
 `api-center/yuandian/` 将元典作为托管只读 Provider 接入。当前冻结 37 项法律法规、案例文书、企业公开信息和法律幻觉检测 API，并额外提供官方实时目录发现与受控通用调用。所有业务请求固定到官方 HTTPS 主机，使用后端 `YUANDIAN_API_KEY` 注入 `X-API-Key`；禁止任意 URL、任意请求头、写入和代码执行，产物会过滤 Secret 与直接个人标识字段。

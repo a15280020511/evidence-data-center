@@ -54,6 +54,12 @@ class YuanDianTaskTests(unittest.TestCase):
                 "arguments": {"bad key": "x"}
             }))
 
+    def test_only_canonical_yuandian_secret_is_accepted(self):
+        with mock.patch.dict(os.environ, {"YUANDIAN_API_KEY": "canonical-key"}, clear=True):
+            self.assertEqual(module._resolve_api_key(), "canonical-key")
+        with mock.patch.dict(os.environ, {"YD" + "_API_KEY": "legacy-key"}, clear=True):
+            self.assertEqual(module._resolve_api_key(), "")
+
     def test_fixed_operation_uses_fixed_origin_header_and_redacts_direct_identifiers(self):
         payload = {
             "code": 200,

@@ -74,24 +74,7 @@ jobs:
         continue-on-error: true
         env:
           WIND_API_KEY: ${{ secrets.WIND_API_KEY }}
-          API_CENTER_SECRETS_JSON: ${{ secrets.API_CENTER_SECRETS_JSON }}
-        shell: bash
         run: |
-          set -euo pipefail
-          if [[ -z "${WIND_API_KEY:-}" && -n "${API_CENTER_SECRETS_JSON:-}" ]]; then
-            wind_api_key="$(
-              python - <<'PY'
-          import json
-          import os
-          raw = os.environ.get("API_CENTER_SECRETS_JSON") or "{}"
-          try:
-              print(str(json.loads(raw).get("WIND_API_KEY") or ""), end="")
-          except Exception:
-              print("", end="")
-          PY
-            )"
-            export WIND_API_KEY="$wind_api_key"
-          fi
           python api-center/aifin-market/aifin_task.py execute \
             --ticket aifin-artifacts/ticket.json --output-dir aifin-artifacts
 

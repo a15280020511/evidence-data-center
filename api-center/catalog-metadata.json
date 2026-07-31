@@ -516,7 +516,7 @@
         "type": "query"
       },
       "limitations": [
-        "需要在天地图开发者控制台申请Key，并在仓库API_CENTER_SECRETS_JSON中配置TIANDITU_API_KEY",
+        "需要在天地图开发者控制台申请Key，并配置独立 Repository Secret TIANDITU_API_KEY",
         "postStr必须符合天地图官方地名搜索V2.0参数规则；本连接器不接受任意URL",
         "POI结果和坐标必须与高德、OpenStreetMap或现场信息交叉核验",
         "配额、许可、坐标体系和使用限制以天地图账户及官方条款为准"

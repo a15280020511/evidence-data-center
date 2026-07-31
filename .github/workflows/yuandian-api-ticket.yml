@@ -85,8 +85,6 @@ jobs:
         continue-on-error: true
         env:
           YUANDIAN_API_KEY: ${{ secrets.YUANDIAN_API_KEY }}
-          YD_API_KEY: ${{ secrets.YD_API_KEY }}
-          API_CENTER_SECRETS_JSON: ${{ secrets.API_CENTER_SECRETS_JSON }}
         run: |
           python api-center/yuandian/yuandian_task.py execute \
             --ticket yuandian-artifacts/ticket.json \

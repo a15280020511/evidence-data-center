@@ -1,6 +1,6 @@
 # 元典法律智能托管 Provider
 
-正式票据前缀：`[api-yuandian]`。认证 Secret：`YUANDIAN_API_KEY`（兼容读取 `YD_API_KEY`，也可作为同名键放入 `API_CENTER_SECRETS_JSON`）。
+正式票据前缀：`[api-yuandian]`。认证只读取独立 Repository Secret `YUANDIAN_API_KEY`，不接受别名或聚合密钥包。
 
 能力分三层：
 
