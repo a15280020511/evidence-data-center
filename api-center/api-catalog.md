@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`69/69` 已启用
-- 托管提供方：`7/7` 已启用
-- 托管操作总数：`93`
-- 已公开参数总数：`647`
-- 目录 SHA-256：`1b92a227c6e18a6d1b76acaf3395668b5ca045c739eebac25fec4c445d03faa2`
+- 托管提供方：`9/9` 已启用
+- 托管操作总数：`99`
+- 已公开参数总数：`655`
+- 目录 SHA-256：`e5adf36847c878b4725d9b36c5f7285abb5001b6190ec0faa58031d48cda9a2e`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -24,6 +24,8 @@
 | Ashare 轻量 A 股行情 | `ashare` | 启用 | `[api-ashare]` | `1` | 否 |
 | Wind AIFin Market 金融数据与能力 | `aifin-market` | 启用 | `[api-aifin]` | `17` | 否 |
 | 元典法律智能开放平台 | `yuandian-law` | 启用 | `[api-yuandian]` | `40` | 否 |
+| 企查查开放平台 | `qichacha` | 启用 | `[api-company]` | `3` | 否 |
+| 天眼查开放平台 | `tianyancha` | 启用 | `[api-company]` | `3` | 否 |
 
 ## 普通连接器
 
@@ -3817,6 +3819,178 @@
     1,
     50
   ]
+}
+```
+
+## 企查查开放平台 (`qichacha`)
+
+- 状态：`启用`
+- 说明：通过企查查官方开放平台读取企业模糊搜索和对外投资等公开企业数据。
+- 目录策略：仅暴露仓库固定登记的企查查官方只读接口，不接受任意 URL、请求头或代码。
+- 执行策略：运行时从单一 JSON Secret 读取 app_key 与 secret_key，动态生成 Timespan 和 MD5 Token；每张票据执行一个只读请求并过滤直接联系方式与个人身份字段。
+- 票据前缀：`[api-company]`
+- Secret环境变量名：`QICHACHA_CREDENTIALS_JSON`（仅名称）
+- 提供方SHA-256：`85abe40844bb052de018ca38695efc22d520207c35c37712e4d6264da767fb29`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取企查查适配器本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `company-search` | 调用企查查企业模糊搜索，根据企业名、统一社会信用代码、地址、产品等关键词返回最多5个企业候选。 | `keyword, page_index` |
+
+`company-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "page_index": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "keyword"
+  ]
+}
+```
+
+| `company-investments` | 调用企查查企业对外投资核查接口，按企业名称或统一社会信用代码读取对外投资企业明细。 | `keyword, page_index, page_size` |
+
+`company-investments` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "page_index": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    }
+  },
+  "required": [
+    "keyword"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 2000000
+}
+```
+
+## 天眼查开放平台 (`tianyancha`)
+
+- 状态：`启用`
+- 说明：通过天眼查官方开放平台读取企业基本信息和企业年报等公开企业数据。
+- 目录策略：仅暴露仓库固定登记的天眼查官方只读接口，不接受任意 URL、请求头或代码。
+- 执行策略：后端固定使用 Authorization Token；每张票据执行一个只读请求并过滤直接联系方式与个人身份字段。
+- 票据前缀：`[api-company]`
+- Secret环境变量名：`TIANYANCHA_API_TOKEN`（仅名称）
+- 提供方SHA-256：`cfae6391c6824cc14c5d90bbc3c90c2ec5bfe97910735691ff687db980909544`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取天眼查适配器本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `company-basic` | 调用天眼查企业基本信息接口，按企业名称、企业ID、注册号或统一社会信用代码查询。 | `keyword` |
+
+`company-basic` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    }
+  },
+  "required": [
+    "keyword"
+  ]
+}
+```
+
+| `company-annual-reports` | 调用天眼查企业年报接口，按企业名称、企业ID、注册号或统一社会信用代码读取年报。 | `keyword, year` |
+
+`company-annual-reports` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1980,
+      "maximum": 2100
+    }
+  },
+  "required": [
+    "keyword"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 2000000
 }
 ```
 
