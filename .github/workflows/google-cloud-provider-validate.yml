@@ -103,18 +103,22 @@ jobs:
           assert {row['connector_id'] for row in catalog['replaced_legacy_connectors']} == {
               'gdelt-doc-articles', 'nasa-black-marble-granules', 'worldpop-population-stats'
           }
-          print(json.dumps({'status': 'PASS', 'managed_providers': 3, 'operations': 18, 'secrets': 1}))
+          print(json.dumps({'status': 'PASS', 'managed_providers': 3, 'operations': 18, 'repository_secrets': 1}))
           PY
 
-      - name: Verify legacy Google secrets and credential material are absent
+      - name: Verify legacy Google secret bindings and credential material are absent
         run: |
           set -euo pipefail
           for legacy in BIGQUERY_SERVICE_ACCOUNT_JSON EARTH_ENGINE_SERVICE_ACCOUNT_JSON GOOGLE_DATA_COMMONS_API_KEY; do
-            if grep -R --line-number --fixed-strings "$legacy: ${{ '${{' }} secrets.$legacy {{ '}}' }}" .github/workflows; then
-              echo "legacy repository secret binding found: $legacy" >&2
+            if grep -R --line-number --fixed-strings "secrets.${legacy}" .github/workflows; then
+              echo "legacy repository secret binding found: ${legacy}" >&2
               exit 1
             fi
           done
+          count=$(grep -R --line-number --fixed-strings 'secrets.GOOGLE_CREDENTIALS_JSON' \
+            .github/workflows/google-cloud-api-ticket.yml \
+            .github/workflows/data-commons-api-ticket.yml | wc -l)
+          test "$count" -eq 2
           if grep -R --line-number --extended-regexp -- '-----BEGIN (RSA )?PRIVATE KEY-----' api-center/google-cloud api-center/data-commons; then
             echo "private key material found in repository files" >&2
             exit 1
