@@ -62,15 +62,16 @@ jobs:
           test ! -e maintenance/add_baostock_provider.py
           git diff --check
 
-      - name: Commit integration
+      - name: Commit non-workflow integration
         id: commit
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
+          git reset -- .github/workflows
           git diff --cached --check
-          git commit -m 'feat(api-center): add BaoStock managed provider'
+          git commit -m 'feat(api-center): add BaoStock managed provider core'
           git push origin HEAD:${TARGET_BRANCH}
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
@@ -78,7 +79,7 @@ jobs:
         if: success()
         run: |
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -f body="BAOSTOCK_INTEGRATION_COMPLETED branch=${TARGET_BRANCH} commit=${{ steps.commit.outputs.sha }} unit_tests=passed catalog_generated=true credentials_required=false model_calls=0"
+            -f body="BAOSTOCK_CORE_COMPLETED branch=${TARGET_BRANCH} commit=${{ steps.commit.outputs.sha }} unit_tests=passed catalog_generated=true workflow_files=pending_connector_write credentials_required=false model_calls=0"
 
       - name: Publish failure receipt
         if: failure()
