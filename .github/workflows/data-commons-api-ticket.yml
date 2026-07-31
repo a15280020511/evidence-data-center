@@ -31,9 +31,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Expand unified Google credentials
-        run: python api-center/google-cloud/unified_google_credentials.py
-
       - name: Set up isolated Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -93,11 +90,31 @@ jobs:
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
             -F body=@data-commons-comment.md
 
+      - name: Validate and expand unified Google credentials
+        id: credentials
+        if: >-
+          steps.prepare.outputs.accepted == 'true' &&
+          steps.duplicate.outcome == 'success'
+        continue-on-error: true
+        run: python api-center/google-cloud/unified_google_credentials.py
+
+      - name: Create structured unified credential block
+        if: >-
+          steps.prepare.outputs.accepted == 'true' &&
+          steps.duplicate.outcome == 'success' &&
+          steps.credentials.outcome != 'success'
+        run: |
+          python api-center/google-cloud/unified_google_credentials.py \
+            --blocked-target data-commons \
+            --ticket data-commons-artifacts/ticket.json \
+            --output-dir data-commons-artifacts
+
       - name: Execute read-only Data Commons operation
         id: execute
         if: >-
           steps.prepare.outputs.accepted == 'true' &&
-          steps.duplicate.outcome == 'success'
+          steps.duplicate.outcome == 'success' &&
+          steps.credentials.outcome == 'success'
         continue-on-error: true
         run: |
           python api-center/data-commons/data_commons_task.py execute \
@@ -135,6 +152,7 @@ jobs:
           always() &&
           (steps.prepare.outputs.accepted != 'true' ||
            steps.duplicate.outcome != 'success' ||
+           steps.credentials.outcome != 'success' ||
            steps.execute.outputs.status != 'API_DATA_COMMONS_COMPLETED' ||
            steps.upload.outcome != 'success')
         run: |
