@@ -1,80 +1,10 @@
 {
-  "schema_version": "china-commercial-provider-catalog-v1",
-  "ticket_prefix": "",
-  "required_secret_environment_variable": "",
+  "schema_version": "miaoxiang-provider-catalog-v1",
+  "ticket_prefix": "[api-mx]",
+  "required_secret_environment_variable": "MX_APIKEY",
   "secret_values_exposed": false,
-  "replaced_legacy_connectors": [],
+  "public_non_personal_data_only": true,
   "providers": [
-    {
-      "provider_id": "tianyancha",
-      "display_name": "天眼查开放平台",
-      "description": "通过天眼查官方开放平台读取企业基本信息和企业年报等公开企业数据。",
-      "enabled": true,
-      "ticket_prefix": "[api-company]",
-      "required_secret_environment_variable": "TIANYANCHA_API_TOKEN",
-      "catalog_policy": "仅暴露仓库固定登记的天眼查官方只读接口，不接受任意 URL、请求头或代码。",
-      "execution_policy": "后端固定使用 Authorization Token；每张票据执行一个只读请求并过滤直接联系方式与个人身份字段。",
-      "limits": {
-        "requests_per_ticket": 1,
-        "timeout_seconds_max": 60,
-        "max_response_bytes": 2000000
-      },
-      "operations": [
-        {
-          "operation_id": "catalog-capabilities",
-          "description": "读取天眼查适配器本地安全能力目录，不访问上游且不需要密钥。",
-          "parameters": [],
-          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}}
-        },
-        {
-          "operation_id": "company-basic",
-          "description": "调用天眼查企业基本信息接口，按企业名称、企业ID、注册号或统一社会信用代码查询。",
-          "parameters": ["keyword"],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "keyword": {"type": "string", "minLength": 1, "maxLength": 200}
-            },
-            "required": ["keyword"]
-          },
-          "result_contract": {
-            "provider": "tianyancha",
-            "official_endpoint": "https://open.api.tianyancha.com/services/open/ic/baseinfoV2/2.0",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation",
-            "documentation_url": "https://open.tianyancha.com/open/818"
-          }
-        },
-        {
-          "operation_id": "company-annual-reports",
-          "description": "调用天眼查企业年报接口，按企业名称、企业ID、注册号或统一社会信用代码读取年报。",
-          "parameters": ["keyword", "year"],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "keyword": {"type": "string", "minLength": 1, "maxLength": 200},
-              "year": {"type": "integer", "minimum": 1980, "maximum": 2100}
-            },
-            "required": ["keyword"]
-          },
-          "result_contract": {
-            "provider": "tianyancha",
-            "official_endpoint": "https://open.api.tianyancha.com/services/open/ic/annualreport/2.0",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation",
-            "documentation_url": "https://open.tianyancha.com/open/825"
-          }
-        }
-      ]
-    },
     {
       "provider_id": "miaoxiang",
       "display_name": "东方财富妙想金融 API",
@@ -152,5 +82,6 @@
         }
       ]
     }
-  ]
+  ],
+  "replaced_legacy_connectors": []
 }

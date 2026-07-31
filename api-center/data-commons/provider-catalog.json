@@ -1,10 +1,11 @@
 {
-  "schema_version": "data-commons-provider-catalog-v1",
+  "schema_version": "data-commons-provider-catalog-v2",
   "provider_id": "data-commons",
   "display_name": "Google Data Commons",
   "enabled": true,
   "ticket_prefix": "[api-dc]",
-  "required_secret_environment_variable": "GOOGLE_DATA_COMMONS_API_KEY",
+  "required_secret_environment_variable": "GOOGLE_CREDENTIALS_JSON",
+  "credential_bundle_field": "data_commons_api_key",
   "secret_values_exposed": false,
   "public_non_personal_data_only": true,
   "base_url": "https://api.datacommons.org/v2",

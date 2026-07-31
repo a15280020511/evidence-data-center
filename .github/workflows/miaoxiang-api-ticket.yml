@@ -1,4 +1,4 @@
-name: Managed Company Intelligence API Center
+name: Managed Miaoxiang API Center
 
 on:
   issues:
@@ -10,21 +10,21 @@ permissions:
   actions: read
 
 concurrency:
-  group: api-company-ticket-${{ github.event.issue.number }}
+  group: api-mx-ticket-${{ github.event.issue.number }}
   cancel-in-progress: false
 
 jobs:
-  execute-company-api:
+  execute-miaoxiang-api:
     if: >-
       github.actor == github.repository_owner &&
-      startsWith(github.event.issue.title, '[api-company]')
+      startsWith(github.event.issue.title, '[api-mx]')
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
-      TIANYANCHA_API_TOKEN: ${{ secrets.TIANYANCHA_API_TOKEN }}
+      MX_APIKEY: ${{ secrets.MX_APIKEY }}
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -36,58 +36,58 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
-          cache-dependency-path: api-center/company-intelligence/requirements.txt
+          cache-dependency-path: api-center/miaoxiang/requirements.txt
 
       - name: Install pinned dependencies
         run: |
           python -m pip install --disable-pip-version-check --no-input \
-            -r api-center/company-intelligence/requirements.txt
+            -r api-center/miaoxiang/requirements.txt
           python -m pip check
 
       - name: Compile managed provider control plane
-        run: python -m py_compile api-center/company-intelligence/company_intelligence_task.py
+        run: python -m py_compile api-center/miaoxiang/miaoxiang_task.py
 
-      - name: Parse and authorize company intelligence ticket
+      - name: Parse and authorize Miaoxiang ticket
         id: prepare
         continue-on-error: true
         run: |
-          python api-center/company-intelligence/company_intelligence_task.py prepare \
+          python api-center/miaoxiang/miaoxiang_task.py prepare \
             --event-path "$GITHUB_EVENT_PATH" \
-            --output-dir company-artifacts
+            --output-dir miaoxiang-artifacts
 
       - name: Comment accepted ticket
         if: steps.prepare.outputs.accepted == 'true'
         run: |
-          python api-center/company-intelligence/company_intelligence_task.py render \
-            --output-dir company-artifacts --phase accepted > company-comment.md
+          python api-center/miaoxiang/miaoxiang_task.py render \
+            --output-dir miaoxiang-artifacts --phase accepted > miaoxiang-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -F body=@company-comment.md
+            -F body=@miaoxiang-comment.md
 
       - name: Comment rejected ticket
         if: steps.prepare.outputs.accepted != 'true'
         run: |
-          python api-center/company-intelligence/company_intelligence_task.py render \
-            --output-dir company-artifacts --phase rejected > company-comment.md
+          python api-center/miaoxiang/miaoxiang_task.py render \
+            --output-dir miaoxiang-artifacts --phase rejected > miaoxiang-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -F body=@company-comment.md
+            -F body=@miaoxiang-comment.md
 
-      - name: Execute read-only company operation
+      - name: Execute read-only Miaoxiang operation
         id: execute
         if: steps.prepare.outputs.accepted == 'true'
         continue-on-error: true
         run: |
-          python api-center/company-intelligence/company_intelligence_task.py execute \
-            --ticket company-artifacts/ticket.json \
-            --output-dir company-artifacts
+          python api-center/miaoxiang/miaoxiang_task.py execute \
+            --ticket miaoxiang-artifacts/ticket.json \
+            --output-dir miaoxiang-artifacts
 
-      - name: Upload company intelligence evidence
+      - name: Upload Miaoxiang evidence
         id: upload
         if: always()
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: company-intelligence-api-ticket-${{ github.event.issue.number }}-${{ github.run_id }}
-          path: company-artifacts/
+          name: miaoxiang-api-ticket-${{ github.event.issue.number }}-${{ github.run_id }}
+          path: miaoxiang-artifacts/
           if-no-files-found: error
           retention-days: 30
 
@@ -96,19 +96,19 @@ jobs:
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
-          python api-center/company-intelligence/company_intelligence_task.py render \
-            --output-dir company-artifacts \
+          python api-center/miaoxiang/miaoxiang_task.py render \
+            --output-dir miaoxiang-artifacts \
             --phase completed \
-            --artifact-url "$ARTIFACT_URL" > company-comment.md
+            --artifact-url "$ARTIFACT_URL" > miaoxiang-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -F body=@company-comment.md
+            -F body=@miaoxiang-comment.md
 
       - name: Mark rejected or failed execution
         if: >-
           always() &&
           (steps.prepare.outputs.accepted != 'true' ||
-           steps.execute.outputs.status != 'API_COMPANY_COMPLETED' ||
+           steps.execute.outputs.status != 'API_MIAOXIANG_COMPLETED' ||
            steps.upload.outcome != 'success')
         run: |
-          echo "Company intelligence API ticket did not complete successfully."
+          echo "Miaoxiang API ticket did not complete successfully."
           exit 1

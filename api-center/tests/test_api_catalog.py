@@ -30,42 +30,58 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["schema_version"], "api-catalog-v3")
         self.assertEqual(catalog["managed_provider_count"], 11)
         self.assertEqual(catalog["enabled_managed_provider_count"], 11)
+        self.assertEqual(catalog["managed_operation_count"], 105)
+        self.assertEqual(catalog["exposed_parameter_count"], 668)
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
         self.assertEqual(
             set(providers),
-            {"bigquery", "earth-engine", "data-commons", "akshare", "ashare", "aifin-market", "yuandian-law", "qichacha", "tianyancha", "jina-reader", "exa"},
+            {
+                "bigquery", "earth-engine", "data-commons", "akshare", "ashare",
+                "aifin-market", "yuandian-law", "tianyancha", "miaoxiang",
+                "jina-reader", "exa",
+            },
         )
-        self.assertEqual(len(providers["bigquery"]["operations"]), 7)
-        self.assertEqual(len(providers["earth-engine"]["operations"]), 6)
-        self.assertEqual(len(providers["data-commons"]["operations"]), 5)
-        self.assertEqual(len(providers["akshare"]["operations"]), 17)
-        self.assertEqual(len(providers["ashare"]["operations"]), 1)
-        self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
-        self.assertEqual(len(providers["yuandian-law"]["operations"]), 40)
-        self.assertEqual(len(providers["qichacha"]["operations"]), 3)
-        self.assertEqual(len(providers["tianyancha"]["operations"]), 3)
-        self.assertEqual(len(providers["jina-reader"]["operations"]), 2)
-        self.assertEqual(len(providers["exa"]["operations"]), 3)
-        self.assertEqual(
-            providers["qichacha"]["required_secret_environment_variable_name"],
-            "QICHACHA_CREDENTIALS_JSON",
-        )
+        expected_operation_counts = {
+            "bigquery": 7,
+            "earth-engine": 6,
+            "data-commons": 5,
+            "akshare": 17,
+            "ashare": 1,
+            "aifin-market": 17,
+            "yuandian-law": 40,
+            "tianyancha": 3,
+            "miaoxiang": 4,
+            "jina-reader": 2,
+            "exa": 3,
+        }
+        for provider_id, expected in expected_operation_counts.items():
+            self.assertEqual(len(providers[provider_id]["operations"]), expected)
+        self.assertNotIn("qichacha", providers)
         self.assertEqual(
             providers["tianyancha"]["required_secret_environment_variable_name"],
             "TIANYANCHA_API_TOKEN",
         )
         self.assertEqual(
-            providers["jina-reader"]["required_secret_environment_variable_name"],
-            "",
+            providers["miaoxiang"]["required_secret_environment_variable_name"],
+            "MX_APIKEY",
         )
+        self.assertEqual(providers["miaoxiang"]["ticket_prefix"], "[api-mx]")
+        self.assertEqual(
+            {row["operation_id"] for row in providers["miaoxiang"]["operations"]},
+            {"catalog-capabilities", "financial-search", "financial-data", "stock-screen"},
+        )
+        for provider_id in ("bigquery", "earth-engine", "data-commons"):
+            self.assertEqual(
+                providers[provider_id]["required_secret_environment_variable_name"],
+                "GOOGLE_CREDENTIALS_JSON",
+            )
+        self.assertEqual(providers["data-commons"]["ticket_prefix"], "[api-dc]")
+        self.assertEqual(providers["jina-reader"]["required_secret_environment_variable_name"], "")
         self.assertEqual(
             providers["jina-reader"]["optional_secret_environment_variable_name"],
             "JINA_API_KEY",
         )
-        self.assertEqual(
-            providers["exa"]["required_secret_environment_variable_name"],
-            "EXA_API_KEY",
-        )
+        self.assertEqual(providers["exa"]["required_secret_environment_variable_name"], "EXA_API_KEY")
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertEqual(
             providers["yuandian-law"]["required_secret_environment_variable_name"],
@@ -73,41 +89,23 @@ class ApiCatalogTests(unittest.TestCase):
         )
         self.assertEqual(providers["akshare"]["required_secret_environment_variable_name"], "")
         self.assertEqual(
-            providers["data-commons"]["required_secret_environment_variable_name"],
-            "GOOGLE_DATA_COMMONS_API_KEY",
-        )
-        self.assertEqual(providers["data-commons"]["ticket_prefix"], "[api-dc]")
-        self.assertEqual(
             providers["aifin-market"]["required_secret_environment_variable_name"],
             "WIND_API_KEY",
         )
         self.assertFalse(any(row["secret_value_exposed"] for row in providers.values()))
+
         connector_map = {row["connector_id"]: row for row in catalog["connectors"]}
         self.assertTrue(
             {
-                "newsapi-everything",
-                "newsapi-top-headlines",
-                "newsapi-sources",
-                "openmeteo-forecast",
-                "baidu-geocode",
-                "baidu-place-search",
-                "baidu-direction-driving",
-                "amap-place-around",
-                "amap-direction-transit",
-                "baidu-routematrix-driving",
-                "openmeteo-air-quality",
-                "openmeteo-archive",
-                "worldbank-indicators",
-                "wikidata-entity-get",
-                "dbnomics-search",
+                "newsapi-everything", "newsapi-top-headlines", "newsapi-sources",
+                "openmeteo-forecast", "baidu-geocode", "baidu-place-search",
+                "baidu-direction-driving", "amap-place-around", "amap-direction-transit",
+                "baidu-routematrix-driving", "openmeteo-air-quality", "openmeteo-archive",
+                "worldbank-indicators", "wikidata-entity-get", "dbnomics-search",
                 "osm-nominatim-reverse",
             }.issubset(connector_map)
         )
-        for connector_id in (
-            "newsapi-everything",
-            "newsapi-top-headlines",
-            "newsapi-sources",
-        ):
+        for connector_id in ("newsapi-everything", "newsapi-top-headlines", "newsapi-sources"):
             self.assertTrue(connector_map[connector_id]["enabled"])
             self.assertEqual(
                 connector_map[connector_id]["secret_environment_variable_name"],
@@ -115,6 +113,7 @@ class ApiCatalogTests(unittest.TestCase):
             )
         serialized = json.dumps(catalog, ensure_ascii=False)
         self.assertNotIn("VALIDATION_DUMMY_SECRET", serialized)
+        self.assertNotIn("QICHACHA_CREDENTIALS_JSON", serialized)
         for row in catalog["connectors"]:
             self.assertIn("parameter_names", row)
             self.assertIn("detail_file", row)
@@ -126,9 +125,7 @@ class ApiCatalogTests(unittest.TestCase):
             if row["enabled"]:
                 contract = connector.get("response_contract")
                 self.assertIsInstance(contract, dict)
-                status_contract = bool(
-                    contract.get("status_path") and contract.get("success_values")
-                )
+                status_contract = bool(contract.get("status_path") and contract.get("success_values"))
                 data_contract = bool(
                     contract.get("success_when_data_present") is True
                     and contract.get("any_data_paths")

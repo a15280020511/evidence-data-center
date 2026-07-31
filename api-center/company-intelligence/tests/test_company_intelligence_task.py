@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import hashlib
 import importlib.util
 import json
 import os
@@ -19,10 +18,10 @@ SPEC.loader.exec_module(module)
 
 
 class CompanyIntelligenceTaskTests(unittest.TestCase):
-    def ticket(self, provider: str, operation: str, parameters: dict) -> dict:
+    def ticket(self, operation: str, parameters: dict) -> dict:
         return {
-            "task_id": f"test-{provider}-{operation}",
-            "provider": provider,
+            "task_id": f"test-tianyancha-{operation}",
+            "provider": "tianyancha",
             "operation": operation,
             "objective": "test",
             "parameters": parameters,
@@ -36,19 +35,11 @@ class CompanyIntelligenceTaskTests(unittest.TestCase):
             },
         }
 
-    def test_qichacha_signature_matches_official_formula(self) -> None:
-        timespan, token = module._qcc_auth("app", "secret", 123456)
-        self.assertEqual(timespan, "123456")
-        self.assertEqual(
-            token,
-            hashlib.md5(b"app123456secret").hexdigest().upper(),
-        )
-
-    def test_provider_operation_pair_is_enforced(self) -> None:
-        with self.assertRaisesRegex(ValueError, "not available"):
-            module.validate_ticket(
-                self.ticket("tianyancha", "company-search", {"keyword": "腾讯"})
-            )
+    def test_removed_qichacha_ticket_is_rejected(self) -> None:
+        ticket = self.ticket("company-basic", {"keyword": "腾讯"})
+        ticket["provider"] = "qichacha"
+        with self.assertRaises(ValueError):
+            module.validate_ticket(ticket)
 
     def test_sensitive_contact_and_identity_fields_are_removed(self) -> None:
         payload = {
@@ -62,10 +53,10 @@ class CompanyIntelligenceTaskTests(unittest.TestCase):
             {"Name": "示例公司", "nested": {"value": 1}},
         )
 
-    def test_missing_qichacha_secret_is_structured_block(self) -> None:
-        ticket = self.ticket("qichacha", "company-search", {"keyword": "腾讯"})
+    def test_missing_tianyancha_secret_is_structured_block(self) -> None:
+        ticket = self.ticket("company-basic", {"keyword": "腾讯"})
         with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
-            os.environ, {module.QICHACHA_CREDENTIALS_ENV: ""}, clear=False
+            os.environ, {module.TIANYANCHA_TOKEN_ENV: ""}, clear=False
         ):
             root = Path(tmp)
             ticket_path = root / "ticket.json"
@@ -80,23 +71,8 @@ class CompanyIntelligenceTaskTests(unittest.TestCase):
                 snapshot["failure"]["code"], "COMPANY_CREDENTIALS_MISSING"
             )
 
-    def test_missing_tianyancha_secret_is_structured_block(self) -> None:
-        ticket = self.ticket("tianyancha", "company-basic", {"keyword": "腾讯"})
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
-            os.environ, {module.TIANYANCHA_TOKEN_ENV: ""}, clear=False
-        ):
-            root = Path(tmp)
-            ticket_path = root / "ticket.json"
-            ticket_path.write_text(json.dumps(ticket, ensure_ascii=False), encoding="utf-8")
-            rc = module.execute(ticket_path, root / "out")
-            self.assertEqual(rc, 1)
-            snapshot = json.loads(
-                (root / "out/company-snapshot.json").read_text(encoding="utf-8")
-            )
-            self.assertEqual(snapshot["status"], "API_COMPANY_BLOCKED")
-
-    def test_catalog_operations_need_no_secret(self) -> None:
-        ticket = self.ticket("qichacha", "catalog-capabilities", {})
+    def test_catalog_operation_needs_no_secret(self) -> None:
+        ticket = self.ticket("catalog-capabilities", {})
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             ticket_path = root / "ticket.json"
@@ -107,6 +83,7 @@ class CompanyIntelligenceTaskTests(unittest.TestCase):
                 (root / "out/company-snapshot.json").read_text(encoding="utf-8")
             )
             self.assertEqual(snapshot["status"], "API_COMPANY_COMPLETED")
+            self.assertEqual(snapshot["provider"], "tianyancha")
             self.assertFalse(snapshot["security"]["secret_values_included"])
 
 

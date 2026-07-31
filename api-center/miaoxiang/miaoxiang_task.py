@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Read-only Tianyancha managed-provider execution."""
+"""Read-only Dongfang Caifu Miaoxiang financial API execution."""
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
 import os
-import re
 import time
 import urllib.error
 import urllib.parse
@@ -20,22 +19,13 @@ from jsonschema import Draft202012Validator
 HERE = Path(__file__).resolve().parent
 SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
-TIANYANCHA_TOKEN_ENV = "TIANYANCHA_API_TOKEN"
-
-OPERATION_PROVIDER = {
-    "catalog-capabilities": {"tianyancha"},
-    "company-basic": {"tianyancha"},
-    "company-annual-reports": {"tianyancha"},
+API_KEY_ENV = "MX_APIKEY"
+BASE_URL = "https://mkapi2.dfcfs.com/finskillshub"
+ENDPOINTS = {
+    "financial-search": "/api/claw/news-search",
+    "financial-data": "/api/claw/query",
+    "stock-screen": "/api/claw/stock-screen",
 }
-TYC_ENDPOINTS = {
-    "company-basic": "https://open.api.tianyancha.com/services/open/ic/baseinfoV2/2.0",
-    "company-annual-reports": "https://open.api.tianyancha.com/services/open/ic/annualreport/2.0",
-}
-SENSITIVE_KEY_RE = re.compile(
-    r"(?:phone|mobile|tel|email|mail|idcard|identity|passport|contact|opername|"
-    r"legalperson|legal_person|personname|person_name|humanname|human_name)",
-    re.IGNORECASE,
-)
 
 
 def utc_now() -> str:
@@ -73,14 +63,14 @@ def write_output(name: str, value: Any) -> None:
         handle.write(f"{name}={text}\n")
 
 
-def _catalog_operations() -> dict[tuple[str, str], Mapping[str, Any]]:
+def operation_map() -> dict[str, Mapping[str, Any]]:
     catalog = load_json(CATALOG_PATH)
-    result: dict[tuple[str, str], Mapping[str, Any]] = {}
-    for provider in catalog["providers"]:
-        provider_id = str(provider["provider_id"])
-        for operation in provider["operations"]:
-            result[(provider_id, str(operation["operation_id"]))] = operation
-    return result
+    provider = catalog["providers"][0]
+    return {
+        str(row["operation_id"]): row
+        for row in provider["operations"]
+        if isinstance(row, Mapping)
+    }
 
 
 def validate_ticket(ticket: Mapping[str, Any]) -> None:
@@ -94,17 +84,16 @@ def validate_ticket(ticket: Mapping[str, Any]) -> None:
             for item in errors[:20]
         )
         raise ValueError(rendered)
-    provider = str(ticket["provider"])
     operation = str(ticket["operation"])
-    if provider not in OPERATION_PROVIDER.get(operation, set()):
-        raise ValueError(f"operation {operation} is not available for provider {provider}")
-    contract = _catalog_operations().get((provider, operation))
+    contract = operation_map().get(operation)
     if contract is None:
-        raise ValueError(f"unsupported provider operation: {provider}/{operation}")
-    schema = contract.get("parameter_schema")
-    if isinstance(schema, Mapping):
+        raise ValueError(f"unsupported Miaoxiang operation: {operation}")
+    parameter_schema = contract.get("parameter_schema")
+    if isinstance(parameter_schema, Mapping):
         parameter_errors = sorted(
-            Draft202012Validator(dict(schema)).iter_errors(ticket.get("parameters") or {}),
+            Draft202012Validator(dict(parameter_schema)).iter_errors(
+                ticket.get("parameters") or {}
+            ),
             key=lambda item: list(item.absolute_path),
         )
         if parameter_errors:
@@ -125,8 +114,8 @@ def prepare(event_path: Path, output_dir: Path) -> int:
     reason = ""
     ticket: Mapping[str, Any] | None = None
     try:
-        if not title.startswith("[api-company]"):
-            raise ValueError("issue title must start with [api-company]")
+        if not title.startswith("[api-mx]"):
+            raise ValueError("issue title must start with [api-mx]")
         parsed = json.loads(body)
         if not isinstance(parsed, Mapping):
             raise ValueError("ticket body must be a JSON object")
@@ -137,11 +126,11 @@ def prepare(event_path: Path, output_dir: Path) -> int:
     except (json.JSONDecodeError, ValueError) as exc:
         reason = str(exc)
     status = {
-        "schema_version": "company-intelligence-ticket-status-v2",
+        "schema_version": "miaoxiang-ticket-status-v1",
         "accepted": accepted,
         "reason": reason,
         "task_id": str((ticket or {}).get("task_id") or ""),
-        "provider": str((ticket or {}).get("provider") or ""),
+        "provider": "miaoxiang",
         "operation": str((ticket or {}).get("operation") or ""),
         "ticket_sha256": canonical_sha(ticket) if ticket else None,
         "secret_values_exposed": False,
@@ -153,7 +142,7 @@ def prepare(event_path: Path, output_dir: Path) -> int:
     return 0 if accepted else 1
 
 
-def _bounded_int(
+def bounded_int(
     value: Any, *, default: int, minimum: int, maximum: int, name: str
 ) -> int:
     if value in (None, ""):
@@ -167,54 +156,54 @@ def _bounded_int(
     return parsed
 
 
-def _require_text(value: Any, name: str, maximum: int = 200) -> str:
+def require_text(value: Any, name: str, maximum: int = 500) -> str:
     text = str(value or "").strip()
-    if not text or len(text) > maximum:
-        raise ValueError(f"{name} must contain 1 to {maximum} characters")
+    if not text or len(text) > maximum or "\x00" in text:
+        raise ValueError(f"{name} must contain 1 to {maximum} valid characters")
     return text
 
 
-def _tyc_token() -> str:
-    token = str(os.getenv(TIANYANCHA_TOKEN_ENV) or "").strip()
-    if not token:
-        raise RuntimeError(f"missing repository Secret {TIANYANCHA_TOKEN_ENV}")
-    return token
+def build_body(operation: str, parameters: Mapping[str, Any]) -> dict[str, Any]:
+    if operation == "financial-search":
+        return {"query": require_text(parameters.get("query"), "query")}
+    if operation == "financial-data":
+        return {"toolQuery": require_text(parameters.get("query"), "query")}
+    if operation == "stock-screen":
+        return {
+            "keyword": require_text(parameters.get("keyword"), "keyword"),
+            "pageNo": bounded_int(
+                parameters.get("page_no"), default=1, minimum=1, maximum=100, name="page_no"
+            ),
+            "pageSize": bounded_int(
+                parameters.get("page_size"), default=20, minimum=1, maximum=100, name="page_size"
+            ),
+        }
+    raise ValueError(f"unsupported Miaoxiang operation: {operation}")
 
 
-def sanitize_payload(value: Any) -> Any:
-    if isinstance(value, Mapping):
-        result: dict[str, Any] = {}
-        for raw_key, item in value.items():
-            key = str(raw_key)
-            if SENSITIVE_KEY_RE.search(key):
-                continue
-            result[key] = sanitize_payload(item)
-        return result
-    if isinstance(value, list):
-        return [sanitize_payload(item) for item in value]
-    return value
-
-
-def _http_json(
-    url: str,
+def request_json(
+    operation: str,
     *,
-    headers: Mapping[str, str],
-    params: Mapping[str, Any],
+    api_key: str,
+    body: Mapping[str, Any],
     timeout: int,
     max_bytes: int,
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    query = urllib.parse.urlencode(
-        {key: value for key, value in params.items() if value not in (None, "")}
-    )
-    request_url = f"{url}?{query}" if query else url
+) -> tuple[Any, dict[str, Any]]:
+    path = ENDPOINTS.get(operation)
+    if not path:
+        raise ValueError(f"operation has no allowlisted endpoint: {operation}")
+    url = BASE_URL + path
+    raw_body = json.dumps(dict(body), ensure_ascii=False).encode("utf-8")
     request = urllib.request.Request(
-        request_url,
+        url,
+        data=raw_body,
         headers={
             "Accept": "application/json",
-            "User-Agent": "gpts-company-intelligence-api-center/2",
-            **dict(headers),
+            "Content-Type": "application/json; charset=utf-8",
+            "User-Agent": "gpts-miaoxiang-api-center/1",
+            "apikey": api_key,
         },
-        method="GET",
+        method="POST",
     )
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -230,68 +219,35 @@ def _http_json(
     try:
         payload = json.loads(raw.decode("utf-8")) if raw else {}
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise RuntimeError(f"upstream returned non-JSON HTTP {status}") from exc
-    if not isinstance(payload, Mapping):
-        raise RuntimeError("upstream JSON root must be an object")
+        raise RuntimeError(f"Miaoxiang returned non-JSON HTTP {status}") from exc
     if not 200 <= status < 300:
-        raise RuntimeError(f"upstream HTTP {status}")
-    return dict(payload), {
+        message = payload.get("message") if isinstance(payload, Mapping) else payload
+        raise RuntimeError(f"Miaoxiang HTTP {status}: {message}")
+    if isinstance(payload, Mapping):
+        business_code = payload.get("code", payload.get("status"))
+        if business_code not in (None, 0, "0", 200, "200", "success", "SUCCESS"):
+            message = payload.get("message", payload.get("msg", "business request failed"))
+            raise RuntimeError(f"Miaoxiang business status {business_code}: {message}")
+    return payload, {
         "http_status": status,
         "content_type": content_type,
         "request_origin": urllib.parse.urlsplit(url).netloc,
-        "request_path": urllib.parse.urlsplit(url).path,
+        "request_path": path,
+        "authentication": "apikey header; value not recorded",
     }
-
-
-def _tianyancha(
-    operation: str,
-    parameters: Mapping[str, Any],
-    timeout: int,
-    max_bytes: int,
-) -> tuple[Any, dict[str, Any]]:
-    keyword = _require_text(parameters.get("keyword"), "keyword")
-    query: dict[str, Any] = {"keyword": keyword}
-    if operation == "company-annual-reports" and parameters.get("year") not in (None, ""):
-        query["year"] = _bounded_int(
-            parameters.get("year"),
-            default=2025,
-            minimum=1980,
-            maximum=2100,
-            name="year",
-        )
-    if operation not in TYC_ENDPOINTS:
-        raise ValueError(f"unsupported Tianyancha operation: {operation}")
-    payload, metadata = _http_json(
-        TYC_ENDPOINTS[operation],
-        headers={"Authorization": _tyc_token()},
-        params=query,
-        timeout=timeout,
-        max_bytes=max_bytes,
-    )
-    error_code = payload.get("error_code")
-    metadata["business_status"] = error_code
-    if error_code != 0:
-        reason = str(payload.get("reason") or "upstream business request failed")
-        raise RuntimeError(f"Tianyancha business status {error_code}: {reason}")
-    return sanitize_payload(payload), metadata
 
 
 def execute(ticket_path: Path, output_dir: Path) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     ticket = load_json(ticket_path)
     validate_ticket(ticket)
-    provider = str(ticket["provider"])
     operation = str(ticket["operation"])
     parameters = dict(ticket.get("parameters") or {})
     acceptance = dict(ticket.get("acceptance") or {})
-    timeout = _bounded_int(
-        acceptance.get("timeout_seconds"),
-        default=30,
-        minimum=5,
-        maximum=60,
-        name="timeout_seconds",
+    timeout = bounded_int(
+        acceptance.get("timeout_seconds"), default=30, minimum=5, maximum=60, name="timeout_seconds"
     )
-    max_bytes = _bounded_int(
+    max_bytes = bounded_int(
         acceptance.get("max_response_bytes"),
         default=500_000,
         minimum=1024,
@@ -300,50 +256,53 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
     )
     started = time.perf_counter()
     started_at = utc_now()
-    status = "API_COMPANY_FAILED"
+    status = "API_MIAOXIANG_FAILED"
     data: Any = None
     metadata: dict[str, Any] = {}
     failure: dict[str, Any] | None = None
-    credential_secret_name: str | None = None
     try:
         if operation == "catalog-capabilities":
-            catalog = load_json(CATALOG_PATH)
-            data = next(
-                row for row in catalog["providers"] if row["provider_id"] == provider
-            )
+            data = load_json(CATALOG_PATH)["providers"][0]
             metadata = {"source": "repository-catalog", "http_status": None}
         else:
-            credential_secret_name = TIANYANCHA_TOKEN_ENV
-            data, metadata = _tianyancha(operation, parameters, timeout, max_bytes)
+            api_key = str(os.getenv(API_KEY_ENV) or "").strip()
+            if not api_key:
+                raise RuntimeError(f"missing repository Secret {API_KEY_ENV}")
+            body = build_body(operation, parameters)
+            data, metadata = request_json(
+                operation,
+                api_key=api_key,
+                body=body,
+                timeout=timeout,
+                max_bytes=max_bytes,
+            )
         encoded = json.dumps(data, ensure_ascii=False, allow_nan=False).encode("utf-8")
         if len(encoded) > max_bytes:
-            raise RuntimeError(
-                f"sanitized result exceeds acceptance.max_response_bytes={max_bytes}"
-            )
-        status = "API_COMPANY_COMPLETED"
+            raise RuntimeError(f"result exceeds acceptance.max_response_bytes={max_bytes}")
+        status = "API_MIAOXIANG_COMPLETED"
     except RuntimeError as exc:
         text = str(exc)
         blocked = text.startswith("missing repository Secret")
-        status = "API_COMPANY_BLOCKED" if blocked else "API_COMPANY_FAILED"
+        status = "API_MIAOXIANG_BLOCKED" if blocked else "API_MIAOXIANG_FAILED"
         failure = {
-            "code": "COMPANY_CREDENTIALS_MISSING" if blocked else "COMPANY_UPSTREAM_ERROR",
+            "code": "MIAOXIANG_API_KEY_MISSING" if blocked else "MIAOXIANG_UPSTREAM_ERROR",
             "message": text,
             "retryable": not blocked,
         }
-    except (ValueError, json.JSONDecodeError, StopIteration) as exc:
+    except (ValueError, json.JSONDecodeError) as exc:
         failure = {
-            "code": "COMPANY_REQUEST_REJECTED",
+            "code": "MIAOXIANG_REQUEST_REJECTED",
             "message": str(exc),
             "retryable": False,
         }
     snapshot = {
-        "schema_version": "company-intelligence-api-snapshot-v2",
+        "schema_version": "miaoxiang-api-snapshot-v1",
         "status": status,
         "created_at": utc_now(),
         "started_at": started_at,
         "elapsed_seconds": round(time.perf_counter() - started, 6),
         "task_id": str(ticket["task_id"]),
-        "provider": provider,
+        "provider": "miaoxiang",
         "operation": operation,
         "objective": str(ticket.get("objective") or ""),
         "ticket_sha256": canonical_sha(ticket),
@@ -354,25 +313,26 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         "failure": failure,
         "security": {
             "secret_values_included": False,
-            "authorization_headers_recorded": False,
+            "api_key_recorded": False,
             "arbitrary_url_allowed": False,
             "write_operations_allowed": False,
-            "direct_contact_fields_removed": True,
+            "watchlist_mutation_allowed": False,
+            "simulated_trading_allowed": False,
             "public_non_personal_data_only": True,
         },
         "model_calls": 0,
     }
     snapshot["snapshot_sha256"] = canonical_sha(snapshot)
-    write_json(output_dir / "company-snapshot.json", snapshot)
+    write_json(output_dir / "miaoxiang-snapshot.json", snapshot)
     write_json(
-        output_dir / "company-diagnostics.json",
+        output_dir / "miaoxiang-diagnostics.json",
         {
-            "schema_version": "company-intelligence-api-diagnostics-v2",
+            "schema_version": "miaoxiang-api-diagnostics-v1",
             "status": status,
-            "provider": provider,
+            "provider": "miaoxiang",
             "operation": operation,
             "failure": failure,
-            "credential_secret_name": credential_secret_name,
+            "credential_secret_name": API_KEY_ENV if operation != "catalog-capabilities" else None,
             "credential_secret_value_exposed": False,
         },
     )
@@ -380,31 +340,24 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         f"# {status}",
         "",
         f"- Task ID: `{ticket['task_id']}`",
-        f"- Provider: `{provider}`",
+        "- Provider: `miaoxiang`",
         f"- Operation: `{operation}`",
         f"- Snapshot SHA256: `{snapshot['snapshot_sha256']}`",
         "- Model calls: `0`",
     ]
     if failure:
-        summary.extend(
-            [
-                f"- Error code: `{failure['code']}`",
-                f"- Message: {failure['message']}",
-            ]
-        )
-    (output_dir / "company-summary.md").write_text(
-        "\n".join(summary) + "\n", encoding="utf-8"
-    )
+        summary.extend([f"- Error code: `{failure['code']}`", f"- Message: {failure['message']}"])
+    (output_dir / "miaoxiang-summary.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
     write_json(
         output_dir / "artifact-manifest.json",
         {
-            "schema_version": "company-intelligence-artifact-manifest-v2",
+            "schema_version": "miaoxiang-artifact-manifest-v1",
             "files": [
                 "ticket.json",
                 "ticket-status.json",
-                "company-snapshot.json",
-                "company-diagnostics.json",
-                "company-summary.md",
+                "miaoxiang-snapshot.json",
+                "miaoxiang-diagnostics.json",
+                "miaoxiang-summary.md",
             ],
             "snapshot_sha256": snapshot["snapshot_sha256"],
             "secret_values_included": False,
@@ -412,31 +365,30 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
     )
     write_output("status", status)
     write_output("snapshot_sha256", snapshot["snapshot_sha256"])
-    return 0 if status == "API_COMPANY_COMPLETED" else 1
+    return 0 if status == "API_MIAOXIANG_COMPLETED" else 1
 
 
 def render(output_dir: Path, phase: str, artifact_url: str) -> int:
     if phase == "accepted":
         status = load_json(output_dir / "ticket-status.json")
-        print("## API_COMPANY_ACCEPTED")
+        print("## API_MIAOXIANG_ACCEPTED")
         print()
         print(f"- Task ID: `{status.get('task_id') or ''}`")
-        print(f"- Provider: `{status.get('provider') or ''}`")
         print(f"- Operation: `{status.get('operation') or ''}`")
         print(f"- Ticket SHA256: `{status.get('ticket_sha256') or ''}`")
         print("- Model calls: `0`")
         return 0
     if phase == "rejected":
         status = load_json(output_dir / "ticket-status.json")
-        print("## API_COMPANY_REJECTED")
+        print("## API_MIAOXIANG_REJECTED")
         print()
         print(f"- Reason: `{status.get('reason') or 'invalid ticket'}`")
         return 0
-    snapshot = load_json(output_dir / "company-snapshot.json")
+    snapshot = load_json(output_dir / "miaoxiang-snapshot.json")
     print(f"## {snapshot['status']}")
     print()
     print(f"- Task ID: `{snapshot['task_id']}`")
-    print(f"- Provider: `{snapshot['provider']}`")
+    print("- Provider: `miaoxiang`")
     print(f"- Operation: `{snapshot['operation']}`")
     print(f"- Snapshot SHA256: `{snapshot['snapshot_sha256']}`")
     print(f"- Artifact: {artifact_url or 'unavailable'}")
@@ -466,9 +418,7 @@ def main() -> int:
     execute_parser.add_argument("--output-dir", required=True)
     render_parser = sub.add_parser("render")
     render_parser.add_argument("--output-dir", required=True)
-    render_parser.add_argument(
-        "--phase", choices=["accepted", "rejected", "completed"], required=True
-    )
+    render_parser.add_argument("--phase", choices=["accepted", "rejected", "completed"], required=True)
     render_parser.add_argument("--artifact-url", default="")
     args = parser.parse_args()
     if args.command == "prepare":

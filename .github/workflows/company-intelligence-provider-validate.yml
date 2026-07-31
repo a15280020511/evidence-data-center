@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "api-center/company-intelligence/**"
+      - "api-center/miaoxiang/**"
       - "api-center/build_catalog.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
@@ -14,6 +15,7 @@ on:
     branches: [main]
     paths:
       - "api-center/company-intelligence/**"
+      - "api-center/miaoxiang/**"
       - "api-center/build_catalog.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
@@ -80,23 +82,30 @@ jobs:
           schema = json.loads((root / 'ticket.schema.json').read_text(encoding='utf-8'))
           catalog = json.loads((root / 'provider-catalog.json').read_text(encoding='utf-8'))
           Draft202012Validator.check_schema(schema)
-          assert catalog['schema_version'] == 'company-intelligence-provider-catalog-v1'
+          assert catalog['schema_version'] == 'china-commercial-provider-catalog-v1'
           assert catalog['secret_values_exposed'] is False
           providers = {row['provider_id']: row for row in catalog['providers']}
-          assert set(providers) == {'qichacha', 'tianyancha'}
+          assert set(providers) == {'tianyancha', 'miaoxiang'}
+          assert 'qichacha' not in providers
           assert all(row['enabled'] is True for row in providers.values())
-          assert providers['qichacha']['required_secret_environment_variable'] == 'QICHACHA_CREDENTIALS_JSON'
           assert providers['tianyancha']['required_secret_environment_variable'] == 'TIANYANCHA_API_TOKEN'
-          assert len(providers['qichacha']['operations']) == 3
+          assert providers['miaoxiang']['required_secret_environment_variable'] == 'MX_APIKEY'
           assert len(providers['tianyancha']['operations']) == 3
-          print(json.dumps({'status': 'PASS', 'providers': 2, 'operations': 6}))
+          assert len(providers['miaoxiang']['operations']) == 4
+          assert schema['properties']['provider'] == {'const': 'tianyancha'}
+          print(json.dumps({'status': 'PASS', 'providers': 2, 'operations': 7, 'qichacha': 'removed'}))
           PY
 
-      - name: Verify no credential material enters repository files
+      - name: Verify Qichacha runtime and credential material are absent
         run: |
           set -euo pipefail
-          if grep -R --line-number --fixed-strings '"app_key": "' api-center/company-intelligence; then
-            echo "literal app key found" >&2
+          if grep --line-number --ignore-case --extended-regexp \
+            'qichacha|QICHACHA_CREDENTIALS_JSON|api\.qichacha\.com' \
+            api-center/company-intelligence/company_intelligence_task.py \
+            api-center/company-intelligence/provider-catalog.json \
+            api-center/company-intelligence/ticket.schema.json \
+            .github/workflows/company-intelligence-api-ticket.yml; then
+            echo "Qichacha production reference remains" >&2
             exit 1
           fi
           if grep -R --line-number --extended-regexp -- '-----BEGIN (RSA )?PRIVATE KEY-----' api-center/company-intelligence; then

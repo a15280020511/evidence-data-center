@@ -4,19 +4,23 @@ on:
   pull_request:
     paths:
       - "api-center/google-cloud/**"
+      - "api-center/data-commons/**"
       - "api-center/build_catalog.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
       - ".github/workflows/google-cloud-api-ticket.yml"
+      - ".github/workflows/data-commons-api-ticket.yml"
       - ".github/workflows/google-cloud-provider-validate.yml"
   push:
     branches: [main]
     paths:
       - "api-center/google-cloud/**"
+      - "api-center/data-commons/**"
       - "api-center/build_catalog.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
       - ".github/workflows/google-cloud-api-ticket.yml"
+      - ".github/workflows/data-commons-api-ticket.yml"
       - ".github/workflows/google-cloud-provider-validate.yml"
   workflow_dispatch:
 
@@ -54,12 +58,13 @@ jobs:
           python -m pip check
 
       - name: Audit managed provider dependencies
-        run: |
-          python -m pip_audit -r api-center/google-cloud/requirements.txt
+        run: python -m pip_audit -r api-center/google-cloud/requirements.txt
 
       - name: Compile and run managed provider tests with coverage
         run: |
-          python -m py_compile api-center/google-cloud/google_cloud_task.py \
+          python -m py_compile \
+            api-center/google-cloud/google_cloud_task.py \
+            api-center/google-cloud/unified_google_credentials.py \
             api-center/google-cloud/tests/*.py
           coverage erase
           coverage run --source=api-center/google-cloud -m unittest discover \
@@ -68,7 +73,7 @@ jobs:
           coverage report --skip-empty
           coverage json -o google-cloud-coverage.json
 
-      - name: Validate schemas and provider catalog
+      - name: Validate schemas and unified provider catalog
         run: |
           python - <<'PY'
           import json
@@ -78,50 +83,47 @@ jobs:
           root = Path('api-center/google-cloud')
           schema = json.loads((root / 'ticket.schema.json').read_text(encoding='utf-8'))
           catalog = json.loads((root / 'provider-catalog.json').read_text(encoding='utf-8'))
+          dc_catalog = json.loads(Path('api-center/data-commons/provider-catalog.json').read_text(encoding='utf-8'))
           Draft202012Validator.check_schema(schema)
-          assert catalog['schema_version'] == 'google-cloud-provider-catalog-v2'
-          assert set(catalog['required_secret_environment_variables']) == {
-              'BIGQUERY_SERVICE_ACCOUNT_JSON',
-              'EARTH_ENGINE_SERVICE_ACCOUNT_JSON',
-          }
+          assert catalog['schema_version'] == 'google-cloud-provider-catalog-v3'
+          assert catalog['required_secret_environment_variables'] == ['GOOGLE_CREDENTIALS_JSON']
+          assert catalog['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
+          assert catalog['credential_bundle_contract']['required'] == ['service_account', 'data_commons_api_key']
           assert catalog['secret_values_exposed'] is False
           providers = {row['provider_id']: row for row in catalog['providers']}
           assert set(providers) == {'bigquery', 'earth-engine', 'data-commons'}
           assert all(row['enabled'] is True for row in providers.values())
-          assert providers['bigquery']['required_secret_environment_variable'] == 'BIGQUERY_SERVICE_ACCOUNT_JSON'
-          assert providers['earth-engine']['required_secret_environment_variable'] == 'EARTH_ENGINE_SERVICE_ACCOUNT_JSON'
+          assert all(row['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON' for row in providers.values())
           assert len(providers['bigquery']['operations']) == 7
           assert len(providers['earth-engine']['operations']) == 6
           assert len(providers['data-commons']['operations']) == 5
-          assert providers['data-commons']['ticket_prefix'] == '[api-dc]'
-          assert providers['data-commons']['required_secret_environment_variable'] == 'GOOGLE_DATA_COMMONS_API_KEY'
+          assert dc_catalog['required_secret_environment_variable'] == 'GOOGLE_CREDENTIALS_JSON'
+          assert dc_catalog['credential_bundle_field'] == 'data_commons_api_key'
           assert 'patents-public-data' in providers['bigquery']['default_public_projects']
           assert {row['connector_id'] for row in catalog['replaced_legacy_connectors']} == {
-              'gdelt-doc-articles',
-              'nasa-black-marble-granules',
-              'worldpop-population-stats',
+              'gdelt-doc-articles', 'nasa-black-marble-granules', 'worldpop-population-stats'
           }
-          print(json.dumps({'status': 'PASS', 'managed_providers': 3, 'operations': 18}))
+          print(json.dumps({'status': 'PASS', 'managed_providers': 3, 'operations': 18, 'repository_secrets': 1}))
           PY
 
-      - name: Verify no shared credential or credential material enters repository files
+      - name: Verify legacy Google secret bindings and credential material are absent
         run: |
           set -euo pipefail
-          shared_google_secret='GOOGLE_CLOUD'"_SERVICE_ACCOUNT_JSON"
-          if grep -R --line-number --fixed-strings "$shared_google_secret" \
-            api-center .github/workflows; then
-            echo "shared Google credential entry found" >&2
-            exit 1
-          fi
-          if grep -R --line-number --fixed-strings '"private_key"' api-center/google-cloud; then
-            echo "service-account private_key field found in repository files" >&2
-            exit 1
-          fi
-          if grep -R --line-number --extended-regexp -- '-----BEGIN (RSA )?PRIVATE KEY-----' api-center/google-cloud; then
+          for legacy in BIGQUERY_SERVICE_ACCOUNT_JSON EARTH_ENGINE_SERVICE_ACCOUNT_JSON GOOGLE_DATA_COMMONS_API_KEY; do
+            if grep -R --line-number --fixed-strings "secrets.${legacy}" .github/workflows; then
+              echo "legacy repository secret binding found: ${legacy}" >&2
+              exit 1
+            fi
+          done
+          count=$(grep -R --line-number --fixed-strings 'secrets.GOOGLE_CREDENTIALS_JSON' \
+            .github/workflows/google-cloud-api-ticket.yml \
+            .github/workflows/data-commons-api-ticket.yml | wc -l)
+          test "$count" -eq 2
+          if grep -R --line-number --extended-regexp -- '-----BEGIN (RSA )?PRIVATE KEY-----' api-center/google-cloud api-center/data-commons; then
             echo "private key material found in repository files" >&2
             exit 1
           fi
-          if grep -R --line-number --extended-regexp 'ya29\.[A-Za-z0-9._-]+' api-center/google-cloud; then
+          if grep -R --line-number --extended-regexp 'ya29\.[A-Za-z0-9._-]+' api-center/google-cloud api-center/data-commons; then
             echo "OAuth access token found in repository files" >&2
             exit 1
           fi
@@ -135,5 +137,6 @@ jobs:
             google-cloud-coverage.json
             api-center/google-cloud/provider-catalog.json
             api-center/google-cloud/ticket.schema.json
+            api-center/data-commons/provider-catalog.json
           if-no-files-found: warn
           retention-days: 30
