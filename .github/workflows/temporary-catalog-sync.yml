@@ -34,26 +34,59 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Update unified Google test expectations
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('api-center/google-cloud/tests/test_google_cloud_task.py')
+          text = path.read_text(encoding='utf-8')
+          replacements = [
+              (
+                  '{"BIGQUERY_SERVICE_ACCOUNT_JSON", "EARTH_ENGINE_SERVICE_ACCOUNT_JSON"}',
+                  '{"GOOGLE_CREDENTIALS_JSON"}',
+              ),
+              (
+                  'providers["bigquery"]["required_secret_environment_variable"],\n            "BIGQUERY_SERVICE_ACCOUNT_JSON",',
+                  'providers["bigquery"]["required_secret_environment_variable"],\n            "GOOGLE_CREDENTIALS_JSON",',
+              ),
+              (
+                  'providers["earth-engine"]["required_secret_environment_variable"],\n            "EARTH_ENGINE_SERVICE_ACCOUNT_JSON",',
+                  'providers["earth-engine"]["required_secret_environment_variable"],\n            "GOOGLE_CREDENTIALS_JSON",',
+              ),
+              (
+                  'providers["data-commons"]["required_secret_environment_variable"],\n            "GOOGLE_DATA_COMMONS_API_KEY",',
+                  'providers["data-commons"]["required_secret_environment_variable"],\n            "GOOGLE_CREDENTIALS_JSON",',
+              ),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f'expected test contract not found: {old[:80]}')
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+
       - name: Regenerate deterministic contracts
         run: |
           set -euo pipefail
           python api-center/build_config.py
           python api-center/build_catalog.py
 
-      - name: Commit only generated contracts
+      - name: Commit only intended contracts
         run: |
           set -euo pipefail
           git add \
+            api-center/google-cloud/tests/test_google_cloud_task.py \
             api-center/api-catalog.json \
             api-center/api-catalog.md \
             api-center/connector-manifest.json \
             api-center/krakend.validation.json \
             api-center/krakend.tmpl
           if git diff --cached --quiet; then
-            echo "Generated contracts already current."
+            echo "Generated and test contracts already current."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "build: refresh deterministic API catalog"
+          git commit -m "build: refresh API and unified Google contracts"
           git push origin "HEAD:${{ github.head_ref }}"
