@@ -27,13 +27,13 @@ jobs:
       - name: Create source archive
         run: |
           set -euo pipefail
-          tar --exclude='.git' -czf evidence-data-center-source.tar.gz .
+          tar --exclude='.git' -czf /tmp/evidence-data-center-source.tar.gz .
 
       - name: Upload source archive
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: evidence-data-center-source-${{ github.run_id }}
-          path: evidence-data-center-source.tar.gz
+          path: /tmp/evidence-data-center-source.tar.gz
           if-no-files-found: error
           retention-days: 1
 
