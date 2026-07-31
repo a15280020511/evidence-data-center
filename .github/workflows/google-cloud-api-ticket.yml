@@ -24,7 +24,8 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
-      GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON }}
+      BIGQUERY_SERVICE_ACCOUNT_JSON: ${{ secrets.BIGQUERY_SERVICE_ACCOUNT_JSON }}
+      EARTH_ENGINE_SERVICE_ACCOUNT_JSON: ${{ secrets.EARTH_ENGINE_SERVICE_ACCOUNT_JSON }}
       BIGQUERY_ALLOWED_PUBLIC_PROJECTS: ${{ vars.BIGQUERY_ALLOWED_PUBLIC_PROJECTS }},patents-public-data
     steps:
       - name: Checkout pinned source
