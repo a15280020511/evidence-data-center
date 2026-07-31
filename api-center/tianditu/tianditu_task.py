@@ -475,7 +475,9 @@ def curl_response(url: str, timeout: int, max_bytes: int) -> tuple[int, bytes, d
 
 def cloud_waf_blocked(status: int, raw: bytes, server: str) -> bool:
     sample = raw[:5000].decode("utf-8", errors="ignore").casefold()
-    return status == 418 or "cloudwaf" in server.casefold() or "访问被拦截" in sample
+    body_blocked = "访问被拦截" in sample or "request blocked" in sample
+    server_blocked = status >= 400 and "cloudwaf" in server.casefold()
+    return status == 418 or body_blocked or server_blocked
 
 
 def compact_response_message(raw: bytes) -> str:
@@ -548,6 +550,8 @@ def call_tianditu(operation: str, parameters: Mapping[str, Any], timeout: int, m
                 **request_metadata(post),
                 **transport_meta,
                 **exc.metadata,
+                "upstream_called": bool(transport_meta.get("upstream_called"))
+                or bool(exc.metadata.get("upstream_called")),
                 "transport_attempts": attempts + list(exc.metadata.get("transport_attempts") or []),
                 "waf_blocked": True,
                 "first_http_status": http_status,
