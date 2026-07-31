@@ -31,7 +31,9 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_managed_providers_expose_fixed_readonly_operations_only(self) -> None:
         catalog = json.loads((ROOT / "api-catalog.json").read_text(encoding="utf-8"))
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 104)
+        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 105)
+        self.assertNotIn("qichacha", providers)
+        self.assertEqual(len(providers["miaoxiang"]["operations"]), 4)
         self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
         self.assertEqual(len(providers["akshare"]["operations"]), 17)
         self.assertEqual(len(providers["bigquery"]["operations"]), 7)
@@ -49,11 +51,13 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(wind_limits["arbitrary_tool_names_allowed"])
         self.assertFalse(wind_limits["arbitrary_urls_allowed"])
         self.assertFalse(wind_limits["trading_or_order_execution_allowed"])
+
         akshare = json.loads((ROOT / "akshare/provider-catalog.json").read_text(encoding="utf-8"))
         ak_limits = next(row for row in akshare["providers"] if row["provider_id"] == "akshare")["limits"]
         self.assertFalse(ak_limits["arbitrary_functions_allowed"])
         self.assertFalse(ak_limits["arbitrary_urls_allowed"])
         self.assertFalse(ak_limits["brokerage_execution_allowed"])
+
         yuandian = json.loads((ROOT / "yuandian/provider-catalog.json").read_text(encoding="utf-8"))
         legal_limits = yuandian["providers"][0]["limits"]
         self.assertFalse(legal_limits["arbitrary_urls_allowed"])
@@ -61,6 +65,20 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(legal_limits["write_operations_allowed"])
         self.assertFalse(legal_limits["secret_values_exposed"])
         self.assertTrue(legal_limits["direct_personal_identifiers_redacted"])
+
+        miaoxiang = json.loads((ROOT / "miaoxiang/provider-catalog.json").read_text(encoding="utf-8"))
+        provider = miaoxiang["providers"][0]
+        operation_ids = {row["operation_id"] for row in provider["operations"]}
+        self.assertEqual(
+            operation_ids,
+            {"catalog-capabilities", "financial-search", "financial-data", "stock-screen"},
+        )
+        policy = provider["execution_policy"].lower()
+        self.assertIn("禁止", policy)
+        for operation_id in operation_ids:
+            self.assertNotIn("trade", operation_id)
+            self.assertNotIn("order", operation_id)
+            self.assertNotIn("watchlist", operation_id)
 
 
 if __name__ == "__main__":
