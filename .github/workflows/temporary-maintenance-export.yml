@@ -1,0 +1,35 @@
+name: Temporary owner-only maintenance export
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  export-source:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[maintenance-export-source]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Checkout pinned source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Create source archive
+        run: |
+          set -euo pipefail
+          tar --exclude='.git' -czf evidence-data-center-source.tar.gz .
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: evidence-data-center-source-${{ github.run_id }}
+          path: evidence-data-center-source.tar.gz
+          if-no-files-found: error
+          retention-days: 1
