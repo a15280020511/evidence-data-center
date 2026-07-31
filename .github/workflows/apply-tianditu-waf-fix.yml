@@ -40,17 +40,20 @@ jobs:
         run: |
           python tools/apply_tianditu_waf_fix.py
           python - <<'PY'
+          import re
           from pathlib import Path
+
           path = Path('api-center/tianditu/tianditu_task.py')
           text = path.read_text(encoding='utf-8')
-          old = '        config_lines = [f\'url = "{url.replace(chr(34), r"\\\\\\"")}"\']\n'
-          if old not in text:
-              raise SystemExit('expected curl URL escaping line not found')
-          new = (
+          pattern = r'^        config_lines = \[f\'url = .*?\n'
+          replacement = (
               '        escaped_url = url.replace("\\\\", "\\\\\\\\").replace(\'"\', \'\\\\"\')\n'
               '        config_lines = [f\'url = "{escaped_url}"\']\n'
           )
-          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          text, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE)
+          if count != 1:
+              raise SystemExit(f'expected one curl URL line, replaced {count}')
+          path.write_text(text, encoding='utf-8')
           PY
           python api-center/build_catalog_market_search.py
 
