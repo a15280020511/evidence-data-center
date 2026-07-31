@@ -1,0 +1,63 @@
+#!/usr/bin/env python3
+"""Compatibility wrapper that extends the API catalog with market/search providers."""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any, Mapping
+
+import build_catalog as base
+
+HERE = base.HERE
+MARKET_SEARCH_CATALOG = HERE / "market-search/provider-catalog.json"
+base.MANAGED_PROVIDER_CATALOG_PATHS = (
+    *base.MANAGED_PROVIDER_CATALOG_PATHS,
+    MARKET_SEARCH_CATALOG,
+)
+
+load_json = base.load_json
+canonical_sha = base.canonical_sha
+
+
+def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dict[str, Any]:
+    catalog = base.build(manifest_path, metadata_path, connector_root)
+    reading_order = list(catalog.get("detail_reading_order") or [])
+    item = "market-search/provider-catalog.json"
+    if item not in reading_order:
+        insert_at = reading_order.index("catalog-metadata.json") if "catalog-metadata.json" in reading_order else len(reading_order)
+        reading_order.insert(insert_at, item)
+        catalog["detail_reading_order"] = reading_order
+        catalog.pop("catalog_sha256", None)
+        catalog["catalog_sha256"] = base.canonical_sha(catalog)
+    return catalog
+
+
+def render_markdown(catalog: Mapping[str, Any]) -> str:
+    return base.render_markdown(catalog)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--manifest", default=str(HERE / "connector-manifest.json"))
+    parser.add_argument("--metadata", default=str(HERE / "catalog-metadata.json"))
+    parser.add_argument("--json-output", default=str(HERE / "api-catalog.json"))
+    parser.add_argument("--markdown-output", default=str(HERE / "api-catalog.md"))
+    args = parser.parse_args()
+    catalog = build(Path(args.manifest), Path(args.metadata), HERE / "connectors")
+    Path(args.json_output).write_text(
+        json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
+    )
+    Path(args.markdown_output).write_text(render_markdown(catalog), encoding="utf-8")
+    print(json.dumps({
+        "status": "PASS",
+        "connector_count": catalog["connector_count"],
+        "managed_provider_count": catalog["managed_provider_count"],
+        "managed_operation_count": catalog["managed_operation_count"],
+        "catalog_sha256": catalog["catalog_sha256"],
+    }))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
