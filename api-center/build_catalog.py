@@ -19,6 +19,7 @@ MANAGED_PROVIDER_CATALOG_PATHS = (
     HERE / "akshare/provider-catalog.json",
     HERE / "aifin-market/provider-catalog.json",
     HERE / "yuandian/provider-catalog.json",
+    HERE / "company-intelligence/provider-catalog.json",
 )
 
 

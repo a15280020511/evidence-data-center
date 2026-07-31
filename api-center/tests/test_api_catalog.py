@@ -28,12 +28,12 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
         self.assertEqual(catalog["maintenance_owner"], "web-gpt-github-plugin")
         self.assertEqual(catalog["schema_version"], "api-catalog-v3")
-        self.assertEqual(catalog["managed_provider_count"], 7)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 7)
+        self.assertEqual(catalog["managed_provider_count"], 9)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 9)
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
         self.assertEqual(
             set(providers),
-            {"bigquery", "earth-engine", "data-commons", "akshare", "ashare", "aifin-market", "yuandian-law"},
+            {"bigquery", "earth-engine", "data-commons", "akshare", "ashare", "aifin-market", "yuandian-law", "qichacha", "tianyancha"},
         )
         self.assertEqual(len(providers["bigquery"]["operations"]), 7)
         self.assertEqual(len(providers["earth-engine"]["operations"]), 6)
@@ -42,6 +42,16 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(len(providers["ashare"]["operations"]), 1)
         self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
         self.assertEqual(len(providers["yuandian-law"]["operations"]), 40)
+        self.assertEqual(len(providers["qichacha"]["operations"]), 3)
+        self.assertEqual(len(providers["tianyancha"]["operations"]), 3)
+        self.assertEqual(
+            providers["qichacha"]["required_secret_environment_variable_name"],
+            "QICHACHA_CREDENTIALS_JSON",
+        )
+        self.assertEqual(
+            providers["tianyancha"]["required_secret_environment_variable_name"],
+            "TIANYANCHA_API_TOKEN",
+        )
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertEqual(
             providers["yuandian-law"]["required_secret_environment_variable_name"],
