@@ -1,0 +1,51 @@
+name: Temporary export current main source
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  export:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[maintenance-export-current-main-source]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Record source provenance
+        run: |
+          mkdir -p /tmp/source-export
+          printf '%s\n' "$(git rev-parse HEAD)" > /tmp/source-export/MAIN_SHA.txt
+          tar --exclude=.git -czf /tmp/source-export/current-main-source.tar.gz .
+          sha256sum /tmp/source-export/current-main-source.tar.gz > /tmp/source-export/SHA256SUMS
+
+      - name: Upload source artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: current-main-source-${{ github.run_id }}
+          path: /tmp/source-export/
+          if-no-files-found: error
+          retention-days: 3
+
+      - name: Publish receipt
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="STATUS=completed\nRUN_ID=${GITHUB_RUN_ID}\nARTIFACT=current-main-source-${GITHUB_RUN_ID}\nMAIN_SHA=$(git rev-parse HEAD)"
+
+      - name: Publish failure
+        if: failure()
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${{ github.event.issue.number }}/comments" \
+            -f body="STATUS=failed\nRUN_ID=${GITHUB_RUN_ID}"
