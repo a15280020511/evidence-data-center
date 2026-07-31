@@ -213,30 +213,25 @@ jobs:
           ! git grep -n 'GOOGLE_CREDENTIALS_JSON'
           git grep -n 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON'
 
-      - name: Restore production workflow and remove temporary files
+      - name: Exclude workflow mutations and remove migration script
         run: |
           set -euo pipefail
-          git show e104b1dfe73755b181aea34a5ec6035258580592:.github/workflows/google-cloud-api-ticket.yml \
-            | sed 's/GOOGLE_CREDENTIALS_JSON/GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON/g' \
-            > .github/workflows/google-cloud-api-ticket.yml
-          rm -f \
-            api-center/google-cloud/migrate_unified_secret.py \
-            .github/workflows/unify-google-credentials-main-bootstrap.yml \
-            .github/workflows/unify-google-credentials-issue-bootstrap.yml
+          git restore --source=HEAD -- .github/workflows
+          rm -f api-center/google-cloud/migrate_unified_secret.py
 
-      - name: Commit validated migration to main
+      - name: Commit validated API-center migration to main
         id: commit
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
+          git add -A api-center
           git diff --cached --stat
-          git commit -m "fix(api-center): unify all Google providers on one secret"
+          git commit -m "fix(api-center): unify Google provider credential bundle"
           git push origin HEAD:main
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Publish maintenance receipt
         run: |
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -f body="Unified Google credential migration completed at commit ${{ steps.commit.outputs.sha }}. BigQuery, Earth Engine, and Data Commons now read only GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON. Model calls: 0."
+            -f body="Google provider code and generated catalogs migrated at commit ${{ steps.commit.outputs.sha }}. Workflow references will be finalized separately through the GitHub connector. Model calls: 0."
