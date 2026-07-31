@@ -1,203 +1,155 @@
 # 独立外部 API 接入中心
 
-API 接入中心是三个业务中心中的受控取数层。它与专家团中心、计算中心不共享依赖、任务状态、运行目录或业务逻辑，也不能直接调用它们。自定义 GPTs 是唯一使用中心和唯一跨中心中继；普通网页 GPT + GitHub 插件是维修中心。
+API 接入中心是三个业务中心中的受控取数层。它与专家研判中心、计算推演中心不共享依赖、任务状态、运行目录或业务逻辑，也不能直接调用它们。自定义 GPTs 是唯一使用中心和唯一跨中心中继；普通网页 GPT + GitHub 插件是维修中心。
 
-## 最大安全能力策略
+## 最大安全只读策略
 
-当前 API 中心执行 `maximum-safe-readonly`：在固定官方后端、固定只读能力、参数白名单、费用/响应上限和 Secret 隔离不变的前提下，最大化暴露已接入上游的高价值公共数据能力。详细能力规模、边界和维护规则见 `CAPABILITY_MAXIMIZATION.md`。
+API 中心执行 `maximum-safe-readonly`：在固定官方后端、固定只读能力、参数白名单、请求与响应上限、Secret 隔离和证据回执不变的前提下，最大化暴露已接入上游的高价值公共数据能力。
 
-当前统一目录包含 `69` 个普通只读连接器和 `7` 个托管提供方、`93` 个固定操作。目录是运行时选择面，不把任意 URL、任意函数、任意脚本、写入或交易能力开放给 GPTs。
-
-## GPTs 能力目录
-
-GPTs 使用 API 中心前应先读取：
+统一能力规模不在本文硬编码，以以下确定性生成文件为准：
 
 - `api-catalog.json`：机器可读完整能力目录；
 - `api-catalog.md`：人类和 GPTs 可读目录；
-- `connector-manifest.json`：底层注册表；
-- `connectors/*.connector.json`：单连接器完整声明合同。
+- `connector-manifest.json`：普通连接器底层注册表；
+- `connectors/*.connector.json`：单连接器完整声明合同；
+- 各托管提供方的 `provider-catalog.json`：固定操作和参数 Schema。
 
-目录公开：
-
-- 能力名称、用途和分类；
-- 启用状态；
-- 固定端点和方法；
-- 输入参数白名单与示例；
-- 返回字段和业务响应合同；
-- 地域、新鲜度、成本等级和限制；
-- 熔断、限流和SSRF策略；
-- Secret环境变量名称；
-- 连接器SHA-256。
-
-目录绝不公开：
-
-- Secret值；
-- Authorization或Cookie；
-- 私有部署凭据；
-- 用户个人数据。
+目录公开能力名称、用途、固定端点、方法、参数白名单、响应合同、地域、新鲜度、成本等级、限制、Secret 环境变量名称和 SHA-256；绝不公开 Secret 值、Authorization、Cookie、私有凭据或用户个人数据。
 
 目录由以下命令确定性生成：
 
 ```text
-python api-center/build_catalog.py
+python api-center/build_config.py
+python api-center/build_catalog_market_search.py
 ```
 
-新增或修改连接器时，必须同步更新 `catalog-metadata.json`，重新生成目录，并通过 Git diff 校验。
+新增或修改能力时，必须同步提交生成后的 `api-catalog.json` 和 `api-catalog.md`，并通过 Git diff 确定性校验。
 
-## BigQuery、Earth Engine 与 AKShare 托管能力
+## Secret 隔离
 
-BigQuery、Earth Engine和AKShare不伪装成普通KrakenD GET连接器。它们使用独立的
-`google-cloud/provider-catalog.json`完整功能目录和`[api-gcp]`正式票据：
+一个外部 API 服务对应一个独立 Repository Secret。不得把多家 API 的 Key 或 Token 拼接到 JSON、文本或总 Secret 中。
 
-```text
-GPTs读取统一api-catalog.json
-→ 按需读取google-cloud/provider-catalog.json
-→ 选择BigQuery目录/只读查询或Earth Engine目录/只读值计算
-→ GitHub独立工作流执行并生成Artifact
-```
-
-托管目录开放数据集、表、字段、例程、模型、STAC数据集和Earth Engine算法信息；
-执行仍严格只读，并受公共项目、扫描量、返回行数、表达式复杂度和资产权限限制。
-认证Secret名称为`BIGQUERY_SERVICE_ACCOUNT_JSON` 与 `EARTH_ENGINE_SERVICE_ACCOUNT_JSON`，值不进入目录或Artifact。
-
-被BigQuery或Earth Engine等价替代的GDELT、NASA夜间灯光元数据和WorldPop普通连接器已删除，
-避免重复维护。地图、路线、POI、天气和其他独立数据源继续保留。
-
-## NewsAPI 新闻能力
-
-NewsAPI作为普通只读连接器接入，开放官方三项能力：
-
-- `newsapi-everything`：按关键词、时间、语言、来源和域名检索文章元数据；
-- `newsapi-top-headlines`：按国家、类别、来源或关键词读取头条；
-- `newsapi-sources`：读取可用于Top Headlines的来源目录。
-
-三项能力共享后端Secret环境变量名：
-
-```text
-NEWSAPI_API_KEY
-```
-
-密钥通过后端`X-Api-Key`请求头注入，GPTs和正式票据不能提交、读取或覆盖密钥。后台实行“一项外部 API 服务对应一个独立 Repository Secret”，不得把多家密钥组合进JSON、文本或单一总Secret。当前普通连接器使用：
+普通连接器当前使用：
 
 ```text
 AMAP_API_KEY
 BAIDU_MAP_API_KEY
 NEWSAPI_API_KEY
-TIANDITU_API_KEY
 ```
 
-每个Secret在GitHub后台单独建立、单独轮换、单独撤销；真实值不能写入仓库、Issue或Artifact。
+Tushare 托管提供方单独使用：
 
-NewsAPI只返回标题、来源、URL、摘要和受限正文片段，不提供完整文章正文。套餐限制、延迟、历史范围、请求配额和生产使用许可由NewsAPI账户决定；GPTs必须把返回内容作为新闻线索，并打开原始文章进行来源与日期核验。
+```text
+TUSHARE_API_TOKEN
+```
+
+Tushare Token 不与 AKShare、TickFlow、Wind AIFin、妙想或其他金融数据源复用。Secret 只能在后端注入，不能进入仓库、Issue、日志或 Artifact。完整规则见 `SECRET_ISOLATION_POLICY.md`。
+
+## 普通只读连接器
+
+普通 `[api]` 票据仅允许调用 `connector-manifest.json` 中已启用的固定 GET 连接器和白名单参数。典型能力包括：
+
+- 高德和百度地图的地理编码、POI、路线、距离、天气与路况；
+- Open-Meteo 天气、气候、海洋、洪水、空气质量和历史数据；
+- 世界银行、DBnomics、Wikidata、OpenStreetMap；
+- NewsAPI 的 Everything、Top Headlines 和 Sources。
+
+正式票据未配置远程网关时，可以在 GitHub Actions 中启动临时回环 KrakenD 网关；所需 Secret 只写入本次 Runner 临时环境文件，并在任务结束前删除。
+
+## 托管提供方
+
+BigQuery、Earth Engine、Data Commons、AKShare、Wind AIFin、元典法律、企业信息、网页检索、TickFlow、SerpAPI、Tushare 等能力使用独立托管工作流，不伪装成普通 KrakenD GET 连接器。
+
+托管提供方共同遵守：
+
+```text
+固定票据前缀
+固定 Provider ID
+固定只读操作目录
+每个操作独立参数 Schema
+固定官方 HTTPS 主机
+后端凭据注入
+请求、超时、分页和响应体积上限
+结构化 Snapshot、Diagnostics 和 Artifact
+禁止任意 URL、任意请求头、任意代码、写入和交易
+```
+
+## Tushare Pro 中国金融数据
+
+`api-center/tushare/` 使用官方 HTTPS JSON API：
+
+```text
+POST https://api.tushare.pro
+```
+
+正式票据前缀：
+
+```text
+[api-tushare]
+```
+
+独立 Repository Secret：
+
+```text
+TUSHARE_API_TOKEN
+```
+
+当前固定开放 20 项操作，其中一项为本地能力目录，19 项为上游只读数据：
+
+- 交易日历和股票基础信息；
+- A 股日线、周线、月线、复权因子和每日估值指标；
+- 个股资金流、融资融券汇总和龙虎榜；
+- 利润表、资产负债表、现金流量表和财务指标；
+- 指数基础信息和指数日线；
+- 基金基础信息和基金净值；
+- 沪深港通持股明细。
+
+执行器只允许目录中登记的 `api_name`，Token 仅在 HTTPS POST JSON 中注入。每张票据最多一次正常请求和一次瞬态故障重试。实际可用接口、频率和历史范围由 Tushare 账户积分及权限决定；权限不足会返回结构化 `TUSHARE_PERMISSION_DENIED`，不会伪造空数据。
+
+天地图提供方、固定大陆 Runner 逻辑和 `TIANDITU_API_KEY` 代码引用已删除。GitHub Repository Settings 中如仍保存旧 Secret，需要仓库所有者手动删除。
 
 ## 正式数据任务
 
-创建标题以 `[api]` 开头的 Issue，正文必须符合 `api-ticket.schema.json`。GitHub Actions 将：
+普通连接器创建标题以 `[api]` 开头的 Issue；托管提供方使用各自固定前缀。GitHub Actions 将执行：
 
 ```text
-校验票据与去重
-→ 从当前connector-manifest动态读取连接器
-→ 仅允许启用的GET连接器和白名单参数
-→ 选择远程认证网关或临时本地网关
-→ 采集并检查HTTP状态、业务状态和非空数据
-→ 生成结构化证据、Manifest和Issue回退正文
+校验票据与事件发起者
+→ 校验 Provider、操作和参数 Schema
+→ 后端注入本次唯一外部凭据
+→ 执行受限只读请求
+→ 检查 HTTP 与上游业务状态
+→ 过滤 Secret 和敏感字段
+→ 生成 Snapshot、Diagnostics、Manifest 和 Artifact
+→ 将可验证摘要写回 Issue
 ```
 
-正式输出：
-
-- `api-snapshot.json`
-- `api-audit.json`
-- `api-diagnostics.json`
-- `api-console.log`
-- `api-summary.md`
-- `artifact-manifest.json`
-
-API票据只接受公开、非个人数据。不得在公开Issue中提交个人轨迹、账户信息、隐私数据、受监管数据或任何Secret。
-
-## 长期在线网关
-
-GitHub可以验证并构建KrakenD镜像。需要低延迟直接访问时，仓库外平台负责长期运行、HTTPS、入站认证、出站网络策略、Secret、访问日志和回滚。
-
-正式 `[api]` 任务不强制依赖长期部署：未配置远程网关时，可使用GitHub Actions中的临时回环网关。
-
-## 执行模式
-
-1. 同时配置 `API_GATEWAY_BASE_URL` 和 `API_GATEWAY_AUTH_TOKEN`：使用远程HTTPS网关；
-2. 未配置远程网关：只读取本次连接器声明的独立 Repository Secret，启动临时回环网关；
-3. 所需配置或Secret缺失：返回 `API_BLOCKED`，不伪造数据。
-
-每个外部 API 服务使用唯一、规范的 Repository Secret 名称。运行时只把本次请求所需的独立Secret写入Runner临时环境文件，并在任务结束前删除；任何Secret值都不得进入仓库、Issue或Artifact。
-
-## 连接器
-
-每个外部数据源是一个 `connectors/*.connector.json` 声明式插头。当前可用能力以 `api-catalog.json` 和 `connector-manifest.json` 为准，不在GPTs提示词中永久硬编码。
-
-启用连接器必须定义：
-
-- 固定公开端点；
-- 固定后端主机和路径；
-- 输入参数白名单；
-- Secret注入环境变量名；
-- `response_contract`；
-- 固定熔断和可选限流；
-- 对应的GPTs目录元数据。
-
-## 新增连接器
-
-1. 复制 `connectors/example.connector.json`；
-2. 设置唯一ID、公开端点、后端地址和输入白名单；
-3. 使用 `secret_header.env` 或 `secret_query.env` 声明Secret名称，不写入Secret值；
-4. 为正式启用的GET连接器增加 `response_contract`；
-5. 在 `catalog-metadata.json` 增加显示名称、用途、参数说明、示例和限制；
-6. 运行 `python api-center/build_config.py`；
-7. 运行 `python api-center/build_catalog.py`；
-8. 提交连接器、KrakenD配置、Manifest和目录文件。
+所有 API 票据只接受公开、非个人数据。不得在公开 Issue 中提交个人轨迹、账户信息、隐私数据、受监管数据或任何 Secret。
 
 ## 安全边界
 
-连接器不执行自定义Python、Shell、Lua或Go插件，不允许任意URL。编译器和票据控制面拒绝：
+API 中心拒绝：
 
-- 明文密钥；
-- 客户端传入后端密钥参数；
-- 未启用连接器；
-- 非白名单参数；
-- 正式票据中的POST、PUT、PATCH、DELETE；
-- 危险转发头；
+- 明文密钥或客户端覆盖后端凭据；
+- 未启用连接器或未登记的托管操作；
+- 非白名单参数和任意 URL；
+- 自定义请求头、Cookie、Authorization 和代理地址；
+- POST、PUT、PATCH、DELETE 写入操作，Tushare 固定只读 POST 协议除外；
+- 交易、下单、账户操作和经纪商执行；
+- 任意 Python、Shell、Lua、Go 插件或外部代码；
 - 私网、保留地址和云元数据地址；
-- 缺少业务响应合同的正式连接器；
 - 私人或受监管数据声明。
 
-静态校验不能阻止DNS重绑定，生产平台仍需出站防火墙或网络策略。
+静态校验不能替代生产出站防火墙、网络策略和上游账户权限管理。
 
 ## 与其他中心的关系
 
-API中心不能直接调用计算或专家中心。允许的业务协作是：
+API 中心不能直接调用计算推演中心或专家研判中心。允许的业务协作是：
 
 ```text
-API中心产生Snapshot
-→ GPTs读取正文、Manifest和SHA
-→ GPTs按任务需要选择计算或专家中心
-→ GPTs创建新的正式票据
+API 中心产生 Snapshot
+→ GPTs 读取正文、Manifest 和 SHA
+→ GPTs 按任务需要选择计算或专家中心
+→ GPTs 创建新的正式票据
 ```
 
-调用顺序可以由GPTs自由组合，但必须满足本仓库 `governance-compatibility.json` 与治理仓库冻结合同的输入依赖、证据和循环限制；业务运行时不得跨仓库读取治理仓库。
-
-## AKShare金融公开数据
-
-AKShare使用独立`[api-akshare]`票据和固定函数白名单。它不需要API密钥，但上游网页接口可能变化，因此适配器固定版本、限制行数、输出Artifact并禁止任意函数、URL和交易执行。
-
-
-## Open-Meteo 与百度地图
-
-Open-Meteo以无密钥普通连接器接入，提供按经纬度读取当前、小时和逐日天气能力。
-百度地图以三个后端注入密钥的普通连接器接入：地址转坐标、POI搜索和驾车路线规划。
-百度地图密钥环境变量名为独立 Repository Secret `BAIDU_MAP_API_KEY`，不能写入Issue、仓库或Artifact。
-
-## Wind AIFin Market
-
-AIFin Market采用独立托管提供方，不伪装成普通KrakenD GET接口。正式票据前缀为 `[api-aifin]`，使用 `WIND_API_KEY` 认证。适配器已经把四个官方 MCP 服务当前目录发现的全部 `15` 个只读工具映射为固定操作，覆盖行情、K线、技术面、基本面、股东、事件、风险、公告、新闻、宏观经济和综合金融计算；另提供本地能力目录和实时工具目录。
-
-密钥只能配置为独立 Repository Secret `WIND_API_KEY`。执行仍禁止任意 `server_type`、任意 `tool_name`、任意 URL、交易、写入和代码执行。
-## 元典法律智能开放平台
-
-`api-center/yuandian/` 将元典作为托管只读 Provider 接入。当前冻结 37 项法律法规、案例文书、企业公开信息和法律幻觉检测 API，并额外提供官方实时目录发现与受控通用调用。所有业务请求固定到官方 HTTPS 主机，使用后端 `YUANDIAN_API_KEY` 注入 `X-API-Key`；禁止任意 URL、任意请求头、写入和代码执行，产物会过滤 Secret 与直接个人标识字段。
+调用顺序由 GPTs 组合，但必须满足治理仓库冻结合同中的输入依赖、证据和循环限制；业务运行时不得跨仓库直接读取或调用其他中心。

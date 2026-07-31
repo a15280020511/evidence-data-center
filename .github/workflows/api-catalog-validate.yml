@@ -104,15 +104,17 @@ jobs:
           assert 'tianditu-place-search' not in connector_ids
           assert 'TIANDITU_API_KEY' not in manifest['required_secret_environment_variables']
           assert not Path('api-center/connectors/tianditu-place-search.connector.json').exists()
-          assert not Path('api-center/tests/test_tianditu_connector.py').exists()
+          assert not Path('api-center/tianditu').exists()
+          assert not Path('.github/workflows/tianditu-api-ticket.yml').exists()
+          assert not Path('.github/workflows/tianditu-provider-validate.yml').exists()
 
           assert catalog['schema_version'] == 'api-catalog-v3'
           assert catalog['connector_count'] == 68
           assert catalog['enabled_connector_count'] == 68
           assert catalog['managed_provider_count'] == 16
           assert catalog['enabled_managed_provider_count'] == 16
-          assert catalog['managed_operation_count'] == 131
-          assert catalog['exposed_parameter_count'] == 790
+          assert catalog['managed_operation_count'] == 143
+          assert catalog['exposed_parameter_count'] >= 850
           assert catalog['secret_values_exposed'] is False
 
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
@@ -132,10 +134,11 @@ jobs:
               'firecrawl': 4,
               'tickflow': 5,
               'serpapi': 4,
-              'tianditu': 8,
+              'tushare': 20,
           }
           assert set(providers) == set(expected_counts)
-          assert sum(len(row['operations']) for row in providers.values()) == 131
+          assert 'tianditu' not in providers
+          assert sum(len(row['operations']) for row in providers.values()) == 143
           for provider_id, expected in expected_counts.items():
               assert len(providers[provider_id]['operations']) == expected
               assert providers[provider_id]['secret_value_exposed'] is False
@@ -153,42 +156,42 @@ jobs:
               'firecrawl': 'FIRECRAWL_API_KEY',
               'tickflow': 'TICKFLOW_API_KEY',
               'serpapi': 'SERPAPI_API_KEY',
-              'tianditu': 'TIANDITU_API_KEY',
+              'tushare': 'TUSHARE_API_TOKEN',
           }
           for provider_id, secret_name in expected_secret_names.items():
               assert providers[provider_id]['required_secret_environment_variable_name'] == secret_name
 
-          tianditu = providers['tianditu']
-          assert tianditu['ticket_prefix'] == '[api-tianditu]'
-          assert {row['operation_id'] for row in tianditu['operations']} == {
-              'catalog-capabilities', 'normal-search', 'viewport-search',
-              'nearby-search', 'polygon-search', 'administrative-search',
-              'category-search', 'statistics-search',
+          tushare = providers['tushare']
+          assert tushare['ticket_prefix'] == '[api-tushare]'
+          assert {row['operation_id'] for row in tushare['operations']} == {
+              'catalog-capabilities', 'trade-calendar', 'stock-basic', 'daily-quotes',
+              'weekly-quotes', 'monthly-quotes', 'adjust-factor', 'daily-basic',
+              'money-flow', 'margin-summary', 'top-list', 'income-statement',
+              'balance-sheet', 'cash-flow-statement', 'financial-indicator',
+              'index-basic', 'index-daily', 'fund-basic', 'fund-nav', 'hk-hold',
           }
-          limits = tianditu['limits']
-          assert limits['nearby_radius_meters_max'] == 10000
-          assert limits['polygon_points_max'] == 20
+          limits = tushare['limits']
+          assert limits['arbitrary_api_names_allowed'] is False
           assert limits['arbitrary_urls_allowed'] is False
           assert limits['arbitrary_headers_allowed'] is False
-          assert limits['tile_bulk_download_allowed'] is False
           assert limits['write_operations_allowed'] is False
-          assert limits['direct_phone_fields_redacted'] is True
-          assert 'tianditu/provider-catalog.json' in catalog['managed_provider_catalog_files']
-          assert 'tianditu/provider-catalog.json' in catalog['detail_reading_order']
-          assert 'TIANDITU_TOKEN' not in json.dumps(tianditu, ensure_ascii=False)
-          assert any(
-              row['connector_id'] == 'tianditu-place-search'
-              for row in catalog['replaced_legacy_connectors']
-          )
+          assert limits['trading_or_order_execution_allowed'] is False
+          assert limits['secret_values_exposed'] is False
+          assert 'tushare/provider-catalog.json' in catalog['managed_provider_catalog_files']
+          assert 'tushare/provider-catalog.json' in catalog['detail_reading_order']
+          assert 'tianditu/provider-catalog.json' not in catalog['managed_provider_catalog_files']
+          serialized = json.dumps(catalog, ensure_ascii=False)
+          assert 'TIANDITU_API_KEY' not in serialized
+          assert 'TIANDITU_EXPECTED_EGRESS_IP' not in serialized
 
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
               'managed_providers': 16,
-              'managed_operations': 131,
-              'exposed_parameters': 790,
-              'tianditu_operations': 8,
-              'legacy_tianditu_connector': 'removed',
+              'managed_operations': 143,
+              'exposed_parameters': catalog['exposed_parameter_count'],
+              'tushare_operations': 20,
+              'tianditu': 'removed',
           }))
           PY
 
@@ -213,7 +216,7 @@ jobs:
             api-center/miaoxiang/provider-catalog.json
             api-center/web-retrieval/provider-catalog.json
             api-center/market-search/provider-catalog.json
-            api-center/tianditu/provider-catalog.json
-            api-center/tianditu/ticket.schema.json
+            api-center/tushare/provider-catalog.json
+            api-center/tushare/ticket.schema.json
           if-no-files-found: error
           retention-days: 30

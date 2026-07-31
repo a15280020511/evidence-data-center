@@ -31,21 +31,26 @@ class CapabilityMaximizationTests(unittest.TestCase):
     def test_managed_providers_expose_fixed_readonly_operations_only(self) -> None:
         catalog = json.loads((ROOT / "api-catalog.json").read_text(encoding="utf-8"))
         providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
-        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 131)
+        self.assertEqual(sum(len(row["operations"]) for row in providers.values()), 143)
         self.assertNotIn("qichacha", providers)
-        self.assertEqual(len(providers["miaoxiang"]["operations"]), 4)
-        self.assertEqual(len(providers["aifin-market"]["operations"]), 17)
-        self.assertEqual(len(providers["akshare"]["operations"]), 17)
-        self.assertEqual(len(providers["bigquery"]["operations"]), 7)
-        self.assertEqual(len(providers["earth-engine"]["operations"]), 6)
-        self.assertEqual(len(providers["yuandian-law"]["operations"]), 40)
-        self.assertEqual(len(providers["jina-reader"]["operations"]), 2)
-        self.assertEqual(len(providers["exa"]["operations"]), 3)
-        self.assertEqual(len(providers["tavily"]["operations"]), 5)
-        self.assertEqual(len(providers["firecrawl"]["operations"]), 4)
-        self.assertEqual(len(providers["tickflow"]["operations"]), 5)
-        self.assertEqual(len(providers["serpapi"]["operations"]), 4)
-        self.assertEqual(len(providers["tianditu"]["operations"]), 8)
+        self.assertNotIn("tianditu", providers)
+        expected_counts = {
+            "miaoxiang": 4,
+            "aifin-market": 17,
+            "akshare": 17,
+            "bigquery": 7,
+            "earth-engine": 6,
+            "yuandian-law": 40,
+            "jina-reader": 2,
+            "exa": 3,
+            "tavily": 5,
+            "firecrawl": 4,
+            "tickflow": 5,
+            "serpapi": 4,
+            "tushare": 20,
+        }
+        for provider_id, count in expected_counts.items():
+            self.assertEqual(len(providers[provider_id]["operations"]), count)
         self.assertEqual(providers["yuandian-law"]["discovered_readonly_tool_count"], 37)
         self.assertFalse(any(row["secret_value_exposed"] for row in providers.values()))
 
@@ -108,13 +113,16 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(serpapi_limits["html_output_allowed"])
         self.assertFalse(serpapi_limits["arbitrary_engine_allowed"])
 
-        tianditu = json.loads((ROOT / "tianditu/provider-catalog.json").read_text(encoding="utf-8"))
-        tianditu_limits = tianditu["providers"][0]["limits"]
-        self.assertFalse(tianditu_limits["arbitrary_urls_allowed"])
-        self.assertFalse(tianditu_limits["arbitrary_headers_allowed"])
-        self.assertFalse(tianditu_limits["tile_bulk_download_allowed"])
-        self.assertFalse(tianditu_limits["write_operations_allowed"])
-        self.assertTrue(tianditu_limits["direct_phone_fields_redacted"])
+        tushare = json.loads((ROOT / "tushare/provider-catalog.json").read_text(encoding="utf-8"))
+        tushare_provider = tushare["providers"][0]
+        tushare_limits = tushare_provider["limits"]
+        self.assertEqual(tushare_provider["required_secret_environment_variable"], "TUSHARE_API_TOKEN")
+        self.assertFalse(tushare_limits["arbitrary_api_names_allowed"])
+        self.assertFalse(tushare_limits["arbitrary_urls_allowed"])
+        self.assertFalse(tushare_limits["arbitrary_headers_allowed"])
+        self.assertFalse(tushare_limits["write_operations_allowed"])
+        self.assertFalse(tushare_limits["trading_or_order_execution_allowed"])
+        self.assertFalse(tushare_limits["secret_values_exposed"])
 
 
 if __name__ == "__main__":

@@ -84,7 +84,6 @@ jobs:
           AMAP_API_KEY: ${{ secrets.AMAP_API_KEY }}
           BAIDU_MAP_API_KEY: ${{ secrets.BAIDU_MAP_API_KEY }}
           NEWSAPI_API_KEY: ${{ secrets.NEWSAPI_API_KEY }}
-          TIANDITU_API_KEY: ${{ secrets.TIANDITU_API_KEY }}
         run: |
           python api-center/api_task.py resolve-mode \
             --plan api-artifacts/request-plan.json \
