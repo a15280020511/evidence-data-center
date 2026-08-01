@@ -57,6 +57,7 @@ jobs:
             api-center/nasa/requirements.txt
             api-center/metno-geosatellite/requirements.txt
             api-center/copernicus/requirements.txt
+            api-center/eia/requirements.txt
 
       - name: Install isolated intelligence dependencies
         run: |
@@ -82,7 +83,8 @@ jobs:
             -r api-center/marketstack/requirements.txt \
             -r api-center/nasa/requirements.txt \
             -r api-center/metno-geosatellite/requirements.txt \
-            -r api-center/copernicus/requirements.txt
+            -r api-center/copernicus/requirements.txt \
+            -r api-center/eia/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -118,6 +120,7 @@ jobs:
           python -m unittest discover -s api-center/nasa/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/metno-geosatellite/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/copernicus/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/eia/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Rebuild deterministic contracts
@@ -144,11 +147,11 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 38
-          assert catalog['enabled_managed_provider_count'] == 38
+          assert catalog['managed_provider_count'] == len(providers) == 39
+          assert catalog['enabled_managed_provider_count'] == 39
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 420
+          ) == 426
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
@@ -249,6 +252,19 @@ jobs:
           assert copernicus['limits']['oauth_token_persistence_allowed'] is False
           assert copernicus['limits']['write_operations_allowed'] is False
 
+          eia = providers['eia']
+          assert eia['ticket_prefix'] == '[intel-eia]'
+          assert eia['required_secret_environment_variable_name'] == 'EIA_API_KEY'
+          assert len(eia['operations']) == 6
+          assert eia['limits']['requests_per_ticket_max'] == 1
+          assert eia['limits']['rows_per_response_max'] == 5000
+          assert eia['limits']['fixed_api_host'] == 'api.eia.gov'
+          assert eia['limits']['automatic_pagination_allowed'] is False
+          assert eia['limits']['bulk_download_allowed'] is False
+          assert eia['limits']['path_traversal_allowed'] is False
+          assert eia['limits']['background_crawling_allowed'] is False
+          assert eia['limits']['write_operations_allowed'] is False
+
           aisstream = providers['aisstream']
           assert aisstream['ticket_prefix'] == '[intel-aisstream]'
           assert aisstream['required_secret_environment_variable_name'] == 'AISSTREAM_API_KEY'
@@ -271,8 +287,8 @@ jobs:
               'status': 'PASS',
               'connectors': 68,
               'worldbank_connectors': 9,
-              'managed_providers': 38,
-              'managed_operations': 420,
+              'managed_providers': 39,
+              'managed_operations': 426,
               'overture_maps_operations': 7,
               'oecd_operations': 6,
               'alphafeed_operations': 10,
@@ -286,6 +302,7 @@ jobs:
               'nasa_operations': 25,
               'metno_geosatellite_operations': 4,
               'copernicus_operations': 7,
+              'eia_operations': 6,
               'removed_providers': ['agent-toolbelt', 'gapup-mcp'],
           }))
           PY
