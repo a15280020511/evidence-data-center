@@ -40,12 +40,13 @@ jobs:
       - name: Apply standalone credential and catalog migration
         run: python maintenance/readd_data_commons_v2.py
 
-      - name: Correct generated snapshot regression assertion
+      - name: Normalize generated tests and documentation
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('api-center/data-commons/tests/test_data_commons_task.py')
-          text = path.read_text(encoding='utf-8')
+
+          test_path = Path('api-center/data-commons/tests/test_data_commons_task.py')
+          text = test_path.read_text(encoding='utf-8')
           text = text.replace(
               '(out / "snapshot.json").read_text(encoding="utf-8")',
               '(out / "data-commons-snapshot.json").read_text(encoding="utf-8")',
@@ -54,7 +55,13 @@ jobs:
               'self.assertNotIn("api_key", json.dumps(snap).lower())',
               'self.assertFalse(snap["security"]["secret_values_included"])\n            self.assertFalse(snap["security"]["api_key_recorded"])',
           )
-          path.write_text(text, encoding='utf-8')
+          test_path.write_text(text, encoding='utf-8')
+
+          readme_path = Path('api-center/data-commons/README.md')
+          lines = [line.rstrip() for line in readme_path.read_text(encoding='utf-8').splitlines()]
+          while lines and not lines[-1]:
+              lines.pop()
+          readme_path.write_text('\n'.join(lines) + '\n', encoding='utf-8')
           PY
 
       - name: Set up Python 3.12
