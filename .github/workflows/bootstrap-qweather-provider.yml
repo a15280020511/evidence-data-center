@@ -1,0 +1,96 @@
+name: Bootstrap QWeather provider
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: bootstrap-qweather-provider
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.issue.title == '[maintenance] add-qweather-provider'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      TARGET_BRANCH: feat/qweather-provider-20260801
+    steps:
+      - name: Checkout integration branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ env.TARGET_BRANCH }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Register QWeather in deterministic catalogs
+        run: python maintenance/register_qweather_provider.py
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/baostock/requirements.txt \
+            -r api-center/eodhd/requirements.txt \
+            -r api-center/data-commons/requirements.txt \
+            -r api-center/qweather/requirements.txt \
+            -r requirements-dev.txt
+          python -m pip check
+
+      - name: Generate deterministic API catalog
+        run: python api-center/build_catalog_market_search.py
+
+      - name: Run static and unit validation
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            api-center/qweather/qweather_task.py \
+            api-center/qweather/tests/test_qweather_task.py \
+            api-center/build_catalog_market_search.py \
+            api-center/tests/test_api_catalog.py \
+            api-center/tests/test_capability_maximization.py
+          python -m unittest discover -s api-center/qweather/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
+          test ! -e maintenance/register_qweather_provider.py
+          git diff --check
+
+      - name: Commit integration
+        id: commit
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git reset -- .github/workflows/bootstrap-qweather-provider.yml
+          git diff --cached --check
+          git commit -m 'feat(api-center): register QWeather managed provider'
+          git push origin HEAD:${TARGET_BRANCH}
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish integration receipt
+        if: success()
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -f body="QWEATHER_CORE_COMPLETED branch=${TARGET_BRANCH} commit=${{ steps.commit.outputs.sha }} operations=18 host=ka6r72kcc3.re.qweatherapi.com secret=QWEATHER_API_KEY auth=X-QW-Api-Key tests=passed catalog_generated=true model_calls=0"
+
+      - name: Publish failure receipt
+        if: failure()
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -f body="QWEATHER_INTEGRATION_FAILED branch=${TARGET_BRANCH} run=${GITHUB_RUN_ID} model_calls=0"
