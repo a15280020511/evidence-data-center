@@ -42,6 +42,7 @@ NEWSAPI_API_KEY
 ```text
 TUSHARE_API_TOKEN
 EODHD_API_TOKEN
+ALPHA_VANTAGE_API_KEY
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
 MX_APIKEY
@@ -127,6 +128,17 @@ EODHD_API_TOKEN
 ```
 
 开放 25 项只读操作，覆盖全球交易所和证券目录、历史与实时行情、基本面、公司行动、技术指标、新闻情绪、股票筛选、企业日历、宏观事件以及交易时段和节假日。上游套餐决定实际数据范围与额度；API 中心不开放 WebSocket、交易、下单、账户操作、任意 URL 或任意请求头。
+
+## Alpha Vantage 全球金融与宏观数据
+
+`api-center/alpha-vantage/` 使用固定官方 HTTPS GET 端点，票据前缀和独立 Secret 为：
+
+```text
+[api-alpha-vantage]
+ALPHA_VANTAGE_API_KEY
+```
+
+固定开放 66 项只读操作，覆盖全球股票、指数、期权、基本面、公司行动、新闻情绪、外汇、数字资产、商品、美国宏观经济和技术指标。每张票据最多一次上游请求，Provider 全局串行，不自动重试，以保护官方免费密钥每日 25 次的标准额度。部分函数、实时或延迟市场数据以及完整历史范围需要 Alpha Vantage 付费权限；权限或额度不足会返回结构化诊断，不会伪造空数据。
 
 ## Wolfram|Alpha 计算知识
 

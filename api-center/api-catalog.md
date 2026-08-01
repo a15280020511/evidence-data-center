@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`24/24` 已启用
-- 托管操作总数：`240`
-- 已公开参数总数：`1137`
-- 目录 SHA-256：`98a5b346c94b93cb59db5b4a647354a07694f5d9915aef75136fd8b127e4f906`
+- 托管提供方：`25/25` 已启用
+- 托管操作总数：`306`
+- 已公开参数总数：`1275`
+- 目录 SHA-256：`9366530a5c6c777a16dcd801a097dac121829c772f11d8c3d5384c6f610e8d6a`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -39,6 +39,7 @@
 | 和风天气 QWeather | `qweather` | 启用 | `[api-qweather]` | `18` | 否 |
 | 东方财富妙想 MCP | `miaoxiang-mcp` | 启用 | `[api-mx-mcp]` | `13` | 否 |
 | East Asia Econ 东亚宏观数据库 | `east-asia-econ` | 启用 | `[api-east-asia-econ]` | `6` | 否 |
+| Alpha Vantage 全球金融与宏观数据 | `alpha-vantage` | 启用 | `[api-alpha-vantage]` | `66` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -9220,6 +9221,1950 @@
   "client_supplied_api_key_allowed": false,
   "redirects_allowed": false,
   "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## Alpha Vantage 全球金融与宏观数据 (`alpha-vantage`)
+
+- 状态：`启用`
+- 说明：通过 Alpha Vantage 官方 HTTPS Query API 读取全球股票、指数、期权、基本面、公司行动、新闻情绪、外汇、数字资产、商品、美国宏观经济和技术指标。
+- 目录策略：仅开放目录中显式登记的固定 Alpha Vantage function 和参数 Schema；禁止任意 function、任意 URL、任意主机、任意请求头、客户端自带 apikey、CSV、交易、下单、账户修改和数据写入。
+- 执行策略：ALPHA_VANTAGE_API_KEY 仅由后端注入固定 HTTPS GET 查询；每张票据最多一次上游请求且全 Provider 串行，避免消耗免费密钥每日 25 次额度；响应、超时和体积受限，错误和额度提示结构化返回。
+- 票据前缀：`[api-alpha-vantage]`
+- Secret环境变量名：`ALPHA_VANTAGE_API_KEY`（仅名称）
+- 提供方SHA-256：`15e466cbf2cd445f58ae15b1d0d47561ef682ed72198b7637e54bf193b6b77bc`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Alpha Vantage 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `symbol-search` | 按关键词搜索全球股票、ETF 和基金代码。 | `keywords` |
+
+`symbol-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keywords": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    }
+  }
+}
+```
+
+| `global-quote` | 读取单一全球证券的最新报价快照。 | `symbol, entitlement` |
+
+`global-quote` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `market-status` | 读取全球主要市场开闭市状态。 | `无` |
+
+`market-status` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `stock-intraday` | 读取全球股票分钟级 OHLCV 时间序列。 | `symbol, interval, outputsize, month, adjusted, extended_hours, entitlement` |
+
+`stock-intraday` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min"
+      ]
+    },
+    "outputsize": {
+      "type": "string",
+      "enum": [
+        "compact",
+        "full"
+      ]
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "adjusted": {
+      "type": "boolean"
+    },
+    "extended_hours": {
+      "type": "boolean"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval"
+  ]
+}
+```
+
+| `stock-daily` | 读取全球股票日线 OHLCV；compact 可用于免费密钥。 | `symbol, outputsize` |
+
+`stock-daily` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "outputsize": {
+      "type": "string",
+      "enum": [
+        "compact",
+        "full"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `stock-daily-adjusted` | 读取复权日线、分红和拆股事件。 | `symbol, outputsize, entitlement` |
+
+`stock-daily-adjusted` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "outputsize": {
+      "type": "string",
+      "enum": [
+        "compact",
+        "full"
+      ]
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `stock-weekly` | 读取全球股票周线 OHLCV。 | `symbol` |
+
+`stock-weekly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `stock-weekly-adjusted` | 读取全球股票复权周线。 | `symbol` |
+
+`stock-weekly-adjusted` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `stock-monthly` | 读取全球股票月线 OHLCV。 | `symbol` |
+
+`stock-monthly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `stock-monthly-adjusted` | 读取全球股票复权月线。 | `symbol` |
+
+`stock-monthly-adjusted` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `realtime-bulk-quotes` | 批量读取最多 50 个证券的实时报价。 | `symbol` |
+
+`realtime-bulk-quotes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+){0,49}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `index-catalog` | 读取 Alpha Vantage 支持的市场指数目录。 | `无` |
+
+`index-catalog` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `index-data` | 读取主要市场指数的日、周或月 OHLC。 | `symbol, interval` |
+
+`index-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval"
+  ]
+}
+```
+
+| `realtime-options` | 读取美国股票实时期权链或指定合约。 | `symbol, require_greeks, contract` |
+
+`realtime-options` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "require_greeks": {
+      "type": "boolean"
+    },
+    "contract": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9]+$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `historical-options` | 读取美国股票历史期权链。 | `symbol, date` |
+
+`historical-options` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `news-sentiment` | 读取股票、外汇、数字资产和宏观主题新闻及情绪。 | `tickers, topics, time_from, time_to, sort, limit` |
+
+`news-sentiment` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "tickers": {
+      "type": "string",
+      "maxLength": 300,
+      "pattern": "^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+){0,19}$"
+    },
+    "topics": {
+      "type": "string",
+      "maxLength": 300,
+      "pattern": "^[a-z_]+(,[a-z_]+){0,9}$"
+    },
+    "time_from": {
+      "type": "string",
+      "pattern": "^[0-9]{8}T[0-9]{4}$"
+    },
+    "time_to": {
+      "type": "string",
+      "pattern": "^[0-9]{8}T[0-9]{4}$"
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "LATEST",
+        "EARLIEST",
+        "RELEVANCE"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    }
+  }
+}
+```
+
+| `top-gainers-losers` | 读取美国市场涨幅榜、跌幅榜和最活跃榜。 | `无` |
+
+`top-gainers-losers` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `company-overview` | 读取上市公司概览、估值和关键财务指标。 | `symbol` |
+
+`company-overview` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `income-statement` | 读取公司年度和季度利润表。 | `symbol` |
+
+`income-statement` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `balance-sheet` | 读取公司年度和季度资产负债表。 | `symbol` |
+
+`balance-sheet` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `cash-flow` | 读取公司年度和季度现金流量表。 | `symbol` |
+
+`cash-flow` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `earnings` | 读取公司年度和季度每股收益。 | `symbol` |
+
+`earnings` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `earnings-estimates` | 读取公司盈利预测和分析师共识。 | `symbol, horizon` |
+
+`earnings-estimates` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "3month",
+        "6month",
+        "12month"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `listing-status` | 读取美国股票与 ETF 上市或退市状态。 | `date, state` |
+
+`listing-status` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "active",
+        "delisted"
+      ]
+    }
+  }
+}
+```
+
+| `earnings-calendar` | 读取未来企业财报日历。 | `symbol, horizon` |
+
+`earnings-calendar` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "3month",
+        "6month",
+        "12month"
+      ]
+    }
+  }
+}
+```
+
+| `ipo-calendar` | 读取未来 IPO 日历。 | `无` |
+
+`ipo-calendar` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `dividends` | 读取公司历史和未来已公告分红。 | `symbol` |
+
+`dividends` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `splits` | 读取公司历史拆股和合股事件。 | `symbol` |
+
+`splits` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `shares-outstanding` | 读取公司基本和稀释流通股数。 | `symbol` |
+
+`shares-outstanding` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `insider-transactions` | 读取公司内部人交易。 | `symbol` |
+
+`insider-transactions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `institutional-holdings` | 读取机构持仓汇总与明细。 | `symbol` |
+
+`institutional-holdings` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `etf-profile` | 读取 ETF 净资产、持仓和行业配置。 | `symbol` |
+
+`etf-profile` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `currency-exchange-rate` | 读取两种法币或数字资产间的实时汇率。 | `from_currency, to_currency` |
+
+`currency-exchange-rate` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from_currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "to_currency": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "required": [
+    "from_currency",
+    "to_currency"
+  ]
+}
+```
+
+| `fx-daily` | 读取外汇日线。 | `from_symbol, to_symbol, outputsize` |
+
+`fx-daily` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from_symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "to_symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "outputsize": {
+      "type": "string",
+      "enum": [
+        "compact",
+        "full"
+      ]
+    }
+  },
+  "required": [
+    "from_symbol",
+    "to_symbol"
+  ]
+}
+```
+
+| `fx-weekly` | 读取外汇周线。 | `from_symbol, to_symbol` |
+
+`fx-weekly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from_symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "to_symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "required": [
+    "from_symbol",
+    "to_symbol"
+  ]
+}
+```
+
+| `fx-monthly` | 读取外汇月线。 | `from_symbol, to_symbol` |
+
+`fx-monthly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from_symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "to_symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "required": [
+    "from_symbol",
+    "to_symbol"
+  ]
+}
+```
+
+| `digital-currency-daily` | 读取数字资产日线。 | `symbol, market` |
+
+`digital-currency-daily` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "market": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "required": [
+    "symbol",
+    "market"
+  ]
+}
+```
+
+| `digital-currency-weekly` | 读取数字资产周线。 | `symbol, market` |
+
+`digital-currency-weekly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "market": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "required": [
+    "symbol",
+    "market"
+  ]
+}
+```
+
+| `digital-currency-monthly` | 读取数字资产月线。 | `symbol, market` |
+
+`digital-currency-monthly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "market": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "required": [
+    "symbol",
+    "market"
+  ]
+}
+```
+
+| `gold-silver-spot` | 读取黄金或白银现货价格。 | `symbol` |
+
+`gold-silver-spot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "enum": [
+        "GOLD",
+        "XAU",
+        "SILVER",
+        "XAG"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `gold-silver-history` | 读取黄金或白银历史价格。 | `symbol, interval` |
+
+`gold-silver-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "enum": [
+        "GOLD",
+        "XAU",
+        "SILVER",
+        "XAG"
+      ]
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval"
+  ]
+}
+```
+
+| `wti` | 读取西德克萨斯中质原油价格。 | `interval` |
+
+`wti` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}
+```
+
+| `brent` | 读取布伦特原油价格。 | `interval` |
+
+`brent` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}
+```
+
+| `natural-gas` | 读取亨利港天然气价格。 | `interval` |
+
+`natural-gas` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}
+```
+
+| `copper` | 读取铜价。 | `interval` |
+
+`copper` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}
+```
+
+| `aluminum` | 读取铝价。 | `interval` |
+
+`aluminum` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}
+```
+
+| `real-gdp` | 读取美国实际 GDP。 | `interval` |
+
+`real-gdp` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "annual",
+        "quarterly"
+      ]
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}
+```
+
+| `real-gdp-per-capita` | 读取美国人均实际 GDP。 | `无` |
+
+`real-gdp-per-capita` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `treasury-yield` | 读取美国国债收益率。 | `interval, maturity` |
+
+`treasury-yield` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "maturity": {
+      "type": "string",
+      "enum": [
+        "3month",
+        "2year",
+        "5year",
+        "7year",
+        "10year",
+        "30year"
+      ]
+    }
+  },
+  "required": [
+    "interval",
+    "maturity"
+  ]
+}
+```
+
+| `federal-funds-rate` | 读取美国联邦基金利率。 | `interval` |
+
+`federal-funds-rate` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}
+```
+
+| `cpi` | 读取美国消费者价格指数。 | `interval` |
+
+`cpi` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "interval": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "semiannual"
+      ]
+    }
+  },
+  "required": [
+    "interval"
+  ]
+}
+```
+
+| `inflation` | 读取美国年度通胀率。 | `无` |
+
+`inflation` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `retail-sales` | 读取美国月度零售销售。 | `无` |
+
+`retail-sales` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `durable-goods` | 读取美国耐用品订单。 | `无` |
+
+`durable-goods` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `unemployment` | 读取美国失业率。 | `无` |
+
+`unemployment` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `nonfarm-payroll` | 读取美国非农就业人数。 | `无` |
+
+`nonfarm-payroll` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `sma` | 计算简单移动平均线。 | `symbol, interval, time_period, series_type, month, entitlement` |
+
+`sma` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "time_period": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "series_type": {
+      "type": "string",
+      "enum": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval",
+    "time_period",
+    "series_type"
+  ]
+}
+```
+
+| `ema` | 计算指数移动平均线。 | `symbol, interval, time_period, series_type, month, entitlement` |
+
+`ema` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "time_period": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "series_type": {
+      "type": "string",
+      "enum": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval",
+    "time_period",
+    "series_type"
+  ]
+}
+```
+
+| `rsi` | 计算相对强弱指数。 | `symbol, interval, time_period, series_type, month, entitlement` |
+
+`rsi` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "time_period": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "series_type": {
+      "type": "string",
+      "enum": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval",
+    "time_period",
+    "series_type"
+  ]
+}
+```
+
+| `macd` | 计算 MACD。 | `symbol, interval, time_period, series_type, month, entitlement, fastperiod, slowperiod, signalperiod, matype` |
+
+`macd` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "time_period": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "series_type": {
+      "type": "string",
+      "enum": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    },
+    "fastperiod": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "slowperiod": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "signalperiod": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "matype": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 8
+    }
+  },
+  "required": [
+    "symbol",
+    "interval",
+    "series_type"
+  ]
+}
+```
+
+| `bbands` | 计算布林带。 | `symbol, interval, time_period, series_type, month, entitlement, nbdevup, nbdevdn, matype` |
+
+`bbands` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "time_period": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "series_type": {
+      "type": "string",
+      "enum": [
+        "open",
+        "high",
+        "low",
+        "close"
+      ]
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    },
+    "nbdevup": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 20
+    },
+    "nbdevdn": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 20
+    },
+    "matype": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 8
+    }
+  },
+  "required": [
+    "symbol",
+    "interval",
+    "time_period",
+    "series_type"
+  ]
+}
+```
+
+| `atr` | 计算平均真实波幅。 | `symbol, interval, time_period, month, entitlement` |
+
+`atr` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "time_period": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval",
+    "time_period"
+  ]
+}
+```
+
+| `adx` | 计算平均趋向指数。 | `symbol, interval, time_period, month, entitlement` |
+
+`adx` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "time_period": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval",
+    "time_period"
+  ]
+}
+```
+
+| `stoch` | 计算随机指标。 | `symbol, interval, fastkperiod, slowkperiod, slowdperiod, slowkmatype, slowdmatype, month, entitlement` |
+
+`stoch` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "fastkperiod": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "slowkperiod": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "slowdperiod": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "slowkmatype": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 8
+    },
+    "slowdmatype": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 8
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval"
+  ]
+}
+```
+
+| `obv` | 计算能量潮指标。 | `symbol, interval, month, entitlement` |
+
+`obv` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1min",
+        "5min",
+        "15min",
+        "30min",
+        "60min",
+        "daily",
+        "weekly",
+        "monthly"
+      ]
+    },
+    "month": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}$"
+    },
+    "entitlement": {
+      "type": "string",
+      "enum": [
+        "delayed",
+        "realtime"
+      ]
+    }
+  },
+  "required": [
+    "symbol",
+    "interval"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "fixed_api_host": "www.alphavantage.co",
+  "fixed_api_path": "/query",
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "free_key_documented_requests_per_day": 25,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 20000000,
+  "arbitrary_functions_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_api_key_allowed": false,
+  "redirects_allowed": false,
+  "csv_allowed": false,
+  "write_operations_allowed": false,
+  "trading_or_order_execution_allowed": false,
   "personal_data_allowed": false,
   "secret_values_exposed": false
 }

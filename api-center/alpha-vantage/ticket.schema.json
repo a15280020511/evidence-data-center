@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/a15280020511/evidence-data-center/api-center/alpha-vantage/ticket.schema.json",
+  "title": "Alpha Vantage API ticket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "provider",
+    "operation",
+    "parameters",
+    "acceptance",
+    "data_policy"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$"
+    },
+    "provider": {
+      "const": "alpha-vantage"
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "catalog-capabilities",
+        "symbol-search",
+        "global-quote",
+        "market-status",
+        "stock-intraday",
+        "stock-daily",
+        "stock-daily-adjusted",
+        "stock-weekly",
+        "stock-weekly-adjusted",
+        "stock-monthly",
+        "stock-monthly-adjusted",
+        "realtime-bulk-quotes",
+        "index-catalog",
+        "index-data",
+        "realtime-options",
+        "historical-options",
+        "news-sentiment",
+        "top-gainers-losers",
+        "company-overview",
+        "income-statement",
+        "balance-sheet",
+        "cash-flow",
+        "earnings",
+        "earnings-estimates",
+        "listing-status",
+        "earnings-calendar",
+        "ipo-calendar",
+        "dividends",
+        "splits",
+        "shares-outstanding",
+        "insider-transactions",
+        "institutional-holdings",
+        "etf-profile",
+        "currency-exchange-rate",
+        "fx-daily",
+        "fx-weekly",
+        "fx-monthly",
+        "digital-currency-daily",
+        "digital-currency-weekly",
+        "digital-currency-monthly",
+        "gold-silver-spot",
+        "gold-silver-history",
+        "wti",
+        "brent",
+        "natural-gas",
+        "copper",
+        "aluminum",
+        "real-gdp",
+        "real-gdp-per-capita",
+        "treasury-yield",
+        "federal-funds-rate",
+        "cpi",
+        "inflation",
+        "retail-sales",
+        "durable-goods",
+        "unemployment",
+        "nonfarm-payroll",
+        "sma",
+        "ema",
+        "rsi",
+        "macd",
+        "bbands",
+        "atr",
+        "adx",
+        "stoch",
+        "obv"
+      ]
+    },
+    "parameters": {
+      "type": "object",
+      "maxProperties": 20
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeout_seconds",
+        "max_response_bytes"
+      ],
+      "properties": {
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 20000000
+        }
+      }
+    },
+    "data_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "public_data_only",
+        "no_personal_data",
+        "no_secret_values"
+      ],
+      "properties": {
+        "public_data_only": {
+          "const": true
+        },
+        "no_personal_data": {
+          "const": true
+        },
+        "no_secret_values": {
+          "const": true
+        }
+      }
+    }
+  }
+}

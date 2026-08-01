@@ -1,0 +1,2995 @@
+{
+  "schema_version": "alpha-vantage-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "alpha-vantage",
+      "display_name": "Alpha Vantage 全球金融与宏观数据",
+      "description": "通过 Alpha Vantage 官方 HTTPS Query API 读取全球股票、指数、期权、基本面、公司行动、新闻情绪、外汇、数字资产、商品、美国宏观经济和技术指标。",
+      "enabled": true,
+      "ticket_prefix": "[api-alpha-vantage]",
+      "required_secret_environment_variable": "ALPHA_VANTAGE_API_KEY",
+      "catalog_policy": "仅开放目录中显式登记的固定 Alpha Vantage function 和参数 Schema；禁止任意 function、任意 URL、任意主机、任意请求头、客户端自带 apikey、CSV、交易、下单、账户修改和数据写入。",
+      "execution_policy": "ALPHA_VANTAGE_API_KEY 仅由后端注入固定 HTTPS GET 查询；每张票据最多一次上游请求且全 Provider 串行，避免消耗免费密钥每日 25 次额度；响应、超时和体积受限，错误和额度提示结构化返回。",
+      "limits": {
+        "fixed_api_host": "www.alphavantage.co",
+        "fixed_api_path": "/query",
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "free_key_documented_requests_per_day": 25,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 20000000,
+        "arbitrary_functions_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_api_key_allowed": false,
+        "redirects_allowed": false,
+        "csv_allowed": false,
+        "write_operations_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Alpha Vantage 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": true,
+            "function": "",
+            "force_query": {}
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "symbol-search",
+          "description": "按关键词搜索全球股票、ETF 和基金代码。",
+          "parameters": [
+            "keywords"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "keywords": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "function": "SYMBOL_SEARCH",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "global-quote",
+          "description": "读取单一全球证券的最新报价快照。",
+          "parameters": [
+            "symbol",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "GLOBAL_QUOTE",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "market-status",
+          "description": "读取全球主要市场开闭市状态。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "MARKET_STATUS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "stock-intraday",
+          "description": "读取全球股票分钟级 OHLCV 时间序列。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "outputsize",
+            "month",
+            "adjusted",
+            "extended_hours",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min"
+                ]
+              },
+              "outputsize": {
+                "type": "string",
+                "enum": [
+                  "compact",
+                  "full"
+                ]
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "adjusted": {
+                "type": "boolean"
+              },
+              "extended_hours": {
+                "type": "boolean"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "TIME_SERIES_INTRADAY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": true
+          }
+        },
+        {
+          "operation_id": "stock-daily",
+          "description": "读取全球股票日线 OHLCV；compact 可用于免费密钥。",
+          "parameters": [
+            "symbol",
+            "outputsize"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "outputsize": {
+                "type": "string",
+                "enum": [
+                  "compact",
+                  "full"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "TIME_SERIES_DAILY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "stock-daily-adjusted",
+          "description": "读取复权日线、分红和拆股事件。",
+          "parameters": [
+            "symbol",
+            "outputsize",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "outputsize": {
+                "type": "string",
+                "enum": [
+                  "compact",
+                  "full"
+                ]
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "TIME_SERIES_DAILY_ADJUSTED",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": true
+          }
+        },
+        {
+          "operation_id": "stock-weekly",
+          "description": "读取全球股票周线 OHLCV。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "TIME_SERIES_WEEKLY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "stock-weekly-adjusted",
+          "description": "读取全球股票复权周线。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "TIME_SERIES_WEEKLY_ADJUSTED",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "stock-monthly",
+          "description": "读取全球股票月线 OHLCV。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "TIME_SERIES_MONTHLY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "stock-monthly-adjusted",
+          "description": "读取全球股票复权月线。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "TIME_SERIES_MONTHLY_ADJUSTED",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "realtime-bulk-quotes",
+          "description": "批量读取最多 50 个证券的实时报价。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512,
+                "pattern": "^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+){0,49}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "REALTIME_BULK_QUOTES",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": true
+          }
+        },
+        {
+          "operation_id": "index-catalog",
+          "description": "读取 Alpha Vantage 支持的市场指数目录。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "INDEX_CATALOG",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "index-data",
+          "description": "读取主要市场指数的日、周或月 OHLC。",
+          "parameters": [
+            "symbol",
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "INDEX_DATA",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": true
+          }
+        },
+        {
+          "operation_id": "realtime-options",
+          "description": "读取美国股票实时期权链或指定合约。",
+          "parameters": [
+            "symbol",
+            "require_greeks",
+            "contract"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "require_greeks": {
+                "type": "boolean"
+              },
+              "contract": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9]+$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "REALTIME_OPTIONS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": true
+          }
+        },
+        {
+          "operation_id": "historical-options",
+          "description": "读取美国股票历史期权链。",
+          "parameters": [
+            "symbol",
+            "date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "HISTORICAL_OPTIONS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": true
+          }
+        },
+        {
+          "operation_id": "news-sentiment",
+          "description": "读取股票、外汇、数字资产和宏观主题新闻及情绪。",
+          "parameters": [
+            "tickers",
+            "topics",
+            "time_from",
+            "time_to",
+            "sort",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tickers": {
+                "type": "string",
+                "maxLength": 300,
+                "pattern": "^[A-Za-z0-9._:-]+(,[A-Za-z0-9._:-]+){0,19}$"
+              },
+              "topics": {
+                "type": "string",
+                "maxLength": 300,
+                "pattern": "^[a-z_]+(,[a-z_]+){0,9}$"
+              },
+              "time_from": {
+                "type": "string",
+                "pattern": "^[0-9]{8}T[0-9]{4}$"
+              },
+              "time_to": {
+                "type": "string",
+                "pattern": "^[0-9]{8}T[0-9]{4}$"
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "LATEST",
+                  "EARLIEST",
+                  "RELEVANCE"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "function": "NEWS_SENTIMENT",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "top-gainers-losers",
+          "description": "读取美国市场涨幅榜、跌幅榜和最活跃榜。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "TOP_GAINERS_LOSERS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "company-overview",
+          "description": "读取上市公司概览、估值和关键财务指标。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "OVERVIEW",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "income-statement",
+          "description": "读取公司年度和季度利润表。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "INCOME_STATEMENT",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "balance-sheet",
+          "description": "读取公司年度和季度资产负债表。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "BALANCE_SHEET",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "cash-flow",
+          "description": "读取公司年度和季度现金流量表。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "CASH_FLOW",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "earnings",
+          "description": "读取公司年度和季度每股收益。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "EARNINGS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "earnings-estimates",
+          "description": "读取公司盈利预测和分析师共识。",
+          "parameters": [
+            "symbol",
+            "horizon"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "horizon": {
+                "type": "string",
+                "enum": [
+                  "3month",
+                  "6month",
+                  "12month"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "EARNINGS_ESTIMATES",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "listing-status",
+          "description": "读取美国股票与 ETF 上市或退市状态。",
+          "parameters": [
+            "date",
+            "state"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "delisted"
+                ]
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "function": "LISTING_STATUS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "earnings-calendar",
+          "description": "读取未来企业财报日历。",
+          "parameters": [
+            "symbol",
+            "horizon"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "horizon": {
+                "type": "string",
+                "enum": [
+                  "3month",
+                  "6month",
+                  "12month"
+                ]
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "function": "EARNINGS_CALENDAR",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "ipo-calendar",
+          "description": "读取未来 IPO 日历。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "IPO_CALENDAR",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "dividends",
+          "description": "读取公司历史和未来已公告分红。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "DIVIDENDS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "splits",
+          "description": "读取公司历史拆股和合股事件。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "SPLITS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "shares-outstanding",
+          "description": "读取公司基本和稀释流通股数。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "SHARES_OUTSTANDING",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "insider-transactions",
+          "description": "读取公司内部人交易。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "INSIDER_TRANSACTIONS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "institutional-holdings",
+          "description": "读取机构持仓汇总与明细。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "INSTITUTIONAL_HOLDINGS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "etf-profile",
+          "description": "读取 ETF 净资产、持仓和行业配置。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "ETF_PROFILE",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "currency-exchange-rate",
+          "description": "读取两种法币或数字资产间的实时汇率。",
+          "parameters": [
+            "from_currency",
+            "to_currency"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "from_currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "to_currency": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "from_currency",
+              "to_currency"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "CURRENCY_EXCHANGE_RATE",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "fx-daily",
+          "description": "读取外汇日线。",
+          "parameters": [
+            "from_symbol",
+            "to_symbol",
+            "outputsize"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "from_symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "to_symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "outputsize": {
+                "type": "string",
+                "enum": [
+                  "compact",
+                  "full"
+                ]
+              }
+            },
+            "required": [
+              "from_symbol",
+              "to_symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "FX_DAILY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "fx-weekly",
+          "description": "读取外汇周线。",
+          "parameters": [
+            "from_symbol",
+            "to_symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "from_symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "to_symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "from_symbol",
+              "to_symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "FX_WEEKLY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "fx-monthly",
+          "description": "读取外汇月线。",
+          "parameters": [
+            "from_symbol",
+            "to_symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "from_symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "to_symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "from_symbol",
+              "to_symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "FX_MONTHLY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "digital-currency-daily",
+          "description": "读取数字资产日线。",
+          "parameters": [
+            "symbol",
+            "market"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "market": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "symbol",
+              "market"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "DIGITAL_CURRENCY_DAILY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "digital-currency-weekly",
+          "description": "读取数字资产周线。",
+          "parameters": [
+            "symbol",
+            "market"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "market": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "symbol",
+              "market"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "DIGITAL_CURRENCY_WEEKLY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "digital-currency-monthly",
+          "description": "读取数字资产月线。",
+          "parameters": [
+            "symbol",
+            "market"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "market": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            },
+            "required": [
+              "symbol",
+              "market"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "DIGITAL_CURRENCY_MONTHLY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "gold-silver-spot",
+          "description": "读取黄金或白银现货价格。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "enum": [
+                  "GOLD",
+                  "XAU",
+                  "SILVER",
+                  "XAG"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "GOLD_SILVER_SPOT",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "gold-silver-history",
+          "description": "读取黄金或白银历史价格。",
+          "parameters": [
+            "symbol",
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "enum": [
+                  "GOLD",
+                  "XAU",
+                  "SILVER",
+                  "XAG"
+                ]
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "GOLD_SILVER_HISTORY",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "wti",
+          "description": "读取西德克萨斯中质原油价格。",
+          "parameters": [
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              }
+            },
+            "required": [
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "WTI",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "brent",
+          "description": "读取布伦特原油价格。",
+          "parameters": [
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              }
+            },
+            "required": [
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "BRENT",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "natural-gas",
+          "description": "读取亨利港天然气价格。",
+          "parameters": [
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              }
+            },
+            "required": [
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "NATURAL_GAS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "copper",
+          "description": "读取铜价。",
+          "parameters": [
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              }
+            },
+            "required": [
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "COPPER",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "aluminum",
+          "description": "读取铝价。",
+          "parameters": [
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              }
+            },
+            "required": [
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "ALUMINUM",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "real-gdp",
+          "description": "读取美国实际 GDP。",
+          "parameters": [
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "annual",
+                  "quarterly"
+                ]
+              }
+            },
+            "required": [
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "REAL_GDP",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "real-gdp-per-capita",
+          "description": "读取美国人均实际 GDP。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "REAL_GDP_PER_CAPITA",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "treasury-yield",
+          "description": "读取美国国债收益率。",
+          "parameters": [
+            "interval",
+            "maturity"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "maturity": {
+                "type": "string",
+                "enum": [
+                  "3month",
+                  "2year",
+                  "5year",
+                  "7year",
+                  "10year",
+                  "30year"
+                ]
+              }
+            },
+            "required": [
+              "interval",
+              "maturity"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "TREASURY_YIELD",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "federal-funds-rate",
+          "description": "读取美国联邦基金利率。",
+          "parameters": [
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              }
+            },
+            "required": [
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "FEDERAL_FUNDS_RATE",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "cpi",
+          "description": "读取美国消费者价格指数。",
+          "parameters": [
+            "interval"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "monthly",
+                  "semiannual"
+                ]
+              }
+            },
+            "required": [
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "CPI",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "inflation",
+          "description": "读取美国年度通胀率。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "INFLATION",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "retail-sales",
+          "description": "读取美国月度零售销售。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "RETAIL_SALES",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "durable-goods",
+          "description": "读取美国耐用品订单。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "DURABLES",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "unemployment",
+          "description": "读取美国失业率。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "UNEMPLOYMENT",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "nonfarm-payroll",
+          "description": "读取美国非农就业人数。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "function": "NONFARM_PAYROLL",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "sma",
+          "description": "计算简单移动平均线。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "time_period",
+            "series_type",
+            "month",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "time_period": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "series_type": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "high",
+                  "low",
+                  "close"
+                ]
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "time_period",
+              "series_type"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "SMA",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "ema",
+          "description": "计算指数移动平均线。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "time_period",
+            "series_type",
+            "month",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "time_period": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "series_type": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "high",
+                  "low",
+                  "close"
+                ]
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "time_period",
+              "series_type"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "EMA",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "rsi",
+          "description": "计算相对强弱指数。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "time_period",
+            "series_type",
+            "month",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "time_period": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "series_type": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "high",
+                  "low",
+                  "close"
+                ]
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "time_period",
+              "series_type"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "RSI",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "macd",
+          "description": "计算 MACD。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "time_period",
+            "series_type",
+            "month",
+            "entitlement",
+            "fastperiod",
+            "slowperiod",
+            "signalperiod",
+            "matype"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "time_period": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "series_type": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "high",
+                  "low",
+                  "close"
+                ]
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              },
+              "fastperiod": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "slowperiod": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "signalperiod": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "matype": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 8
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "series_type"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "MACD",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": true
+          }
+        },
+        {
+          "operation_id": "bbands",
+          "description": "计算布林带。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "time_period",
+            "series_type",
+            "month",
+            "entitlement",
+            "nbdevup",
+            "nbdevdn",
+            "matype"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "time_period": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "series_type": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "high",
+                  "low",
+                  "close"
+                ]
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              },
+              "nbdevup": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 20
+              },
+              "nbdevdn": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 20
+              },
+              "matype": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 8
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "time_period",
+              "series_type"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "BBANDS",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "atr",
+          "description": "计算平均真实波幅。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "time_period",
+            "month",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "time_period": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "time_period"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "ATR",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "adx",
+          "description": "计算平均趋向指数。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "time_period",
+            "month",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "time_period": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval",
+              "time_period"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "ADX",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "stoch",
+          "description": "计算随机指标。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "fastkperiod",
+            "slowkperiod",
+            "slowdperiod",
+            "slowkmatype",
+            "slowdmatype",
+            "month",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "fastkperiod": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "slowkperiod": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "slowdperiod": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "slowkmatype": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 8
+              },
+              "slowdmatype": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 8
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "STOCH",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        },
+        {
+          "operation_id": "obv",
+          "description": "计算能量潮指标。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "month",
+            "entitlement"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "enum": [
+                  "1min",
+                  "5min",
+                  "15min",
+                  "30min",
+                  "60min",
+                  "daily",
+                  "weekly",
+                  "monthly"
+                ]
+              },
+              "month": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}$"
+              },
+              "entitlement": {
+                "type": "string",
+                "enum": [
+                  "delayed",
+                  "realtime"
+                ]
+              }
+            },
+            "required": [
+              "symbol",
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "function": "OBV",
+            "force_query": {
+              "datatype": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "alpha-vantage",
+            "official_origin": "https://www.alphavantage.co",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "apikey_query_backend_only",
+            "premium_entitlement_may_be_required": false
+          }
+        }
+      ]
+    }
+  ]
+}

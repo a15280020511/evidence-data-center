@@ -24,6 +24,7 @@ AMAP_API_KEY
 BAIDU_MAP_API_KEY
 NEWSAPI_API_KEY
 TUSHARE_API_TOKEN
+ALPHA_VANTAGE_API_KEY
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
 ```
@@ -33,3 +34,5 @@ LLAMA_CLOUD_API_KEY
 Wolfram|Alpha 的 AppID 仅允许作为 `appid` 查询参数注入三个固定官方端点。LlamaParse Key 仅允许作为 Bearer 凭据注入 NA 或 EU 官方 Parse v2 主机；解析结果中的预签名下载地址必须删除后才能写入 Artifact。
 
 天地图提供方已删除；`TIANDITU_API_KEY` 不再被任何工作流或代码读取。仓库设置中残留的旧 Secret 需由仓库所有者在 GitHub Settings 中手动删除。
+
+Alpha Vantage Key 仅允许作为 `apikey` 查询参数注入 `https://www.alphavantage.co/query`；客户端不得覆盖 `function` 白名单或传入自己的密钥。
