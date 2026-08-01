@@ -48,14 +48,14 @@ jobs:
           python -m unittest discover -s api-center/browserless/tests -p 'test_*.py' -v
           python -m unittest api-center.tests.test_api_catalog -v
 
-      - name: Commit materialized integration
+      - name: Commit materialized API files
         run: |
-          if git diff --quiet && git diff --cached --quiet; then
-            echo "Browserless integration already materialized."
+          git add api-center
+          if git diff --cached --quiet; then
+            echo "Browserless API files already materialized."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add api-center .github/workflows/browserless-api-ticket.yml .github/workflows/browserless-provider-validate.yml
           git commit -m "feat: add Browserless to API center"
           git push origin "HEAD:${{ github.head_ref }}"
