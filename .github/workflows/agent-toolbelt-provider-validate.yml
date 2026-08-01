@@ -1,27 +1,25 @@
 name: Apply Agent Toolbelt Stock Tool Removal
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/agent-toolbelt-provider-validate.yml"
+  push:
+    branches:
+      - "automation/remove-agt-stock-tools"
 
 permissions:
   contents: write
 
 concurrency:
-  group: apply-agent-toolbelt-stock-removal-${{ github.ref }}
+  group: apply-agent-toolbelt-stock-removal
   cancel-in-progress: true
 
 jobs:
   apply-removal:
-    if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
-      - name: Checkout PR branch
+      - name: Checkout migration branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
           persist-credentials: true
           fetch-depth: 0
 
@@ -214,4 +212,4 @@ Agent Toolbelt 官方 API 使用 Bearer Key。未配置 `AGENT_TOOLBELT_KEY` 时
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add api-center/agent-toolbelt api-center/api-catalog.json api-center/api-catalog.md api-center/tests/test_api_catalog.py api-center/tests/test_capability_maximization.py .github/workflows/api-catalog-validate.yml
           git commit -m "refactor: remove Agent Toolbelt stock tools"
-          git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          git push origin HEAD:${GITHUB_REF_NAME}
