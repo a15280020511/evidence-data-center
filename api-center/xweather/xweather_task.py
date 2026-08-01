@@ -39,24 +39,33 @@ class XweatherError(RuntimeError):
         self.retryable = retryable
 
 
+def _validate_credential(name: str, value: str, *, maximum: int = 512) -> None:
+    if not 8 <= len(value) <= maximum:
+        raise XweatherError("XWEATHER_CREDENTIAL_INVALID", f"invalid {name} length")
+    if any(ord(char) < 0x21 or ord(char) > 0x7E for char in value):
+        raise XweatherError("XWEATHER_CREDENTIAL_INVALID", f"invalid {name} characters")
+
+
 def credentials() -> tuple[str, str]:
     client_id = str(os.getenv(CLIENT_ID_ENV) or "").strip()
-    client_secret = str(os.getenv(CLIENT_SECRET_ENV) or "").strip()
+    raw_secret = str(os.getenv(CLIENT_SECRET_ENV) or "").strip()
     if not client_id:
         raise XweatherError(
             "XWEATHER_CLIENT_ID_MISSING",
             f"missing repository Variable {CLIENT_ID_ENV}",
         )
-    if not client_secret:
+    if not raw_secret:
         raise XweatherError(
             "XWEATHER_CLIENT_SECRET_MISSING",
             f"missing repository Secret {CLIENT_SECRET_ENV}",
         )
-    for name, value in ((CLIENT_ID_ENV, client_id), (CLIENT_SECRET_ENV, client_secret)):
-        if not 8 <= len(value) <= 512:
-            raise XweatherError("XWEATHER_CREDENTIAL_INVALID", f"invalid {name} length")
-        if any(ord(char) < 0x21 or ord(char) > 0x7E for char in value):
-            raise XweatherError("XWEATHER_CREDENTIAL_INVALID", f"invalid {name} characters")
+
+    _validate_credential(CLIENT_ID_ENV, client_id)
+    _validate_credential(CLIENT_SECRET_ENV, raw_secret, maximum=1024)
+
+    prefix = client_id + "_"
+    client_secret = raw_secret[len(prefix) :] if raw_secret.startswith(prefix) else raw_secret
+    _validate_credential(CLIENT_SECRET_ENV, client_secret)
     return client_id, client_secret
 
 
