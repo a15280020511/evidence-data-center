@@ -38,6 +38,7 @@ EXPECTED_OPERATION_COUNTS = {
     "baostock": 20,
     "eodhd": 25,
     "east-asia-econ": 6,
+    "alpha-vantage": 66,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -62,9 +63,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 24)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 24)
-        self.assertEqual(catalog["managed_operation_count"], 240)
+        self.assertEqual(catalog["managed_provider_count"], 25)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 25)
+        self.assertEqual(catalog["managed_operation_count"], 306)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -101,6 +102,7 @@ class ApiCatalogTests(unittest.TestCase):
             "tushare": "TUSHARE_API_TOKEN",
             "eodhd": "EODHD_API_TOKEN",
             "east-asia-econ": "EAST_ASIA_ECON_API_KEY",
+            "alpha-vantage": "ALPHA_VANTAGE_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -156,6 +158,26 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(east_asia["limits"]["arbitrary_urls_allowed"])
         self.assertFalse(east_asia["limits"]["arbitrary_headers_allowed"])
         self.assertFalse(east_asia["limits"]["write_operations_allowed"])
+
+        alpha_vantage = providers["alpha-vantage"]
+        self.assertEqual(alpha_vantage["ticket_prefix"], "[api-alpha-vantage]")
+        self.assertEqual(
+            alpha_vantage["required_secret_environment_variable_name"],
+            "ALPHA_VANTAGE_API_KEY",
+        )
+        self.assertEqual(len(alpha_vantage["operations"]), 66)
+        self.assertEqual(
+            alpha_vantage["limits"]["fixed_api_host"],
+            "www.alphavantage.co",
+        )
+        self.assertEqual(alpha_vantage["limits"]["requests_per_ticket_max"], 1)
+        self.assertEqual(alpha_vantage["limits"]["provider_concurrency_max"], 1)
+        self.assertFalse(alpha_vantage["limits"]["arbitrary_functions_allowed"])
+        self.assertFalse(alpha_vantage["limits"]["client_supplied_api_key_allowed"])
+        self.assertFalse(alpha_vantage["limits"]["write_operations_allowed"])
+        self.assertFalse(
+            alpha_vantage["limits"]["trading_or_order_execution_allowed"]
+        )
 
         self.assertEqual(
             providers["tushare"]["ticket_prefix"],
@@ -228,6 +250,7 @@ class ApiCatalogTests(unittest.TestCase):
             "qweather/provider-catalog.json",
             "miaoxiang-mcp/provider-catalog.json",
             "east-asia-econ/provider-catalog.json",
+            "alpha-vantage/provider-catalog.json",
             "knowledge-tools/provider-catalog.json",
         ):
             self.assertIn(catalog_file, catalog["managed_provider_catalog_files"])
