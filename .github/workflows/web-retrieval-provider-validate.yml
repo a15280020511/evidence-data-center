@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "api-center/web-retrieval/**"
+      - "api-center/browserless/**"
       - "api-center/build_catalog.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
@@ -11,12 +12,14 @@ on:
       - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/web-retrieval-api-ticket.yml"
       - ".github/workflows/context-retrieval-api-ticket.yml"
+      - ".github/workflows/browserless-api-ticket.yml"
       - ".github/workflows/web-retrieval-provider-validate.yml"
       - ".github/workflows/api-catalog-validate.yml"
   push:
     branches: [main]
     paths:
       - "api-center/web-retrieval/**"
+      - "api-center/browserless/**"
       - "api-center/build_catalog.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
@@ -24,6 +27,7 @@ on:
       - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/web-retrieval-api-ticket.yml"
       - ".github/workflows/context-retrieval-api-ticket.yml"
+      - ".github/workflows/browserless-api-ticket.yml"
       - ".github/workflows/web-retrieval-provider-validate.yml"
       - ".github/workflows/api-catalog-validate.yml"
   workflow_dispatch:
@@ -92,27 +96,46 @@ jobs:
           assert catalog['schema_version'] == 'web-retrieval-provider-catalog-v2'
           assert catalog['secret_values_exposed'] is False
           providers = {row['provider_id']: row for row in catalog['providers']}
-          assert set(providers) == {'jina-reader', 'exa', 'tavily', 'firecrawl'}
+          assert set(providers) == {
+              'jina-reader', 'exa', 'tavily', 'firecrawl', 'browserless'
+          }
           assert all(row['enabled'] is True for row in providers.values())
           assert providers['jina-reader']['required_secret_environment_variable'] == ''
           assert providers['jina-reader']['optional_secret_environment_variable'] == 'JINA_API_KEY'
           assert providers['exa']['required_secret_environment_variable'] == 'EXA_API_KEY'
           assert providers['tavily']['required_secret_environment_variable'] == 'TAVILY_API_KEY'
           assert providers['firecrawl']['required_secret_environment_variable'] == 'FIRECRAWL_API_KEY'
+          assert providers['browserless']['required_secret_environment_variable'] == 'BROWSERLESS_TOKEN'
           assert providers['tavily']['ticket_prefix'] == '[api-context]'
           assert providers['firecrawl']['ticket_prefix'] == '[api-context]'
+          assert providers['browserless']['ticket_prefix'] == '[api-browserless]'
           assert len(providers['jina-reader']['operations']) == 2
           assert len(providers['exa']['operations']) == 3
           assert len(providers['tavily']['operations']) == 5
           assert len(providers['firecrawl']['operations']) == 4
+          assert len(providers['browserless']['operations']) == 8
           assert {row['operation_id'] for row in providers['tavily']['operations']} == {
               'catalog-capabilities', 'search', 'extract', 'map', 'crawl'
           }
           assert {row['operation_id'] for row in providers['firecrawl']['operations']} == {
               'catalog-capabilities', 'search', 'scrape', 'map'
           }
+          assert {row['operation_id'] for row in providers['browserless']['operations']} == {
+              'catalog-capabilities', 'content', 'scrape', 'screenshot', 'pdf',
+              'performance', 'search', 'map'
+          }
+          browserless_limits = providers['browserless']['limits']
+          assert browserless_limits['fixed_api_host'] == 'production-sfo.browserless.io'
+          assert browserless_limits['arbitrary_code_allowed'] is False
+          assert browserless_limits['websocket_sessions_allowed'] is False
+          assert browserless_limits['profiles_allowed'] is False
+          assert browserless_limits['custom_headers_allowed'] is False
+          assert browserless_limits['cookies_allowed'] is False
+          assert browserless_limits['proxy_configuration_allowed'] is False
+          assert browserless_limits['captcha_or_unblock_allowed'] is False
+          assert browserless_limits['write_operations_allowed'] is False
           assert context_schema['properties']['provider']['enum'] == ['tavily', 'firecrawl']
-          print(json.dumps({'status': 'PASS', 'providers': 4, 'operations': 14}))
+          print(json.dumps({'status': 'PASS', 'providers': 5, 'operations': 22}))
           PY
 
       - name: Verify no credential material or unsafe operations enter repository files
