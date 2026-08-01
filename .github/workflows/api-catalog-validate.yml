@@ -48,6 +48,7 @@ jobs:
             api-center/overture-maps/requirements.txt
             api-center/oecd/requirements.txt
             api-center/alphafeed/requirements.txt
+            api-center/agent-toolbelt/requirements.txt
 
       - name: Install isolated API dependencies
         run: |
@@ -64,7 +65,8 @@ jobs:
             -r api-center/alpha-vantage/requirements.txt \
             -r api-center/overture-maps/requirements.txt \
             -r api-center/oecd/requirements.txt \
-            -r api-center/alphafeed/requirements.txt
+            -r api-center/alphafeed/requirements.txt \
+            -r api-center/agent-toolbelt/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -95,6 +97,7 @@ jobs:
             api-center/overture-maps/overture_maps_task.py \
             api-center/oecd/oecd_task.py \
             api-center/alphafeed/alphafeed_task.py \
+            api-center/agent-toolbelt/agent_toolbelt_task.py \
             api-center/tests/*.py \
             api-center/browserless/tests/*.py \
             api-center/east-asia-econ/tests/*.py \
@@ -102,7 +105,8 @@ jobs:
             api-center/overture-maps/tests/*.py \
             api-center/oecd/tests/*.py \
             api-center/alphafeed/tests/*.py \
-            api-center/xweather/tests/*.py
+            api-center/xweather/tests/*.py \
+            api-center/agent-toolbelt/tests/*.py
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
@@ -115,6 +119,7 @@ jobs:
           python -m unittest discover -s api-center/overture-maps/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/oecd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/alphafeed/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/agent-toolbelt/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Rebuild deterministic contracts
@@ -141,11 +146,11 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 29
-          assert catalog['enabled_managed_provider_count'] == 29
+          assert catalog['managed_provider_count'] == len(providers) == 30
+          assert catalog['enabled_managed_provider_count'] == 30
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 339
+          ) == 368
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
@@ -183,16 +188,27 @@ jobs:
           assert xweather['limits']['client_supplied_credentials_allowed'] is False
           assert xweather['limits']['write_operations_allowed'] is False
 
+          agent_toolbelt = providers['agent-toolbelt']
+          assert agent_toolbelt['ticket_prefix'] == '[api-agent-toolbelt]'
+          assert agent_toolbelt['required_secret_environment_variable_name'] == 'AGENT_TOOLBELT_KEY'
+          assert len(agent_toolbelt['operations']) == 29
+          assert agent_toolbelt['limits']['fixed_api_host'] == 'www.agenttoolbelt.live'
+          assert agent_toolbelt['limits']['arbitrary_tool_names_allowed'] is False
+          assert agent_toolbelt['limits']['watchlist_crud_allowed'] is False
+          assert agent_toolbelt['limits']['write_operations_allowed'] is False
+          assert agent_toolbelt['limits']['trading_or_order_execution_allowed'] is False
+
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
               'worldbank_connectors': 9,
-              'managed_providers': 29,
-              'managed_operations': 339,
+              'managed_providers': 30,
+              'managed_operations': 368,
               'overture_maps_operations': 7,
               'oecd_operations': 6,
               'alphafeed_operations': 10,
               'xweather_operations': 10,
+              'agent_toolbelt_operations': 29,
           }))
           PY
           git diff --check
@@ -217,5 +233,7 @@ jobs:
             api-center/alphafeed/ticket.schema.json
             api-center/xweather/provider-catalog.json
             api-center/xweather/ticket.schema.json
+            api-center/agent-toolbelt/provider-catalog.json
+            api-center/agent-toolbelt/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
