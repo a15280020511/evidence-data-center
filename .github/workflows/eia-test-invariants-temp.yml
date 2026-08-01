@@ -1,0 +1,77 @@
+name: Temporary EIA Test Invariant Patcher
+
+on:
+  push:
+    branches: [feat/eia-api-provider]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+          ref: feat/eia-api-provider
+      - name: Update deterministic test invariants
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path}: expected one match, found {count}: {old!r}')
+              file.write_text(text.replace(old, new), encoding='utf-8')
+
+          catalog_test = 'api-center/tests/test_api_catalog.py'
+          replace_once(
+              catalog_test,
+              '    "copernicus-cdse": 7,\n    "wolfram-alpha": 4,',
+              '    "copernicus-cdse": 7,\n    "eia": 6,\n    "wolfram-alpha": 4,',
+          )
+          replace_once(
+              catalog_test,
+              '        self.assertEqual(catalog["managed_provider_count"], 38)',
+              '        self.assertEqual(catalog["managed_provider_count"], 39)',
+          )
+          replace_once(
+              catalog_test,
+              '        self.assertEqual(catalog["enabled_managed_provider_count"], 38)',
+              '        self.assertEqual(catalog["enabled_managed_provider_count"], 39)',
+          )
+          replace_once(
+              catalog_test,
+              '        self.assertEqual(catalog["managed_operation_count"], 420)',
+              '        self.assertEqual(catalog["managed_operation_count"], 426)',
+          )
+          replace_once(
+              catalog_test,
+              '            "copernicus-cdse": "COPERNICUS_CLIENT_SECRET",\n            "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",',
+              '            "copernicus-cdse": "COPERNICUS_CLIENT_SECRET",\n            "eia": "EIA_API_KEY",\n            "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",',
+          )
+
+          capability_test = 'api-center/tests/test_capability_maximization.py'
+          replace_once(
+              capability_test,
+              '            420,\n        )',
+              '            426,\n        )',
+          )
+          replace_once(
+              capability_test,
+              '            "copernicus-cdse": 7,\n            "wolfram-alpha": 4,',
+              '            "copernicus-cdse": 7,\n            "eia": 6,\n            "wolfram-alpha": 4,',
+          )
+          PY
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center/tests/test_api_catalog.py api-center/tests/test_capability_maximization.py
+          git commit -m "test: update catalog invariants for EIA"
+          git push origin HEAD:feat/eia-api-provider
