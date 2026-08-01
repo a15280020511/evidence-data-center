@@ -25,7 +25,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Remove unsupported stock tools
+      - name: Install migration and validation dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/agent-toolbelt/requirements.txt
+          python -m pip check
+
+      - name: Remove unsupported stock tools and rebuild contracts
         run: |
           set -euo pipefail
           python .github/scripts/remove_agent_toolbelt_stock_tools.py
@@ -35,9 +43,6 @@ jobs:
       - name: Validate migrated contracts
         run: |
           set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input \
-            -r api-center/requirements.txt \
-            -r api-center/agent-toolbelt/requirements.txt
           python -m py_compile \
             api-center/build_catalog.py \
             api-center/build_catalog_market_search.py \
