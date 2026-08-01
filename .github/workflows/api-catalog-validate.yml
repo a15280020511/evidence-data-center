@@ -139,6 +139,11 @@ jobs:
           import json
           from pathlib import Path
 
+          stock_operations = {
+              'stock-thesis', 'earnings-analysis', 'insider-signal',
+              'valuation-snapshot', 'bear-vs-bull', 'compare-stocks',
+              'moat-analysis', 'watchlist-scan',
+          }
           catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
           manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
@@ -150,7 +155,7 @@ jobs:
           assert catalog['enabled_managed_provider_count'] == 30
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 368
+          ) == 360
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
@@ -189,9 +194,14 @@ jobs:
           assert xweather['limits']['write_operations_allowed'] is False
 
           agent_toolbelt = providers['agent-toolbelt']
+          agent_toolbelt_ops = {row['operation_id'] for row in agent_toolbelt['operations']}
           assert agent_toolbelt['ticket_prefix'] == '[api-agent-toolbelt]'
           assert agent_toolbelt['required_secret_environment_variable_name'] == 'AGENT_TOOLBELT_KEY'
-          assert len(agent_toolbelt['operations']) == 29
+          assert len(agent_toolbelt_ops) == 21
+          assert not stock_operations.intersection(agent_toolbelt_ops)
+          assert agent_toolbelt['limits']['fixed_upstream_tool_count'] == 20
+          assert agent_toolbelt['limits']['stock_research_tools_allowed'] is False
+          assert agent_toolbelt['limits']['us_equity_research_allowed'] is False
           assert agent_toolbelt['limits']['fixed_api_host'] == 'www.agenttoolbelt.live'
           assert agent_toolbelt['limits']['arbitrary_tool_names_allowed'] is False
           assert agent_toolbelt['limits']['watchlist_crud_allowed'] is False
@@ -203,12 +213,13 @@ jobs:
               'connectors': 68,
               'worldbank_connectors': 9,
               'managed_providers': 30,
-              'managed_operations': 368,
+              'managed_operations': 360,
               'overture_maps_operations': 7,
               'oecd_operations': 6,
               'alphafeed_operations': 10,
               'xweather_operations': 10,
-              'agent_toolbelt_operations': 29,
+              'agent_toolbelt_operations': 21,
+              'agent_toolbelt_stock_operations': 0,
           }))
           PY
           git diff --check
