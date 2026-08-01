@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: temporary-integrate-marketstack
@@ -30,6 +30,7 @@ jobs:
         with:
           ref: feat/add-marketstack
           fetch-depth: 0
+          persist-credentials: false
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
@@ -49,13 +50,44 @@ jobs:
       - name: Apply deterministic integration and rebuild catalogs
         run: python api-center/marketstack/integrate_marketstack.py
 
-      - name: Commit integrated contracts and remove temporary runner
+      - name: Freeze validated patch bundle
         run: |
-          git rm api-center/marketstack/integrate_marketstack.py
-          git rm .github/workflows/temporary-integrate-marketstack.yml
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --check
-          git commit -m "feat: register Marketstack free-plan provider"
-          git push origin HEAD:feat/add-marketstack
+          set -euo pipefail
+          mkdir -p marketstack-integration-patch/api-center/tests
+          mkdir -p marketstack-integration-patch/api-center
+          mkdir -p marketstack-integration-patch/.github/workflows
+          cp api-center/build_catalog_market_search.py marketstack-integration-patch/api-center/
+          cp api-center/tests/test_api_catalog.py marketstack-integration-patch/api-center/tests/
+          cp api-center/tests/test_capability_maximization.py marketstack-integration-patch/api-center/tests/
+          cp .github/workflows/api-catalog-validate.yml marketstack-integration-patch/.github/workflows/
+          cp api-center/README.md marketstack-integration-patch/api-center/
+          cp api-center/SECRET_ISOLATION_POLICY.md marketstack-integration-patch/api-center/
+          cp api-center/api-catalog.json marketstack-integration-patch/api-center/
+          cp api-center/api-catalog.md marketstack-integration-patch/api-center/
+          python - <<'PY'
+          import hashlib, json
+          from pathlib import Path
+          root = Path('marketstack-integration-patch')
+          files = {}
+          for path in sorted(p for p in root.rglob('*') if p.is_file()):
+              files[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+          (root / 'validated-patch-manifest.json').write_text(
+              json.dumps({
+                  'schema_version': 'marketstack-validated-patch-v1',
+                  'managed_provider_count': 35,
+                  'managed_operation_count': 384,
+                  'marketstack_operations': 11,
+                  'tests_passed': True,
+                  'files': files,
+              }, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          PY
+
+      - name: Upload validated integration patch
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: marketstack-validated-integration-${{ github.run_id }}
+          path: marketstack-integration-patch/
+          if-no-files-found: error
+          retention-days: 7
