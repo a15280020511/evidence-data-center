@@ -127,11 +127,7 @@ jobs:
                   '            "gapup-mcp": 209,\n',
               ),
           )
-          text = text.replace(
-              '            593,\n',
-              '            363,\n',
-              1,
-          )
+          text = text.replace('            593,\n', '            363,\n', 1)
           save("api-center/tests/test_capability_maximization.py", text)
 
           def remove_markdown_section(text: str, heading_pattern: str) -> str:
@@ -152,6 +148,53 @@ jobs:
           text = remove_markdown_section(text, r"Agent Toolbelt")
           text = remove_markdown_section(text, r"Gapup MCP")
           save("api-center/SECRET_ISOLATION_POLICY.md", text)
+
+          text = load(".github/workflows/api-catalog-validate.yml")
+          text = remove_exact_lines(
+              text,
+              (
+                  '            api-center/agent-toolbelt/requirements.txt\n',
+                  '            api-center/gapup-mcp/requirements.txt\n',
+                  '            -r api-center/agent-toolbelt/requirements.txt \\\n',
+                  '            -r api-center/gapup-mcp/requirements.txt \\\n',
+                  '            api-center/agent-toolbelt/agent_toolbelt_task.py \\\n',
+                  '            api-center/gapup-mcp/gapup_mcp_task.py \\\n',
+                  '            api-center/agent-toolbelt/tests/*.py \\\n',
+                  '            api-center/gapup-mcp/tests/*.py \\\n',
+                  "          python -m unittest discover -s api-center/agent-toolbelt/tests -p 'test_*.py' -v\n",
+                  "          python -m unittest discover -s api-center/gapup-mcp/tests -p 'test_*.py' -v\n",
+                  '            api-center/agent-toolbelt/provider-catalog.json\n',
+                  '            api-center/agent-toolbelt/ticket.schema.json\n',
+                  '            api-center/gapup-mcp/provider-catalog.json\n',
+                  '            api-center/gapup-mcp/ticket.schema.json\n',
+                  '            api-center/gapup-mcp/readonly-tools.snapshot.json\n',
+                  "              'agent_toolbelt_operations': 21,\n",
+                  "              'agent_toolbelt_stock_operations': 0,\n",
+                  "              'gapup_mcp_operations': 209,\n",
+                  "              'gapup_mcp_upstream_tools': 208,\n",
+                  "              'gapup_mcp_blocked_tools': 63,\n",
+              ),
+          )
+          text = text.replace(
+              "assert catalog['managed_provider_count'] == len(providers) == 34",
+              "assert catalog['managed_provider_count'] == len(providers) == 32",
+          )
+          text = text.replace(
+              "assert catalog['enabled_managed_provider_count'] == 34",
+              "assert catalog['enabled_managed_provider_count'] == 32",
+          )
+          text = text.replace('          ) == 593\n', '          ) == 363\n')
+          text = text.replace("              'managed_providers': 34,\n", "              'managed_providers': 32,\n")
+          text = text.replace("              'managed_operations': 593,\n", "              'managed_operations': 363,\n")
+          text, removed = re.subn(
+              r"\n          agent_toolbelt = providers\['agent-toolbelt'\].*?\n          who = providers\['who-gho-odata'\]",
+              "\n          who = providers['who-gho-odata']",
+              text,
+              flags=re.DOTALL,
+          )
+          if removed != 1:
+              raise RuntimeError(f"expected one catalog workflow provider block, removed {removed}")
+          save(".github/workflows/api-catalog-validate.yml", text)
           PY
 
       - name: Rebuild deterministic catalog
@@ -163,7 +206,7 @@ jobs:
           python api-center/tests/test_api_catalog.py
           python api-center/tests/test_capability_maximization.py
           python -m compileall -q api-center
-          if git grep -n -i -E 'agent[ -]?toolbelt|agent_toolbelt|AGENT_TOOLBELT_KEY|gapup|GAPUP_API_KEY' -- . ':!README.md' ':!api-center/api-catalog.json' ':!api-center/api-catalog.md'; then
+          if git grep -n -i -E 'agent[ -]?toolbelt|agent_toolbelt|AGENT_TOOLBELT_KEY|gapup|GAPUP_API_KEY' -- . ':!README.md' ':!api-center/api-catalog.json' ':!api-center/api-catalog.md' ':!.github/workflows/temporary-remove-agent-toolbelt-gapup.yml'; then
             echo "Unexpected provider reference remains"
             exit 1
           fi
