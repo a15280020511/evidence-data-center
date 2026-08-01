@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`28/28` 已启用
-- 托管操作总数：`329`
-- 已公开参数总数：`1322`
-- 目录 SHA-256：`e0589dc7aae4cba6fb121b2027e309c1177e3f66a88aad85bf6b3efb89edb8e6`
+- 托管提供方：`29/29` 已启用
+- 托管操作总数：`339`
+- 已公开参数总数：`1358`
+- 目录 SHA-256：`800fefa0a702bf8322b9b5225f6db43e87d76fae568fba3de5d88e443d0aeed4`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -37,6 +37,7 @@
 | EODHD 全球金融市场数据 | `eodhd` | 启用 | `[api-eodhd]` | `25` | 否 |
 | Google Data Commons | `data-commons` | 启用 | `[api-dc]` | `5` | 否 |
 | 和风天气 QWeather | `qweather` | 启用 | `[api-qweather]` | `18` | 否 |
+| Xweather 全球专业天气数据 | `xweather` | 启用 | `[api-xweather]` | `10` | 否 |
 | 东方财富妙想 MCP | `miaoxiang-mcp` | 启用 | `[api-mx-mcp]` | `13` | 否 |
 | East Asia Econ 东亚宏观数据库 | `east-asia-econ` | 启用 | `[api-east-asia-econ]` | `6` | 否 |
 | Alpha Vantage 全球金融与宏观数据 | `alpha-vantage` | 启用 | `[api-alpha-vantage]` | `66` | 否 |
@@ -135,6 +136,7 @@
 - 执行策略：只允许单条SELECT或WITH查询；禁止DDL、DML、脚本、导出、外部查询、远程函数和私有项目访问。
 - 票据前缀：`[api-gcp]`
 - Secret环境变量名：`GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`92ce9c51980065a31186c2bc2273959f6e43c6441df5f29dea8affef1b6659c3`
 
 | 操作 | 说明 | 参数 |
@@ -441,6 +443,7 @@
 - 执行策略：只允许返回JSON值的只读计算；禁止导出、写资产、删除、复制、重命名、上传、外部URL和视频或缩略图任务。
 - 票据前缀：`[api-gcp]`
 - Secret环境变量名：`GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`90546500a5762ec00c17ea64e49cf60bada2bfe850551587abd8f0e161c73938`
 
 | 操作 | 说明 | 参数 |
@@ -613,6 +616,7 @@
 - 执行策略：每张票据只执行一个固定白名单函数；严格校验证券代码、市场、周期、日期、报表类型、指标枚举、行数和超时；不连接券商、不下单。
 - 票据前缀：`[api-akshare]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`51c98e310e75aa22eb2cf474ed39a82cef707470af3d0d88a487271cb7ddc4d1`
 
 | 操作 | 说明 | 参数 |
@@ -1173,6 +1177,7 @@
 - 执行策略：每张票据只读取一个证券代码；腾讯为主源，新浪为备用；限制周期、行数、超时和响应大小；不下单、不连接券商。
 - 票据前缀：`[api-ashare]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`f763ed3c3a2aa7e979a6de86ffa20527b6f93b9d9e8613d21df21e0a4cffe481`
 
 | 操作 | 说明 | 参数 |
@@ -1275,6 +1280,7 @@
 - 执行策略：每张票据只执行一个固定只读操作；先初始化MCP，再调用固定映射工具；限制输入、日期、条数和响应大小；不下单、不写入、不执行任意代码。
 - 票据前缀：`[api-aifin]`
 - Secret环境变量名：`WIND_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`b630c7bf2699e4ff10856cc68063f54bbb5d64e14de27273f38dded0aa6ff819`
 
 | 操作 | 说明 | 参数 |
@@ -1844,6 +1850,7 @@
 - 执行策略：每张票据只执行一个只读调用；固定https://open.chineselaw.com主机，使用后端X-API-Key；限制参数深度、条数、超时和响应大小；过滤密钥和直接个人标识字段。
 - 票据前缀：`[api-yuandian]`
 - Secret环境变量名：`YUANDIAN_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`209bcddd432ce325bb04568aa8404881ec8e42ec6995648166a0a3182ceea80e`
 
 | 操作 | 说明 | 参数 |
@@ -3671,6 +3678,7 @@
 - 执行策略：后端固定使用 Authorization Token；每张票据执行一个只读请求并过滤直接联系方式与个人身份字段。
 - 票据前缀：`[api-company]`
 - Secret环境变量名：`TIANYANCHA_API_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`cfae6391c6824cc14c5d90bbc3c90c2ec5bfe97910735691ff687db980909544`
 
 | 操作 | 说明 | 参数 |
@@ -3752,6 +3760,7 @@
 - 执行策略：每张票据执行一个只读请求；禁止修改自选股、模拟交易、撤单、账户资金和其他写操作。
 - 票据前缀：`[api-mx]`
 - Secret环境变量名：`MX_APIKEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`ccd53455ebe7f9945eae858c350bf635362edf29ccbc98a89dae3f93c0ea2843`
 
 | 操作 | 说明 | 参数 |
@@ -3861,6 +3870,7 @@
 - 执行策略：无 Key 时使用 Jina Reader 官方匿名基础额度；配置 JINA_API_KEY 时仅在后端 Authorization Bearer 头注入以提高额度。每张票据最多读取一个 URL。
 - 票据前缀：`[api-web]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`44e58ffbc0199c0920a3f86db7093bd389aef67fb7a2d1a95f14dd669d18f4b6`
 
 | 操作 | 说明 | 参数 |
@@ -3926,6 +3936,7 @@
 - 执行策略：EXA_API_KEY 仅在后端 x-api-key 头注入；每张票据只执行一次调用；搜索最多10条，Contents最多5个公开 HTTPS URL，不启用摘要或联系人富集。
 - 票据前缀：`[api-web]`
 - Secret环境变量名：`EXA_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`9ae67e37ccc9cb17e849551300f7c87b705415ff90d759e972cc9c5d3d4164ce`
 
 | 操作 | 说明 | 参数 |
@@ -4059,6 +4070,7 @@
 - 执行策略：TAVILY_API_KEY 仅在后端 Authorization Bearer 头注入；每张票据执行一次请求；Search 默认 basic 且关闭自动参数和生成式答案；Extract 最多5个 URL；Map 最多50个链接；Crawl 最多20页且深度最多2。
 - 票据前缀：`[api-context]`
 - Secret环境变量名：`TAVILY_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`c8e9b195cf48b60dd7657f55a575745b00cee16dda1b6fa52c76e10deb6365a0`
 
 | 操作 | 说明 | 参数 |
@@ -4364,6 +4376,7 @@
 - 执行策略：FIRECRAWL_API_KEY 仅在后端 Authorization Bearer 头注入；每张票据执行一次请求；Search最多10条；Scrape仅允许Markdown和Links并启用零数据保留；Map最多100个链接且默认不含子域名。
 - 票据前缀：`[api-context]`
 - Secret环境变量名：`FIRECRAWL_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`a44c4d567f550e422b27f53ae4531d69e2096d249e590d953835c16fedc56375`
 
 | 操作 | 说明 | 参数 |
@@ -4543,6 +4556,7 @@
 - 执行策略：BROWSERLESS_TOKEN 仅在后端固定查询参数中注入且不进入日志或 Artifact；每张票据只调用一个固定 REST 端点；目标 URL 必须通过公开 HTTPS 与 SSRF 防护；二进制结果只作为 Artifact 文件保存。
 - 票据前缀：`[api-browserless]`
 - Secret环境变量名：`BROWSERLESS_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`930432038bc74e69f64242ed145e7dafc372bfb114b6a2fed2c625a01ab1f7d1`
 
 | 操作 | 说明 | 参数 |
@@ -4833,6 +4847,7 @@
 - 执行策略：TICKFLOW_API_KEY 仅在后端 x-api-key 请求头注入；每张票据最多执行一次同步只读请求，并限制标的数量、K 线数量、超时和响应体积。
 - 票据前缀：`[api-tickflow]`
 - Secret环境变量名：`TICKFLOW_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`36b2bb448fe84eb74a83051deafaa1514f290d6d89c13588d3e6d3ba4c72c671`
 
 | 操作 | 说明 | 参数 |
@@ -5047,6 +5062,7 @@
 - 执行策略：SERPAPI_API_KEY 仅在后端 api_key 查询参数注入且不会写入日志或 Artifact；每张票据执行一次同步搜索，固定 JSON 输出并限制分页、地区、语言和响应体积。
 - 票据前缀：`[api-serpapi]`
 - Secret环境变量名：`SERPAPI_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`058e437fae61170070a799442456adabaace2c0daa7521e6f9813c27e71ea27f`
 
 | 操作 | 说明 | 参数 |
@@ -5240,6 +5256,7 @@
 - 执行策略：TUSHARE_API_TOKEN 仅在后端 HTTPS POST JSON 中注入，不写入日志、Issue 或 Artifact；每张票据最多一次正常请求和一次瞬态故障重试，并限制参数、超时、响应体积和分页。
 - 票据前缀：`[api-tushare]`
 - Secret环境变量名：`TUSHARE_API_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`17b75ee3179f49be521afbdd4bb310f963983cc17161a6a806a5119f81a460eb`
 
 | 操作 | 说明 | 参数 |
@@ -6304,6 +6321,7 @@
 - 执行策略：每张票据只允许一次登录、一次白名单查询和一次登出；所有生产票据使用仓库级全局串行并发组，禁止并发连接。每个上海自然日最多预占 50000 次上游查询，第 50000 次后立即激活当天本地黑名单；配额台账异常时失败关闭，禁止访问 BaoStock。
 - 票据前缀：`[api-baostock]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`396936b20d6f23f465158560441182ffcc47c2ab361877581e706dc8a439eb72`
 
 | 操作 | 说明 | 参数 |
@@ -6885,6 +6903,7 @@
 - 执行策略：EODHD_API_TOKEN 仅在后端查询参数中注入且不会进入日志、Issue 或 Artifact；每张票据最多一次正常请求和一次瞬态故障重试，并限制超时、响应体积、结果行数和筛选器结构。
 - 票据前缀：`[api-eodhd]`
 - Secret环境变量名：`EODHD_API_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`124c5e16ef567d8df1bbbfd7b261ac7b6a23f70cc73799ab2c27c73d3fc5ed58`
 
 | 操作 | 说明 | 参数 |
@@ -7717,6 +7736,7 @@
 - 执行策略：API Key 仅以 X-API-Key 后端请求头注入；每张票据只执行一个白名单操作，限制节点数、变量数、关系表达式、超时和响应体积。
 - 票据前缀：`[api-dc]`
 - Secret环境变量名：`GOOGLE_DATA_COMMONS_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`be48fabd30ef0c7cda43239e538ac2ea929f49d7fc323508c8301a8d93b7a2a7`
 
 | 操作 | 说明 | 参数 |
@@ -7881,6 +7901,7 @@
 - 执行策略：QWEATHER_API_KEY 仅在后端 X-QW-Api-Key 请求头注入，不写入日志、Issue 或 Artifact；禁止任意 URL、Host、路径、请求头和客户端密钥。
 - 票据前缀：`[api-qweather]`
 - Secret环境变量名：`QWEATHER_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`17d05469d868d3c16103aec70b326c2a000291a5a845a9908f56e07a9743d352`
 
 | 操作 | 说明 | 参数 |
@@ -8762,6 +8783,417 @@
 }
 ```
 
+## Xweather 全球专业天气数据 (`xweather`)
+
+- 状态：`启用`
+- 说明：通过 Xweather 官方 Weather API 读取全球地点、实时观测、插值条件、15 日预报、官方预警、空气质量、日月和历史观测汇总。
+- 目录策略：固定开放 10 项核心只读能力；所有端点、路径、参数、时间范围、返回条数和响应体积受白名单与硬上限约束。
+- 执行策略：Client ID 由 GitHub Repository Variable 注入，Client Secret 仅由 Repository Secret 注入；不接受客户端凭据、任意 URL、任意查询、路线批量、写操作或 Webhook。
+- 票据前缀：`[api-xweather]`
+- Secret环境变量名：`XWEATHER_CLIENT_SECRET`（仅名称）
+- Repository Variable名：`XWEATHER_CLIENT_ID`（仅名称）
+- 提供方SHA-256：`08ac2b25c04d317e7a9d28f15e38a8067801ca541fe02518ec050c23d292dc6d`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Xweather 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `places-closest` | 按城市、邮编、站点或经纬度查询最近地理位置。 | `p, limit, fields` |
+
+`places-closest` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "p": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "p"
+  ]
+}
+```
+
+| `observations-current` | 读取指定位置最近的全球气象站实时观测。 | `location, filter, fields` |
+
+`observations-current` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "filter": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `conditions` | 读取全球位置当前、历史、未来逐小时条件或分钟级降水条件。 | `location, from, to, at_time, filter, limit, fields` |
+
+`conditions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "at_time": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "filter": {
+      "type": "string",
+      "enum": [
+        "1hr",
+        "minutelyprecip"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 72
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `forecasts` | 读取全球位置最长 15 日的日、昼夜或小时天气预报。 | `location, filter, limit, fields` |
+
+`forecasts` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "filter": {
+      "type": "string",
+      "enum": [
+        "day",
+        "daynight",
+        "mdnt2mdnt",
+        "1hr",
+        "3hr",
+        "6hr"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `alerts` | 读取指定位置当前有效的官方天气预警。 | `location, limit, fields` |
+
+`alerts` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `air-quality` | 读取全球位置当前空气质量、AQI、AQHI 和污染物信息。 | `location, filter, fields` |
+
+`air-quality` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "filter": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `sunmoon` | 读取全球位置日出日落、曙暮光和月升月落数据。 | `location, from, to, limit` |
+
+`sunmoon` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `moon-phases` | 读取全球位置主要月相发生时间。 | `location, from, to, limit` |
+
+`moon-phases` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `observations-summary` | 读取指定位置最多 30 日的历史观测日汇总。 | `location, from, to, limit, fields` |
+
+`observations-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "max_rows": 5000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "arbitrary_query_parameters_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "webhooks_allowed": false,
+  "route_queries_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_host": "data.api.xweather.com",
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 1,
+  "plan_or_multiplier_dependent_endpoints": true
+}
+```
+
 ## 东方财富妙想 MCP (`miaoxiang-mcp`)
 
 - 状态：`启用`
@@ -8770,6 +9202,7 @@
 - 执行策略：每张票据只执行一个固定只读工具调用；后端通过 em_api_key 请求头注入 EM_API_KEY；禁止自选股修改、模拟交易、下单、账户操作和其他写操作。
 - 票据前缀：`[api-mx-mcp]`
 - Secret环境变量名：`EM_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`7a4fbf351f300bd5f746b94e48e374b24911a38b38211157a6c14ea72cf6a1de`
 
 | 操作 | 说明 | 参数 |
@@ -9067,6 +9500,7 @@
 - 执行策略：仅允许固定 HTTPS GET 路径与白名单查询参数；每张票据最多一次上游请求，不重试付费或限额查询；API Key 仅写入 X-API-Key 请求头，不进入 Issue、日志、目录或 Artifact。
 - 票据前缀：`[api-east-asia-econ]`
 - Secret环境变量名：`EAST_ASIA_ECON_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`0c433a9dd653a1039c389b5eed82ad054487980f2d11516e32dbee1a3191f0d7`
 
 | 操作 | 说明 | 参数 |
@@ -9237,6 +9671,7 @@
 - 执行策略：ALPHA_VANTAGE_API_KEY 仅由后端注入固定 HTTPS GET 查询；每张票据最多一次上游请求且全 Provider 串行，避免消耗免费密钥每日 25 次额度；响应、超时和体积受限，错误和额度提示结构化返回。
 - 票据前缀：`[api-alpha-vantage]`
 - Secret环境变量名：`ALPHA_VANTAGE_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`15e466cbf2cd445f58ae15b1d0d47561ef682ed72198b7637e54bf193b6b77bc`
 
 | 操作 | 说明 | 参数 |
@@ -11181,6 +11616,7 @@
 - 执行策略：只调用 Overture 官方 Python 客户端固定只读函数；边界框面积、要素类型、发布格式、返回条数和响应体积均受硬限制。
 - 票据前缀：`[api-overture]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`acec22ea8fb41dd662e964c99293ee8ae1fd72fed70b8332069a485e44787459`
 
 | 操作 | 说明 | 参数 |
@@ -11396,6 +11832,7 @@
 - 执行策略：仅允许对 sdmx.oecd.org/public/rest/v1 发起一次 HTTPS GET；不跟随重定向，不接受任意 URL、请求头或写操作。
 - 票据前缀：`[api-oecd]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`83c66dfcf37eb0574142e6053818daa536289f693541997a211ff20dd2f935bb`
 
 | 操作 | 说明 | 参数 |
@@ -11634,6 +12071,7 @@
 - 执行策略：API Key 仅由 GitHub Actions 后端注入；不接受客户端密钥、任意方法、任意主机、交易、下单、WebSocket 或写操作。
 - 票据前缀：`[api-alphafeed]`
 - Secret环境变量名：`ALPHAFEED_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`f74609460418fd7363f97d939eefa8b1c711801f9c9ecf61fcb77fcf465ba289`
 
 | 操作 | 说明 | 参数 |
@@ -11972,6 +12410,7 @@
 - 执行策略：WOLFRAM_ALPHA_APP_ID 仅在后端 appid 查询参数注入；每张票据执行一次只读查询，固定输出类型并限制输入、超时和响应体积。
 - 票据前缀：`[api-wolfram]`
 - Secret环境变量名：`WOLFRAM_ALPHA_APP_ID`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`d510d42245f91826f4ff38f567b17c9bf7f6a60972b51c7202ac00e04e3a796a`
 
 | 操作 | 说明 | 参数 |
@@ -12137,6 +12576,7 @@
 - 执行策略：LLAMA_CLOUD_API_KEY 仅在后端 Bearer 请求头注入；新建解析任务后在单张票据内有限轮询，并过滤预签名下载 URL、Authorization 和密钥。
 - 票据前缀：`[api-llamaparse]`
 - Secret环境变量名：`LLAMA_CLOUD_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`5104c79c0f79e9b401c203957b4c122b2b26f1462e220816ccb475b96c52fc0e`
 
 | 操作 | 说明 | 参数 |

@@ -1,0 +1,587 @@
+{
+  "schema_version": "xweather-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "xweather",
+      "display_name": "Xweather 全球专业天气数据",
+      "description": "通过 Xweather 官方 Weather API 读取全球地点、实时观测、插值条件、15 日预报、官方预警、空气质量、日月和历史观测汇总。",
+      "enabled": true,
+      "ticket_prefix": "[api-xweather]",
+      "required_secret_environment_variable": "XWEATHER_CLIENT_SECRET",
+      "required_repository_variable": "XWEATHER_CLIENT_ID",
+      "catalog_policy": "固定开放 10 项核心只读能力；所有端点、路径、参数、时间范围、返回条数和响应体积受白名单与硬上限约束。",
+      "execution_policy": "Client ID 由 GitHub Repository Variable 注入，Client Secret 仅由 Repository Secret 注入；不接受客户端凭据、任意 URL、任意查询、路线批量、写操作或 Webhook。",
+      "official_origin": "https://data.api.xweather.com",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "max_rows": 5000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "arbitrary_query_parameters_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "webhooks_allowed": false,
+        "route_queries_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "data.api.xweather.com",
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 1,
+        "plan_or_multiplier_dependent_endpoints": true
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Xweather 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": true,
+            "path_template": "",
+            "path_parameters": [],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "places-closest",
+          "description": "按城市、邮编、站点或经纬度查询最近地理位置。",
+          "parameters": [
+            "p",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "p": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "p"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/places/closest",
+            "path_parameters": [],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "observations-current",
+          "description": "读取指定位置最近的全球气象站实时观测。",
+          "parameters": [
+            "location",
+            "filter",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/observations/{location}",
+            "path_parameters": [
+              "location"
+            ],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "conditions",
+          "description": "读取全球位置当前、历史、未来逐小时条件或分钟级降水条件。",
+          "parameters": [
+            "location",
+            "from",
+            "to",
+            "at_time",
+            "filter",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "at_time": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "filter": {
+                "type": "string",
+                "enum": [
+                  "1hr",
+                  "minutelyprecip"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 72
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/conditions/{location}",
+            "path_parameters": [
+              "location"
+            ],
+            "query_parameter_map": {
+              "at_time": "for"
+            }
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "forecasts",
+          "description": "读取全球位置最长 15 日的日、昼夜或小时天气预报。",
+          "parameters": [
+            "location",
+            "filter",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "daynight",
+                  "mdnt2mdnt",
+                  "1hr",
+                  "3hr",
+                  "6hr"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/forecasts/{location}",
+            "path_parameters": [
+              "location"
+            ],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "alerts",
+          "description": "读取指定位置当前有效的官方天气预警。",
+          "parameters": [
+            "location",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/alerts/{location}",
+            "path_parameters": [
+              "location"
+            ],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "air-quality",
+          "description": "读取全球位置当前空气质量、AQI、AQHI 和污染物信息。",
+          "parameters": [
+            "location",
+            "filter",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/airquality/{location}",
+            "path_parameters": [
+              "location"
+            ],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "sunmoon",
+          "description": "读取全球位置日出日落、曙暮光和月升月落数据。",
+          "parameters": [
+            "location",
+            "from",
+            "to",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/sunmoon/{location}",
+            "path_parameters": [
+              "location"
+            ],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "moon-phases",
+          "description": "读取全球位置主要月相发生时间。",
+          "parameters": [
+            "location",
+            "from",
+            "to",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/sunmoon/moonphases/{location}",
+            "path_parameters": [
+              "location"
+            ],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "observations-summary",
+          "description": "读取指定位置最多 30 日的历史观测日汇总。",
+          "parameters": [
+            "location",
+            "from",
+            "to",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/observations/summary/{location}",
+            "path_parameters": [
+              "location"
+            ],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        }
+      ]
+    }
+  ]
+}

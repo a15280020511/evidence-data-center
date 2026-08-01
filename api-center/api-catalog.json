@@ -21,6 +21,7 @@
     "eodhd/provider-catalog.json",
     "data-commons/provider-catalog.json",
     "qweather/provider-catalog.json",
+    "xweather/provider-catalog.json",
     "miaoxiang-mcp/provider-catalog.json",
     "east-asia-econ/provider-catalog.json",
     "alpha-vantage/provider-catalog.json",
@@ -29,13 +30,13 @@
     "alphafeed/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "224cec5b5a9840032a0c74db2e472fd9694d124c0a856e95af79c58122bea14e",
+  "managed_provider_catalog_sha256": "342fe6dad241e5608823703ec8d36adf80623767855a2c1c8364b7c5101de9c1",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 28,
-  "enabled_managed_provider_count": 28,
-  "managed_operation_count": 329,
-  "exposed_parameter_count": 1322,
+  "managed_provider_count": 29,
+  "enabled_managed_provider_count": 29,
+  "managed_operation_count": 339,
+  "exposed_parameter_count": 1358,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -54,6 +55,7 @@
     "eodhd/provider-catalog.json",
     "data-commons/provider-catalog.json",
     "qweather/provider-catalog.json",
+    "xweather/provider-catalog.json",
     "miaoxiang-mcp/provider-catalog.json",
     "east-asia-econ/provider-catalog.json",
     "alpha-vantage/provider-catalog.json",
@@ -400,6 +402,7 @@
       },
       "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "92ce9c51980065a31186c2bc2273959f6e43c6441df5f29dea8affef1b6659c3",
       "catalog_file": "google-cloud/provider-catalog.json"
@@ -573,6 +576,7 @@
       },
       "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "90546500a5762ec00c17ea64e49cf60bada2bfe850551587abd8f0e161c73938",
       "catalog_file": "google-cloud/provider-catalog.json"
@@ -1154,6 +1158,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "51c98e310e75aa22eb2cf474ed39a82cef707470af3d0d88a487271cb7ddc4d1",
       "catalog_file": "akshare/provider-catalog.json"
@@ -1261,6 +1266,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "f763ed3c3a2aa7e979a6de86ffa20527b6f93b9d9e8613d21df21e0a4cffe481",
       "catalog_file": "akshare/provider-catalog.json"
@@ -1851,6 +1857,7 @@
       },
       "required_secret_environment_variable_name": "WIND_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "b630c7bf2699e4ff10856cc68063f54bbb5d64e14de27273f38dded0aa6ff819",
       "catalog_file": "aifin-market/provider-catalog.json"
@@ -3448,6 +3455,7 @@
       },
       "required_secret_environment_variable_name": "YUANDIAN_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "209bcddd432ce325bb04568aa8404881ec8e42ec6995648166a0a3182ceea80e",
       "catalog_file": "yuandian/provider-catalog.json",
@@ -4227,6 +4235,7 @@
       },
       "required_secret_environment_variable_name": "TIANYANCHA_API_TOKEN",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "cfae6391c6824cc14c5d90bbc3c90c2ec5bfe97910735691ff687db980909544",
       "catalog_file": "company-intelligence/provider-catalog.json"
@@ -4351,6 +4360,7 @@
       },
       "required_secret_environment_variable_name": "MX_APIKEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "ccd53455ebe7f9945eae858c350bf635362edf29ccbc98a89dae3f93c0ea2843",
       "catalog_file": "company-intelligence/provider-catalog.json"
@@ -4428,6 +4438,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "JINA_API_KEY",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "44e58ffbc0199c0920a3f86db7093bd389aef67fb7a2d1a95f14dd669d18f4b6",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -4587,6 +4598,7 @@
       },
       "required_secret_environment_variable_name": "EXA_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "9ae67e37ccc9cb17e849551300f7c87b705415ff90d759e972cc9c5d3d4164ce",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -4956,6 +4968,7 @@
       },
       "required_secret_environment_variable_name": "TAVILY_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "c8e9b195cf48b60dd7657f55a575745b00cee16dda1b6fa52c76e10deb6365a0",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -5177,6 +5190,7 @@
       },
       "required_secret_environment_variable_name": "FIRECRAWL_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "a44c4d567f550e422b27f53ae4531d69e2096d249e590d953835c16fedc56375",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -5569,6 +5583,7 @@
       },
       "required_secret_environment_variable_name": "BROWSERLESS_TOKEN",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "930432038bc74e69f64242ed145e7dafc372bfb114b6a2fed2c625a01ab1f7d1",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -5829,6 +5844,7 @@
       },
       "required_secret_environment_variable_name": "TICKFLOW_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "36b2bb448fe84eb74a83051deafaa1514f290d6d89c13588d3e6d3ba4c72c671",
       "catalog_file": "market-search/provider-catalog.json"
@@ -6070,6 +6086,7 @@
       },
       "required_secret_environment_variable_name": "SERPAPI_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "058e437fae61170070a799442456adabaace2c0daa7521e6f9813c27e71ea27f",
       "catalog_file": "market-search/provider-catalog.json"
@@ -7379,6 +7396,7 @@
       },
       "required_secret_environment_variable_name": "TUSHARE_API_TOKEN",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "17b75ee3179f49be521afbdd4bb310f963983cc17161a6a806a5119f81a460eb",
       "catalog_file": "tushare/provider-catalog.json"
@@ -8106,6 +8124,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "396936b20d6f23f465158560441182ffcc47c2ab361877581e706dc8a439eb72",
       "catalog_file": "baostock/provider-catalog.json"
@@ -9164,6 +9183,7 @@
       },
       "required_secret_environment_variable_name": "EODHD_API_TOKEN",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "124c5e16ef567d8df1bbbfd7b261ac7b6a23f70cc73799ab2c27c73d3fc5ed58",
       "catalog_file": "eodhd/provider-catalog.json"
@@ -9357,6 +9377,7 @@
       },
       "required_secret_environment_variable_name": "GOOGLE_DATA_COMMONS_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "be48fabd30ef0c7cda43239e538ac2ea929f49d7fc323508c8301a8d93b7a2a7",
       "catalog_file": "data-commons/provider-catalog.json"
@@ -10421,9 +10442,516 @@
       },
       "required_secret_environment_variable_name": "QWEATHER_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "17d05469d868d3c16103aec70b326c2a000291a5a845a9908f56e07a9743d352",
       "catalog_file": "qweather/provider-catalog.json"
+    },
+    {
+      "provider_id": "xweather",
+      "display_name": "Xweather 全球专业天气数据",
+      "description": "通过 Xweather 官方 Weather API 读取全球地点、实时观测、插值条件、15 日预报、官方预警、空气质量、日月和历史观测汇总。",
+      "enabled": true,
+      "ticket_prefix": "[api-xweather]",
+      "catalog_policy": "固定开放 10 项核心只读能力；所有端点、路径、参数、时间范围、返回条数和响应体积受白名单与硬上限约束。",
+      "execution_policy": "Client ID 由 GitHub Repository Variable 注入，Client Secret 仅由 Repository Secret 注入；不接受客户端凭据、任意 URL、任意查询、路线批量、写操作或 Webhook。",
+      "operation_count": 10,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Xweather 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "places-closest",
+          "description": "按城市、邮编、站点或经纬度查询最近地理位置。",
+          "parameter_names": [
+            "p",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "p": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "p"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "observations-current",
+          "description": "读取指定位置最近的全球气象站实时观测。",
+          "parameter_names": [
+            "location",
+            "filter",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "conditions",
+          "description": "读取全球位置当前、历史、未来逐小时条件或分钟级降水条件。",
+          "parameter_names": [
+            "location",
+            "from",
+            "to",
+            "at_time",
+            "filter",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "at_time": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "filter": {
+                "type": "string",
+                "enum": [
+                  "1hr",
+                  "minutelyprecip"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 72
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "forecasts",
+          "description": "读取全球位置最长 15 日的日、昼夜或小时天气预报。",
+          "parameter_names": [
+            "location",
+            "filter",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "daynight",
+                  "mdnt2mdnt",
+                  "1hr",
+                  "3hr",
+                  "6hr"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "alerts",
+          "description": "读取指定位置当前有效的官方天气预警。",
+          "parameter_names": [
+            "location",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "air-quality",
+          "description": "读取全球位置当前空气质量、AQI、AQHI 和污染物信息。",
+          "parameter_names": [
+            "location",
+            "filter",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "sunmoon",
+          "description": "读取全球位置日出日落、曙暮光和月升月落数据。",
+          "parameter_names": [
+            "location",
+            "from",
+            "to",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "moon-phases",
+          "description": "读取全球位置主要月相发生时间。",
+          "parameter_names": [
+            "location",
+            "from",
+            "to",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "observations-summary",
+          "description": "读取指定位置最多 30 日的历史观测日汇总。",
+          "parameter_names": [
+            "location",
+            "from",
+            "to",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "max_rows": 5000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "arbitrary_query_parameters_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "webhooks_allowed": false,
+        "route_queries_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "data.api.xweather.com",
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 1,
+        "plan_or_multiplier_dependent_endpoints": true
+      },
+      "required_secret_environment_variable_name": "XWEATHER_CLIENT_SECRET",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "XWEATHER_CLIENT_ID",
+      "secret_value_exposed": false,
+      "provider_sha256": "08ac2b25c04d317e7a9d28f15e38a8067801ca541fe02518ec050c23d292dc6d",
+      "catalog_file": "xweather/provider-catalog.json"
     },
     {
       "provider_id": "miaoxiang-mcp",
@@ -10792,6 +11320,7 @@
       },
       "required_secret_environment_variable_name": "EM_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "7a4fbf351f300bd5f746b94e48e374b24911a38b38211157a6c14ea72cf6a1de",
       "catalog_file": "miaoxiang-mcp/provider-catalog.json"
@@ -11004,6 +11533,7 @@
       },
       "required_secret_environment_variable_name": "EAST_ASIA_ECON_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "0c433a9dd653a1039c389b5eed82ad054487980f2d11516e32dbee1a3191f0d7",
       "catalog_file": "east-asia-econ/provider-catalog.json"
@@ -13537,6 +14067,7 @@
       },
       "required_secret_environment_variable_name": "ALPHA_VANTAGE_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "15e466cbf2cd445f58ae15b1d0d47561ef682ed72198b7637e54bf193b6b77bc",
       "catalog_file": "alpha-vantage/provider-catalog.json"
@@ -13799,6 +14330,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "acec22ea8fb41dd662e964c99293ee8ae1fd72fed70b8332069a485e44787459",
       "catalog_file": "overture-maps/provider-catalog.json"
@@ -14093,6 +14625,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "83c66dfcf37eb0574142e6053818daa536289f693541997a211ff20dd2f935bb",
       "catalog_file": "oecd/provider-catalog.json"
@@ -14508,6 +15041,7 @@
       },
       "required_secret_environment_variable_name": "ALPHAFEED_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "f74609460418fd7363f97d939eefa8b1c711801f9c9ecf61fcb77fcf465ba289",
       "catalog_file": "alphafeed/provider-catalog.json"
@@ -14716,6 +15250,7 @@
       },
       "required_secret_environment_variable_name": "WOLFRAM_ALPHA_APP_ID",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "d510d42245f91826f4ff38f567b17c9bf7f6a60972b51c7202ac00e04e3a796a",
       "catalog_file": "knowledge-tools/provider-catalog.json"
@@ -14926,6 +15461,7 @@
       },
       "required_secret_environment_variable_name": "LLAMA_CLOUD_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "5104c79c0f79e9b401c203957b4c122b2b26f1462e220816ccb475b96c52fc0e",
       "catalog_file": "knowledge-tools/provider-catalog.json"
@@ -23265,5 +23801,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "e0589dc7aae4cba6fb121b2027e309c1177e3f66a88aad85bf6b3efb89edb8e6"
+  "catalog_sha256": "800fefa0a702bf8322b9b5225f6db43e87d76fae568fba3de5d88e443d0aeed4"
 }

@@ -142,6 +142,9 @@ def _build_managed_providers() -> tuple[dict[str, Any], list[dict[str, Any]]]:
                 "optional_secret_environment_variable_name": str(
                     raw_provider.get("optional_secret_environment_variable") or ""
                 ),
+                "required_repository_variable": str(
+                    raw_provider.get("required_repository_variable") or ""
+                ),
                 "secret_value_exposed": False,
                 "provider_sha256": canonical_sha(raw_provider),
                 "catalog_file": str(path.relative_to(HERE)),
@@ -429,6 +432,8 @@ def render_markdown(catalog: Mapping[str, Any]) -> str:
             f"- 票据前缀：`{provider['ticket_prefix']}`",
             "- Secret环境变量名："
             f"`{provider['required_secret_environment_variable_name'] or '无'}`（仅名称）",
+            "- Repository Variable名："
+            f"`{provider.get('required_repository_variable') or '无'}`（仅名称）",
             f"- 提供方SHA-256：`{provider['provider_sha256']}`",
             "",
             "| 操作 | 说明 | 参数 |",

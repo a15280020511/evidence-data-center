@@ -44,6 +44,7 @@ TUSHARE_API_TOKEN
 EODHD_API_TOKEN
 ALPHA_VANTAGE_API_KEY
 ALPHAFEED_API_KEY
+XWEATHER_CLIENT_SECRET
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
 MX_APIKEY
@@ -176,6 +177,18 @@ ALPHAFEED_API_KEY
 ```
 
 固定开放 10 项只读操作，覆盖 A股、ETF、美股、港股实时行情、K线、分时、盘口、标的信息和复权因子。禁止任意 SDK 方法、WebSocket、交易、下单和写操作。
+
+## Xweather 全球专业天气数据
+
+`api-center/xweather/` 固定访问 Xweather Weather API：
+
+```text
+[api-xweather]
+Repository Variable: XWEATHER_CLIENT_ID
+Repository Secret:   XWEATHER_CLIENT_SECRET
+```
+
+固定开放 10 项核心只读能力，覆盖地点解析、实时观测、插值天气条件、最长 15 日预报、官方天气预警、空气质量、日月、月相和历史观测日汇总。部分端点受账户套餐、区域和调用倍率约束；禁止任意 URL、路线批量、Webhook 和写操作。
 
 ## Wolfram|Alpha 计算知识
 

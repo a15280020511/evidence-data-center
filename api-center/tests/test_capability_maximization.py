@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            329,
+            339,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -68,6 +68,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "earth-engine": 6,
             "data-commons": 5,
             "qweather": 18,
+            "xweather": 10,
             "yuandian-law": 40,
             "jina-reader": 2,
             "exa": 3,
@@ -241,6 +242,21 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(qw_provider["limits"]["arbitrary_hosts_allowed"])
         self.assertFalse(qw_provider["limits"]["redirects_allowed"])
         self.assertFalse(qw_provider["limits"]["write_operations_allowed"])
+
+        xweather = json.loads(
+            (ROOT / "xweather/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        xw_provider = xweather["providers"][0]
+        self.assertEqual(
+            xw_provider["required_secret_environment_variable"],
+            "XWEATHER_CLIENT_SECRET",
+        )
+        self.assertEqual(xw_provider["required_repository_variable"], "XWEATHER_CLIENT_ID")
+        self.assertEqual(xw_provider["limits"]["fixed_api_host"], "data.api.xweather.com")
+        self.assertFalse(xw_provider["limits"]["arbitrary_urls_allowed"])
+        self.assertFalse(xw_provider["limits"]["arbitrary_query_parameters_allowed"])
+        self.assertFalse(xw_provider["limits"]["client_supplied_credentials_allowed"])
+        self.assertFalse(xw_provider["limits"]["write_operations_allowed"])
 
         miaoxiang_mcp = json.loads(
             (ROOT / "miaoxiang-mcp/provider-catalog.json").read_text(

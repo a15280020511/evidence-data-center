@@ -20,6 +20,7 @@ EXPECTED_OPERATION_COUNTS = {
     "earth-engine": 6,
     "data-commons": 5,
     "qweather": 18,
+    "xweather": 10,
     "akshare": 17,
     "ashare": 1,
     "aifin-market": 17,
@@ -66,9 +67,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 28)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 28)
-        self.assertEqual(catalog["managed_operation_count"], 329)
+        self.assertEqual(catalog["managed_provider_count"], 29)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 29)
+        self.assertEqual(catalog["managed_operation_count"], 339)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -91,6 +92,7 @@ class ApiCatalogTests(unittest.TestCase):
             "earth-engine": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
             "data-commons": "GOOGLE_DATA_COMMONS_API_KEY",
             "qweather": "QWEATHER_API_KEY",
+            "xweather": "XWEATHER_CLIENT_SECRET",
             "aifin-market": "WIND_API_KEY",
             "yuandian-law": "YUANDIAN_API_KEY",
             "tianyancha": "TIANYANCHA_API_TOKEN",
@@ -135,6 +137,19 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(providers["qweather"]["limits"]["fixed_api_host"], "ka6r72kcc3.re.qweatherapi.com")
         self.assertFalse(providers["qweather"]["limits"]["arbitrary_hosts_allowed"])
         self.assertFalse(providers["qweather"]["limits"]["redirects_allowed"])
+
+        xweather = providers["xweather"]
+        self.assertEqual(xweather["ticket_prefix"], "[api-xweather]")
+        self.assertEqual(
+            xweather["required_secret_environment_variable_name"],
+            "XWEATHER_CLIENT_SECRET",
+        )
+        self.assertEqual(xweather["required_repository_variable"], "XWEATHER_CLIENT_ID")
+        self.assertEqual(len(xweather["operations"]), 10)
+        self.assertEqual(xweather["limits"]["fixed_api_host"], "data.api.xweather.com")
+        self.assertFalse(xweather["limits"]["arbitrary_query_parameters_allowed"])
+        self.assertFalse(xweather["limits"]["client_supplied_credentials_allowed"])
+        self.assertFalse(xweather["limits"]["write_operations_allowed"])
 
         self.assertEqual(providers["miaoxiang-mcp"]["ticket_prefix"], "[api-mx-mcp]")
         self.assertEqual(providers["miaoxiang-mcp"]["required_secret_environment_variable_name"], "EM_API_KEY")
@@ -277,6 +292,7 @@ class ApiCatalogTests(unittest.TestCase):
             "eodhd/provider-catalog.json",
             "data-commons/provider-catalog.json",
             "qweather/provider-catalog.json",
+            "xweather/provider-catalog.json",
             "miaoxiang-mcp/provider-catalog.json",
             "east-asia-econ/provider-catalog.json",
             "alpha-vantage/provider-catalog.json",

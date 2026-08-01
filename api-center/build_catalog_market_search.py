@@ -21,6 +21,7 @@ BAOSTOCK_CATALOG = HERE / "baostock/provider-catalog.json"
 EODHD_CATALOG = HERE / "eodhd/provider-catalog.json"
 DATA_COMMONS_CATALOG = HERE / "data-commons/provider-catalog.json"
 QWEATHER_CATALOG = HERE / "qweather/provider-catalog.json"
+XWEATHER_CATALOG = HERE / "xweather/provider-catalog.json"
 MIAOXIANG_MCP_CATALOG = HERE / "miaoxiang-mcp/provider-catalog.json"
 EAST_ASIA_ECON_CATALOG = HERE / "east-asia-econ/provider-catalog.json"
 ALPHA_VANTAGE_CATALOG = HERE / "alpha-vantage/provider-catalog.json"
@@ -36,6 +37,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "eodhd": 25,
     "data-commons": 5,
     "qweather": 18,
+    "xweather": 10,
     "miaoxiang-mcp": 13,
     "east-asia-econ": 6,
     "alpha-vantage": 66,
@@ -53,6 +55,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     EODHD_CATALOG,
     DATA_COMMONS_CATALOG,
     QWEATHER_CATALOG,
+    XWEATHER_CATALOG,
     MIAOXIANG_MCP_CATALOG,
     EAST_ASIA_ECON_CATALOG,
     ALPHA_VANTAGE_CATALOG,
@@ -86,6 +89,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "eodhd/provider-catalog.json",
         "data-commons/provider-catalog.json",
         "qweather/provider-catalog.json",
+        "xweather/provider-catalog.json",
         "miaoxiang-mcp/provider-catalog.json",
         "east-asia-econ/provider-catalog.json",
         "alpha-vantage/provider-catalog.json",
