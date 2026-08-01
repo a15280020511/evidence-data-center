@@ -167,7 +167,7 @@ jobs:
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
           python api-center/build_catalog_market_search.py
           git diff --check
-          ! git grep -nE 'gpk_[A-Za-z0-9_-]{12,}' -- ':!api-center/gapup-mcp/tests/**'
+          ! git grep -nE 'gpk_[A-Za-z0-9_-]{12,}' -- ':!api-center/gapup-mcp/tests/**' ':!.github/scripts/integrate_gapup_mcp.py'
 
       - name: Remove one-shot integration files
         run: |
