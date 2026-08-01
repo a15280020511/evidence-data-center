@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            234,
+            240,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -79,6 +79,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "tushare": 20,
             "baostock": 20,
             "eodhd": 25,
+            "east-asia-econ": 6,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -252,6 +253,17 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(eodhd_provider["limits"]["arbitrary_headers_allowed"])
         self.assertFalse(eodhd_provider["limits"]["write_operations_allowed"])
         self.assertFalse(eodhd_provider["limits"]["trading_or_order_execution_allowed"])
+
+        east_asia = json.loads(
+            (ROOT / "east-asia-econ/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        east_asia_provider = east_asia["providers"][0]
+        self.assertEqual(east_asia_provider["required_secret_environment_variable"], "EAST_ASIA_ECON_API_KEY")
+        self.assertEqual(east_asia_provider["limits"]["fixed_api_host"], "data-api.eastasiaecon.com")
+        self.assertEqual(east_asia_provider["limits"]["requests_per_ticket_max"], 1)
+        self.assertFalse(east_asia_provider["limits"]["arbitrary_urls_allowed"])
+        self.assertFalse(east_asia_provider["limits"]["arbitrary_headers_allowed"])
+        self.assertFalse(east_asia_provider["limits"]["write_operations_allowed"])
 
         baostock = json.loads(
             (ROOT / "baostock/provider-catalog.json").read_text(encoding="utf-8")

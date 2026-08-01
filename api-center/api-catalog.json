@@ -22,15 +22,16 @@
     "data-commons/provider-catalog.json",
     "qweather/provider-catalog.json",
     "miaoxiang-mcp/provider-catalog.json",
+    "east-asia-econ/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "ca513396a76d03108e9ecaa745bad5ec276adfa2a39aa40c80c0ba8703de8373",
+  "managed_provider_catalog_sha256": "7a29d74c0624862e4cf1d1675ad7daa7ba76119baac7d19da4ef4de859d4c77e",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 23,
-  "enabled_managed_provider_count": 23,
-  "managed_operation_count": 234,
-  "exposed_parameter_count": 1128,
+  "managed_provider_count": 24,
+  "enabled_managed_provider_count": 24,
+  "managed_operation_count": 240,
+  "exposed_parameter_count": 1137,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -50,6 +51,7 @@
     "data-commons/provider-catalog.json",
     "qweather/provider-catalog.json",
     "miaoxiang-mcp/provider-catalog.json",
+    "east-asia-econ/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -10787,6 +10789,218 @@
       "catalog_file": "miaoxiang-mcp/provider-catalog.json"
     },
     {
+      "provider_id": "east-asia-econ",
+      "display_name": "East Asia Econ 东亚宏观数据库",
+      "description": "通过 East Asia Econ 官方只读 REST API 搜索并读取中国、日本、韩国、台湾及区域汇总的月度、季度和年度经济序列。",
+      "enabled": true,
+      "ticket_prefix": "[api-east-asia-econ]",
+      "catalog_policy": "开放固定的搜索、序列元数据、数据库统计、序列数据和账户用量接口；搜索、元数据和统计无需密钥，序列数据与用量由后端注入独立 API Key。",
+      "execution_policy": "仅允许固定 HTTPS GET 路径与白名单查询参数；每张票据最多一次上游请求，不重试付费或限额查询；API Key 仅写入 X-API-Key 请求头，不进入 Issue、日志、目录或 Artifact。",
+      "operation_count": 6,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 East Asia Econ 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "east-asia-econ",
+            "official_origin": "https://data-api.eastasiaecon.com",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "search-series",
+          "description": "按关键词、经济体和频率搜索可用经济序列；官方搜索接口无需认证。",
+          "parameter_names": [
+            "q",
+            "country",
+            "freq",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "country": {
+                "type": "string",
+                "enum": [
+                  "cn",
+                  "jp",
+                  "kr",
+                  "tw",
+                  "regional"
+                ]
+              },
+              "freq": {
+                "type": "string",
+                "enum": [
+                  "m",
+                  "q",
+                  "a"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "q"
+            ]
+          },
+          "result_contract": {
+            "provider": "east-asia-econ",
+            "official_origin": "https://data-api.eastasiaecon.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "series-info",
+          "description": "读取指定序列的可用频率、日期范围和观测数量；无需下载数据或消耗序列查询额度。",
+          "parameter_names": [
+            "series_name"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "series_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "series_name"
+            ]
+          },
+          "result_contract": {
+            "provider": "east-asia-econ",
+            "official_origin": "https://data-api.eastasiaecon.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "database-stats",
+          "description": "读取数据库总序列数及按经济体、频率划分的汇总统计；无需认证。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "east-asia-econ",
+            "official_origin": "https://data-api.eastasiaecon.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "series-data",
+          "description": "下载指定经济序列的月度、季度或年度观测值，可按起止日期过滤。",
+          "parameter_names": [
+            "series_name",
+            "freq",
+            "start",
+            "end"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "series_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "freq": {
+                "type": "string",
+                "enum": [
+                  "m",
+                  "q",
+                  "a"
+                ]
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "series_name"
+            ]
+          },
+          "result_contract": {
+            "provider": "east-asia-econ",
+            "official_origin": "https://data-api.eastasiaecon.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "x-api-key-header-backend-only"
+          }
+        },
+        {
+          "operation_id": "usage",
+          "description": "读取当前 East Asia Econ API Key 的月度用量、额度和会员层级。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "east-asia-econ",
+            "official_origin": "https://data-api.eastasiaecon.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "x-api-key-header-backend-only"
+          }
+        }
+      ],
+      "limits": {
+        "fixed_api_host": "data-api.eastasiaecon.com",
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 20000000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_api_key_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "EAST_ASIA_ECON_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "3e2fc4221e23c819841a6dcce9a50168a86f060074182666a3b99f62dbfe954d",
+      "catalog_file": "east-asia-econ/provider-catalog.json"
+    },
+    {
       "provider_id": "wolfram-alpha",
       "display_name": "Wolfram|Alpha 计算知识 API",
       "description": "通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。",
@@ -19539,5 +19753,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "f9770b97037210163aff46b9e7a7b376538b5e0a43430e5ec289470274025592"
+  "catalog_sha256": "4faef136fb4a1d521fc13f26f272f6805d3f918a487c97fd7a8e1e25cc936b8e"
 }
