@@ -7,6 +7,12 @@ on:
     paths:
       - ".github/scripts/add_global_data_sources.py"
       - ".github/workflows/temp-add-global-data-sources.yml"
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - ".github/scripts/add_global_data_sources.py"
+      - ".github/workflows/temp-add-global-data-sources.yml"
 
 permissions:
   contents: write
@@ -23,6 +29,7 @@ jobs:
       - name: Checkout migration branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
+          ref: feat/add-overture-oecd-alphafeed
           persist-credentials: true
           fetch-depth: 0
 
