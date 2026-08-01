@@ -219,7 +219,15 @@ def query_mediastack(
             ) from exc
 
         code, message = _safe_error_detail(payload)
-        if response.status_code in {401, 403} or code in {
+        if code in {
+            "function_access_restricted",
+            "https_access_restricted",
+        }:
+            raise MediastackError(
+                "MEDIASTACK_PLAN_REQUIRED",
+                message or code,
+            )
+        if response.status_code == 401 or code in {
             "invalid_access_key",
             "missing_access_key",
         }:
@@ -233,13 +241,10 @@ def query_mediastack(
                 message or code,
                 retryable=code == "rate_limit_reached",
             )
-        if code in {
-            "function_access_restricted",
-            "https_access_restricted",
-        }:
+        if response.status_code == 403:
             raise MediastackError(
-                "MEDIASTACK_PLAN_REQUIRED",
-                message or code,
+                "MEDIASTACK_CREDENTIAL_OR_PERMISSION_DENIED",
+                message or "upstream HTTP 403",
             )
         if not 200 <= response.status_code < 300:
             raise MediastackError(
