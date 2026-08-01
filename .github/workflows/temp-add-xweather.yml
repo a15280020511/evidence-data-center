@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - ".github/scripts/add_xweather_provider.py"
+      - ".github/scripts/fix_xweather_catalog_variable.py"
       - ".github/workflows/temp-add-xweather.yml"
 
 permissions:
@@ -33,7 +34,9 @@ jobs:
           python-version: "3.12"
 
       - name: Apply deterministic Xweather migration
-        run: python .github/scripts/add_xweather_provider.py
+        run: |
+          python .github/scripts/add_xweather_provider.py
+          python .github/scripts/fix_xweather_catalog_variable.py
 
       - name: Install validation dependencies
         run: |
@@ -46,6 +49,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m py_compile \
+            api-center/build_catalog.py \
             api-center/managed_provider_runtime.py \
             api-center/xweather/xweather_task.py \
             api-center/xweather/tests/*.py
