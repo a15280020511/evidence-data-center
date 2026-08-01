@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`20/20` 已启用
-- 托管操作总数：`195`
-- 已公开参数总数：`1028`
-- 目录 SHA-256：`d054b45a5b6bcc9489a6650abdd72a4352d5989dc586306a478edf8d1221a73e`
+- 托管提供方：`21/21` 已启用
+- 托管操作总数：`213`
+- 已公开参数总数：`1096`
+- 目录 SHA-256：`ebdd63ae730b110b63ca0da2624c1a305f324fd87082b966d5dbe179b611fa6d`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -35,6 +35,7 @@
 | BaoStock 中国证券免费数据 | `baostock` | 启用 | `[api-baostock]` | `20` | 否 |
 | EODHD 全球金融市场数据 | `eodhd` | 启用 | `[api-eodhd]` | `25` | 否 |
 | Google Data Commons | `data-commons` | 启用 | `[api-dc]` | `5` | 否 |
+| 和风天气 QWeather | `qweather` | 启用 | `[api-qweather]` | `18` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -7560,6 +7561,895 @@
   "sparql_allowed": false,
   "natural_language_api_allowed": false,
   "mcp_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## 和风天气 QWeather (`qweather`)
+
+- 状态：`启用`
+- 说明：通过开发者专属 API Host 读取全球地理位置、城市天气、格点天气、分钟级降水、空气质量、生活指数、短期历史天气和太阳辐射数据。
+- 目录策略：仅开放显式登记的固定 GET 路径和参数 Schema；固定使用用户专属 Host ka6r72kcc3.re.qweatherapi.com。
+- 执行策略：QWEATHER_API_KEY 仅在后端 X-QW-Api-Key 请求头注入，不写入日志、Issue 或 Artifact；禁止任意 URL、Host、路径、请求头和客户端密钥。
+- 票据前缀：`[api-qweather]`
+- Secret环境变量名：`QWEATHER_API_KEY`（仅名称）
+- 提供方SHA-256：`17d05469d868d3c16103aec70b326c2a000291a5a845a9908f56e07a9743d352`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地和风天气安全能力目录，不调用上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `geo-city-lookup` | 全球城市、行政区或坐标反向解析，返回 LocationID、经纬度、时区和行政层级。 | `location, adm, range, number, lang` |
+
+`geo-city-lookup` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\]{1,120}$"
+    },
+    "adm": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "range": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `geo-city-top` | 读取全球或指定国家/地区的热门城市。 | `range, number, lang` |
+
+`geo-city-top` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "range": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    }
+  }
+}
+```
+
+| `geo-poi-lookup` | 按关键字、坐标、LocationID 或 Adcode 搜索景点或潮汐站。 | `location, type, city, number, lang` |
+
+`geo-poi-lookup` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\]{1,120}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "scenic",
+        "TSTA"
+      ]
+    },
+    "city": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    }
+  },
+  "required": [
+    "location",
+    "type"
+  ]
+}
+```
+
+| `geo-poi-range` | 在指定坐标半径内搜索景点或潮汐站。 | `location, type, radius, number, lang` |
+
+`geo-poi-range` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "scenic",
+        "TSTA"
+      ]
+    },
+    "radius": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    }
+  },
+  "required": [
+    "location",
+    "type"
+  ]
+}
+```
+
+| `weather-now` | 读取全球城市实时天气观测。 | `location, lang, unit` |
+
+`weather-now` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\]{1,120}$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "m",
+        "i"
+      ]
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `weather-daily` | 读取全球城市 3 至 30 日天气预报。 | `days, location, lang, unit` |
+
+`weather-daily` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "days": {
+      "type": "string",
+      "enum": [
+        "3d",
+        "7d",
+        "10d",
+        "15d",
+        "30d"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\]{1,120}$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "m",
+        "i"
+      ]
+    }
+  },
+  "required": [
+    "days",
+    "location"
+  ]
+}
+```
+
+| `weather-hourly` | 读取全球城市未来 24 至 168 小时逐小时天气预报。 | `hours, location, lang, unit` |
+
+`weather-hourly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "hours": {
+      "type": "string",
+      "enum": [
+        "24h",
+        "72h",
+        "168h"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\]{1,120}$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "m",
+        "i"
+      ]
+    }
+  },
+  "required": [
+    "hours",
+    "location"
+  ]
+}
+```
+
+| `minutely-precipitation` | 读取中国坐标未来两小时每 5 分钟降水临近预报。 | `location, lang` |
+
+`minutely-precipitation` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `grid-weather-now` | 读取全球坐标 3–5 公里格点实时天气。 | `location, lang, unit` |
+
+`grid-weather-now` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "m",
+        "i"
+      ]
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `grid-weather-daily` | 读取全球坐标 3 或 7 日格点天气预报。 | `days, location, lang, unit` |
+
+`grid-weather-daily` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "days": {
+      "type": "string",
+      "enum": [
+        "3d",
+        "7d"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "m",
+        "i"
+      ]
+    }
+  },
+  "required": [
+    "days",
+    "location"
+  ]
+}
+```
+
+| `grid-weather-hourly` | 读取全球坐标 24 或 72 小时格点天气预报。 | `hours, location, lang, unit` |
+
+`grid-weather-hourly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "hours": {
+      "type": "string",
+      "enum": [
+        "24h",
+        "72h"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "m",
+        "i"
+      ]
+    }
+  },
+  "required": [
+    "hours",
+    "location"
+  ]
+}
+```
+
+| `air-quality-current` | 读取全球坐标 1×1 公里实时空气质量、污染物和健康建议。 | `latitude, longitude, lang` |
+
+`air-quality-current` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    }
+  },
+  "required": [
+    "latitude",
+    "longitude"
+  ]
+}
+```
+
+| `air-quality-hourly` | 读取全球坐标未来 24 小时空气质量预报。 | `latitude, longitude, lang, local_time` |
+
+`air-quality-hourly` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "local_time": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "latitude",
+    "longitude"
+  ]
+}
+```
+
+| `air-quality-daily` | 读取全球坐标未来 3 日空气质量预报。 | `latitude, longitude, lang, local_time` |
+
+`air-quality-daily` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "local_time": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "latitude",
+    "longitude"
+  ]
+}
+```
+
+| `weather-indices` | 读取中国和全球城市 1 或 3 日天气生活指数。 | `days, location, type, lang` |
+
+`weather-indices` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "days": {
+      "type": "string",
+      "enum": [
+        "1d",
+        "3d"
+      ]
+    },
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\]{1,120}$"
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^(?:[1-9]|1[0-6])(?:,(?:[1-9]|1[0-6])){0,15}$",
+      "maxLength": 64
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    }
+  },
+  "required": [
+    "days",
+    "location",
+    "type"
+  ]
+}
+```
+
+| `historical-weather` | 读取最近 10 天内指定日期的历史天气再分析数据。 | `location, date, lang, unit` |
+
+`historical-weather` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "pattern": "^[0-9A-Za-z_-]{3,32}$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{8}$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "zh",
+        "en",
+        "fr",
+        "es",
+        "ja",
+        "ko",
+        "ru",
+        "de",
+        "pt",
+        "it",
+        "th",
+        "ar"
+      ]
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "m",
+        "i"
+      ]
+    }
+  },
+  "required": [
+    "location",
+    "date"
+  ]
+}
+```
+
+| `solar-radiation-forecast` | 读取全球坐标未来 1–60 小时太阳辐射预报。 | `latitude, longitude, hours, interval, tilt, azimuth, extra` |
+
+`solar-radiation-forecast` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "hours": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60
+    },
+    "interval": {
+      "type": "integer",
+      "enum": [
+        15,
+        30,
+        60
+      ]
+    },
+    "tilt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 90
+    },
+    "azimuth": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 359
+    },
+    "extra": {
+      "type": "string",
+      "pattern": "^(?:weather|poa)(?:,(?:weather|poa))?$"
+    }
+  },
+  "required": [
+    "latitude",
+    "longitude"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 2,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 5000000,
+  "max_rows": 5000,
+  "fixed_api_host": "ka6r72kcc3.re.qweatherapi.com",
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_api_key_allowed": false,
+  "redirects_allowed": false,
   "write_operations_allowed": false,
   "personal_data_allowed": false,
   "secret_values_exposed": false
