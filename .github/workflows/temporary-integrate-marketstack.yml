@@ -53,3 +53,5 @@ jobs:
           git diff --cached --check
           git commit -m "feat: register Marketstack free-plan provider"
           git push origin HEAD:feat/add-marketstack
+
+# second push intentionally triggers the newly indexed workflow
