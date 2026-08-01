@@ -11,6 +11,7 @@ on:
       - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/mediastack-provider-validate.yml"
       - ".github/workflows/mediastack-api-ticket.yml"
+      - ".github/mediastack-live-smoke.once"
   push:
     branches: [main]
     paths:
@@ -75,6 +76,83 @@ jobs:
           assert provider['limits']['secret_values_exposed'] is False
           print(json.dumps({'status': 'PASS', 'operations': 5}))
           PY
+
+      - name: Execute one-shot live authentication probe
+        if: hashFiles('.github/mediastack-live-smoke.once') != ''
+        env:
+          MEDIASTACK_API_KEY: ${{ secrets.MEDIASTACK_API_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p mediastack-live-evidence
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          from pathlib import Path
+
+          provider_dir = Path('api-center/mediastack').resolve()
+          sys.path.insert(0, str(provider_dir))
+          import mediastack_task as task
+
+          summary = {
+              'provider': 'mediastack',
+              'operation': 'latest-news',
+              'requested_rows': 1,
+              'secret_present': bool(os.getenv('MEDIASTACK_API_KEY')),
+              'secret_value_exposed': False,
+              'real_upstream_request_attempted': False,
+              'status': 'UNKNOWN',
+          }
+          try:
+              summary['real_upstream_request_attempted'] = True
+              payload, metadata = task.query_mediastack(
+                  'latest-news',
+                  {'languages': ['en'], 'limit': 1, 'offset': 0},
+                  timeout=20,
+                  max_bytes=500000,
+                  max_rows=1,
+              )
+              rows = payload.get('data') if isinstance(payload, dict) else None
+              summary.update({
+                  'status': 'PASS',
+                  'row_count': len(rows) if isinstance(rows, list) else 0,
+                  'request_origin': metadata.get('request_origin'),
+                  'http_method': metadata.get('http_method'),
+                  'credential_mode': metadata.get('credential_mode'),
+                  'quota_counted': metadata.get('billable_or_quota_counted'),
+              })
+          except task.MediastackError as exc:
+              summary.update({
+                  'status': 'FAIL',
+                  'error_code': exc.code,
+                  'error_message': str(exc),
+                  'retryable': exc.retryable,
+              })
+          except Exception as exc:
+              summary.update({
+                  'status': 'FAIL',
+                  'error_code': type(exc).__name__,
+                  'error_message': str(exc),
+                  'retryable': False,
+              })
+
+          Path('mediastack-live-evidence/summary.json').write_text(
+              json.dumps(summary, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(summary, ensure_ascii=False))
+          if summary['status'] != 'PASS':
+              raise SystemExit(1)
+          PY
+
+      - name: Upload one-shot live evidence
+        if: always() && hashFiles('.github/mediastack-live-smoke.once') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mediastack-live-smoke-${{ github.run_id }}
+          path: mediastack-live-evidence/summary.json
+          if-no-files-found: error
+          retention-days: 7
 
       - name: Verify repository contains no credential material
         run: git diff --check
