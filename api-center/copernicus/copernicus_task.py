@@ -32,7 +32,7 @@ CATALOG_PATH = HERE / "provider-catalog.json"
 STAC_ORIGIN = "https://stac.dataspace.copernicus.eu"
 SENTINEL_HUB_ORIGIN = "https://sh.dataspace.copernicus.eu"
 IDENTITY_ORIGIN = "https://identity.dataspace.copernicus.eu"
-TOKEN_PATH = "/auth/realms/CDSE/protocol/openid-connect/token"
+OAUTH_ENDPOINT_PATH = "/auth/realms/CDSE/protocol/openid-connect/token"
 CLIENT_ID_ENV = "COPERNICUS_CLIENT_ID"
 CLIENT_SECRET_ENV = "COPERNICUS_CLIENT_SECRET"
 USER_AGENT = "EvidenceDataCenter/1.0 github.com/a15280020511/evidence-data-center"
@@ -229,7 +229,7 @@ def _request_json(
 def _oauth_token(timeout: int) -> str:
     client_id, client_secret = credentials()
     response = requests.post(
-        IDENTITY_ORIGIN + TOKEN_PATH,
+        IDENTITY_ORIGIN + OAUTH_ENDPOINT_PATH,
         headers={"Accept": "application/json", "User-Agent": USER_AGENT},
         data={
             "grant_type": "client_credentials",
