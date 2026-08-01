@@ -33,6 +33,7 @@ MEDIASTACK_CATALOG = HERE / "mediastack/provider-catalog.json"
 STATISTICS_OF_THE_WORLD_CATALOG = HERE / "statistics-of-the-world/provider-catalog.json"
 AISSTREAM_CATALOG = HERE / "aisstream/provider-catalog.json"
 INTERNET_ARCHIVE_CATALOG = HERE / "internet-archive/provider-catalog.json"
+MARKETSTACK_CATALOG = HERE / "marketstack/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -54,6 +55,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "statistics-of-the-world": 11,
     "aisstream": 4,
     "internet-archive": 6,
+    "marketstack": 11,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -77,6 +79,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     STATISTICS_OF_THE_WORLD_CATALOG,
     AISSTREAM_CATALOG,
     INTERNET_ARCHIVE_CATALOG,
+    MARKETSTACK_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -116,6 +119,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "statistics-of-the-world/provider-catalog.json",
         "aisstream/provider-catalog.json",
         "internet-archive/provider-catalog.json",
+        "marketstack/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:

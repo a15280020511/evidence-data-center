@@ -48,6 +48,7 @@ EXPECTED_OPERATION_COUNTS = {
     "statistics-of-the-world": 11,
     "aisstream": 4,
     "internet-archive": 6,
+    "marketstack": 11,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -72,9 +73,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 34)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 34)
-        self.assertEqual(catalog["managed_operation_count"], 373)
+        self.assertEqual(catalog["managed_provider_count"], 35)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 35)
+        self.assertEqual(catalog["managed_operation_count"], 384)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -118,6 +119,7 @@ class ApiCatalogTests(unittest.TestCase):
             "alphafeed": "ALPHAFEED_API_KEY",
             "mediastack": "MEDIASTACK_API_KEY",
             "aisstream": "AISSTREAM_API_KEY",
+            "marketstack": "MARKETSTACK_ACCESS_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -232,6 +234,21 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(alphafeed["limits"]["arbitrary_sdk_methods_allowed"])
         self.assertFalse(alphafeed["limits"]["trading_or_order_execution_allowed"])
 
+
+        marketstack = providers["marketstack"]
+        self.assertEqual(marketstack["ticket_prefix"], "[intel-marketstack]")
+        self.assertEqual(
+            marketstack["required_secret_environment_variable_name"],
+            "MARKETSTACK_ACCESS_KEY",
+        )
+        self.assertEqual(len(marketstack["operations"]), 11)
+        self.assertEqual(marketstack["limits"]["fixed_api_host"], "api.marketstack.com")
+        self.assertEqual(marketstack["limits"]["free_plan_requests_per_month"], 100)
+        self.assertEqual(marketstack["limits"]["historical_span_days_max"], 366)
+        self.assertFalse(marketstack["limits"]["automatic_pagination_allowed"])
+        self.assertFalse(marketstack["limits"]["intraday_or_realtime_operations_allowed"])
+        self.assertFalse(marketstack["limits"]["write_operations_allowed"])
+        self.assertFalse(marketstack["limits"]["trading_or_order_execution_allowed"])
 
         aisstream = providers["aisstream"]
         self.assertEqual(aisstream["ticket_prefix"], "[intel-aisstream]")

@@ -44,6 +44,7 @@ TUSHARE_API_TOKEN
 EODHD_API_TOKEN
 ALPHA_VANTAGE_API_KEY
 ALPHAFEED_API_KEY
+MARKETSTACK_ACCESS_KEY
 XWEATHER_CLIENT_SECRET
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
@@ -141,6 +142,17 @@ ALPHA_VANTAGE_API_KEY
 ```
 
 固定开放 66 项只读操作，覆盖全球股票、指数、期权、基本面、公司行动、新闻情绪、外汇、数字资产、商品、美国宏观经济和技术指标。每张票据最多一次上游请求，Provider 全局串行，不自动重试，以保护官方免费密钥每日 25 次的标准额度。部分函数、实时或延迟市场数据以及完整历史范围需要 Alpha Vantage 付费权限；权限或额度不足会返回结构化诊断，不会伪造空数据。
+
+## Marketstack 全球股票 EOD 与免费历史数据
+
+`api-center/marketstack/` 固定访问 Marketstack v2 HTTPS REST API：
+
+```text
+[intel-marketstack]
+MARKETSTACK_ACCESS_KEY
+```
+
+固定开放 11 项免费计划只读能力，覆盖最新 EOD、最大一年历史 EOD、指定日期 EOD、拆股、分红、证券目录、单一证券信息、交易所、币种和时区。为保护免费计划每月 100 次请求额度，每张票据只发送一次请求、不自动重试或翻页、最多 5 个证券代码、历史跨度最多 366 天。盘中、实时轮询、债券、ETF、商品、企业基本面、EDGAR、交易和写入能力均不开放。
 
 ## World Bank 世界银行开放数据
 

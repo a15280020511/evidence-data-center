@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            373,
+            384,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -90,6 +90,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "statistics-of-the-world": 11,
             "aisstream": 4,
             "internet-archive": 6,
+            "marketstack": 11,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -305,6 +306,23 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(eodhd_provider["limits"]["write_operations_allowed"])
         self.assertFalse(
             eodhd_provider["limits"]["trading_or_order_execution_allowed"]
+        )
+
+        marketstack = json.loads(
+            (ROOT / "marketstack/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        marketstack_provider = marketstack["providers"][0]
+        self.assertEqual(
+            marketstack_provider["required_secret_environment_variable"],
+            "MARKETSTACK_ACCESS_KEY",
+        )
+        self.assertEqual(marketstack_provider["limits"]["requests_per_ticket_max"], 1)
+        self.assertEqual(marketstack_provider["limits"]["symbols_per_ticket_max"], 5)
+        self.assertFalse(marketstack_provider["limits"]["automatic_pagination_allowed"])
+        self.assertFalse(marketstack_provider["limits"]["intraday_or_realtime_operations_allowed"])
+        self.assertFalse(marketstack_provider["limits"]["write_operations_allowed"])
+        self.assertFalse(
+            marketstack_provider["limits"]["trading_or_order_execution_allowed"]
         )
 
         east_asia = json.loads(
