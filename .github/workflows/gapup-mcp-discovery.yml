@@ -1,8 +1,9 @@
 name: Discover Gapup MCP Catalog
 
 on:
-  push:
-    branches: [feat/add-overture-oecd-alphafeed]
+  pull_request:
+    types: [synchronize]
+    branches: [main]
     paths:
       - ".github/workflows/gapup-mcp-discovery.yml"
       - ".github/gapup-mcp-discovery-trigger.txt"
@@ -42,7 +43,7 @@ jobs:
               headers={
                   "Content-Type": "application/json",
                   "Accept": "application/json, text/event-stream",
-                  "User-Agent": "evidence-data-center-gapup-discovery/1",
+                  "User-Agent": "intelligence-center-gapup-discovery/1",
               },
           )
           with urllib.request.urlopen(request, timeout=45) as response:
