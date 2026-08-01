@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`34/34` 已启用
-- 托管操作总数：`373`
-- 已公开参数总数：`1449`
-- 目录 SHA-256：`d46e3ad3808867a0af1fb0e286d133e831746e5af2cd50d8f2df3d5fcd99c508`
+- 托管提供方：`35/35` 已启用
+- 托管操作总数：`384`
+- 已公开参数总数：`1483`
+- 目录 SHA-256：`7ff5354abb3947ddb36c1150a09f8b9df53610bae3cffaa33481098b290b7c29`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -49,6 +49,7 @@
 | Statistics of the World 全球统计 | `statistics-of-the-world` | 启用 | `[intel-sotw]` | `11` | 否 |
 | AISstream 全球船舶实时AIS | `aisstream` | 启用 | `[intel-aisstream]` | `4` | 否 |
 | 互联网档案馆 Internet Archive | `internet-archive` | 启用 | `[intel-internet-archive]` | `6` | 否 |
+| Marketstack 全球股票 EOD 与历史数据 | `marketstack` | 启用 | `[intel-marketstack]` | `11` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -13883,6 +13884,422 @@
   "authentication_required": false,
   "secret_values_exposed": false,
   "automatic_pagination_allowed": false
+}
+```
+
+## Marketstack 全球股票 EOD 与历史数据 (`marketstack`)
+
+- 状态：`启用`
+- 说明：通过 Marketstack v2 固定 HTTPS REST 端点读取免费计划可用的全球股票日线、最多一年历史、拆股、分红以及证券、交易所、币种和时区目录。
+- 目录策略：仅开放免费计划明确提供的11项固定只读操作；禁止任意URL、路径、请求头、客户端密钥、盘中与实时轮询、付费数据面、自动翻页、交易和写入。
+- 执行策略：MARKETSTACK_ACCESS_KEY仅由GitHub Actions后端注入查询参数；每张票据只发送一次GET请求且不自动重试，最多5个证券代码，历史跨度最多366天，limit最大100。
+- 票据前缀：`[intel-marketstack]`
+- Secret环境变量名：`MARKETSTACK_ACCESS_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`115f416ff077df84439e8edec577f10821914b0cb9a24744ca182807b05c0a2d`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地Marketstack安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `eod-latest` | 读取最多5个证券的最新可用日终OHLCV与复权数据。 | `symbols, limit, offset` |
+
+`eod-latest` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `eod-history` | 读取最多5个证券、最大366天范围的历史日终OHLCV与复权数据。 | `symbols, date_from, date_to, sort, limit, offset` |
+
+`eod-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"
+      }
+    },
+    "date_from": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "date_to": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "ASC",
+        "DESC",
+        "asc",
+        "desc"
+      ],
+      "default": "DESC"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `eod-by-date` | 读取指定交易日、最多5个证券的日终数据。 | `date, symbols, limit, offset` |
+
+`eod-by-date` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "required": [
+    "date",
+    "symbols"
+  ]
+}
+```
+
+| `dividends` | 读取最多5个证券、最大366天范围的历史分红记录。 | `symbols, date_from, date_to, limit, offset` |
+
+`dividends` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"
+      }
+    },
+    "date_from": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "date_to": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `splits` | 读取最多5个证券、最大366天范围的历史拆股记录。 | `symbols, date_from, date_to, limit, offset` |
+
+`splits` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"
+      }
+    },
+    "date_from": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "date_to": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `tickers-list` | 按有限搜索词和可选交易所代码读取Marketstack证券目录。 | `search, exchange, limit, offset` |
+
+`tickers-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "exchange": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{2,12}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `ticker-info` | 读取单一证券代码的静态目录和交易所信息。 | `symbol` |
+
+`ticker-info` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `exchanges-list` | 读取Marketstack支持的交易所目录。 | `limit, offset` |
+
+`exchanges-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `currencies-list` | 读取Marketstack支持的币种目录。 | `limit, offset` |
+
+`currencies-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `timezones-list` | 读取Marketstack支持的时区目录。 | `limit, offset` |
+
+`timezones-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 10000000,
+  "rows_per_request_max": 100,
+  "symbols_per_ticket_max": 5,
+  "historical_span_days_max": 366,
+  "free_plan_requests_per_month": 100,
+  "fixed_api_host": "api.marketstack.com",
+  "fixed_api_prefix": "/v2",
+  "automatic_pagination_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "arbitrary_query_parameters_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "intraday_or_realtime_operations_allowed": false,
+  "paid_plan_only_operations_allowed": false,
+  "websocket_allowed": false,
+  "write_operations_allowed": false,
+  "trading_or_order_execution_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": true
 }
 ```
 

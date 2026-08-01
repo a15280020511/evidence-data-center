@@ -26,6 +26,7 @@ NEWSAPI_API_KEY
 TUSHARE_API_TOKEN
 ALPHA_VANTAGE_API_KEY
 ALPHAFEED_API_KEY
+MARKETSTACK_ACCESS_KEY
 XWEATHER_CLIENT_SECRET
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
@@ -43,6 +44,14 @@ AlphaFeed Key 仅允许由 `api-center/alphafeed/` 的固定工作流注入官�
 
 Xweather 的公开 Client ID 作为 GitHub Repository Variable `XWEATHER_CLIENT_ID` 注入，唯一敏感凭据为 Repository Secret `XWEATHER_CLIENT_SECRET`。两者只发送至 `https://data.api.xweather.com` 的固定白名单 GET 端点，不写入仓库、Issue、日志或 Artifact。
 
+
+## Marketstack
+
+```text
+Repository Secret: MARKETSTACK_ACCESS_KEY
+```
+
+该Key只允许作为`access_key`查询参数注入`https://api.marketstack.com/v2`的11项固定免费计划GET端点。客户端不得提交或覆盖Key；Key不得进入Issue、目录、日志、诊断或Artifact。每张票据单请求、不自动重试，最多5个证券代码和366天历史范围。
 
 ## AISstream
 
