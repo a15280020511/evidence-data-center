@@ -5,7 +5,7 @@
 - 托管提供方：`22/22` 已启用
 - 托管操作总数：`226`
 - 已公开参数总数：`1107`
-- 目录 SHA-256：`ba5f9e485f6f5158f87151c693664469cf79fdbe3ee0269a44f11f92b5cdd3c5`
+- 目录 SHA-256：`2dd5f268cc487cde820ba9dadf1f641917bf0f8f8e6288d66bdcef581f164c7c`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -6005,10 +6005,10 @@
 - 状态：`启用`
 - 说明：通过官方 baostock Python 客户端读取中国证券历史行情、交易日历、证券基础、指数成分、财务能力指标、业绩报告和宏观利率数据。无需 API Key。
 - 目录策略：仅开放显式登记的 BaoStock 查询函数；禁止任意函数、任意网络地址、交易、下单、账户操作、写入和自定义代码。
-- 执行策略：每张票据只允许一次登录、一次白名单查询和一次登出；设置进程级 socket 超时、最大行数与序列化响应体积，结果生成 Snapshot、Diagnostics 和 Artifact。
+- 执行策略：每张票据只允许一次登录、一次白名单查询和一次登出；所有生产票据使用仓库级全局串行并发组，禁止并发连接。每个上海自然日最多预占 50000 次上游查询，第 50000 次后立即激活当天本地黑名单；配额台账异常时失败关闭，禁止访问 BaoStock。
 - 票据前缀：`[api-baostock]`
 - Secret环境变量名：`无`（仅名称）
-- 提供方SHA-256：`aa43174e5bc0ba90d4c630d6933f46f0d19269faee5225750d8330417ad2de83`
+- 提供方SHA-256：`396936b20d6f23f465158560441182ffcc47c2ab361877581e706dc8a439eb72`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -6568,7 +6568,16 @@
   "write_operations_allowed": false,
   "trading_or_order_execution_allowed": false,
   "credentials_required": false,
-  "secret_values_exposed": false
+  "secret_values_exposed": false,
+  "daily_request_limit": 50000,
+  "daily_quota_timezone": "Asia/Shanghai",
+  "max_parallel_connections": 1,
+  "global_serial_connection_required": true,
+  "concurrency_group": "api-baostock-global-single-connection",
+  "local_blacklist_at_daily_limit": true,
+  "quota_ledger_fail_closed": true,
+  "quota_ledger_issue_number": 297,
+  "catalog_operations_consume_quota": false
 }
 ```
 

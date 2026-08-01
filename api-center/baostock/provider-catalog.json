@@ -11,7 +11,7 @@
       "ticket_prefix": "[api-baostock]",
       "required_secret_environment_variable": "",
       "catalog_policy": "仅开放显式登记的 BaoStock 查询函数；禁止任意函数、任意网络地址、交易、下单、账户操作、写入和自定义代码。",
-      "execution_policy": "每张票据只允许一次登录、一次白名单查询和一次登出；设置进程级 socket 超时、最大行数与序列化响应体积，结果生成 Snapshot、Diagnostics 和 Artifact。",
+      "execution_policy": "每张票据只允许一次登录、一次白名单查询和一次登出；所有生产票据使用仓库级全局串行并发组，禁止并发连接。每个上海自然日最多预占 50000 次上游查询，第 50000 次后立即激活当天本地黑名单；配额台账异常时失败关闭，禁止访问 BaoStock。",
       "limits": {
         "queries_per_ticket_max": 1,
         "timeout_seconds_max": 60,
@@ -23,7 +23,16 @@
         "write_operations_allowed": false,
         "trading_or_order_execution_allowed": false,
         "credentials_required": false,
-        "secret_values_exposed": false
+        "secret_values_exposed": false,
+        "daily_request_limit": 50000,
+        "daily_quota_timezone": "Asia/Shanghai",
+        "max_parallel_connections": 1,
+        "global_serial_connection_required": true,
+        "concurrency_group": "api-baostock-global-single-connection",
+        "local_blacklist_at_daily_limit": true,
+        "quota_ledger_fail_closed": true,
+        "quota_ledger_issue_number": 297,
+        "catalog_operations_consume_quota": false
       },
       "operations": [
         {
