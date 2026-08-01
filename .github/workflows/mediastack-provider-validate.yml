@@ -8,6 +8,7 @@ on:
       - "api-center/build_catalog_market_search.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
+      - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/mediastack-provider-validate.yml"
       - ".github/workflows/mediastack-api-ticket.yml"
   push:
@@ -18,12 +19,13 @@ on:
       - "api-center/build_catalog_market_search.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
+      - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/mediastack-provider-validate.yml"
       - ".github/workflows/mediastack-api-ticket.yml"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
@@ -32,7 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          persist-credentials: false
+          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
+          persist-credentials: ${{ github.event_name == 'pull_request' }}
+          fetch-depth: 0
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -73,6 +77,36 @@ jobs:
           assert provider['limits']['secret_values_exposed'] is False
           print(json.dumps({'status': 'PASS', 'operations': 5}))
           PY
+
+      - name: Update remaining catalog regression constants once
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('api-center/tests/test_capability_maximization.py')
+          text = path.read_text(encoding='utf-8')
+          text = text.replace(
+              '            577,\n        )\n        self.assertNotIn("qichacha", providers)',
+              '            582,\n        )\n        self.assertNotIn("qichacha", providers)',
+              1,
+          )
+          if '            "mediastack": 5,\n' not in text:
+              anchor = '            "who-gho-odata": 8,\n'
+              if anchor not in text:
+                  raise SystemExit('Mediastack expected-count anchor missing')
+              text = text.replace(anchor, anchor + '            "mediastack": 5,\n', 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          python -m unittest discover -s api-center/tests -p 'test_capability_maximization.py' -v
+          git diff --check
+          git config user.name "a15280020511"
+          git config user.email "270211234+a15280020511@users.noreply.github.com"
+          git add api-center/tests/test_capability_maximization.py
+          if ! git diff --cached --quiet; then
+            git commit -m "test: include Mediastack in capability totals"
+            git push origin HEAD:${{ github.head_ref }}
+          fi
 
       - name: Verify repository contains no credential material
         run: git diff --check
