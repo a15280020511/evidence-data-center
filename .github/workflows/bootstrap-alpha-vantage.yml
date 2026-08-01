@@ -46,9 +46,11 @@ jobs:
           Path('tools/integrate_alpha_vantage.py').write_bytes(content)
           PY
 
-      - name: Install catalog dependencies
+      - name: Install catalog and provider dependencies
         run: |
-          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            requests==2.34.2
           python -m pip check
 
       - name: Generate provider, tests, workflows, and unified catalog
