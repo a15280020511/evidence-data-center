@@ -1,11 +1,11 @@
-# API 中心能力目录
+# 情报中心能力目录
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`30/30` 已启用
-- 托管操作总数：`360`
-- 已公开参数总数：`1431`
-- 目录 SHA-256：`dc5dbaaec1986d461046a11502eb3d486c6ff020c6e1aac8cdb3fa767950c804`
+- 托管提供方：`31/31` 已启用
+- 托管操作总数：`569`
+- 已公开参数总数：`2320`
+- 目录 SHA-256：`6536efdf0ae4f9ab1a1c0a53a19cc3546ca19e64de951a79180d9ff3a04b5c60`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -45,6 +45,7 @@
 | Overture Maps 全球开放地图数据 | `overture-maps` | 启用 | `[api-overture]` | `7` | 否 |
 | OECD Data Explorer SDMX | `oecd` | 启用 | `[api-oecd]` | `6` | 否 |
 | AlphaFeed 中国与全球证券行情 | `alphafeed` | 启用 | `[api-alphafeed]` | `10` | 否 |
+| Gapup MCP 公共商业情报 | `gapup-mcp` | 启用 | `[intel-gapup]` | `209` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -13372,6 +13373,18174 @@
   "client_supplied_api_key_allowed": false,
   "websocket_allowed": false,
   "trading_or_order_execution_allowed": false
+}
+```
+
+## Gapup MCP 公共商业情报 (`gapup-mcp`)
+
+- 状态：`启用`
+- 说明：通过Gapup官方MCP读取公共商业、市场、贸易、研究、公司、宏观、内容和合规情报；仅开放208项固定只读工具。
+- 目录策略：官方271项工具经实时tools/list发现后固化；开放208项只读、公开、非个人、非机密工具，阻断63项写入、异步、个人筛查、主动安全、支付、医疗和敏感合同工具。
+- 执行策略：每张票据只允许一次固定tools/call；API Key仅由Repository Secret注入；强制同步执行；拒绝任意工具名、任意JSON-RPC方法、回调、Webhook、后台任务、x402自动支付、个人数据、机密数据和私网URL。
+- 票据前缀：`[intel-gapup]`
+- Secret环境变量名：`GAPUP_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`d5ea67fc07c533d00a33a000aec4050ebd80a4c1b5706b4157441f85ecf9dc84`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地固定 Gapup MCP 安全能力目录，不访问上游、不消耗额度。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `abm_architect` | Architecte ABM — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Gapup Hub — ABM 20 comptes nommés · Budget €120k · Tier 1×5 + Tier 2×15 · Playbooks 3 niveaux. Inputs are validated server-side — send the documented case fields. | `company, product, targetAccounts, icpCriteria, salesTeam, abmBudgetEur, currentChannels` |
+
+`abm_architect` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "avgDealValueEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetAccounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "estimatedRevEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currentStage": {
+            "type": "string",
+            "enum": [
+              "unaware",
+              "aware",
+              "engaged",
+              "opportunity",
+              "customer"
+            ],
+            "maxLength": 20000
+          },
+          "keyContacts": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "maxItems": 5
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 5,
+      "maxItems": 50
+    },
+    "icpCriteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "minItems": 2,
+      "maxItems": 6
+    },
+    "salesTeam": {
+      "type": "object",
+      "properties": {
+        "aeCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sdrCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "csCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "aeCount"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "abmBudgetEur": {
+      "type": "number",
+      "minimum": 0
+    },
+    "currentChannels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "maxItems": 8
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "targetAccounts",
+    "icpCriteria"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `abm_lookalike_account_finder` | As a CMO, discover 50 B2B accounts that closely match your top 10 customers' tech stacks and firmographics. This tool analyzes public web data including robots.txt and OpenGraph metadata to identify lookalike accounts for targeted ABM campaigns. Input your top customer domains and desired firmographic filters to receive a ranked list of potential targets with matching technologies and company attributes. | `top_customer_domains, firmographic_filters, tech_stack_keywords` |
+
+`abm_lookalike_account_finder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "top_customer_domains": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri",
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 10,
+      "description": "List of top 10 customer domains to use as seed accounts"
+    },
+    "firmographic_filters": {
+      "type": "object",
+      "properties": {
+        "industry": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "employee_range": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "revenue_range": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "geo_region": {
+          "type": "string",
+          "maxLength": 20000
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "tech_stack_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "Specific technologies to match in lookalike accounts",
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "top_customer_domains"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `account_expansion_mapper` | Mapping d'expansion comptes — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Notion B2B Enterprise — top 30 strategic accounts · expansion plays NRR 130%+ target · Snowflake/Shopify/Vercel/Stripe analyzed. Inputs are validated server-side — send the documented case fields. | `company, accounts, ownership, focus` |
+
+`account_expansion_mapper` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "arrTotalEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "nrrCurrent": {
+          "type": "number",
+          "minimum": 50,
+          "maximum": 200
+        },
+        "nrrTarget": {
+          "type": "number",
+          "minimum": 50,
+          "maximum": 200
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "arrTotalEur",
+        "nrrCurrent",
+        "nrrTarget"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "accountName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 160
+          },
+          "segment": {
+            "type": "string",
+            "enum": [
+              "enterprise",
+              "mid-market",
+              "smb"
+            ],
+            "maxLength": 20000
+          },
+          "currentArrEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currentSeats": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "modulesAdopted": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "minItems": 1,
+            "maxItems": 15
+          },
+          "contractRenewalDate": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "usageScore": {
+            "type": "string",
+            "enum": [
+              "heavy",
+              "active",
+              "light",
+              "dormant"
+            ],
+            "maxLength": 20000
+          },
+          "knownTriggers": {
+            "type": "string",
+            "maxLength": 400
+          }
+        },
+        "required": [
+          "accountName",
+          "segment",
+          "currentArrEur",
+          "currentSeats",
+          "modulesAdopted",
+          "contractRenewalDate",
+          "usageScore"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 5,
+      "maxItems": 50
+    },
+    "ownership": {
+      "type": "object",
+      "properties": {
+        "aeTeamSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "csmTeamSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "averageQuotaPerAeEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "aeTeamSize",
+        "csmTeamSize",
+        "averageQuotaPerAeEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "accounts",
+    "ownership"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `action_plan_esg` | Plan d'action ESG — Gapup agent-payable C-suite expertise (SUSTAINABILITY). Returns a structured, audited deliverable. Reference case: TechCorp SAS — Plan ESG 36 mois (500 FTE, €60M CA, score 54→76/100). Inputs are validated server-side — send the documented case fields. | `company, currentScores, ambitions, availableResources, targetLabels, horizon, focus` |
+
+`action_plan_esg` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "country"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentScores": {
+      "type": "object",
+      "properties": {
+        "environmental": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "social": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "governance": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "overallEsg": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "ambitions": {
+      "type": "object",
+      "properties": {
+        "environmental": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "social": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        },
+        "governance": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "environmental",
+        "social",
+        "governance"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "availableResources": {
+      "type": "object",
+      "properties": {
+        "budgetEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "dedicatedFTE": {
+          "type": "number",
+          "minimum": 0
+        },
+        "externalPartners": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 6
+        }
+      },
+      "required": [
+        "budgetEur",
+        "dedicatedFTE"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetLabels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "EcoVadis Bronze",
+          "EcoVadis Silver",
+          "EcoVadis Gold",
+          "EcoVadis Platinum",
+          "B-Corp",
+          "Entreprise à mission",
+          "ISO 14001",
+          "ISO 26000",
+          "SBTi"
+        ],
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "12 mois",
+        "24 mois",
+        "36 mois"
+      ],
+      "default": "36 mois",
+      "maxLength": 20000
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "company",
+    "ambitions",
+    "availableResources",
+    "horizon"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `africa_trade_barrier_breaker` | As a COO, analyze non-tariff trade barriers (NTBs) across African trade corridors using WITS and UNCTAD STAT data. Input origin/destination countries and product HS codes to receive barrier mapping with severity scores and actionable mitigation strategies. Returns structured risk assessment, regulatory compliance gaps, and supply chain optimization recommendations. Pass async:true to avoid timeout. | `origin_country, destination_country, hs_code, include_regulatory_details` |
+
+`africa_trade_barrier_breaker` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "origin_country": {
+      "type": "string",
+      "description": "ISO 3-letter country code for export origin",
+      "maxLength": 20000
+    },
+    "destination_country": {
+      "type": "string",
+      "description": "ISO 3-letter country code for import destination",
+      "maxLength": 20000
+    },
+    "hs_code": {
+      "type": "string",
+      "description": "6-digit Harmonized System product code",
+      "maxLength": 20000
+    },
+    "include_regulatory_details": {
+      "type": "boolean",
+      "description": "Whether to include detailed regulatory text in output",
+      "default": false
+    }
+  },
+  "required": [
+    "origin_country",
+    "destination_country"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `africa_trade_finance_esg_rater` | As a COO, evaluate ESG compliance of African trade finance providers using World Bank WITS trade statistics and CDP climate disclosure data. Input the financial institution's name or identifier, and receive an ESG rating with breakdown across environmental, social, and governance dimensions. Ideal for due diligence on trade partners or portfolio risk assessment. Pass async:true to avoid timeout. | `institutionName, countryCode, year` |
+
+`africa_trade_finance_esg_rater` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "institutionName": {
+      "type": "string",
+      "description": "Full name of the trade finance provider (e.g., 'Standard Bank Group')",
+      "maxLength": 20000
+    },
+    "countryCode": {
+      "type": "string",
+      "description": "ISO 2-letter country code (e.g., 'ZA' for South Africa)",
+      "pattern": "^[A-Z]{2}$",
+      "maxLength": 20000
+    },
+    "year": {
+      "type": "number",
+      "description": "Assessment year (2018-2023)",
+      "minimum": 2018,
+      "maximum": 2023
+    }
+  },
+  "required": [
+    "institutionName"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `africa_trade_preference_arbitrage` | Analyzes AGOA (African Growth and Opportunity Act) and EBA (Everything But Arms) trade preference arbitrage opportunities for COOs evaluating export strategies. Compares tariff rates, trade volumes, and preference utilization across eligible African countries using WITS and OECD trade data. Returns structured analysis of potential duty savings, market access advantages, and compliance requirements. — pass async:true REQUIRED to avoid x402 timeout. | `hs_code, exporting_country, importing_country, year, preference_scheme` |
+
+`africa_trade_preference_arbitrage` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "hs_code": {
+      "type": "string",
+      "pattern": "^[0-9]{6,10}$",
+      "description": "6-10 digit Harmonized System product code",
+      "maxLength": 20000
+    },
+    "exporting_country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 2-letter country code of African exporter",
+      "maxLength": 20000
+    },
+    "importing_country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 2-letter country code of target market (US/EU)",
+      "maxLength": 20000
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 2010,
+      "maximum": 2026,
+      "description": "Reference year for trade data"
+    },
+    "preference_scheme": {
+      "type": "string",
+      "enum": [
+        "AGOA",
+        "EBA"
+      ],
+      "description": "Trade preference scheme to analyze",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "hs_code",
+    "exporting_country"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `africa_trade_preference_optimizer` | As a COO, analyze AGOA/EBA duty savings opportunities with HS code-level trade route optimization. Input origin country, destination country, and HS code to receive duty savings estimates, optimal trade routes, and preference utilization recommendations. Uses UN Comtrade trade flow data, WCO tariff schedules, and African Union trade agreement rules. Ideal for export market evaluation, supply chain optimization, and trade agreement compliance analysis. Keywords: AGOA, EBA, duty savings, trade optimization, HS code, African trade, export strategy. | `originCountry, destinationCountry, hsCode, quantity, valueUsd` |
+
+`africa_trade_preference_optimizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "originCountry": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-3 country code of export origin (e.g., 'KEN' for Kenya)",
+      "maxLength": 20000
+    },
+    "destinationCountry": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-3 country code of import destination (e.g., 'USA' for United States)",
+      "maxLength": 20000
+    },
+    "hsCode": {
+      "type": "string",
+      "description": "6-10 digit Harmonized System code (e.g., '010121' for live horses)",
+      "maxLength": 20000
+    },
+    "quantity": {
+      "type": "number",
+      "description": "Estimated annual export quantity in units",
+      "minimum": 1
+    },
+    "valueUsd": {
+      "type": "number",
+      "description": "Estimated annual export value in USD",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "originCountry",
+    "destinationCountry",
+    "hsCode"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `agoa_eba_intelligence` | Intelligence préférentielle AGOA (US→Africa) et EBA/GSP (EU→Africa). Vérifie l'éligibilité d'un pays africain aux programmes tarifaires préférentiels, l'éligibilité d'un produit par code HS, identifie les meilleures opportunités d'export Afrique→US/EU, et fournit les règles de conformité (rules of origin, valeur ajoutée, docs). Différenciateur Africa diaspora : 39 pays AGOA + 47 LDCs EBA encodés. Sources : AGOA.info · EU EBA · EU GSP+ · WTO Tariff · UN Comtrade. | `mode, country_iso, hs_code, destination` |
+
+`agoa_eba_intelligence` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "country_eligibility",
+        "product_eligibility",
+        "trade_opportunity",
+        "compliance_check"
+      ],
+      "description": "Mode d'analyse : 'country_eligibility' (statut AGOA/EBA/GSP d'un pays africain) | 'product_eligibility' (éligibilité d'un produit par code HS) | 'trade_opportunity' (top opportunités export Afrique→US/EU) | 'compliance_check' (rules of origin, seuils valeur ajoutée, documentation)",
+      "maxLength": 20000
+    },
+    "country_iso": {
+      "type": "string",
+      "description": "Code ISO 2-lettres du pays africain (requis pour country_eligibility). Exemples : KE=Kenya, NG=Nigeria, ZA=Afrique du Sud, ET=Éthiopie, LS=Lesotho, GH=Ghana.",
+      "maxLength": 20000
+    },
+    "hs_code": {
+      "type": "string",
+      "description": "Code HS (Harmonized System) 6+ chiffres (requis pour product_eligibility). Exemple : '620342' = pantalons coton homme, '090111' = café arabica non torréfié, '060310' = fleurs fraîches.",
+      "maxLength": 20000
+    },
+    "destination": {
+      "type": "string",
+      "enum": [
+        "US",
+        "EU",
+        "both"
+      ],
+      "description": "Marché de destination pour trade_opportunity : 'US', 'EU', ou 'both' (défaut). Ignoré pour les autres modes.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ai_act_incident_response` | Generates EU AI Act incident response playbooks with regulator notification templates for risk management teams. Inputs include incident severity, AI system type, and affected stakeholders. Outputs structured playbook steps, regulator notification drafts, and compliance checklists. Essential for high-risk AI system breaches requiring formal EU notification — pass async:true REQUIRED to avoid x402 timeout. Keywords: AI Act compliance, incident response, regulator notification, risk management, ISO 27035, NIST SP 800-61. | `incident_type, severity, ai_system_type, affected_stakeholders, incident_description` |
+
+`ai_act_incident_response` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "incident_type": {
+      "type": "string",
+      "enum": [
+        "bias",
+        "safety_failure",
+        "data_breach",
+        "model_failure",
+        "other"
+      ],
+      "maxLength": 20000
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "maxLength": 20000
+    },
+    "ai_system_type": {
+      "type": "string",
+      "enum": [
+        "high_risk",
+        "limited_risk",
+        "minimal_risk"
+      ],
+      "maxLength": 20000
+    },
+    "affected_stakeholders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "incident_description": {
+      "type": "string",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "incident_type",
+    "severity"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ai_act_sandbox_regulatory_sandbox` | A legal-focused tool for simulating EU AI Act regulatory sandbox submissions. Provides structured feedback on compliance, risk levels, and required documentation based on EUR-Lex and OECD AI Policy Observatory sources. Accepts AI system descriptions, intended use cases, and technical specifications as input. Returns detailed assessment with warnings, citations, and actionable recommendations for legal teams and AI developers. | `systemDescription, intendedUse, riskLevel, sector, documentation` |
+
+`ai_act_sandbox_regulatory_sandbox` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "systemDescription": {
+      "type": "string",
+      "description": "Detailed description of the AI system including purpose, architecture, and data sources",
+      "maxLength": 20000
+    },
+    "intendedUse": {
+      "type": "string",
+      "description": "Primary and secondary use cases of the AI system",
+      "maxLength": 20000
+    },
+    "riskLevel": {
+      "type": "string",
+      "enum": [
+        "minimal",
+        "limited",
+        "high",
+        "unacceptable"
+      ],
+      "description": "Self-assessed risk level of the AI system",
+      "maxLength": 20000
+    },
+    "sector": {
+      "type": "string",
+      "enum": [
+        "healthcare",
+        "finance",
+        "transport",
+        "education",
+        "public",
+        "other"
+      ],
+      "description": "Primary sector of application",
+      "maxLength": 20000
+    },
+    "documentation": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of provided documentation types (e.g., 'technical', 'ethical', 'data')",
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "systemDescription",
+    "intendedUse",
+    "riskLevel"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ai_act_training_data_audit` | As a CTO, audit AI training datasets for EU AI Act compliance with bias detection and regulatory risk assessment. Inputs: dataset identifier (Hugging Face ID or URL) and optional risk thresholds. Outputs: compliance score, bias metrics, regulatory warnings, and source references. Ideal for pre-deployment risk evaluation. Pass async:true to avoid timeout. | `dataset_id, risk_threshold, include_bias_metrics` |
+
+`ai_act_training_data_audit` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "dataset_id": {
+      "type": "string",
+      "description": "Hugging Face dataset identifier or direct URL to dataset",
+      "maxLength": 20000
+    },
+    "risk_threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.7
+    },
+    "include_bias_metrics": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "dataset_id"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ai_governance_pilot` | Pilotage de gouvernance IA — Gapup agent-payable C-suite expertise (RISK). Returns a structured, audited deliverable. Reference case: TalentScope SAS — scoring IA candidats RH (EU AI Act Annex III §4, high-risk). Inputs are validated server-side — send the documented case fields. | `company, aiUseCases, targetFrameworks, focus` |
+
+`ai_governance_pilot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "jurisdictions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "FR",
+              "EU",
+              "UK",
+              "US-CA",
+              "other"
+            ],
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "country",
+        "jurisdictions"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "aiUseCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "dataTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "maxItems": 10
+          },
+          "impactedUsers": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "dataTypes",
+          "impactedUsers"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "targetFrameworks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "EU AI Act",
+          "ISO 42001",
+          "NIST AI RMF",
+          "GDPR Art.22",
+          "HIPAA",
+          "AGIRC-ARRCO",
+          "UK AI Code"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 7
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "company",
+    "aiUseCases",
+    "targetFrameworks"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `arbitration_awards_lookup` | Commercial arbitration intelligence for litigation lawyers, M&A due diligence teams, sovereign wealth funds and trade finance compliance. Covers 8 major institutions: ICC, AAA, LCIA, HKIAC, SIAC, CIETAC, DIAC, ICDR.
+
+Three modes:
+• party_lookup — find awards by party name (searches 20 landmark public awards + JusMundi best-effort)
+• institution_index — browse awards and caseload stats per institution with date range filter
+• clause_check — audit an arbitration clause for missing elements (institution, seat, language, arbitrator count, governing law, binding nature)
+
+Note: Most arbitration awards are confidential. This tool surfaces public awards (Yukos, Crystallex, Achmea, etc.) plus redacted statistics from institutional annual reports. Private awards are not accessible.
+
+Cache: 24h (arbitration data is very stable). No API key required. | `mode, query, institution, date_from, date_to` |
+
+`arbitration_awards_lookup` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "party_lookup",
+        "institution_index",
+        "clause_check"
+      ],
+      "description": "party_lookup: search by party name or keyword. institution_index: browse awards by institution + stats. clause_check: audit an arbitration clause for issues.",
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 2000,
+      "description": "For party_lookup: party name or keyword (e.g. \"Yukos\", \"Russia\"). For institution_index: institution name or keyword. For clause_check: full text of the arbitration clause to audit."
+    },
+    "institution": {
+      "type": "string",
+      "enum": [
+        "ICC",
+        "AAA",
+        "LCIA",
+        "HKIAC",
+        "SIAC",
+        "CIETAC",
+        "DIAC",
+        "ICDR",
+        "all"
+      ],
+      "description": "Filter by institution. Default 'all'.",
+      "maxLength": 20000
+    },
+    "date_from": {
+      "type": "string",
+      "description": "ISO date filter from (YYYY-MM-DD). Applied to award_date.",
+      "maxLength": 20000
+    },
+    "date_to": {
+      "type": "string",
+      "description": "ISO date filter to (YYYY-MM-DD). Applied to award_date.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode",
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `audit_pre_flight` | Pré-audit comptable — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Reference case: Spendesk — Pré-audit commissaire · Readiness 74/100 · 4 findings critiques · Checklist 18 docs. Inputs are validated server-side — send the documented case fields. | `company, audit, financials, knownIssues, systems` |
+
+`audit_pre_flight` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "serie-a",
+            "serie-b",
+            "serie-c",
+            "serie-d-plus",
+            "profitable-sme",
+            "enterprise"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "audit": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "statutory",
+            "internal",
+            "due-diligence",
+            "ipo-readiness",
+            "sox"
+          ],
+          "maxLength": 20000
+        },
+        "auditor": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "scheduledDate": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "financials": {
+      "type": "object",
+      "properties": {
+        "annualRevenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "totalAssetsEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "closingDateLastYear": {
+          "type": "string",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "annualRevenueEur",
+        "totalAssetsEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "knownIssues": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      },
+      "minItems": 0,
+      "maxItems": 6
+    },
+    "systems": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "minItems": 0,
+      "maxItems": 8
+    }
+  },
+  "required": [
+    "company",
+    "audit",
+    "financials",
+    "knownIssues",
+    "systems"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `banking_fee_negotiator` | As a CFO-focused tool, banking_fee_negotiator analyzes your bank's fee structures (account maintenance, wire transfers, credit lines) and provides data-driven negotiation recommendations. Input your current fees and bank details to receive benchmark comparisons from World Bank and ECB SDW, along with specific levers to reduce costs. Ideal for optimizing treasury operations and improving financial efficiency. Keywords: bank fees, cost optimization, treasury management, financial benchmarking, negotiation strategy. | `account_maintenance_fee, wire_transfer_fee, international_wire_fee, credit_line_fee, bank_country, industry` |
+
+`banking_fee_negotiator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "account_maintenance_fee": {
+      "type": "number",
+      "description": "Current monthly account maintenance fee in USD"
+    },
+    "wire_transfer_fee": {
+      "type": "number",
+      "description": "Current domestic wire transfer fee in USD"
+    },
+    "international_wire_fee": {
+      "type": "number",
+      "description": "Current international wire transfer fee in USD"
+    },
+    "credit_line_fee": {
+      "type": "number",
+      "description": "Current annual credit line fee percentage"
+    },
+    "bank_country": {
+      "type": "string",
+      "description": "ISO 2-letter country code of the bank",
+      "maxLength": 20000
+    },
+    "industry": {
+      "type": "string",
+      "description": "Industry classification (e.g., 'manufacturing', 'retail')",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "account_maintenance_fee",
+    "bank_country"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `battle_cards_live` | Fiche de combat live — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Gapup Hub vs McKinsey Lilli — Deal SaaS B2B €500k · Win rate +11 pts · 6 objections clés armées. Inputs are validated server-side — send the documented case fields. | `competitor, dealContext, ourOffer, knownWeaknesses` |
+
+`battle_cards_live` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "competitor": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "category": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "name",
+        "category"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "dealContext": {
+      "type": "object",
+      "properties": {
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "dealSizeEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "buyerPersona": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "sector",
+        "buyerPersona"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "ourOffer": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 400
+    },
+    "knownWeaknesses": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "competitor",
+    "dealContext",
+    "ourOffer"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `battle_plan` | Plan de bataille marketing — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Gapup Hub — Q3 2026 · Budget €120k · Pipeline €800k · 5 chantiers prioritaires. Inputs are validated server-side — send the documented case fields. | `companyName, arrCurrent, arrTarget, quarter, teamSize, budgetEur, primaryObjective, topChannels, icpDescription, currentBlockers` |
+
+`battle_plan` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "companyName": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "arrCurrent": {
+      "type": "number"
+    },
+    "arrTarget": {
+      "type": "number"
+    },
+    "quarter": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "teamSize": {
+      "type": "number"
+    },
+    "budgetEur": {
+      "type": "number"
+    },
+    "primaryObjective": {
+      "type": "string",
+      "enum": [
+        "pipeline",
+        "brand-awareness",
+        "product-launch",
+        "expansion",
+        "retention"
+      ],
+      "maxLength": 20000
+    },
+    "topChannels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "content",
+          "seo",
+          "paid-search",
+          "paid-social",
+          "email",
+          "events",
+          "pr",
+          "partnerships",
+          "product-led",
+          "outbound",
+          "community",
+          "influencers"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "icpDescription": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "currentBlockers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "companyName",
+    "arrCurrent",
+    "arrTarget",
+    "quarter",
+    "teamSize",
+    "budgetEur",
+    "primaryObjective",
+    "topChannels",
+    "icpDescription",
+    "currentBlockers"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `bond_covenant_esg_compliance_checker` | As a CFO, quickly assess whether your bond covenants meet ESG compliance standards set by BIS and ECB. This tool analyzes covenant text against regulatory benchmarks, identifying potential ESG-related risks in carbon emissions, governance practices, and social impact clauses. Input bond covenant details and receive structured compliance insights with source references. Ideal for pre-issuance due diligence or ongoing monitoring of existing bond portfolios. | `covenantText, issuerSector, jurisdiction, maturityDate, couponType` |
+
+`bond_covenant_esg_compliance_checker` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "covenantText": {
+      "type": "string",
+      "description": "Full text of the bond covenant to analyze",
+      "maxLength": 20000
+    },
+    "issuerSector": {
+      "type": "string",
+      "description": "Industry sector of the bond issuer (e.g., energy, finance)",
+      "maxLength": 20000
+    },
+    "jurisdiction": {
+      "type": "string",
+      "description": "Legal jurisdiction governing the bond (e.g., EU, US)",
+      "maxLength": 20000
+    },
+    "maturityDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Maturity date of the bond",
+      "maxLength": 20000
+    },
+    "couponType": {
+      "type": "string",
+      "enum": [
+        "fixed",
+        "floating",
+        "zero-coupon"
+      ],
+      "description": "Type of bond coupon",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "covenantText"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `bond_covenant_monitor` | As a CFO, monitor bond covenant compliance by analyzing leverage ratios (debt-to-equity, debt-to-EBITDA) and interest coverage ratios using real-time financial data. Input a company's ticker symbol and optional covenant thresholds to receive compliance status, key financial metrics, and SEC filing references. Ideal for proactive debt management and regulatory compliance tracking. Keywords: bond covenants, leverage ratio, interest coverage, debt compliance, SEC filings, financial health. | `ticker, covenantThresholds` |
+
+`bond_covenant_monitor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "description": "Company ticker symbol (e.g., 'AAPL')",
+      "maxLength": 20000
+    },
+    "covenantThresholds": {
+      "type": "object",
+      "properties": {
+        "maxDebtToEquity": {
+          "type": "number",
+          "description": "Maximum allowed debt-to-equity ratio"
+        },
+        "minInterestCoverage": {
+          "type": "number",
+          "description": "Minimum required interest coverage ratio"
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "ticker"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `bp_narratif` | Business Plan narratif — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Reference case: Stripe Series A 2012. Inputs are validated server-side — send the documented case fields. | `company, raise, keyMetrics` |
+
+`bp_narratif` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 800
+        },
+        "foundedYear": {
+          "type": "integer",
+          "minimum": 1990,
+          "maximum": 2030
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "series-c",
+            "growth"
+          ],
+          "maxLength": 20000
+        },
+        "countryHQ": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        }
+      },
+      "required": [
+        "name",
+        "pitch",
+        "foundedYear",
+        "stage",
+        "countryHQ"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "raise": {
+      "type": "object",
+      "properties": {
+        "targetAmountEur": {
+          "type": "integer",
+          "minimum": 50000
+        },
+        "investorAudience": {
+          "type": "string",
+          "enum": [
+            "bank",
+            "vc",
+            "public-grant",
+            "mixed"
+          ],
+          "maxLength": 20000
+        },
+        "timelineMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 24
+        }
+      },
+      "required": [
+        "targetAmountEur",
+        "investorAudience",
+        "timelineMonths"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "keyMetrics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 80
+      },
+      "minItems": 2,
+      "maxItems": 6
+    }
+  },
+  "required": [
+    "company",
+    "raise",
+    "keyMetrics"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `brand_builder` | Architecte de marque — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Pennylane — brand identity SaaS fintech B2B FR/EU (2023). Inputs are validated server-side — send the documented case fields. | `founder, brand, target, existingAssets` |
+
+`brand_builder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "founder": {
+      "type": "object",
+      "properties": {
+        "storyOrigin": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 600
+        },
+        "vision": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "minItems": 2,
+          "maxItems": 7
+        }
+      },
+      "required": [
+        "storyOrigin",
+        "vision",
+        "values"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "brand": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 150
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "scale-up",
+            "established"
+          ],
+          "maxLength": 20000
+        },
+        "geographies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "minItems": 1,
+          "maxItems": 6
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "stage",
+        "geographies"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "icp": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        },
+        "painPoints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 5
+        },
+        "competitors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "minItems": 1,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "icp",
+        "painPoints",
+        "competitors"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "existingAssets": {
+      "type": "object",
+      "properties": {
+        "taglineIfAny": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "colorHexIfAny": {
+          "type": "string",
+          "maxLength": 7
+        },
+        "voiceDescIfAny": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "founder",
+    "brand",
+    "target"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `brand_equity_voice_share_calculator` | Calculates brand equity voice share for CMOs by analyzing mentions across 500K+ news articles and forums from Common Crawl and Wayback Machine. Inputs include brand name, competitors, and time range. Outputs voice share percentage, sentiment distribution, and top sources. Ideal for competitive benchmarking and brand visibility tracking. Pass async:true to avoid timeout. | `brand, competitors, time_range, include_forums` |
+
+`brand_equity_voice_share_calculator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "brand": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "time_range": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 20000
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "start",
+        "end"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "include_forums": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "brand",
+    "time_range"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `budget_variance_ai` | Analyse d'écart budgétaire — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Answers: Explain the key drivers of the budget vs actual variance for <company> in <period> — what are the top 10 narrative explanations? · Which cost categories drove the budget overrun for <company> in <quarter>, and what corrective actions should management take? · Revise the Q4 forecast based on observed Q3 variances for <company> — give me 3 scenarios (base, optimistic, conservative). · Prepare a board-ready budget variance memo for <company> — <period>, budget €<X>M vs actual €<Y>M, with management actions. · What are the quick wins to reduce budget overspend for <company> by end of quarter without impacting growth targets? Reference case: Doctolib Q3 2026 — budget €38.5M vs actual €41.2M (+7.0%) — cloud + headcount + deals timing. Inputs are validated server-side — send the documented case fields. | `entity, budgetContext, focus` |
+
+`budget_variance_ai` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "entity": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "currency": {
+          "type": "string",
+          "default": "EUR",
+          "maxLength": 20000
+        },
+        "period": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 30
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "currency",
+        "period"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "budgetContext": {
+      "type": "object",
+      "properties": {
+        "totalBudgetAmount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "actualAmount": {
+          "type": "number",
+          "minimum": 0
+        },
+        "globalVariancePct": {
+          "type": "number"
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "totalBudgetAmount",
+        "actualAmount",
+        "globalVariancePct",
+        "categories"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "entity",
+    "budgetContext"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `cap_table_strategist` | Stratège du cap table — Gapup agent-payable C-suite expertise (FUNDRAISING). Returns a structured, audited deliverable. Reference case: Aleph AI Series B — modèle dilution multi-rounds + simulations secondaires + hygiène equity · 5 scenarios. Inputs are validated server-side — send the documented case fields. | `company, currentCapTable, founderObjectives, plannedRounds, focus` |
+
+`cap_table_strategist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "foundedYear": {
+          "type": "integer"
+        },
+        "arrEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "foundedYear"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentCapTable": {
+      "type": "object",
+      "properties": {
+        "totalSharesOutstanding": {
+          "type": "number"
+        },
+        "holders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "founder",
+                  "co-founder",
+                  "early-employee",
+                  "esop-pool",
+                  "angel",
+                  "vc-seed",
+                  "vc-series-a",
+                  "vc-series-b",
+                  "vc-series-c",
+                  "vc-later",
+                  "advisor",
+                  "secondary-buyer"
+                ],
+                "maxLength": 20000
+              },
+              "shares": {
+                "type": "number"
+              },
+              "vestingSchedule": {
+                "type": "string",
+                "maxLength": 20000
+              }
+            },
+            "required": [
+              "name",
+              "type",
+              "shares"
+            ],
+            "additionalProperties": false,
+            "maxProperties": 100
+          },
+          "minItems": 3,
+          "maxItems": 20
+        },
+        "esopPoolUnallocatedShares": {
+          "type": "number"
+        },
+        "safeNotesOutstandingEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "totalSharesOutstanding",
+        "holders",
+        "esopPoolUnallocatedShares"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "founderObjectives": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 800
+    },
+    "plannedRounds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "roundType": {
+            "type": "string",
+            "enum": [
+              "seed",
+              "series-a",
+              "series-b",
+              "series-c",
+              "series-d-plus",
+              "bridge",
+              "secondary"
+            ],
+            "maxLength": 20000
+          },
+          "targetAmountEur": {
+            "type": "number"
+          },
+          "targetPreMoneyEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "expectedTimeline": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "roundType",
+          "targetAmountEur",
+          "targetPreMoneyEur",
+          "expectedTimeline"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 4
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "currentCapTable",
+    "founderObjectives",
+    "plannedRounds"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `capacity_planning` | Planification capacitaire — Gapup agent-payable C-suite expertise (CHRO). Returns a structured, audited deliverable. Reference case: Gapup Hub — 22→48 FTE en 12m · ARR €480k→€1.7M · Plan d'embauches par département. Inputs are validated server-side — send the documented case fields. | `company, financials, currentTeam, hiringBudgetEur, benchmarks, constraints` |
+
+`capacity_planning` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "financials": {
+      "type": "object",
+      "properties": {
+        "currentArrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "targetArrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "timeframeMonths": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 36
+        },
+        "currentBurnEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "currentArrEur",
+        "targetArrEur",
+        "timeframeMonths"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentTeam": {
+      "type": "object",
+      "properties": {
+        "totalHeadcount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "departments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "maxLength": 100
+              },
+              "currentHeadcount": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "openPositions": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "annualCostPerHeadEur": {
+                "type": "number",
+                "minimum": 0
+              },
+              "productivityMetric": {
+                "type": "string",
+                "maxLength": 100
+              }
+            },
+            "required": [
+              "name",
+              "currentHeadcount"
+            ],
+            "additionalProperties": false,
+            "maxProperties": 100
+          },
+          "minItems": 1,
+          "maxItems": 10
+        }
+      },
+      "required": [
+        "totalHeadcount",
+        "departments"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "hiringBudgetEur": {
+      "type": "number",
+      "minimum": 0
+    },
+    "benchmarks": {
+      "type": "object",
+      "properties": {
+        "arrPerEmployee": {
+          "type": "number",
+          "minimum": 0
+        },
+        "targetArrPerEmployee": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "company",
+    "financials",
+    "currentTeam"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `capital_strategy` | Stratégie de financement — Gapup agent-payable C-suite expertise (CSO). Returns a structured, audited deliverable. Reference case: Alan assurance santé SaaS — séquence Seed→A→B→C (2016-2022). Inputs are validated server-side — send the documented case fields. | `company, growthPlan, financialPosition, founderConstraints` |
+
+`capital_strategy` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 800
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "series-c",
+            "growth",
+            "public"
+          ],
+          "maxLength": 20000
+        },
+        "countryHQ": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "foundedYear": {
+          "type": "integer",
+          "minimum": 1990,
+          "maximum": 2030
+        }
+      },
+      "required": [
+        "name",
+        "pitch",
+        "stage",
+        "countryHQ",
+        "foundedYear"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "growthPlan": {
+      "type": "object",
+      "properties": {
+        "currentArrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "targetArrEur36m": {
+          "type": "number",
+          "minimum": 0
+        },
+        "headcountNow": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "headcountTarget36m": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "keyMilestones": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "currentArrEur",
+        "targetArrEur36m",
+        "headcountNow",
+        "headcountTarget36m",
+        "keyMilestones"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "financialPosition": {
+      "type": "object",
+      "properties": {
+        "cashRunwayMonths": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cashEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "burnMonthlyEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "grossMarginPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "hasRDEligibility": {
+          "type": "boolean"
+        },
+        "hasJEIStatus": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "cashRunwayMonths",
+        "cashEur",
+        "burnMonthlyEur",
+        "grossMarginPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "founderConstraints": {
+      "type": "object",
+      "properties": {
+        "maxDilutionFounderPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "controlRetentionPriority": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "absolute"
+          ],
+          "maxLength": 20000
+        },
+        "preferredProfile": {
+          "type": "string",
+          "enum": [
+            "control-max",
+            "growth-max",
+            "risk-min"
+          ],
+          "maxLength": 20000
+        },
+        "mustAvoidInstruments": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "maxDilutionFounderPct",
+        "controlRetentionPriority"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "growthPlan",
+    "financialPosition",
+    "founderConstraints"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `carbon_footprint_calculator` | Calculate a company's greenhouse-gas footprint under the GHG Protocol (Scope 1 + 2 + 3, in tCO2eq, tier-2 accuracy ±20%). Returns the emissions breakdown, hotspot identification, 5-8 reduction levers each with capex and payback, an SBTi-aligned reduction trajectory over 5-25 years, the 15 Scope-3 categories in detail, and CSRD/ESRS reporting readiness. When to use this tool: the user needs a carbon assessment for CSRD compliance pre-audit, green-finance access, or supplier ESG scorecards. Inputs: the company profile and its activity data. Delivered by Émilie, the AI Sustainability lead of the Gapup portfolio. | `company, perimeter, scope1Sources, scope2Sources, scope3Activities, reductionTargets, focus` |
+
+`carbon_footprint_calculator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "locations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "referenceYear": {
+          "type": "integer",
+          "minimum": 2018,
+          "maximum": 2030
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "referenceYear"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "perimeter": {
+      "type": "object",
+      "properties": {
+        "organizational": {
+          "type": "string",
+          "enum": [
+            "operational-control",
+            "financial-control",
+            "equity-share"
+          ],
+          "maxLength": 20000
+        },
+        "geographic": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "excludedActivities": {
+          "type": "string",
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "organizational",
+        "geographic"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "scope1Sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "fuelType": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "annualConsumption": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "source",
+          "fuelType",
+          "annualConsumption",
+          "unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 15
+    },
+    "scope2Sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "energyType": {
+            "type": "string",
+            "enum": [
+              "electricity",
+              "heat",
+              "steam",
+              "cooling"
+            ],
+            "maxLength": 20000
+          },
+          "annualConsumptionKWh": {
+            "type": "number",
+            "minimum": 0
+          },
+          "location": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "isRenewableContract": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "source",
+          "energyType",
+          "annualConsumptionKWh",
+          "location",
+          "isRenewableContract"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "scope3Activities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "GHG Protocol Scope 3 category 1-15",
+            "maxLength": 20000
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 300
+          },
+          "estimatedScale": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "category",
+          "description"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 15
+    },
+    "reductionTargets": {
+      "type": "object",
+      "properties": {
+        "sbtiAligned": {
+          "type": "boolean"
+        },
+        "targetYear": {
+          "type": "integer",
+          "minimum": 2025,
+          "maximum": 2050
+        },
+        "targetReductionPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "sbtiAligned",
+        "targetYear",
+        "targetReductionPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "perimeter",
+    "scope2Sources"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `carbon_roadmap` | Roadmap carbone — Gapup agent-payable C-suite expertise (SUSTAINABILITY). Returns a structured, audited deliverable. Reference case: Cas démo — Roadmap carbone. Inputs are validated server-side — send the documented case fields. | `company, perimeter, scope1Sources, scope2Sources, scope3Activities, reductionTargets, focus` |
+
+`carbon_roadmap` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "locations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "referenceYear": {
+          "type": "integer",
+          "minimum": 2018,
+          "maximum": 2030
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "referenceYear"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "perimeter": {
+      "type": "object",
+      "properties": {
+        "organizational": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "geographic": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "excludedActivities": {
+          "type": "string",
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "organizational",
+        "geographic"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "scope1Sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "fuelType": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "annualConsumption": {
+            "type": "number",
+            "minimum": 0
+          },
+          "unit": {
+            "type": "string",
+            "maxLength": 40
+          }
+        },
+        "required": [
+          "source",
+          "fuelType",
+          "annualConsumption",
+          "unit"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 15
+    },
+    "scope2Sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "energyType": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "annualConsumptionKWh": {
+            "type": "number",
+            "minimum": 0
+          },
+          "location": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "isRenewableContract": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "source",
+          "energyType",
+          "annualConsumptionKWh",
+          "location",
+          "isRenewableContract"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "scope3Activities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "purchased-goods-services",
+              "capital-goods",
+              "fuel-energy-related",
+              "upstream-transportation",
+              "waste-operations",
+              "business-travel",
+              "employee-commuting",
+              "upstream-leased-assets",
+              "downstream-transportation",
+              "processing-sold",
+              "use-sold-products",
+              "end-of-life-sold",
+              "downstream-leased-assets",
+              "franchises",
+              "investments"
+            ],
+            "maxLength": 20000
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 300
+          },
+          "estimatedScale": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 120
+          }
+        },
+        "required": [
+          "category",
+          "description"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 15
+    },
+    "reductionTargets": {
+      "type": "object",
+      "properties": {
+        "sbtiAligned": {
+          "type": "boolean"
+        },
+        "targetYear": {
+          "type": "integer",
+          "minimum": 2025,
+          "maximum": 2050
+        },
+        "targetReductionPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "sbtiAligned",
+        "targetYear",
+        "targetReductionPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "perimeter",
+    "scope2Sources"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `champion_mapping` | Cartographie du champion — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Spendesk × Decathlon (deal €120k/an) — Champion identifié : CFO Group · Plan 6 semaines multi-touch. Inputs are validated server-side — send the documented case fields. | `deal, knownContacts, sellerContext` |
+
+`champion_mapping` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "deal": {
+      "type": "object",
+      "properties": {
+        "companyName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "dealSizeEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "stage": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        }
+      },
+      "required": [
+        "companyName",
+        "sector",
+        "dealSizeEur",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "knownContacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "title": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "department": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "engagementLevel": {
+            "type": "string",
+            "enum": [
+              "none",
+              "low",
+              "medium",
+              "high"
+            ],
+            "maxLength": 20000
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "name",
+          "title",
+          "department",
+          "engagementLevel"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "sellerContext": {
+      "type": "object",
+      "properties": {
+        "ourProductName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "mainValueProp": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        },
+        "dealVelocityDays": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "ourProductName",
+        "mainValueProp"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "deal",
+    "knownContacts",
+    "sellerContext"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `change_failure_root_cause_classifier` | Classifies root causes of change failures for CTO-level incident analysis. Uses GitHub PR metadata and Snyk vulnerability data to identify patterns like dependency vulnerabilities, configuration drift, or deployment process gaps. Inputs include GitHub PR URL or incident ID, and outputs structured root cause categories with confidence scores. Ideal for post-mortem analysis and change risk assessment. | `pr_url, incident_id, snyk_org_id, time_range_days` |
+
+`change_failure_root_cause_classifier` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "pr_url": {
+      "type": "string",
+      "pattern": "^https://github.com/[^/]+/[^/]+/pull/\\d+$",
+      "maxLength": 20000
+    },
+    "incident_id": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "snyk_org_id": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "time_range_days": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 90
+    }
+  },
+  "required": [
+    "pr_url"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `china_ecommerce_intel` | Chinese e-commerce intelligence for the ZH diaspora (50M+), import-export teams, brand IP enforcement, MENA/Africa entrepreneurs sourcing from China, and brand monitoring. Covers Taobao, Tmall, JD.com, Pinduoduo, 1688.com (B2B) and AliExpress (cross-border).
+
+Five modes:
+• product_search — search products by keyword across CN platforms. Returns title ZH/EN, price CNY + USD estimate, sales 30d, rating, seller info, product URL.
+• seller_profile — full seller/supplier dossier: factory vs reseller detection, certifications (ISO, BSCI, CE), rating, years in business, main categories.
+• price_history — 12-month price trend for a product (live current price + seasonal model for CN shopping festivals: 11.11, 6.18, CNY).
+• brand_monitoring — detect counterfeits and grey market listings: price anomaly detection (>50% below MSRP = suspicious), counterfeit keyword scan, risk score 0-100.
+• market_intel — category overview: top 5 sellers by market share, avg/median price, volume estimate, price range.
+
+Data quality note: LIVE data from Taobao/Tmall/JD/Pinduoduo REQUIRES AICI_RESEARCH_PROXY_URL with CN residential routing (Bright Data -country-cn). Without proxy: AliExpress (cross-border) + curated category fallback available.
+
+Input formats for seller_profile: 'platform:id' e.g. 'aliexpress:123456', '1688:87654321', 'tmall:apple-store-official'.
+Input formats for price_history: AliExpress product URL or numeric product ID. | `mode, query, platform, region` |
+
+`china_ecommerce_intel` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "product_search",
+        "seller_profile",
+        "price_history",
+        "brand_monitoring",
+        "market_intel"
+      ],
+      "description": "Analysis mode. product_search=find products, seller_profile=supplier dossier, price_history=price trend, brand_monitoring=counterfeit detection, market_intel=category overview.",
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300,
+      "description": "Keyword, product name, product_id, seller_id (platform:id), brand name, or category. Accepts Chinese characters (ZH) or English."
+    },
+    "platform": {
+      "type": "string",
+      "enum": [
+        "taobao",
+        "tmall",
+        "jd",
+        "pinduoduo",
+        "1688",
+        "aliexpress",
+        "all"
+      ],
+      "description": "Target platform. Default: all. Note: taobao/tmall/jd/pinduoduo require CN proxy.",
+      "maxLength": 20000
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "CN-domestic",
+        "cross-border"
+      ],
+      "description": "Market region. CN-domestic=full platform coverage, cross-border=AliExpress+1688 focus. Default: CN-domestic.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode",
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `china_market_data` | Chinese capital market intelligence for the ZH diaspora (50M+) and institutional investors. Covers A-Shares (SSE/SZSE), H-Shares (HKEX), and ADRs across four modes:
+
+• company — full company profile: name ZH/EN, USCC (18-digit social credit code), exchange, industry (CSRC classification), chairperson, registered capital, SOE flag
+• market_quote — real-time quote: price (CNY or HKD), change%, volume, market cap, P/E ratio, dividend yield, last update timestamp
+• sector_overview — sector snapshot: top 5 companies by market cap, avg P/E, 30-day sector index change. Supported sectors: semiconductor, ev, battery, technology, finance, energy, realestate, consumer, pharma, telecom
+• regulatory_filing — recent regulatory disclosures (HKEX filings: annual, quarterly, announcements, mergers, IPOs) with title, date, document URL
+
+Input formats accepted:
+  • 6-digit A-Share ticker (e.g. '600519' for Moutai SSE)
+  • HKEX ticker (e.g. '0700.HK' or '700' for Tencent)
+  • Company name in EN or ZH (e.g. '腾讯', 'Kweichow Moutai')
+  • Sector keyword (e.g. 'semiconductor', '半导体')
+
+Data sources: Yahoo Finance (primary, always accessible), Eastmoney push2 + CompanySurvey (via Bright Data proxy when AICI_RESEARCH_PROXY_URL is set), HKEX filing API. Note: Eastmoney/CSRC/SSE are blocked from datacenter IPs without proxy — set AICI_RESEARCH_PROXY_URL to unlock full coverage. | `mode, query, exchange, period_days` |
+
+`china_market_data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "company",
+        "market_quote",
+        "sector_overview",
+        "regulatory_filing"
+      ],
+      "description": "Analysis mode. company=full profile, market_quote=price data, sector_overview=top 5 by sector, regulatory_filing=recent filings.",
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Ticker (6-digit A-share, 4-digit HK, Yahoo format), company name (ZH or EN), or sector keyword."
+    },
+    "exchange": {
+      "type": "string",
+      "enum": [
+        "SSE",
+        "SZSE",
+        "HKEX",
+        "all"
+      ],
+      "description": "Exchange filter. Default: all. Affects sector_overview ticker selection.",
+      "maxLength": 20000
+    },
+    "period_days": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 365,
+      "description": "Lookback period in days for regulatory filings. Default: 30."
+    }
+  },
+  "required": [
+    "mode",
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `churn_defender` | Bouclier anti-churn — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Spendesk — portefeuille 400 clients PME/ETI, détection churn Q2 2025 (€8M ARR). Inputs are validated server-side — send the documented case fields. | `company, accounts, analysisWindowDays, csrContext` |
+
+`churn_defender` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "arr": {
+          "type": "number",
+          "minimum": 0
+        },
+        "totalAccounts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "avgContractValueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currentChurnRatePct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "targetChurnRatePct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "renewalWindowMonths": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "arr",
+        "totalAccounts",
+        "avgContractValueEur",
+        "currentChurnRatePct",
+        "targetChurnRatePct",
+        "renewalWindowMonths"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "arrEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "contractRenewalDate": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "size": {
+            "type": "string",
+            "enum": [
+              "startup",
+              "sme",
+              "mid-market",
+              "enterprise"
+            ],
+            "maxLength": 20000
+          },
+          "csmOwner": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "usageDropPct": {
+            "type": "number",
+            "minimum": -100,
+            "maximum": 100
+          },
+          "npsScore": {
+            "type": "number",
+            "minimum": -100,
+            "maximum": 100
+          },
+          "openTickets": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "missedPayments": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastLoginDaysAgo": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "championsLeft": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "competitorMentions": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "arrEur",
+          "contractRenewalDate",
+          "industry",
+          "size",
+          "csmOwner"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 5,
+      "maxItems": 30
+    },
+    "analysisWindowDays": {
+      "type": "integer",
+      "minimum": 30,
+      "maximum": 180,
+      "default": 90
+    },
+    "csrContext": {
+      "type": "string",
+      "maxLength": 800
+    }
+  },
+  "required": [
+    "company",
+    "accounts",
+    "analysisWindowDays"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `climate_scenario_rcp` | Projections climatiques long terme par scénario IPCC (RCP AR5 + SSP AR6) pour toute localisation. Scénarios : RCP_4_5, RCP_8_5 (AR5), SSP1_2_6, SSP2_4_5, SSP3_7_0, SSP5_8_5 (AR6), ou 'all' (compare tous). Horizons : 2030–2100. Métriques : température (delta vs baseline 1990-2010, jours >35°C, nuits chaudes), précipitations (delta%, événements extrêmes, sécheresses), hausse du niveau de la mer (cm vs 2000), événements extrêmes (ouragans, inondations P100, sécheresses), indice incendie. Sorties : comparaison multi-scénarios, probabilité IPCC, signaux d'impact business par secteur. Sources : Open-Meteo CMIP6 (keyless), IPCC AR6 Atlas lookup, NOAA SLR projections. Usages : TCFD/CSRD physical risk, due diligence actifs long terme, assurance catastrophe, planification infrastructure. Cache 7j. SLA ≤20s. | `location, scenario, horizon_year, metrics, compare_baseline` |
+
+`climate_scenario_rcp` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "location": {
+      "type": "object",
+      "description": "Localisation : {city, country?} ou {lat, lon}",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "Ville (ex. 'Miami', 'Paris', 'Dhaka')",
+          "maxLength": 20000
+        },
+        "country": {
+          "type": "string",
+          "description": "Pays ou code ISO (ex. 'France', 'US', 'BD')",
+          "maxLength": 20000
+        },
+        "lat": {
+          "type": "number",
+          "description": "Latitude décimale"
+        },
+        "lon": {
+          "type": "number",
+          "description": "Longitude décimale"
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "scenario": {
+      "type": "string",
+      "enum": [
+        "RCP_4_5",
+        "RCP_8_5",
+        "SSP1_2_6",
+        "SSP2_4_5",
+        "SSP3_7_0",
+        "SSP5_8_5",
+        "all"
+      ],
+      "description": "Scénario IPCC. 'all' génère une comparaison multi-scénarios.",
+      "maxLength": 20000
+    },
+    "horizon_year": {
+      "type": "number",
+      "minimum": 2030,
+      "maximum": 2100,
+      "description": "Année horizon de la projection (2030–2100)"
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "temperature",
+          "precipitation",
+          "sea_level",
+          "extreme_events",
+          "wildfire_index"
+        ],
+        "maxLength": 20000
+      },
+      "description": "Métriques à inclure. Défaut : toutes.",
+      "maxItems": 100
+    },
+    "compare_baseline": {
+      "type": "boolean",
+      "description": "Comparer vs baseline 1990-2010 (défaut true)"
+    }
+  },
+  "required": [
+    "location",
+    "scenario",
+    "horizon_year"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `cloud_cost_ri_optimizer` | Analyzes AWS and Azure cloud pricing data alongside RIPE regional demand trends to generate Reserved Instance purchase recommendations for CTOs. Inputs include target cloud provider, instance family, region, and desired commitment term. Outputs include cost savings percentage, optimal RI quantity, and regional demand insights. Ideal for reducing cloud spend with data-driven decisions. Keywords: cloud cost optimization, reserved instances, AWS pricing, Azure pricing, RIPE demand trends. | `cloud_provider, instance_family, region, term, utilization` |
+
+`cloud_cost_ri_optimizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "cloud_provider": {
+      "type": "string",
+      "enum": [
+        "aws",
+        "azure"
+      ],
+      "maxLength": 20000
+    },
+    "instance_family": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "region": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "term": {
+      "type": "string",
+      "enum": [
+        "1-year",
+        "3-year"
+      ],
+      "maxLength": 20000
+    },
+    "utilization": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "cloud_provider",
+    "instance_family",
+    "region"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `code_review_depth_optimizer` | As a CTO, this tool analyzes your team's historical DORA metrics (deployment frequency, lead time, MTTR, change failure rate) and GitHub pull request data to recommend an optimal code review depth. Input your repository identifier and time range, and receive a structured recommendation on review rigor (light, standard, thorough) with supporting metrics and risk-adjusted rationale. | `repository, timeRangeDays, teamSize, riskTolerance` |
+
+`code_review_depth_optimizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "repository": {
+      "type": "string",
+      "description": "GitHub repository identifier in format owner/repo",
+      "maxLength": 20000
+    },
+    "timeRangeDays": {
+      "type": "number",
+      "description": "Number of days of historical data to analyze",
+      "minimum": 7,
+      "maximum": 365
+    },
+    "teamSize": {
+      "type": "number",
+      "description": "Number of active developers in the team",
+      "minimum": 1
+    },
+    "riskTolerance": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "Organization's risk tolerance level",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "repository",
+    "timeRangeDays"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `competitive_deep_dive` | Gold-standard competitive deep dive — STRUCTURED multi-source data (no LLM narrative). Pair tool: `competitor_intel` for LLM-narrated board briefing + slide script. Aggregates Wikipedia, Yahoo Finance, SEC EDGAR, Wayback Machine, DuckDuckGo, HackerNews, domain scraping — all keyless. Returns agent-shaped JSON: KPIs (funding, employees, revenue, market cap), P0/P1/P2 competitive signals, pricing radar, competitor comparison matrix, Wayback timeline, positioning (sector/industry/icp_hypothesis/moat_signals), quality score. Every field is sourced or marked unavailable — no hallucinated figures. SLA: p50 ~25s, p95 ~30s · score 80+ on listed targets (US/EU/foreign) · score ~40 on private companies (no EDGAR/Yahoo data). Use sync for batch agents (≤30s tolerance). Use `competitive_deep_dive_async` + `competitive_deep_dive_result(job_id)` for conversational agents. Inputs: company name or domain (required), optional competitor list (≤5), optional depth (easy/medium/hard). | `company, competitors, depth` |
+
+`competitive_deep_dive` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200,
+      "description": "Name or domain of the target company (e.g. 'Salesforce', 'notion.so', 'HubSpot CRM')"
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "maxItems": 5,
+      "description": "Optional list of competitor names or domains to include in the comparison matrix (max 5)"
+    },
+    "depth": {
+      "type": "string",
+      "enum": [
+        "easy",
+        "medium",
+        "hard"
+      ],
+      "description": "Research depth: 'easy' = Wikipedia + DDG (fast, ~15s); 'medium' = + Yahoo Finance + EDGAR + Wayback (default, ~45s); 'hard' = + HackerNews + domain surfaces + competitor deep dive (~120s)",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "company"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `competitor_intel` | LLM-narrated competitive-intelligence BRIEFING — for human consumption (board meeting, pitch prep). Pair tool: `competitive_deep_dive` for raw structured multi-source data (agent-shaped JSON). Returns: recent competitor moves with severity (critical/high/medium/low), prioritised signals, pricing-radar comparison, 3-6 quantified recommendations (impact in € or %, 7/30/90/180-day horizons), and an 8-12 slide presenter script. Use when the buyer wants a narrative briefing or a deck. Inputs: your company (name + one-paragraph pitch) + 1-10 competitors. Delivered by Manue, AI CMO of the Gapup portfolio. | `selfCompany, competitors, focus` |
+
+`competitor_intel` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "selfCompany": {
+      "type": "object",
+      "description": "Your company info",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400,
+          "description": "One-paragraph pitch"
+        }
+      },
+      "required": [
+        "name",
+        "pitch"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "competitors": {
+      "type": "array",
+      "description": "1-10 competitors to analyze",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400,
+      "description": "Optional — what the buyer wants to track first (e.g. pricing moves, hiring patterns)"
+    }
+  },
+  "required": [
+    "selfCompany",
+    "competitors"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `competitor_moves` | Mouvements concurrents — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Answers: What have my named competitors done recently — releases, pricing changes, hires, funding? · Which competitor signals are the most urgent right now and what should I do about them? Reference case: Notion — moves de ClickUp, Asana, Coda. Inputs are validated server-side — send the documented case fields. | `selfCompany, competitors, focus` |
+
+`competitor_moves` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "selfCompany": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "name",
+        "pitch"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "selfCompany",
+    "competitors"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `competitor_pricing_radar` | Radar pricing concurrents — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Answers: How do my competitors' pricing plans and monthly prices compare to mine? · Which competitor plan undercuts or out-features my equivalent tier? Reference case: Notion — pricing vs ClickUp, Asana, Coda. Inputs are validated server-side — send the documented case fields. | `selfCompany, competitors, focus` |
+
+`competitor_pricing_radar` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "selfCompany": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "name",
+        "pitch"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "selfCompany",
+    "competitors"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `competitor_pricing_scrape` | Scrape and parse a competitor pricing page from a URL or domain. Fetches via proxy-aware timedFetch (tries /pricing, /plans, homepage fallback), then extracts: plan names, prices, billing cadence (monthly/annual/usage-based/one-time), key features, free tier presence, enterprise tier, estimated price range. Returns structured pricing tiers. If unfetchable or no pricing found (anti-bot, SPA, auth wall): returns a clear degraded result with warnings and signals — never fake success. ICP: founders, product managers, pricing strategists, competitive intel teams. Proxy-aware (AICI_RESEARCH_PROXY_URL). Cache TTL 6h. | `url` |
+
+`competitor_pricing_scrape` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "Competitor URL or domain (e.g. 'https://notion.so/pricing', 'notion.so', 'https://www.example.com'). For best results, provide the direct pricing page URL.",
+      "maxLength": 2048
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `competitor_profiles` | Profils concurrents — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Answers: What are the strengths, weaknesses and positioning of each of my competitors? · Give me a SWOT-style profile of a named competitor. Reference case: Notion — profils de ClickUp, Asana, Coda. Inputs are validated server-side — send the documented case fields. | `selfCompany, competitors, focus` |
+
+`competitor_profiles` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "selfCompany": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "name",
+        "pitch"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "selfCompany",
+    "competitors"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `competitor_recommendations` | Recommandations concurrentielles — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Answers: Given my competitors, what strategic actions should I take and in what order? · What should my 7/30/90/180-day competitive response plan look like? Reference case: Notion — actions face à ClickUp, Asana, Coda. Inputs are validated server-side — send the documented case fields. | `selfCompany, competitors, focus` |
+
+`competitor_recommendations` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "selfCompany": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "name",
+        "pitch"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "maxLength": 2048
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "selfCompany",
+    "competitors"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_audience_profile` | Return the audience targeting profile of a content entity — its enrichment tags reframed as audience facets with confidence, corroboration and full provenance (verifiable, sourced). The response also carries an entity-level provenance block (average confidence, data freshness). When to use this tool: an ad-tech or marketing agent needs a machine-readable, verifiable audience descriptor for a franchise or work. Input: an entity_id and its type. | `entity_id, entity_type` |
+
+`content_audience_profile` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "entity_id": {
+      "type": "string",
+      "description": "Entity id from content_catalog",
+      "maxLength": 20000
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "franchise",
+        "work"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "entity_id"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_catalog` | Browse the Gapup gold-standard content catalogue — video games, films, TV series and music. Returns franchises with their works (title, release year). When to use this tool: an agent needs structured, audited metadata for a cultural franchise, wants to resolve a title to a canonical entity, or browses a domain's catalogue before requesting enrichment. Inputs: a content domain and an optional case-insensitive name filter. Each franchise id can be passed to content_enrichment for its fine-grained tag profile. | `domain, name, limit` |
+
+`content_catalog` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "enum": [
+        "music",
+        "film",
+        "tv",
+        "video-game"
+      ],
+      "description": "Content domain to browse",
+      "maxLength": 20000
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 120,
+      "description": "Optional case-insensitive substring filter on franchise name"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Maximum number of franchises to return (default 20)"
+    }
+  },
+  "required": [
+    "domain"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_compare` | Compare the tag profiles of two content entities (franchises or works) and measure how similar they are. Returns a Jaccard similarity score, the list of shared tags, the tags unique to each entity, and a breakdown of shared tags by facet. When to use this tool: an agent needs to compare two franchises or works (e.g. 'how similar are Dark Souls and Elden Ring?', 'what do Street Fighter and Mortal Kombat have in common?', 'on which axes do these two games differ?'), find positioning overlap, identify cross-sell opportunities, or answer 'if you liked X you might like Y' questions backed by data. Works for any domain (video-games, music, film, tv). | `entity_a, entity_b, entity_type` |
+
+`content_compare` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "entity_a": {
+      "type": "string",
+      "description": "Id of the first entity from content_catalog (e.g. 'game-dark-souls', 'music-daft-punk').",
+      "maxLength": 20000
+    },
+    "entity_b": {
+      "type": "string",
+      "description": "Id of the second entity from content_catalog (e.g. 'game-elden-ring', 'music-justice').",
+      "maxLength": 20000
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "franchise",
+        "work"
+      ],
+      "description": "Whether both ids are franchises or works (applies to both). Defaults to 'franchise'.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "entity_a",
+    "entity_b"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_discovery` | Discover content franchises within a domain. Two modes: pass `tag` for a precise taxonomy match (every game tagged 'co-op'), or pass `query` for free-text SEMANTIC search powered by pgvector embeddings — finding franchises by meaning ('dark atmospheric games about isolation') even when no literal tag matches. Results are verifiable: tag mode carries tag confidence/corroboration, semantic mode carries a similarity score; both carry entity freshness. When to use: an agent wants a domain-scoped shortlist by tag or by intent. Inputs: a domain plus either a tag or a free-text query. | `domain, tag, query, limit` |
+
+`content_discovery` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "enum": [
+        "music",
+        "film",
+        "tv",
+        "video-game"
+      ],
+      "description": "Content domain to search within",
+      "maxLength": 20000
+    },
+    "tag": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 80,
+      "description": "Tag label to match precisely (e.g. 'thriller', 'co-op'). Mutually exclusive with `query`."
+    },
+    "query": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 400,
+      "description": "Free-text intent for semantic search (e.g. 'melancholic synth-pop about heartbreak'). Mutually exclusive with `tag`."
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Maximum franchises to return (default 25)"
+    }
+  },
+  "required": [
+    "domain"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_engine` | Moteur de contenu — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Notion — content engine 2026 (productivity B2B). Inputs are validated server-side — send the documented case fields. | `brand, cluster, months, maxArticlesPerMonth` |
+
+`content_engine` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "brand": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "voiceAttributes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 40
+          },
+          "minItems": 2,
+          "maxItems": 5
+        },
+        "audienceLabel": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "name",
+        "voiceAttributes",
+        "audienceLabel"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "cluster": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "primaryIntent": {
+          "type": "string",
+          "enum": [
+            "informational",
+            "commercial",
+            "transactional",
+            "navigational"
+          ],
+          "maxLength": 20000
+        },
+        "geography": {
+          "type": "string",
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "topic",
+        "primaryIntent"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "months": {
+      "type": "integer",
+      "minimum": 3,
+      "maximum": 12
+    },
+    "maxArticlesPerMonth": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 80
+    }
+  },
+  "required": [
+    "brand",
+    "cluster",
+    "months",
+    "maxArticlesPerMonth"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_enrichment` | Return the enriched tag profile of a content entity — the Gapup moat. Each tag carries a facet (genre, theme, play-mode, perspective…), a confidence score, a corroboration score and its full provenance (which sources corroborated it, when). The response also carries an entity-level provenance block (average confidence, data freshness). When to use this tool: an agent has a franchise or work id (from content_catalog) and needs a fine-grained, machine-readable, verifiable characterisation for matching, recommendation, contextual targeting or analysis. Inputs: an entity id and its type. | `entity_id, entity_type` |
+
+`content_enrichment` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "entity_id": {
+      "type": "string",
+      "description": "Entity id from content_catalog (e.g. 'music-daft-punk', 'film-the-dark-knight-collection:the-dark-knight')",
+      "maxLength": 20000
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "franchise",
+        "work"
+      ],
+      "description": "Whether the id is a franchise or a work (default franchise)",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "entity_id"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_evergreen_score_analyzer` | Evaluates content evergreen potential for CMOs by analyzing historical traffic patterns and backlink authority. Takes a content URL and optional time range, returns an evergreen score (0-100), traffic trend analysis, and backlink profile. Ideal for content strategy planning, SEO optimization, and identifying high-value evergreen assets. Uses Wayback Machine and Common Crawl public APIs. | `url, fromDate, toDate` |
+
+`content_evergreen_score_analyzer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Content URL to analyze",
+      "maxLength": 2048
+    },
+    "fromDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Start date for historical analysis (YYYY-MM-DD)",
+      "maxLength": 20000
+    },
+    "toDate": {
+      "type": "string",
+      "format": "date",
+      "description": "End date for historical analysis (YYYY-MM-DD)",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_provenance` | Audit the full data provenance of a content entity — all its enrichment tags with their extraction source, corroboration score, source list and last verification date, plus an entity-level freshness summary. Use this tool before citing or relying on enriched content data in a high-stakes context (ad targeting, editorial, analysis). Inputs: entity_id (required) and entity_type (franchise or work). | `entity_id, entity_type` |
+
+`content_provenance` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "entity_id": {
+      "type": "string",
+      "description": "Entity id from content_catalog (e.g. 'video-game-elden-ring')",
+      "maxLength": 20000
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "franchise",
+        "work"
+      ],
+      "description": "Whether the id is a franchise or a work (default: franchise)",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "entity_id"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_ranking` | Return the TOP-ranked content entities in a category, by a chosen criterion — the direct answer to superlative / decision queries: 'best video games', 'top RPGs', 'cheapest games', 'best value RPGs', 'best FPS playable right now', 'most popular music artists'. Criteria: critic_score, popularity, price, value (critic score per unit price). `direction` flips it (asc = cheapest/lowest first). `available_only` restricts to entities currently buyable. Sliceable by genre and release-year window; every result carries its score, price and source. When to use: an agent must produce a ranked shortlist to support a recommendation, a purchase or a 'what is the best X' decision. | `domain, criterion, direction, available_only, genre, year_from, year_to, limit` |
+
+`content_ranking` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "enum": [
+        "music",
+        "film",
+        "tv",
+        "video-game"
+      ],
+      "description": "Content domain to rank within",
+      "maxLength": 20000
+    },
+    "criterion": {
+      "type": "string",
+      "enum": [
+        "critic_score",
+        "popularity",
+        "price",
+        "value"
+      ],
+      "description": "critic_score (0-100, default) · popularity · price · value (critic score per unit price)",
+      "maxLength": 20000
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "desc",
+        "asc"
+      ],
+      "description": "desc = best/highest first (default); asc = cheapest/lowest/least first. Defaults to asc for price.",
+      "maxLength": 20000
+    },
+    "available_only": {
+      "type": "boolean",
+      "description": "If true, restrict to entities currently available to buy/play (default false)"
+    },
+    "genre": {
+      "type": "string",
+      "description": "Optional genre filter, e.g. 'RPG', 'FPS', 'thriller'",
+      "maxLength": 20000
+    },
+    "year_from": {
+      "type": "integer",
+      "description": "Optional earliest release year"
+    },
+    "year_to": {
+      "type": "integer",
+      "description": "Optional latest release year"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Number of ranked results (default 20)"
+    }
+  },
+  "required": [
+    "domain"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_similar` | Find content entities similar to a given one. For embedded franchises this uses SEMANTIC vector similarity (pgvector) over the enrichment profile — surfacing entities that feel alike even when their tags differ literally. Falls back to shared enrichment-tag overlap for works or non-embedded entities. Each result carries a similarity score and its entity-level freshness/confidence (verifiable, sourced). When to use this tool: an agent wants recommendations or lookalikes for a franchise or work. Input: an entity_id and its type. | `entity_id, entity_type, limit` |
+
+`content_similar` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "entity_id": {
+      "type": "string",
+      "description": "Entity id from content_catalog",
+      "maxLength": 20000
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "franchise",
+        "work"
+      ],
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    }
+  },
+  "required": [
+    "entity_id"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `content_taxonomy` | Return the enrichment taxonomy of a content domain — every tag grouped by facet (genre, theme, mood, play-mode…). When to use this tool: an agent needs the controlled vocabulary to filter, classify or query content. Input: a domain. | `domain` |
+
+`content_taxonomy` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "enum": [
+        "music",
+        "film",
+        "tv",
+        "gaming"
+      ],
+      "description": "Content domain",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "domain"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `corporate_registry_lookup` | Resolve legal information about a company from its national corporate registry. Returns a normalised, sourced company profile: legal status, registration number, directors, shareholders, recent filings, registered address, share capital, and a quality score (0–100). Coverage: France (INPI, keyless — full SIREN/SIRET with directors), 3M+ entities worldwide via GLEIF LEI (keyless, large companies), UK (Companies House, optional key), Netherlands (KvK, optional key), and OpenCorporates (token required since 2026). Sources are tried in cascade; quality_score increases with each source that succeeds. When to use: due-diligence, KYC screening, supplier verification, M&A research, or any workflow needing verified company identity and legal status. Optional env vars: COMPANIES_HOUSE_API_KEY (UK), KVK_API_KEY (NL), OPENCORPORATES_API_TOKEN (OpenCorporates token). | `company_name, country, identifier` |
+
+`corporate_registry_lookup` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company_name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200,
+      "description": "Company name or trading name to look up (e.g. 'Sanofi', 'Tesco PLC', 'Notion Labs Inc')"
+    },
+    "country": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "description": "ISO 3166-1 alpha-2 country code (e.g. 'FR', 'GB', 'NL', 'DE', 'SG', 'AU', 'US'). If omitted, inferred from legal suffix in company name, then falls back to global search."
+    },
+    "identifier": {
+      "type": "string",
+      "maxLength": 50,
+      "description": "Optional registry identifier for a fast direct lookup: SIREN (FR, 9 digits), Companies House number (GB, 8 chars), KvK number (NL, 8 digits), etc."
+    }
+  },
+  "required": [
+    "company_name"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `court_filings_multi` | Aggregate court filings, judgments and litigation records for a company or individual across five major legal jurisdictions: US (CourtListener / PACER), UK (National Archives — EWHC/EWCA/UKSC/UKUT), EU (ECHR HUDOC — European Court of Human Rights), France (Légifrance / Cour de cassation) and Germany (BGH / BVerfG). Returns structured case records with type classification (civil/criminal/antitrust/bankruptcy/administrative/unknown), status (filed/pending/decided/appealed/unknown), parties extracted from case titles, opinion URLs and verbatim snippets. Cross-case pattern recognition produces severity-ranked signals (P0–P2) for criminal, antitrust, bankruptcy, regulatory, data-breach and IP categories. Use when: due diligence on a counterparty, vendor risk assessment, competitive intelligence (litigation history), regulatory exposure mapping. All sources are public and keyless. Optional env var COURTLISTENER_API_KEY raises US rate limits beyond the default 5 req/s anonymous tier. SLA: ≤25s p95 (all jurisdictions fetched in parallel, 8s budget per source). Quality score: 20 pts per jurisdiction with ≥1 case retrieved, +10 if signals detected, +5–10 if ≥2–3 distinct sources contributed. | `party_name, jurisdiction, date_from, date_to` |
+
+`court_filings_multi` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "party_name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200,
+      "description": "Name of the company or individual to search (e.g. \"Apple Inc\", \"TotalEnergies\", \"Volkswagen AG\")"
+    },
+    "jurisdiction": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "US",
+          "UK",
+          "EU",
+          "FR",
+          "DE"
+        ],
+        "maxLength": 20000
+      },
+      "description": "Jurisdictions to search. Defaults to all [\"US\",\"UK\",\"EU\",\"FR\",\"DE\"].",
+      "maxItems": 100
+    },
+    "date_from": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — earliest filing or decision date to include",
+      "maxLength": 20000
+    },
+    "date_to": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — latest filing or decision date to include",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "party_name"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `cross_sell_reco` | Recommandations cross-sell — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Alan × Gapup Hub — 3 produits recommandés · Fit 'perfect' × 2 · ARR potentiel +€18k. Inputs are validated server-side — send the documented case fields. | `company, account, portfolio` |
+
+`cross_sell_reco` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "arrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currentProducts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "usageSignals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 0,
+          "maxItems": 5
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "smb",
+            "mid-market",
+            "enterprise",
+            "strategic"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "arrEur",
+        "currentProducts"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "portfolio": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "category": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "name",
+          "category"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 10
+    }
+  },
+  "required": [
+    "company",
+    "account",
+    "portfolio"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `customer_marketing` | Marketing clients & ambassadeurs — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Gapup Hub — 12 clients analysés · 4 ambassadeurs identifiés · Programme + 6 case studies + référral. Inputs are validated server-side — send the documented case fields. | `company, product, customers, goals, contentBudgetEur, targetUseCases` |
+
+`customer_marketing` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "customers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "industry": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "arrEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "npsScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "usageRatePct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "tenure": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "keyContact": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "useCase": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "referenceWilling": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 3,
+      "maxItems": 30
+    },
+    "goals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "case-studies",
+          "testimonials",
+          "referrals",
+          "ambassadors",
+          "community",
+          "upsell"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 6
+    },
+    "contentBudgetEur": {
+      "type": "number",
+      "minimum": 0
+    },
+    "targetUseCases": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "customers",
+    "goals"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `customer_voice_synth` | Synthèse voix client — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Alan (assurance santé) — 3 personas · Top 5 douleurs · Repositionnement messagerie recommandé. Inputs are validated server-side — send the documented case fields. | `company, dataSources, targetSegments, repositioningFocus` |
+
+`customer_voice_synth` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "product": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "product"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "dataSources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "reviews",
+              "support-tickets",
+              "nps-verbatims",
+              "user-interviews",
+              "social",
+              "churn-surveys"
+            ],
+            "maxLength": 20000
+          },
+          "volume": {
+            "type": "number",
+            "minimum": 0
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "type",
+          "volume"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 6
+    },
+    "targetSegments": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 80
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "repositioningFocus": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 300
+    }
+  },
+  "required": [
+    "company",
+    "dataSources",
+    "targetSegments"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `cve_security_lookup` | Look up CVE vulnerability data for enterprise security teams, DevSecOps and SOC analysts. Supports two modes: exact CVE ID lookup (e.g. 'CVE-2024-3094') or keyword search by product/vendor (e.g. 'openssl', 'Apache Tomcat'). Cross-references four authoritative keyless sources: NVD NIST (official CVE database, CVSS v3 scores, affected CPEs), CISA KEV (Known Exploited Vulnerabilities catalog — exploit_in_wild flag), EPSS FIRST (exploit probability 0-1), GitHub Security Advisories (ecosystem-specific: npm/pypi/maven). Returns structured vulnerability records with CVSS v3 scores, affected product version ranges, CWE weakness classification, references and exploitation status. Signals engine produces P0/P1/P2 alerts: P0=CVSS>=9 + active exploitation, P1=CVSS>=7 or EPSS>=70%, P2=CWE pattern clusters. Relevant for EU NIS2 and DORA supply chain risk obligations. Optional env: NVD_API_KEY (raises NVD rate-limit 5→50 req/30s), GITHUB_TOKEN (raises GHSA GraphQL rate-limit). Cache TTL 6h. SLA <=25s p95. | `query, mode, severity_min, published_after, max_results` |
+
+`cve_security_lookup` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "description": "CVE ID (e.g. \"CVE-2024-3094\") or product/vendor keyword (e.g. \"openssl\", \"Apache Tomcat\"). Mode is auto-detected from the CVE-YYYY-XXXXX pattern."
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "lookup",
+        "search"
+      ],
+      "description": "Override auto-detection: \"lookup\" for exact CVE ID, \"search\" for product/vendor keyword.",
+      "maxLength": 20000
+    },
+    "severity_min": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Minimum CVSS v3 severity to include in results (default: no filter).",
+      "maxLength": 20000
+    },
+    "published_after": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — only include CVEs published after this date. Defaults to 365 days ago for search mode.",
+      "maxLength": 20000
+    },
+    "max_results": {
+      "type": "number",
+      "minimum": 5,
+      "maximum": 50,
+      "description": "Maximum number of vulnerabilities to return (default 20, max 50)."
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `cyber_risk_auditor` | Auditeur de risque cyber — Gapup agent-payable C-suite expertise (RISK). Returns a structured, audited deliverable. Reference case: Qonto — Audit cyber risque B2B FinTech · Score 58/100 → roadmap 90j · 8 findings critiques/high · économie prime -28%. Inputs are validated server-side — send the documented case fields. | `company, techStack, currentPosture, focus` |
+
+`cyber_risk_auditor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "startup",
+            "sme",
+            "midmarket",
+            "enterprise"
+          ],
+          "maxLength": 20000
+        },
+        "dataTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 6
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "size",
+        "dataTypes"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "techStack": {
+      "type": "object",
+      "properties": {
+        "cloudProviders": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 0,
+          "maxItems": 5
+        },
+        "keyApps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 0,
+          "maxItems": 8
+        },
+        "identityProvider": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "endpointMgmt": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "cloudProviders",
+        "keyApps"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentPosture": {
+      "type": "object",
+      "properties": {
+        "hasSOC": {
+          "type": "boolean"
+        },
+        "hasPenTest": {
+          "type": "boolean"
+        },
+        "hasSOC2orISO27001": {
+          "type": "boolean"
+        },
+        "mfa": {
+          "type": "boolean"
+        },
+        "incidentPlanExists": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "hasSOC",
+        "hasPenTest",
+        "hasSOC2orISO27001",
+        "mfa",
+        "incidentPlanExists"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "techStack",
+    "currentPosture"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `deal_coach` | Coach de deal MEDDIC — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Datadog Enterprise deal Société Générale €1.2M ARR — coaching MEDDIC + escalation plays + 14 next actions. Inputs are validated server-side — send the documented case fields. | `deal, buyingCommittee, knownContext, focus` |
+
+`deal_coach` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "deal": {
+      "type": "object",
+      "properties": {
+        "accountName": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "amountEur": {
+          "type": "number"
+        },
+        "stage": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "daysInStage": {
+          "type": "integer"
+        },
+        "expectedCloseDate": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "ownerRep": {
+          "type": "string",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "accountName",
+        "amountEur",
+        "stage",
+        "daysInStage",
+        "expectedCloseDate",
+        "ownerRep"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "buyingCommittee": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "title": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "champion",
+              "economic-buyer",
+              "user",
+              "influencer",
+              "blocker"
+            ],
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "name",
+          "title",
+          "role"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 8
+    },
+    "knownContext": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 800
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "deal",
+    "buyingCommittee",
+    "knownContext"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `deal_structurer` | Structuration de deal — Gapup agent-payable C-suite expertise (CSO). Returns a structured, audited deliverable. Reference case: Agicap × Kyriba — Partenariat API Banking · 5 structures comparées · Term sheet 7 clauses · Score 83/100 JV. Inputs are validated server-side — send the documented case fields. | `company, deal` |
+
+`deal_structurer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "deal": {
+      "type": "object",
+      "properties": {
+        "partnerName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "partnerProfile": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 500
+        },
+        "objective": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        },
+        "estimatedValue": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 0,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "partnerName",
+        "partnerProfile",
+        "objective"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "deal"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `dependency_vulnerability_scan` | SCA (Software Composition Analysis) — scans a project dependency manifest and returns known vulnerabilities for each dependency. Supports: package.json (npm), requirements.txt (Python), go.mod (Go), Cargo.toml (Rust), composer.json (PHP), Gemfile.lock (Ruby), CycloneDX SBOM JSON. PRIMARY source: OSV.dev (keyless, free, covers npm/PyPI/Go/crates.io/Packagist/RubyGems + GHSA advisories federated). CVSS enrichment: NVD NIST (when OSV lacks score). Exploitation flag: CISA KEV (known-exploited-vulnerabilities catalog). Returns per-vuln CVE/GHSA IDs, severity, CVSS score, fixed version, and actionable upgrade recommendations. Relevant for EU NIS2 supply chain risk obligations, DORA, SOC 2 vendor assessments. Cache TTL 6h. Parallel OSV queries (concurrency=10). SLA <=30s p95. | `mode, manifest_content, severity_min, include_transitive` |
+
+`dependency_vulnerability_scan` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "package_json",
+        "requirements_txt",
+        "go_mod",
+        "cargo_toml",
+        "composer_json",
+        "gem_lock",
+        "sbom_cyclonedx"
+      ],
+      "description": "Manifest type: \"package_json\"=npm, \"requirements_txt\"=pip, \"go_mod\"=Go modules, \"cargo_toml\"=Rust, \"composer_json\"=PHP, \"gem_lock\"=Ruby, \"sbom_cyclonedx\"=CycloneDX SBOM JSON.",
+      "maxLength": 20000
+    },
+    "manifest_content": {
+      "type": "string",
+      "description": "Raw text content of the manifest file to scan (e.g. full contents of package.json, requirements.txt, etc.).",
+      "maxLength": 20000
+    },
+    "severity_min": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Minimum severity to include in results (default: \"medium\").",
+      "maxLength": 20000
+    },
+    "include_transitive": {
+      "type": "boolean",
+      "description": "Include transitive/indirect dependencies in results (default: true)."
+    }
+  },
+  "required": [
+    "mode",
+    "manifest_content"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `discovery_prep` | Préparation discovery — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Discovery Salesforce × Airbus — VP Digital Marc Legrand · Signaux achat confirmés · +28 pts conversion demo. Inputs are validated server-side — send the documented case fields. | `prospect, contact, ourOffer, meetingGoal` |
+
+`discovery_prep` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "prospect": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "size": {
+          "type": "string",
+          "enum": [
+            "startup",
+            "sme",
+            "midmarket",
+            "enterprise"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "contact": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "title": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        }
+      },
+      "required": [
+        "name",
+        "title"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "ourOffer": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 400
+    },
+    "meetingGoal": {
+      "type": "string",
+      "maxLength": 300
+    }
+  },
+  "required": [
+    "prospect",
+    "contact",
+    "ourOffer"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `domain_tech_fingerprint` | Empreinte tech d'un domaine — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Answers: What is the tech stack of <domain> — frontend, CMS, analytics, CRM, CDN, hosting? · What buying signals does <domain>'s technology footprint reveal for sales prospecting? · Analyze <domain> for supply-chain technology risk and third-party vendor exposure. · What is the best outreach angle for a sales rep targeting <domain> based on their detected stack? · Run a CISO-style technology fingerprint on <domain> — identify legacy tech, missing security headers, and vendor risk. · Has <domain> recently changed their marketing or analytics stack — any vendor adoption signals? Reference case: velora-payments.io · Next.js + Cloudflare + Stripe + GA4 + HubSpot · . Inputs are validated server-side — send the documented case fields. | `target_domain, focus, depth` |
+
+`domain_tech_fingerprint` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "target_domain": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 253
+    },
+    "focus": {
+      "type": "string",
+      "enum": [
+        "tech-buying",
+        "supply-chain",
+        "general"
+      ],
+      "default": "tech-buying",
+      "maxLength": 20000
+    },
+    "depth": {
+      "type": "string",
+      "enum": [
+        "quick",
+        "standard",
+        "deep"
+      ],
+      "default": "standard",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "target_domain",
+    "focus",
+    "depth"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `dora_metrics_deep_dive` | Analyzes DORA metrics (Deployment Frequency, Mean Time to Recovery, Change Failure Rate) with deep correlation to code review patterns. Designed for CTOs to identify bottlenecks in software delivery pipelines. Inputs include GitHub repository identifiers and optional time ranges. Outputs structured metrics with trend analysis and code review depth insights. | `repo, since, until, branch` |
+
+`dora_metrics_deep_dive` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "repo": {
+      "type": "string",
+      "description": "GitHub repository in format 'owner/repo'",
+      "maxLength": 20000
+    },
+    "since": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start date for analysis (ISO 8601)",
+      "maxLength": 20000
+    },
+    "until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End date for analysis (ISO 8601)",
+      "maxLength": 20000
+    },
+    "branch": {
+      "type": "string",
+      "description": "Branch name to analyze (default: main)",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "repo"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `dora_operational_resilience_stress_tes` | Assess DORA operational resilience by simulating ICT failure scenarios for financial entities. Designed for legal/compliance teams to evaluate ICT risk management under DORA Article 25. Inputs include failure scenario parameters (e.g., ICT service type, duration, impact radius) and entity profile. Outputs structured resilience scores, regulatory gaps, and mitigation recommendations with EUR-Lex/FTC enforcement references. | `ictServiceType, failureDurationHours, impactRadius, entityType, existingMitigations` |
+
+`dora_operational_resilience_stress_tes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "ictServiceType": {
+      "type": "string",
+      "enum": [
+        "cloud",
+        "network",
+        "payment",
+        "core",
+        "third-party"
+      ],
+      "maxLength": 20000
+    },
+    "failureDurationHours": {
+      "type": "number",
+      "minimum": 0.5,
+      "maximum": 72
+    },
+    "impactRadius": {
+      "type": "string",
+      "enum": [
+        "single-entity",
+        "multi-entity",
+        "sector-wide"
+      ],
+      "maxLength": 20000
+    },
+    "entityType": {
+      "type": "string",
+      "enum": [
+        "credit-institution",
+        "investment-firm",
+        "payment-institution",
+        "crypto-asset"
+      ],
+      "maxLength": 20000
+    },
+    "existingMitigations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "redundancy",
+          "backup",
+          "failover",
+          "contractual-sla",
+          "none"
+        ],
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "ictServiceType",
+    "failureDurationHours",
+    "impactRadius",
+    "entityType"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `dual_use_export_risk_mapper` | As a COO, quickly assess export compliance risks for components in your supply chain. This tool analyzes bills of materials (BOMs) against EU dual-use export control lists and ICAO/IMO restricted items data. Input a list of part numbers, descriptions, or HS codes to receive a risk assessment with actionable insights. Output includes risk levels, applicable regulations, and source references for audit trails. | `bomItems, includeSources` |
+
+`dual_use_export_risk_mapper` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "bomItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "partNumber": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "hsCode": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "quantity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 100
+    },
+    "includeSources": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "bomItems"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `dual_use_tech_diversion_monitor` | Asynchronous T5-level tool for COO persona to detect unauthorized diversion of dual-use technologies. Cross-references shipment manifests, EU sanctions lists, and ICAO/IMO transport data to identify suspicious transfers. Inputs: shipment IDs, company identifiers, or geographic routes. Outputs structured diversion risk assessment with source provenance. Requires async:true to avoid 402 timeout. | `shipmentId, companyId, route, techCategory` |
+
+`dual_use_tech_diversion_monitor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "shipmentId": {
+      "type": "string",
+      "description": "Unique shipment identifier (e.g., bill of lading number)",
+      "maxLength": 20000
+    },
+    "companyId": {
+      "type": "string",
+      "description": "Company registration number or tax identifier",
+      "maxLength": 20000
+    },
+    "route": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "type": "string",
+          "description": "ISO 3166-1 alpha-3 country code",
+          "maxLength": 20000
+        },
+        "destination": {
+          "type": "string",
+          "description": "ISO 3166-1 alpha-3 country code",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "origin",
+        "destination"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "techCategory": {
+      "type": "string",
+      "enum": [
+        "aerospace",
+        "nuclear",
+        "biotech",
+        "semiconductors",
+        "telecom"
+      ],
+      "description": "Dual-use technology category",
+      "maxLength": 20000
+    }
+  },
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `earnings_reviewer` | Earnings Reviewer — Gapup agent-payable C-suite expertise (FUNDRAISING). Returns a structured, audited deliverable. Reference case: Salesforce Q3 FY2026 — call transcript + 10-Q + guidance → analyst note. Inputs are validated server-side — send the documented case fields. | `company, quarter, transcriptExcerpt, secFilingContext, analystFocus` |
+
+`earnings_reviewer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "ticker": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "exchange": {
+          "type": "string",
+          "enum": [
+            "NYSE",
+            "NASDAQ",
+            "LSE",
+            "Euronext",
+            "TSX",
+            "other"
+          ],
+          "default": "NASDAQ",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "ticker",
+        "sector",
+        "exchange"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "quarter": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 30
+        },
+        "reportDate": {
+          "type": "string",
+          "maxLength": 30
+        }
+      },
+      "required": [
+        "label"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "transcriptExcerpt": {
+      "type": "string",
+      "minLength": 200,
+      "maxLength": 20000
+    },
+    "secFilingContext": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "analystFocus": {
+      "type": "string",
+      "maxLength": 1000
+    }
+  },
+  "required": [
+    "company",
+    "quarter",
+    "transcriptExcerpt"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `earnings_transcript_signals` | Earnings call transcript signal extractor for equity research analysts, catalyst-driven hedge funds, and BD teams. Parses earnings transcripts (fetched or provided) to surface:
+
+• signals (P0/P1/P2): guidance raise/cut, miss/beat vs consensus, buyback, dividend change, new product, executive change, capex shift, M&A intent, regulatory risk, competitive threat, supply chain, hiring
+• kpis_mentioned: Revenue, EBITDA, EPS, FCF, Gross Margin, Operating Margin with YoY/QoQ %
+• guidance: raised / maintained / cut / new_initiated items extracted
+• q_and_a_topics: top Q&A themes detected (AI strategy, China exposure, M&A pipeline, macro, etc.)
+• overall_tone: bullish / neutral / bearish
+
+Sources fetched automatically: SEC EDGAR 8-K filings, Yahoo Finance earnings news, Motley Fool transcripts. If no transcript can be retrieved from any source, returns status:'failed' with an explicit warning and empty signals — never fabricated data. Accepts transcript_text override for direct analysis. Supports multilingual transcripts (de/fr/es/zh). European tickers (SAP.DE, BMW.DE) mapped to EDGAR-compatible equivalents automatically. | `company_or_ticker, quarter, transcript_text, lang` |
+
+`earnings_transcript_signals` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company_or_ticker": {
+      "type": "string",
+      "description": "Company name or ticker symbol (e.g. 'Tesla', 'TSLA', 'SAP', 'SAP.DE', 'Sanofi', 'SNY'). European tickers (SAP.DE, BMW.DE) are mapped to their ADR equivalents for EDGAR lookup.",
+      "maxLength": 20000
+    },
+    "quarter": {
+      "type": "string",
+      "pattern": "^Q[1-4]-\\d{4}$",
+      "description": "Fiscal quarter in format Q1-2026. Defaults to the most recent past quarter.",
+      "maxLength": 20000
+    },
+    "transcript_text": {
+      "type": "string",
+      "description": "If provided, skips all external fetches and analyses this text directly. Minimum 100 characters.",
+      "maxLength": 20000
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "de",
+        "fr",
+        "es",
+        "zh"
+      ],
+      "description": "Language hint for the transcript. Affects mock transcript language when fetch fails.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "company_or_ticker"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `economic_indicator` | Return a precise macroeconomic indicator for a country — the exact figure for a market-sizing, finance or strategy workflow. Indicators: gdp_usd, gdp_per_capita, gdp_growth, inflation, unemployment, population. Source: World Bank. When to use: an agent's analysis needs an authoritative country-level economic figure. Inputs: country (ISO-2 or ISO-3 code) and indicator name. | `country, indicator` |
+
+`economic_indicator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "description": "Country code, ISO-2 or ISO-3 (e.g. FR, USA)",
+      "maxLength": 20000
+    },
+    "indicator": {
+      "type": "string",
+      "enum": [
+        "gdp_usd",
+        "gdp_per_capita",
+        "gdp_growth",
+        "inflation",
+        "unemployment",
+        "population"
+      ],
+      "description": "Macroeconomic indicator name",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "country",
+    "indicator"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `esg_audit_multi` | Multi-mode ESG intelligence for ESG analysts, sustainability officers and impact investing fund managers. Aggregates live data from CDP, SBTi, Wikipedia, Yahoo Finance and web search across five modes:
+• company_score — ESG score 0-100 with E/S/G breakdown + heuristic rating (AAA-CCC), from CDP grade + SBTi + sector profile
+• controversy_check — controversies detected via web search, classified P0/P1/P2 by type (greenwashing, emissions fraud, labour, governance)
+• emissions — GHG Scope 1/2/3 estimates, SBTi validation flag, net-zero target year, carbon intensity per M€ revenue
+• esrs_readiness — CSRD gap across 12 standards (E1-E5, S1-S4, G1-G3): readiness % + gap list + CSRD deadline + effort man-days
+• sfdr_classification — suggested SFDR Article 6/8/9 with rationale and sustainability indicators met
+
+Signals: P0=critical (controversy/score<40), P1=significant (score<55/SBTi missing/ESRS<50%), P2=watch. Cache 24h. | `mode, query, framework, pillar` |
+
+`esg_audit_multi` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "company_score",
+        "controversy_check",
+        "emissions",
+        "esrs_readiness",
+        "sfdr_classification"
+      ],
+      "description": "Analysis mode.",
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200,
+      "description": "Company name, ticker, ISIN or LEI (e.g. \"Microsoft\", \"Sanofi\", \"Volkswagen\")."
+    },
+    "framework": {
+      "type": "string",
+      "enum": [
+        "GRI",
+        "SASB",
+        "TCFD",
+        "ESRS",
+        "all"
+      ],
+      "description": "ESG framework filter (optional, default: all).",
+      "maxLength": 20000
+    },
+    "pillar": {
+      "type": "string",
+      "enum": [
+        "E",
+        "S",
+        "G",
+        "all"
+      ],
+      "description": "ESG pillar filter (optional, default: all).",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode",
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `esrs_narrative_builder` | Architecte du narratif ESRS / CSRD — Gapup agent-payable C-suite expertise (SUSTAINABILITY). Returns a structured, audited deliverable. Reference case: L'Oréal France — narratif ESRS E1+E5 + S1 + G1 · CSRD reporting 2025-2026 · double-matérialité chiffrée. Inputs are validated server-side — send the documented case fields. | `company, scope, context, focus, presenterScript` |
+
+`esrs_narrative_builder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number"
+        },
+        "reportingYear": {
+          "type": "integer",
+          "minimum": 2024
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "reportingYear"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "standardsApplicable": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ESRS-E1-climate",
+              "ESRS-E2-pollution",
+              "ESRS-E3-water",
+              "ESRS-E4-biodiversity",
+              "ESRS-E5-resources",
+              "ESRS-S1-workforce",
+              "ESRS-S2-value-chain",
+              "ESRS-S3-communities",
+              "ESRS-S4-consumers",
+              "ESRS-G1-business-conduct"
+            ],
+            "maxLength": 20000
+          },
+          "minItems": 3,
+          "maxItems": 10
+        },
+        "countriesOfOperation": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 15
+        },
+        "valueChainScope": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "standardsApplicable",
+        "countriesOfOperation",
+        "valueChainScope"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "recentChanges": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "strategicCommitments": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "strategicCommitments"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "presenterScript": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "slideId": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "slideTitle": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "narration": {
+            "type": "string",
+            "minLength": 80,
+            "maxLength": 1200
+          },
+          "durationSec": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 120
+          },
+          "motionHint": {
+            "type": "string",
+            "enum": [
+              "opening-confidence",
+              "explaining",
+              "pointing-at-chart",
+              "thoughtful-pause",
+              "emphatic-point",
+              "nodding-listening",
+              "hand-gesture-open",
+              "summary-pose",
+              "closing-confidence"
+            ],
+            "maxLength": 20000
+          },
+          "keyPointsToAcknowledge": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 5,
+              "maxLength": 200
+            },
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "slideId",
+          "slideTitle",
+          "narration",
+          "durationSec"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 6,
+      "maxItems": 15
+    }
+  },
+  "required": [
+    "company",
+    "scope",
+    "context"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `event_marketing` | Marketing événementiel — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Pennylane (€120k/an budget événements) — 7 événements sélectionnés · coût-MQL -38% vs année précédente. Inputs are validated server-side — send the documented case fields. | `company, targetAudience, annualBudgetEur, objectives, teamSize, geography, currentEvents` |
+
+`event_marketing` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetAudience": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 200
+    },
+    "annualBudgetEur": {
+      "type": "number",
+      "minimum": 0
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "pipeline-generation",
+          "brand-awareness",
+          "customer-retention",
+          "recruiting",
+          "partner-network"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "teamSize": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "geography": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 60
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "currentEvents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "roiRating": {
+            "type": "string",
+            "enum": [
+              "poor",
+              "ok",
+              "good"
+            ],
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "name",
+          "type",
+          "roiRating"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 0,
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "company",
+    "targetAudience",
+    "annualBudgetEur",
+    "objectives",
+    "teamSize",
+    "geography",
+    "currentEvents"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `financial_model_3statement` | Pure-compute 3-statement financial model builder (Income Statement + Balance Sheet + Cash Flow). Feed assumptions (revenue growth, COGS%, OpEx, CapEx, working capital, tax rate, depreciation, debt schedule) → receive a full 3-5 year projection with integrated DCF valuation. Supports IFRS / US_GAAP / PRC_GAAP (中国会计准则) norms with bilingual ZH+EN labels for PRC. Modes: build (full 3-statement model) | scenario_analysis (base/bull/bear ±20% growth) | sensitivity (1 KPI × 1 input, 5-point grid). No external data needed — all computed from assumptions. ICP: VC due diligence, M&A analysts, CFO SMB, startup founders pitching investors, biotech/SaaS modeling. Returns balance_check_ok per year, DCF enterprise/equity value, and coherence warnings. | `mode, assumptions, sensitivity_kpi, sensitivity_input` |
+
+`financial_model_3statement` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "build",
+        "scenario_analysis",
+        "sensitivity"
+      ],
+      "description": "build = full 3-statement model | scenario_analysis = base/bull/bear | sensitivity = 1 KPI × 1 input",
+      "maxLength": 20000
+    },
+    "assumptions": {
+      "type": "object",
+      "description": "Financial assumptions for the model",
+      "properties": {
+        "starting_revenue_eur": {
+          "type": "number",
+          "description": "Year 0 (base) annual revenue in EUR. Default 1 000 000."
+        },
+        "growth_rates_pct": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "description": "Annual revenue growth rates in %, one per year (e.g. [50, 40, 30, 25, 20]). Last value repeated if shorter than period_years.",
+          "maxItems": 100
+        },
+        "cogs_pct_of_revenue": {
+          "type": "number",
+          "description": "Cost of goods/services as % of revenue (e.g. 30 for SaaS hosting costs)."
+        },
+        "opex_pct_of_revenue": {
+          "type": "number",
+          "description": "Operating expenses (R&D + S&M + G&A) as % of revenue."
+        },
+        "capex_pct_of_revenue": {
+          "type": "number",
+          "description": "Capital expenditures as % of revenue."
+        },
+        "working_capital_pct_of_revenue": {
+          "type": "number",
+          "description": "Net working capital as % of revenue."
+        },
+        "tax_rate_pct": {
+          "type": "number",
+          "description": "Corporate income tax rate in % (e.g. 25 for France, 21 for US)."
+        },
+        "depreciation_years": {
+          "type": "number",
+          "description": "Useful life of assets in years for straight-line depreciation."
+        },
+        "starting_debt_eur": {
+          "type": "number",
+          "description": "Opening debt balance in EUR. Default 0."
+        },
+        "debt_interest_rate_pct": {
+          "type": "number",
+          "description": "Annual interest rate on debt in %. Default 0."
+        },
+        "starting_cash_eur": {
+          "type": "number",
+          "description": "Opening cash balance in EUR. Default 0."
+        },
+        "period_years": {
+          "type": "number",
+          "description": "Projection horizon in years (1-10). Default 5."
+        },
+        "norms": {
+          "type": "string",
+          "enum": [
+            "IFRS",
+            "US_GAAP",
+            "PRC_GAAP"
+          ],
+          "description": "Accounting standard for labels. PRC_GAAP adds 中文 labels alongside EN.",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "growth_rates_pct",
+        "cogs_pct_of_revenue",
+        "opex_pct_of_revenue",
+        "capex_pct_of_revenue",
+        "working_capital_pct_of_revenue",
+        "tax_rate_pct",
+        "depreciation_years",
+        "norms"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "sensitivity_kpi": {
+      "type": "string",
+      "enum": [
+        "revenue_y3",
+        "ebitda_y3",
+        "fcf_y3",
+        "cash_y3",
+        "valuation"
+      ],
+      "description": "KPI to observe in sensitivity mode.",
+      "maxLength": 20000
+    },
+    "sensitivity_input": {
+      "type": "string",
+      "description": "Assumption param to vary in sensitivity mode. E.g. 'growth_rates_pct[0]' or 'cogs_pct_of_revenue'.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode",
+    "assumptions"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_business_ideas` | Return vetted, automation-scored business ideas from the FTG idea bank — each with an autonomy score, monetization model and conservative/median/optimistic MRR projections. When to use this tool: an agent or founder wants ranked, buildable business ideas. Input: optional category and limit. | `category, limit` |
+
+`ftg_business_ideas` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "category": {
+      "type": "string",
+      "description": "Optional category filter",
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_business_plan` | Return the business plan for a market-gap opportunity — direct-trade or local-production, with CAPEX, OPEX, ROI, payback period, automation level and the full plan. Cache-first: returns the stored plan when available, otherwise reports that generation is required (the FTG platform produces plans on demand). When to use this tool: an agent has an opportunity_id (from ftg_market_gap) and needs the investable plan. Input: an opportunity_id. | `opportunity_id` |
+
+`ftg_business_plan` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "opportunity_id": {
+      "type": "string",
+      "description": "Opportunity id obtained from ftg_market_gap",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "opportunity_id"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_country_regulations` | Return import, trade and production regulations for a country — category, title, summary and source. When to use this tool: an agent checks regulatory or compliance requirements before trading or producing in a market. Input: a country, with an optional category. | `country, category, limit` |
+
+`ftg_country_regulations` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "description": "Country ISO code or name",
+      "maxLength": 20000
+    },
+    "category": {
+      "type": "string",
+      "description": "Optional regulation category filter",
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "country"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_country_study` | Return the in-depth FTG country study — multi-part structured analysis of a country's trade and production landscape. When to use this tool: an agent needs deep country context before a sourcing, export or investment decision. Input: a country. | `country` |
+
+`ftg_country_study` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "description": "Country ISO code or name",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "country"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_investor_directory` | Return investors from the FTG directory — VC, PE and impact funds with type, firm, website, ticket-size range, sectors and stages of interest. When to use this tool: an agent builds a fundraising shortlist. Input: optional country and limit. | `country, limit` |
+
+`ftg_investor_directory` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "description": "Optional country ISO code or name",
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_market_gap` | Return the import/production market-gap opportunities for a country — commodities where local demand outpaces local supply. Each opportunity carries the gap value (USD/year), the gap volume (tonnes/year), a 0-100 opportunity score and the potential margin. When to use this tool: an agent needs to know what a country structurally under-produces or over-imports, for trade sourcing, import/export or local-production investment decisions. Input: a country (ISO-2 code or name). | `country, limit` |
+
+`ftg_market_gap` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "description": "Country ISO-2 code (e.g. 'SN', 'KE') or name (e.g. 'Senegal')",
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Maximum opportunities to return (default 20)"
+    }
+  },
+  "required": [
+    "country"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_opportunity_scout` | Rank the best countries for a given commodity — where the market gap, opportunity score and potential margin are highest. Cross-country scouting. When to use this tool: an agent has a commodity and needs to know WHERE to sell, export to or set up local production. Input: a commodity name. | `commodity, limit` |
+
+`ftg_opportunity_scout` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "commodity": {
+      "type": "string",
+      "minLength": 2,
+      "description": "Commodity name (e.g. 'rice', 'soybean', 'poultry')",
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Maximum countries to return (default 20)"
+    }
+  },
+  "required": [
+    "commodity"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_production_economics` | Return production cost benchmarks (CAPEX/OPEX per unit, value ranges, scenarios, quality tiers) and agronomic yields (t/ha, cycles per year) for a commodity. When to use this tool: an agent sizes the economics of producing a commodity. Input: a commodity, with an optional country. | `commodity, country, limit` |
+
+`ftg_production_economics` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "commodity": {
+      "type": "string",
+      "minLength": 2,
+      "description": "Commodity name or slug",
+      "maxLength": 20000
+    },
+    "country": {
+      "type": "string",
+      "description": "Optional country ISO code or name",
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "commodity"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_production_methods` | Return the production methods for a commodity — each with a description, ordered process steps, pros/cons and a popularity rank. Methods are commodity-canonical: one curated set per commodity, reusable across every country. When to use this tool: an agent evaluates HOW a commodity is produced or processed, compares techniques, or builds a production plan. Input: a commodity slug or name. | `commodity` |
+
+`ftg_production_methods` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "commodity": {
+      "type": "string",
+      "minLength": 2,
+      "description": "Commodity slug or name (e.g. 'rice', 'tomato', 'cashew')",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "commodity"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_seller_catalog` | Return seller catalogues registered on FTG — exporters and producers with their commodity, monthly capacity, certifications and target export markets. When to use this tool: an agent builds a supplier or sourcing shortlist. Input: optional seller country and commodity. | `country, commodity, limit` |
+
+`ftg_seller_catalog` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "description": "Optional seller country ISO code or name",
+      "maxLength": 20000
+    },
+    "commodity": {
+      "type": "string",
+      "description": "Optional commodity filter",
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ftg_sourcing_buyers` | Return verified local buyers in a country — companies sourcing a given commodity, with buyer type, city, website, annual volume range and certification requirements. When to use this tool: an agent builds a sourcing or export shortlist, or needs real B2B demand contacts in a market. Input: a country and an optional commodity filter. | `country, commodity, limit` |
+
+`ftg_sourcing_buyers` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "country": {
+      "type": "string",
+      "description": "Country ISO-2 code or name",
+      "maxLength": 20000
+    },
+    "commodity": {
+      "type": "string",
+      "description": "Optional commodity slug to filter buyers by",
+      "maxLength": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "description": "Maximum buyers to return (default 20)"
+    }
+  },
+  "required": [
+    "country"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `funding_hunter` | Chasseur de financements — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Reference case: PME deeptech cleantech FR €8M CA — top 30 dispositifs BPI+France2030+EU+VC. Inputs are validated server-side — send the documented case fields. | `company, financials, project, preferences` |
+
+`funding_hunter` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 800
+        },
+        "foundedYear": {
+          "type": "integer",
+          "minimum": 1990,
+          "maximum": 2030
+        },
+        "countryHQ": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "siret": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 120
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "growth"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "pitch",
+        "foundedYear",
+        "countryHQ",
+        "sector",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "financials": {
+      "type": "object",
+      "properties": {
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "rdSpendEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "headcount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hasJEI": {
+          "type": "boolean"
+        },
+        "hasCIREligibility": {
+          "type": "boolean"
+        },
+        "grossMarginPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "revenueEur",
+        "rdSpendEur",
+        "headcount",
+        "grossMarginPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 600
+        },
+        "budgetEur": {
+          "type": "integer",
+          "minimum": 50000,
+          "maximum": 50000000
+        },
+        "horizonMonths": {
+          "type": "integer",
+          "minimum": 6,
+          "maximum": 36
+        },
+        "techReadinessLevel": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9
+        },
+        "geographies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "minItems": 1,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "description",
+        "budgetEur",
+        "horizonMonths",
+        "geographies"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "preferences": {
+      "type": "object",
+      "properties": {
+        "nonDilutiveFirst": {
+          "type": "boolean"
+        },
+        "maxDilutionPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 40
+        },
+        "urgencyDays": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 365
+        }
+      },
+      "required": [
+        "nonDilutiveFirst"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "financials",
+    "project",
+    "preferences"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `fx_rate` | Get the current or historical foreign-exchange rate for any currency pair — the exact exchange rate, FX rate or conversion rate an agent needs to convert a currency amount or feed a finance, trading, invoicing or pricing workflow. Covers EUR/USD, USD/JPY, GBP/EUR and every ISO-4217 currency pair. Returns the latest spot rate, or a historical rate by date. Use when a workflow needs a precise live or past currency exchange rate, or to convert money between two currencies. Source: European Central Bank reference rates via Frankfurter. Inputs: from/to ISO-4217 currency codes, optional date (YYYY-MM-DD). | `from, to, date` |
+
+`fx_rate` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "from": {
+      "type": "string",
+      "description": "Base currency, ISO-4217 (e.g. EUR)",
+      "maxLength": 20000
+    },
+    "to": {
+      "type": "string",
+      "description": "Quote currency, ISO-4217 (e.g. USD)",
+      "maxLength": 20000
+    },
+    "date": {
+      "type": "string",
+      "description": "Optional YYYY-MM-DD for a historical rate",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "from",
+    "to"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `geo_logistics_intel` | Geospatial logistics intelligence for supply chain, maritime and transport agents. Four modes: (1) geocode_batch — resolve up to 50 addresses to lat/lon with confidence scores (OSM Nominatim + Open-Meteo fallback, 1 req/s rate-limit respected); (2) routing — road/cycling/walking route with distance_km, duration_seconds and ETA ISO timestamp between two addresses or lat/lon points (OSRM public, keyless, global); (3) port_congestion — congestion status for any UN/LOCODE port (e.g. NLRTM, SGSIN, CNSHA) with waiting vessel count, severity (low/medium/high/extreme) and average wait hours; (4) ship_tracking — AIS position, speed, course, destination and ETA for a vessel by its 9-digit MMSI. No API key required for geocode/routing/port. Optional env: AIS_STREAM_API_KEY for live ship data (otherwise MarineTraffic scrape best-effort). SLA: <=25s p95. Cache: 24h geocoding / 1h routing / 30min port / 5min ship. Quality score 0-100. Status: final/partial/failed. | `mode, query, addresses, from, to, mode_transport` |
+
+`geo_logistics_intel` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "geocode_batch",
+        "routing",
+        "port_congestion",
+        "ship_tracking"
+      ],
+      "description": "'geocode_batch': address -> lat/lon. 'routing': route + ETA. 'port_congestion': UN/LOCODE port state. 'ship_tracking': vessel by MMSI",
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "description": "Primary input: address for geocode/routing, UN/LOCODE (e.g. NLRTM) for port_congestion, 9-digit MMSI for ship_tracking",
+      "maxLength": 20000
+    },
+    "addresses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 50,
+      "description": "geocode_batch only: up to 50 addresses (overrides query if provided)"
+    },
+    "from": {
+      "type": "string",
+      "description": "routing only: origin address or 'lat,lon'",
+      "maxLength": 20000
+    },
+    "to": {
+      "type": "string",
+      "description": "routing only: destination address or 'lat,lon'",
+      "maxLength": 20000
+    },
+    "mode_transport": {
+      "type": "string",
+      "enum": [
+        "driving",
+        "walking",
+        "cycling"
+      ],
+      "description": "routing only: transport mode. Default: driving",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode",
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `geographic_expansion` | Expansion géographique — Gapup agent-payable C-suite expertise (CSO). Returns a structured, audited deliverable. Reference case: Gapup Hub — Expansion 4 marchés (DE/UK/ES/NL) · €1.8M budget · ARR cible €3.2M Y2. Inputs are validated server-side — send the documented case fields. | `company, product, financials, targetMarkets, expansionHorizonMonths, preferredEntryMode, constraints` |
+
+`geographic_expansion` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "currentMarkets": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "maxItems": 10
+        },
+        "headcount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "currentMarkets"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "pricingModel": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "avgDealValueEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "financials": {
+      "type": "object",
+      "properties": {
+        "currentArrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "expansionBudgetEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "targetArrNewMarketsEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "currentArrEur",
+        "expansionBudgetEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetMarkets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "country": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "region": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "population": {
+            "type": "number",
+            "minimum": 0
+          },
+          "gdpPerCapitaUsd": {
+            "type": "number",
+            "minimum": 0
+          },
+          "languages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 30
+            },
+            "maxItems": 5
+          },
+          "regulatoryNotes": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "country"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "expansionHorizonMonths": {
+      "type": "integer",
+      "minimum": 6,
+      "maximum": 60
+    },
+    "preferredEntryMode": {
+      "type": "string",
+      "enum": [
+        "direct-sales",
+        "partnership",
+        "acquisition",
+        "distributor",
+        "greenfield"
+      ],
+      "maxLength": 20000
+    },
+    "constraints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "targetMarkets"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `gl_reconciler` | GL Reconciler — Réconciliation grand livre — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Answers: Identify the root causes of the <N> GL breaks in <company>'s ledger for <period> — cluster them and rank by materiality. · For <company> Q<X> close: which accounts have unreconciled items over €<threshold>? Provide a sign-off routing and resolution plan. · Run an automated GL reconciliation for <company> — AR/AP/intercompany entries — flag open items, suggest journal entries. · What are the top 5 systemic control weaknesses causing recurring GL breaks at <company>? Recommend preventive controls. · Generate a month-end close reconciliation report for <company> <period> — breaks by account type, aging analysis, sign-off assignments. Reference case: Acme SaaS Q4 2026 — 47 breaks GL, €1.4M variance non postée. Inputs are validated server-side — send the documented case fields. | `entity, ledgerContext, focus` |
+
+`gl_reconciler` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "entity": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "currency": {
+          "type": "string",
+          "default": "EUR",
+          "maxLength": 20000
+        },
+        "period": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 30
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "currency",
+        "period"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "ledgerContext": {
+      "type": "object",
+      "properties": {
+        "totalEntries": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "breaksCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 100
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "totalEntries",
+        "breaksCount",
+        "modules"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "entity",
+    "ledgerContext"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `gov_procurement_multi` | Aggregate public procurement tenders (calls for tender / appels d'offres) from multiple government sources simultaneously: TED Europa v3 (27 EU countries, keyless API), BOAMP France (opendatasoft, keyless), UK Contracts Finder (OCDS standard, keyless), SAM.gov United States (requires SAM_GOV_API_KEY env var), and bund.de Germany (HTML scraping, partial). Returns structured tender records with buyer authority, EU CPV sector code, estimated contract value converted to EUR via live FX rates, submission deadlines, and direct notice URLs. Use when: a B2G agent needs to find government contract opportunities matching keywords across multiple jurisdictions; building a pipeline of public tenders for bid/no-bid qualification; monitoring a domain by CPV code; market sizing public sector spend. Key inputs: query (keywords), countries (ISO-2 array), cpv_codes (EU standard codes, e.g. 72000000=IT services, 45000000=construction, 79000000=business services), min_value_eur (filter), published_after (ISO date, defaults to 30 days ago). SLA: <=25s p95 (all sources fetched in parallel, 8s budget per source). Optional env var SAM_GOV_API_KEY enables US federal tenders (free key at api.sam.gov). Quality score: 25 pts if TED EU retrieved, 15 pts per other source retrieved (max 60), 10 pts if >= 10 tenders returned, 5 pts if aggregates computed. Status: failed < 30 / partial 30-59 / final >= 60. | `query, countries, cpv_codes, min_value_eur, published_after` |
+
+`gov_procurement_multi` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200,
+      "description": "Keywords to search for tenders (e.g. \"cybersecurity audit\", \"construction\", \"consulting AI\")"
+    },
+    "countries": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "EU",
+          "US",
+          "FR",
+          "UK",
+          "DE",
+          "JP",
+          "BR"
+        ],
+        "maxLength": 20000
+      },
+      "description": "Countries to search. Defaults to [\"EU\",\"US\",\"FR\",\"UK\",\"DE\"]. Use \"EU\" for all 27 EU member states via TED Europa.",
+      "maxItems": 100
+    },
+    "cpv_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "EU Common Procurement Vocabulary codes (e.g. ['72000000'] for IT services, ['45000000'] for construction). Optional.",
+      "maxItems": 100
+    },
+    "min_value_eur": {
+      "type": "number",
+      "description": "Minimum contract value in EUR. Tenders below this are excluded. Optional."
+    },
+    "published_after": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD. Only return tenders published after this date. Defaults to 30 days ago.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `growth_path_architect` | Architecte de croissance — Gapup agent-payable C-suite expertise (CSO). Returns a structured, audited deliverable. Reference case: Pennylane (€30M ARR) — 3 voies de croissance · Mix recommandé : Organique + Geo EU · ARR cible €120M en 36 mois. Inputs are validated server-side — send the documented case fields. | `company, growthTarget, currentDrivers, constraints` |
+
+`growth_path_architect` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "currentArrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "geographies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 60
+          },
+          "minItems": 1,
+          "maxItems": 6
+        },
+        "teamSize": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "currentArrEur",
+        "geographies",
+        "teamSize"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "growthTarget": {
+      "type": "object",
+      "properties": {
+        "targetArrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "horizonMonths": {
+          "type": "number",
+          "minimum": 6,
+          "maximum": 60
+        },
+        "budgetAvailableEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "targetArrEur",
+        "horizonMonths",
+        "budgetAvailableEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentDrivers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "driver": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "contributionPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "growthRatePct": {
+            "type": "number",
+            "minimum": -50,
+            "maximum": 300
+          }
+        },
+        "required": [
+          "driver",
+          "contributionPct",
+          "growthRatePct"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 6
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "maAppetite": {
+          "type": "string",
+          "enum": [
+            "none",
+            "opportunistic",
+            "active"
+          ],
+          "maxLength": 20000
+        },
+        "geographicExpansionReadiness": {
+          "type": "string",
+          "enum": [
+            "not-ready",
+            "6-12mo",
+            "ready-now"
+          ],
+          "maxLength": 20000
+        },
+        "productExpansionBudgetEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "maAppetite",
+        "geographicExpansionReadiness"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "growthTarget",
+    "currentDrivers",
+    "constraints"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `historical_price_series` | Fetch historical OHLCV price series for any ticker: stocks (AAPL, SAP.DE, 7203.T), ETFs, indices, commodities (GC=F for gold) or cryptocurrencies (BTC-USD). Returns a full date-indexed series of open/high/low/close/volume plus pre-computed statistics: total return, annualised return (CAGR), annualised volatility, max drawdown and Sharpe estimate (rf=4%). Automatically detects crypto tickers (→ CoinGecko) vs traditional assets (→ Yahoo Finance primary, Stooq fallback). Adjusts for dividends and splits when adjusted=true (default). Use cases: backtesting, factor analysis, performance attribution, charting, financial modelling. Sources: Yahoo Finance, CoinGecko, Stooq. All keyless. Optional env: AICI_RESEARCH_PROXY_URL for Bright Data routing (lifts Yahoo 429), TWELVE_DATA_API_KEY for higher Twelve Data quota. | `ticker, interval, period, adjusted, metrics` |
+
+`historical_price_series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "description": "Yahoo Finance ticker symbol. Examples: AAPL (US stock), SAP.DE (Frankfurt), 7203.T (Tokyo), BTC-USD (Bitcoin), GC=F (gold futures), ^GSPC (S&P 500).",
+      "maxLength": 20000
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "1d",
+        "1wk",
+        "1mo"
+      ],
+      "description": "Bar interval. Default: 1d (daily).",
+      "maxLength": 20000
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1mo",
+        "3mo",
+        "6mo",
+        "1y",
+        "2y",
+        "5y",
+        "10y",
+        "max"
+      ],
+      "description": "Look-back period. Default: 1y.",
+      "maxLength": 20000
+    },
+    "adjusted": {
+      "type": "boolean",
+      "description": "Adjust close prices for dividends and splits. Default: true."
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume",
+          "returns",
+          "volatility"
+        ],
+        "maxLength": 20000
+      },
+      "description": "Subset of fields to include (informational — all fields always returned).",
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "ticker"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `india_market_data` | Indian capital market intelligence for the IN diaspora (30M+) and investors. Covers NSE, BSE, and MCA corporate registry across four modes:
+
+• company — full company profile: name, CIN, exchange, NSE/BSE tickers, industry, incorporation date, paid-up capital, registered office, status, directors
+• market_quote — real-time quote: price (INR), change%, volume, market cap, P/E ratio. Sources: Yahoo Finance (primary), BSE API, NSE API (proxy-gated)
+• sector_overview — Nifty/Sensex sector snapshot: top 5 companies by market cap. Supported sectors: it, banking, pharma, energy, auto, fmcg, realestate, metals, telecom, consumer
+• mca_filing — Ministry of Corporate Affairs filings. Requires CIN for direct lookup.
+
+Input formats accepted:
+  • NSE ticker (e.g. 'RELIANCE', 'TCS.NS')
+  • BSE 6-digit code (e.g. '500325' for Reliance)
+  • CIN 21-char (e.g. 'L17110MH1973PLC019786')
+  • Company name EN (e.g. 'Reliance Industries', 'Tata Consultancy')
+  • Sector keyword (e.g. 'IT services', 'banking', 'pharma')
+
+ENV: AICI_RESEARCH_PROXY_URL with country-in routing unlocks NSE direct API and MCA. | `mode, query, exchange` |
+
+`india_market_data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "company",
+        "market_quote",
+        "sector_overview",
+        "mca_filing"
+      ],
+      "description": "Analysis mode.",
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "NSE/BSE ticker, CIN (21 chars), company name (EN), or sector keyword."
+    },
+    "exchange": {
+      "type": "string",
+      "enum": [
+        "NSE",
+        "BSE",
+        "all"
+      ],
+      "description": "Exchange filter. Default: all.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode",
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `industry_classifier_naics_sic` | Classificateur d'industrie NAICS/SIC/NACE — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Answers: What is the NAICS code for a company that does <activity>? · Give me NAICS + SIC + NACE classification for this company description. · Which industry sector (GICS) does this company belong to for equity analysis? · What HS code applies to products manufactured by this company? · For EU procurement compliance, what NACE Rev. 2 code applies to this company? · Classify this business into NAICS + SIC + ISIC + GICS + NACE + HS with hierarchy and confidence. · I need to segment my ICP list by NAICS 4-digit subsector — classify these company descriptions. Reference case: Helios Cold Chain EU — Freight forwarding maritime réfrigéré · . Inputs are validated server-side — send the documented case fields. | `company_description, company_url, company_name, primary_revenue_source, focus_classifications` |
+
+`industry_classifier_naics_sic` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company_description": {
+      "type": "string",
+      "minLength": 30,
+      "maxLength": 2000
+    },
+    "company_url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 20000
+    },
+    "company_name": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "primary_revenue_source": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "focus_classifications": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "naics",
+          "sic",
+          "isic",
+          "gics",
+          "nace",
+          "hs"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 6
+    }
+  },
+  "required": [
+    "company_description"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `infra_blueprint_designer` | Architecte infra cloud — Gapup agent-payable C-suite expertise (CTO). Returns a structured, audited deliverable. Answers: Design a cloud infrastructure blueprint for a <workload_type> app with <load> expected traffic and <compliance> requirements. · What is the recommended AWS vs GCP vs Azure architecture for a SaaS multi-tenant app with EU data residency and SOC2? · How should I architect my cloud infra to stay under €5k/month with GDPR compliance and a junior DevOps team? · What cloud services do I need for a <workload_type> with <load> load — compute, DB, cache, CDN, observability? · Give me an end-to-end cloud architecture with scaling plan, security baseline, and IaC tool recommendation. Reference case: Spinora fintech B2B SaaS — saas-multi-tenant · medium load (1k-100k req/d) · eu-west · . Inputs are validated server-side — send the documented case fields. | `workload_type, expected_load, region_preference, cloud_preference, compliance_required, budget_monthly_eur, team_size, business_context` |
+
+`infra_blueprint_designer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "workload_type": {
+      "type": "string",
+      "enum": [
+        "saas-multi-tenant",
+        "web-app-monolith",
+        "api-microservices",
+        "data-pipeline-etl",
+        "ml-training",
+        "ml-inference",
+        "static-website",
+        "mobile-backend",
+        "iot-stream",
+        "video-streaming"
+      ],
+      "maxLength": 20000
+    },
+    "expected_load": {
+      "type": "string",
+      "enum": [
+        "low (<1k req/d)",
+        "medium (1k-100k req/d)",
+        "high (100k-10M req/d)",
+        "massive (10M+ req/d)"
+      ],
+      "maxLength": 20000
+    },
+    "region_preference": {
+      "type": "string",
+      "enum": [
+        "us-east",
+        "us-west",
+        "eu-west",
+        "eu-north",
+        "apac",
+        "multi-region"
+      ],
+      "maxLength": 20000
+    },
+    "cloud_preference": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "aws",
+          "gcp",
+          "azure",
+          "cloud-agnostic"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 4
+    },
+    "compliance_required": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "hipaa",
+          "soc2",
+          "pci-dss",
+          "gdpr",
+          "iso27001",
+          "fedramp"
+        ],
+        "maxLength": 20000
+      },
+      "maxItems": 6
+    },
+    "budget_monthly_eur": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "team_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    },
+    "business_context": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 800
+    }
+  },
+  "required": [
+    "workload_type",
+    "expected_load",
+    "region_preference"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `insurance_coverage_analyzer` | Analyseur de couvertures d'assurance — Gapup agent-payable C-suite expertise (RISK). Returns a structured, audited deliverable. Reference case: Gapup Hub — 3 polices · €24k prime · Score 58/100 · 3 gaps critiques · RFP template. Inputs are validated server-side — send the documented case fields. | `companyName, arrEur, employeeCount, sector, jurisdiction, currentPolicies, riskProfile, objectives` |
+
+`insurance_coverage_analyzer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "companyName": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "arrEur": {
+      "type": "number"
+    },
+    "employeeCount": {
+      "type": "number"
+    },
+    "sector": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "jurisdiction": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "currentPolicies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "do",
+              "cyber",
+              "rc-pro",
+              "eo",
+              "keyman",
+              "property",
+              "employment-practices",
+              "product-liability"
+            ],
+            "maxLength": 20000
+          },
+          "insurer": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "annualPremiumEur": {
+            "type": "number"
+          },
+          "coverageLimitEur": {
+            "type": "number"
+          },
+          "deductibleEur": {
+            "type": "number"
+          },
+          "expiryDate": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "keyExclusions": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "type",
+          "insurer",
+          "annualPremiumEur",
+          "coverageLimitEur",
+          "deductibleEur",
+          "expiryDate",
+          "keyExclusions"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "riskProfile": {
+      "type": "object",
+      "properties": {
+        "hasPersonalData": {
+          "type": "boolean"
+        },
+        "hasBoardOfDirectors": {
+          "type": "boolean"
+        },
+        "hasInternationalOps": {
+          "type": "boolean"
+        },
+        "hasPhysicalProducts": {
+          "type": "boolean"
+        },
+        "hasKeyPersonDependency": {
+          "type": "boolean"
+        },
+        "seriesStage": {
+          "type": "string",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "hasPersonalData",
+        "hasBoardOfDirectors",
+        "hasInternationalOps",
+        "hasPhysicalProducts",
+        "hasKeyPersonDependency",
+        "seriesStage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 4
+    }
+  },
+  "required": [
+    "companyName",
+    "arrEur",
+    "employeeCount",
+    "sector",
+    "jurisdiction",
+    "currentPolicies",
+    "riskProfile",
+    "objectives"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `interest_rate` | Return a precise reference interest rate — the exact figure an agent injects into a treasury, lending, valuation or trading model. Available rates: fed_funds, sofr, us_10y, us_2y, us_3m, ecb_main, euribor_3m. Source: FRED (Federal Reserve Bank of St. Louis). When to use: an agent's computation needs a current benchmark rate as a precise input. | `rate` |
+
+`interest_rate` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "rate": {
+      "type": "string",
+      "enum": [
+        "fed_funds",
+        "sofr",
+        "us_10y",
+        "us_2y",
+        "us_3m",
+        "ecb_main",
+        "euribor_3m"
+      ],
+      "description": "Reference rate name",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "rate"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `internal_communication` | Communication interne — Gapup agent-payable C-suite expertise (CHRO). Returns a structured, audited deliverable. Reference case: Cas démo — Communication interne. Inputs are validated server-side — send the documented case fields. | `company, context, audienceSegments, focus` |
+
+`internal_communication` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nbSites": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "geographies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "minItems": 1,
+          "maxItems": 10
+        },
+        "stage": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 40
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "context": {
+      "type": "object",
+      "properties": {
+        "currentMaturity": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "knownGaps": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 8
+        },
+        "upcomingChanges": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 200
+          },
+          "maxItems": 8
+        },
+        "voiceTone": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "currentMaturity",
+        "knownGaps",
+        "voiceTone"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "audienceSegments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name",
+          "size"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 8
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "context",
+    "audienceSegments"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `investor_list` | Liste d'investisseurs + warm intros — Gapup agent-payable C-suite expertise (FUNDRAISING). Returns a structured, audited deliverable. Reference case: Agicap Série D — 25 VCs matchés · Tier A: Balderton/Accel/Partech · Warm intro path chaque investisseur. Inputs are validated server-side — send the documented case fields. | `company, round, existingInvestors` |
+
+`investor_list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "round": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "series-c",
+            "growth",
+            "pre-ipo"
+          ],
+          "maxLength": 20000
+        },
+        "ticketSizeMin": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ticketSizeMax": {
+          "type": "number",
+          "minimum": 0
+        },
+        "geography": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "arrCurrent": {
+          "type": "number",
+          "minimum": 0
+        },
+        "useCase": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "stage",
+        "ticketSizeMin",
+        "ticketSizeMax",
+        "geography",
+        "useCase"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "existingInvestors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "minItems": 0,
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "company",
+    "round"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `investor_shortlist` | Shortlist d'investisseurs ciblés — Gapup agent-payable C-suite expertise (FUNDRAISING). Returns a structured, audited deliverable. Reference case: Aleph AI — Series B €30M · 60 investisseurs EU/US matchés par stage/thèse · fit score + warm intro path + first message angle. Inputs are validated server-side — send the documented case fields. | `company, round, preferences, focus` |
+
+`investor_shortlist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hqCountry": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "foundedYear": {
+          "type": "integer",
+          "minimum": 2000,
+          "maximum": 2026
+        },
+        "arrCurrentEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "monthlyGrowthPct": {
+          "type": "number"
+        },
+        "keyMetrics": {
+          "type": "string",
+          "maxLength": 400
+        },
+        "description": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "hqCountry",
+        "foundedYear",
+        "description"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "round": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "series-c",
+            "series-d",
+            "series-d-plus",
+            "series-e",
+            "follow-on",
+            "growth",
+            "private-equity"
+          ],
+          "maxLength": 20000
+        },
+        "targetAmountEur": {
+          "type": "number",
+          "minimum": 100000
+        },
+        "minViableAmountEur": {
+          "type": "number",
+          "minimum": 100000
+        },
+        "targetCloseDate": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "leadTicketSizeEur": {
+          "type": "number",
+          "minimum": 100000
+        },
+        "valuationTargetEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "stage",
+        "targetAmountEur",
+        "minViableAmountEur",
+        "targetCloseDate",
+        "leadTicketSizeEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "preferences": {
+      "type": "object",
+      "properties": {
+        "geography": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 8
+        },
+        "avoidInvestors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 20
+        },
+        "requireESGAlignment": {
+          "type": "boolean"
+        },
+        "preferStrategicValue": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "geography"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "round",
+    "preferences"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ip_protection_pilot` | Pilote de protection IP — Gapup agent-payable C-suite expertise (RISK). Returns a structured, audited deliverable. Reference case: Carbios SA — Deeptech FR recyclage PET enzymatique · 14 brevets EP/US/FR · 5 concurrents · licensing €2-8M potentiel. Inputs are validated server-side — send the documented case fields. | `company, patentPortfolioSummary, targetMarkets, competitors, focus` |
+
+`ip_protection_pilot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "country",
+        "revenueEur",
+        "fte"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "patentPortfolioSummary": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 1000
+    },
+    "targetMarkets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 60
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 600
+    }
+  },
+  "required": [
+    "company",
+    "patentPortfolioSummary",
+    "targetMarkets",
+    "competitors"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `job_postings_intelligence` | Agrégation d'offres d'emploi publiques pour inférer les tendances de recrutement. Trois modes : (1) company_hiring — analyse des postings d'une société : volume, fonctions (engineering/sales/marketing/ops/finance/hr), seniorité, géographie, croissance vs période précédente, signaux stratégiques inférés ; (2) role_market — volume marché global pour un rôle (open positions estimate, top employeurs, compétences demandées, médiane seniorité) ; (3) competitor_hiring_comparison — comparaison multi-sociétés (total postings, growth%, focus areas). Sources : Adzuna (ADZUNA_APP_ID/KEY env), RemoteOK (keyless), Himalayas (keyless), baseline statique 40 top employeurs. Usages : due diligence VC, intelligence compétitive, benchmarks RH, signaux pivots stratégiques. Cache 6h. SLA ≤15s. | `mode, company, role, location, competitors, period_days` |
+
+`job_postings_intelligence` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "company_hiring",
+        "role_market",
+        "competitor_hiring_comparison"
+      ],
+      "description": "Mode d'analyse : 'company_hiring' | 'role_market' | 'competitor_hiring_comparison'",
+      "maxLength": 20000
+    },
+    "company": {
+      "type": "string",
+      "description": "Nom de la société (pour company_hiring ou comme 1er concurrent)",
+      "maxLength": 20000
+    },
+    "role": {
+      "type": "string",
+      "description": "Intitulé de poste à analyser (pour role_market, ex. 'data scientist', 'compliance officer')",
+      "maxLength": 20000
+    },
+    "location": {
+      "type": "string",
+      "description": "Pays ou ville (ex. 'France', 'United States', 'London')",
+      "maxLength": 20000
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "Liste de sociétés à comparer (pour competitor_hiring_comparison, min 2)",
+      "maxItems": 100
+    },
+    "period_days": {
+      "type": "number",
+      "description": "Fenêtre d'analyse en jours (défaut 30)"
+    }
+  },
+  "required": [
+    "mode"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `knowledge_base_auto` | Base de connaissance automatique — Gapup agent-payable C-suite expertise (COO). Returns a structured, audited deliverable. Reference case: Klarna — knowledge base auto · Slack+Notion+Drive · 12 articles seed + structure 8 catégories. Inputs are validated server-side — send the documented case fields. | `company, sources, topPainPoints, focus` |
+
+`knowledge_base_auto` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "volumeApprox": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "accessLevel": {
+            "type": "string",
+            "enum": [
+              "read",
+              "read-write"
+            ],
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "tool",
+          "volumeApprox",
+          "accessLevel"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 8
+    },
+    "topPainPoints": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 500
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "sources",
+    "topPainPoints"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `labor_law_alert_geo` | Provides CHROs with daily alerts on new labor law changes by jurisdiction (state/country). Inputs include jurisdiction (ISO country/state code) and optional date range. Outputs structured legislative updates with summaries, effective dates, and source links. Useful for compliance monitoring, risk assessment, and policy adjustments. Keywords: labor law, compliance, legislation, jurisdiction, CHRO, HR policy. | `jurisdiction, since, until` |
+
+`labor_law_alert_geo` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "jurisdiction": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-2 country code or ISO 3166-2 state/province code (e.g., 'US-CA', 'FR')",
+      "maxLength": 20000
+    },
+    "since": {
+      "type": "string",
+      "format": "date",
+      "description": "Optional start date for changes (YYYY-MM-DD). Defaults to 7 days ago.",
+      "maxLength": 20000
+    },
+    "until": {
+      "type": "string",
+      "format": "date",
+      "description": "Optional end date for changes (YYYY-MM-DD). Defaults to today.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "jurisdiction"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `lead_magnets` | Aimants à leads — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Spendesk — Guide trésorerie startup SaaS B2B FR/EU (2024). Inputs are validated server-side — send the documented case fields. | `icp, leadMagnet, brand` |
+
+`lead_magnets` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "icp": {
+      "type": "object",
+      "properties": {
+        "persona": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        },
+        "industry": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 150
+        },
+        "companySize": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "mainPain": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        },
+        "geography": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "persona",
+        "industry",
+        "companySize",
+        "mainPain",
+        "geography"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "leadMagnet": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "ebook",
+            "benchmark",
+            "calculatrice",
+            "checklist",
+            "template",
+            "guide",
+            "rapport-sectoriel",
+            "mini-cours"
+          ],
+          "maxLength": 20000
+        },
+        "targetDownloads": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "budget": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "topic",
+        "format",
+        "targetDownloads",
+        "budget"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "brand": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 150
+        },
+        "cta": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 150
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "cta"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "icp",
+    "leadMagnet",
+    "brand"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `lnd_ai_skill_forecast` | Forecasts AI skill demand trends for CHROs by analyzing patent filings (USPTO PatFT) and job postings (BLS API). Returns 12-month skill demand projections with confidence scores, helping HR leaders prioritize workforce upskilling. Inputs: target AI skills (e.g., 'machine learning', 'NLP'), geographic focus (US state/country), and forecast horizon. Outputs include skill growth rates, patent filing trends, and job posting volumes. Keywords: AI workforce planning, skill gap analysis, talent strategy, patent trends, labor market data. | `skills, region, horizon_months` |
+
+`lnd_ai_skill_forecast` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of AI-related skills to forecast (e.g., ['machine learning', 'computer vision'])",
+      "maxItems": 100
+    },
+    "region": {
+      "type": "string",
+      "description": "Geographic focus (US state code or 'US' for national, e.g., 'CA', 'US')",
+      "maxLength": 20000
+    },
+    "horizon_months": {
+      "type": "number",
+      "description": "Forecast horizon in months (3-24, default 12)",
+      "default": 12
+    }
+  },
+  "required": [
+    "skills",
+    "region"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `lnd_skill_taxonomy_builder` | Generates a dynamic skill taxonomy for CHROs by cross-referencing patent filings (USPTO), job postings (BLS), and learning & development data (OECD). Inputs include industry codes, job roles, or skill clusters; outputs structured skill hierarchies with demand trends and competency gaps. Essential for workforce transformation, talent pipeline optimization, and future-proofing organizational capabilities. — pass async:true REQUIRED to avoid x402 timeout. | `industry, jobRole, skillCluster, timeRange` |
+
+`lnd_skill_taxonomy_builder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "industry": {
+      "type": "string",
+      "description": "NAICS industry code or sector name (e.g., '541511' for IT services)",
+      "maxLength": 20000
+    },
+    "jobRole": {
+      "type": "string",
+      "description": "Target job role or occupation (e.g., 'Data Scientist')",
+      "maxLength": 20000
+    },
+    "skillCluster": {
+      "type": "string",
+      "description": "Optional skill cluster to focus taxonomy (e.g., 'AI/ML')",
+      "maxLength": 20000
+    },
+    "timeRange": {
+      "type": "string",
+      "enum": [
+        "1y",
+        "3y",
+        "5y"
+      ],
+      "description": "Time range for trend analysis",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "industry"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `logistics_esg_incident_tracker` | Tracks real-time ESG incidents in logistics networks for COOs, including supply chain disruptions, regulatory violations, and sustainability risks. Inputs: geographic region, incident type (e.g., emissions, labor, deforestation), and time range. Outputs: structured incident data with severity, location, and source verification. Uses CDP open data and UNCTAD STAT for comprehensive coverage. Keywords: ESG, logistics, supply chain, sustainability, compliance, risk management. | `region, incidentType, startDate, endDate, severity` |
+
+`logistics_esg_incident_tracker` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "region": {
+      "type": "string",
+      "description": "Geographic region filter (e.g., 'Europe', 'Asia', 'Global')",
+      "maxLength": 20000
+    },
+    "incidentType": {
+      "type": "string",
+      "enum": [
+        "emissions",
+        "labor",
+        "deforestation",
+        "water",
+        "waste",
+        "regulatory"
+      ],
+      "description": "Type of ESG incident to track",
+      "maxLength": 20000
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Start date for incident search (ISO 8601)",
+      "maxLength": 20000
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date",
+      "description": "End date for incident search (ISO 8601)",
+      "maxLength": 20000
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "description": "Minimum severity level to include",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "region",
+    "incidentType"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ma_arbitrage_hunter` | As a CFO, identify cross-border M&A arbitrage opportunities by comparing target company valuations across different jurisdictions. Inputs include target company ticker, primary and secondary jurisdictions, and valuation metrics. Outputs include valuation gaps, FX-adjusted multiples, and jurisdiction-specific premiums/discounts. Uses real-time ECB FX rates, Yahoo Finance market data, and SEC EDGAR filings for public companies. Ideal for quick assessment of potential arbitrage in M&A scenarios. | `targetTicker, primaryJurisdiction, secondaryJurisdiction, valuationMetric, sector` |
+
+`ma_arbitrage_hunter` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "targetTicker": {
+      "type": "string",
+      "description": "Target company ticker symbol (e.g., 'AAPL')",
+      "maxLength": 20000
+    },
+    "primaryJurisdiction": {
+      "type": "string",
+      "description": "Primary jurisdiction for valuation comparison (e.g., 'US')",
+      "maxLength": 20000
+    },
+    "secondaryJurisdiction": {
+      "type": "string",
+      "description": "Secondary jurisdiction for valuation comparison (e.g., 'DE')",
+      "maxLength": 20000
+    },
+    "valuationMetric": {
+      "type": "string",
+      "enum": [
+        "P/E",
+        "EV/EBITDA",
+        "P/B"
+      ],
+      "description": "Valuation multiple to use for comparison",
+      "maxLength": 20000
+    },
+    "sector": {
+      "type": "string",
+      "description": "Industry sector for peer comparison (e.g., 'Technology')",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "targetTicker",
+    "primaryJurisdiction"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ma_deal_screener` | M&A Deal Screener — Gapup agent-payable C-suite expertise (CSO). Returns a structured, audited deliverable. Reference case: Salesforce M&A targets — 12 cibles screened · fit score + valuation + integration risk. Inputs are validated server-side — send the documented case fields. | `acquirer, criteria, focus` |
+
+`ma_deal_screener` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "acquirer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "arrEur": {
+          "type": "number"
+        },
+        "strategicThesis": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "arrEur",
+        "strategicThesis"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "criteria": {
+      "type": "object",
+      "properties": {
+        "targetGeo": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 100
+        },
+        "arrRangeMinEur": {
+          "type": "number"
+        },
+        "arrRangeMaxEur": {
+          "type": "number"
+        },
+        "preferredEntryMode": {
+          "type": "string",
+          "enum": [
+            "acquihire",
+            "tuck-in",
+            "platform",
+            "transformative"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "targetGeo",
+        "arrRangeMinEur",
+        "arrRangeMaxEur",
+        "preferredEntryMode"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "acquirer",
+    "criteria"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ma_tax_efficiency_mapper` | For CFOs evaluating cross-border M&A deals: analyzes tax efficiency by mapping withholding tax rates, transfer pricing regulations, and permanent establishment risks across specified jurisdictions. Inputs include acquirer/target jurisdictions, deal structure, and transaction value. Outputs jurisdiction-specific tax exposure, efficiency scores, and risk flags. Uses World Bank Tax Rates API, IMF SDR data, and SEC EDGAR filings for corporate tax disclosures. — pass async:true REQUIRED to avoid x402 timeout. | `acquirer_jurisdiction, target_jurisdiction, deal_structure, transaction_value, include_transfer_pricing` |
+
+`ma_tax_efficiency_mapper` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "acquirer_jurisdiction": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-3 country code of the acquiring entity",
+      "maxLength": 20000
+    },
+    "target_jurisdiction": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-3 country code of the target entity",
+      "maxLength": 20000
+    },
+    "deal_structure": {
+      "type": "string",
+      "enum": [
+        "asset",
+        "share",
+        "merger",
+        "joint_venture"
+      ],
+      "description": "Type of M&A transaction structure",
+      "maxLength": 20000
+    },
+    "transaction_value": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Deal value in USD millions"
+    },
+    "include_transfer_pricing": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether to analyze transfer pricing risks"
+    }
+  },
+  "required": [
+    "acquirer_jurisdiction",
+    "target_jurisdiction"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `manufacturing_esg_compliance_mapper` | As a COO, quickly identify ESG compliance gaps across manufacturing facilities using EPA TRI emissions data and GRI sustainability standards. Input facility identifiers or geographic regions to receive a prioritized remediation roadmap with risk scores, regulatory violations, and suggested corrective actions. Ideal for sustainability reporting, regulatory risk assessment, and operational improvement planning. Keywords: ESG compliance, manufacturing facilities, EPA TRI, GRI standards, sustainability reporting, regulatory risk. | `facilityIds, region, year, includeGri` |
+
+`manufacturing_esg_compliance_mapper` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "facilityIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of EPA facility identifiers (e.g., TRIFID)",
+      "maxItems": 100
+    },
+    "region": {
+      "type": "string",
+      "description": "Geographic region (state, county, or ZIP code) for facility search",
+      "maxLength": 20000
+    },
+    "year": {
+      "type": "number",
+      "description": "Reporting year (default: current year - 1)",
+      "minimum": 2000,
+      "maximum": 2026
+    },
+    "includeGri": {
+      "type": "boolean",
+      "description": "Include GRI standards analysis (default: true)",
+      "default": true
+    }
+  },
+  "required": [
+    "facilityIds"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `manufacturing_waste_heatmap` | Generates manufacturing waste heatmaps for COOs using EPA TRI and FAOSTAT data. Input manufacturing site identifiers or geographic regions to analyze waste streams, emissions, and resource inefficiencies. Outputs include waste intensity maps, circular economy opportunity rankings, and cost-saving potential. Ideal for sustainability strategy and operational efficiency improvements. Pass async:true to avoid timeout. | `site_ids, region, year, waste_types` |
+
+`manufacturing_waste_heatmap` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "site_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of manufacturing site identifiers (EPA TRI IDs or FAO facility codes)",
+      "maxItems": 100
+    },
+    "region": {
+      "type": "string",
+      "description": "Geographic region (country code or sub-national region) for aggregated analysis",
+      "maxLength": 20000
+    },
+    "year": {
+      "type": "number",
+      "description": "Analysis year (2010-2023)",
+      "minimum": 2010,
+      "maximum": 2023
+    },
+    "waste_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "Specific waste types to analyze (e.g., ['metals', 'chemicals', 'energy'])",
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "year"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `margin_doctor` | Marge par deal — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Gapup Hub — 8 deals pipeline · €28k ARR sous-marge détecté · Récupération €4.2k/an · Playbook 4 scénarios. Inputs are validated server-side — send the documented case fields. | `company, product, deals` |
+
+`margin_doctor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "targetGrossMarginPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "name",
+        "targetGrossMarginPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "deals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "arrEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "discountPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "cogsEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "closingDate": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "competitors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "minItems": 0,
+            "maxItems": 3
+          },
+          "urgency": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "arrEur",
+          "discountPct"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 15
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "deals"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `margin_doctor_finance` | Médecin des Marges — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Reference case: Alan — ARR €60M · marge brute 68% → 79% · €3,2M fuites identifiées · Rule of 40 : 14→38. Inputs are validated server-side — send the documented case fields. | `company, incomeStatement, costBreakdown, unitEconomics, marginTargets` |
+
+`margin_doctor_finance` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "currentArrEur": {
+          "type": "number"
+        },
+        "revenueLastYearEur": {
+          "type": "number"
+        },
+        "teamSize": {
+          "type": "number"
+        },
+        "businessModel": {
+          "type": "string",
+          "enum": [
+            "saas",
+            "marketplace",
+            "services",
+            "hybrid"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "currentArrEur",
+        "revenueLastYearEur",
+        "teamSize",
+        "businessModel"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "incomeStatement": {
+      "type": "object",
+      "properties": {
+        "grossRevenueEur": {
+          "type": "number"
+        },
+        "cogsEur": {
+          "type": "number"
+        },
+        "grossMarginPct": {
+          "type": "number"
+        },
+        "researchAndDevEur": {
+          "type": "number"
+        },
+        "salesAndMarketingEur": {
+          "type": "number"
+        },
+        "generalAndAdminEur": {
+          "type": "number"
+        },
+        "ebitdaEur": {
+          "type": "number"
+        },
+        "ebitdaMarginPct": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "grossRevenueEur",
+        "cogsEur",
+        "grossMarginPct",
+        "researchAndDevEur",
+        "salesAndMarketingEur",
+        "generalAndAdminEur",
+        "ebitdaEur",
+        "ebitdaMarginPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "costBreakdown": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "amountEur": {
+            "type": "number"
+          },
+          "percentOfRevenue": {
+            "type": "number"
+          },
+          "trend": {
+            "type": "string",
+            "enum": [
+              "growing",
+              "stable",
+              "declining"
+            ],
+            "maxLength": 20000
+          },
+          "controllable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "category",
+          "amountEur",
+          "percentOfRevenue",
+          "trend",
+          "controllable"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 100
+    },
+    "unitEconomics": {
+      "type": "object",
+      "properties": {
+        "cacEur": {
+          "type": "number"
+        },
+        "ltvEur": {
+          "type": "number"
+        },
+        "avgContractValueEur": {
+          "type": "number"
+        },
+        "grossMarginPerCustomerEur": {
+          "type": "number"
+        },
+        "paybackMonths": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "marginTargets": {
+      "type": "object",
+      "properties": {
+        "targetGrossMarginPct": {
+          "type": "number"
+        },
+        "targetEbitdaMarginPct": {
+          "type": "number"
+        },
+        "targetTimeframeMonths": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "targetGrossMarginPct",
+        "targetEbitdaMarginPct",
+        "targetTimeframeMonths"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "incomeStatement",
+    "costBreakdown",
+    "unitEconomics",
+    "marginTargets"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `market_entry_strategist` | Stratégie d'entrée marché — Gapup agent-payable C-suite expertise (CSO). Returns a structured, audited deliverable. Reference case: OpenAI Inde 2026 — entrée marché 1.4Md utilisateurs · 5 forces Porter + 4 entry modes + 18-month roadmap + risk register. Inputs are validated server-side — send the documented case fields. | `company, targetMarket, preferences, focus` |
+
+`market_entry_strategist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "homeMarket": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "productDescription": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "homeMarket",
+        "productDescription"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetMarket": {
+      "type": "object",
+      "properties": {
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 400
+        },
+        "preferredTimeline": {
+          "type": "string",
+          "enum": [
+            "urgent",
+            "12-months",
+            "18-24-months",
+            "exploratory"
+          ],
+          "maxLength": 20000
+        },
+        "investmentBudgetEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "country",
+        "rationale",
+        "preferredTimeline",
+        "investmentBudgetEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "preferences": {
+      "type": "object",
+      "properties": {
+        "riskAppetite": {
+          "type": "string",
+          "enum": [
+            "conservative",
+            "moderate",
+            "aggressive"
+          ],
+          "maxLength": 20000
+        },
+        "preferredModes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "export",
+              "licensing",
+              "franchising",
+              "partnership",
+              "joint-venture",
+              "wholly-owned-subsidiary",
+              "acquisition"
+            ],
+            "maxLength": 20000
+          },
+          "maxItems": 4
+        },
+        "excludedModes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "export",
+              "licensing",
+              "franchising",
+              "partnership",
+              "joint-venture",
+              "wholly-owned-subsidiary",
+              "acquisition"
+            ],
+            "maxLength": 20000
+          },
+          "maxItems": 4
+        },
+        "successCriteria": {
+          "type": "string",
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "riskAppetite"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "targetMarket",
+    "preferences"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `market_research_brief` | Generate a structured, sourced market research brief on any market, sector or industry. Returns a machine-readable note with six sections: an executive overview, a market-size estimate (with assumptions and sources — no invented figures), key players, demand & technology trends, risk factors, and a traceable source list. When to use this tool: an agent needs to assess a new market, validate a business opportunity, prepare a pitch, or benchmark a sector before a strategic decision. Data is assembled live from keyless public sources: Wikipedia (sector context), World Bank (macro GDP/population for market sizing), REST Countries (geo context). Fields that cannot be sourced are marked 'unavailable' rather than estimated. Inputs: topic (required), geo and sector (optional refinements). | `topic, geo, sector` |
+
+`market_research_brief` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "topic": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200,
+      "description": "Market or sector to research (e.g. 'electric vehicle batteries', 'B2B SaaS CRM Europe', 'telemedicine Africa')"
+    },
+    "geo": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Optional geography to scope the brief (country name, region, or continent — e.g. 'France', 'Southeast Asia')"
+    },
+    "sector": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Optional parent sector to disambiguate the topic (e.g. 'healthcare', 'energy', 'software')"
+    }
+  },
+  "required": [
+    "topic"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `market_sizing` | Dimensionnement marché TAM/SAM/SOM — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Gapup Hub — TAM/SAM/SOM IA décisionnelle C-suite Europe · TAM €48Md · SOM €280M Year-3. Inputs are validated server-side — send the documented case fields. | `product, target, approach, competitorComps, horizon` |
+
+`market_sizing` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "category": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "valueProposition": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 400
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "valueProposition"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "target": {
+      "type": "object",
+      "properties": {
+        "geography": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "segments": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "customerType": {
+          "type": "string",
+          "enum": [
+            "b2b",
+            "b2c",
+            "b2b2c",
+            "marketplace"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "geography",
+        "segments",
+        "customerType"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "approach": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "top-down",
+          "bottom-up",
+          "value-theory",
+          "hybrid"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "competitorComps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "minItems": 0,
+      "maxItems": 5
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "current",
+        "3-year",
+        "5-year"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "product",
+    "target"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `marketing_roi_dashboard` | Dashboard ROI marketing — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Gapup Hub — H1 2026 · 5 canaux · ROI 3.2× · Attribution W-shaped · Budget €60k. Inputs are validated server-side — send the documented case fields. | `companyName, periodLabel, totalMarketingBudgetEur, totalRevenueAttribEur, channelData, currentAttributionModel, targetAttributionModel, arpuEur` |
+
+`marketing_roi_dashboard` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "companyName": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "periodLabel": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "totalMarketingBudgetEur": {
+      "type": "number"
+    },
+    "totalRevenueAttribEur": {
+      "type": "number"
+    },
+    "channelData": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "string",
+            "enum": [
+              "paid-search",
+              "paid-social",
+              "seo-organic",
+              "email",
+              "events",
+              "content",
+              "partnerships",
+              "outbound",
+              "product-led",
+              "pr"
+            ],
+            "maxLength": 20000
+          },
+          "spendEur": {
+            "type": "number"
+          },
+          "mql": {
+            "type": "number"
+          },
+          "sql": {
+            "type": "number"
+          },
+          "closedWon": {
+            "type": "number"
+          },
+          "revenueAttribEur": {
+            "type": "number"
+          },
+          "avgCycledays": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "channel",
+          "spendEur",
+          "mql",
+          "sql",
+          "closedWon",
+          "revenueAttribEur",
+          "avgCycledays"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 10
+    },
+    "currentAttributionModel": {
+      "type": "string",
+      "enum": [
+        "first-touch",
+        "last-touch",
+        "linear",
+        "time-decay",
+        "u-shaped",
+        "w-shaped"
+      ],
+      "maxLength": 20000
+    },
+    "targetAttributionModel": {
+      "type": "string",
+      "enum": [
+        "first-touch",
+        "last-touch",
+        "linear",
+        "time-decay",
+        "u-shaped",
+        "w-shaped"
+      ],
+      "maxLength": 20000
+    },
+    "arpuEur": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "companyName",
+    "periodLabel",
+    "totalMarketingBudgetEur",
+    "totalRevenueAttribEur",
+    "channelData",
+    "currentAttributionModel",
+    "targetAttributionModel",
+    "arpuEur"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `meddic_scoring` | Scoring MEDDIC du pipeline — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Gapup Hub — Pipeline 8 deals · €2.1M · MEDDIC score moyen 62/100 · 3 deals at-risk. Inputs are validated server-side — send the documented case fields. | `company, product, deals, targetWinRate, salesCycle` |
+
+`meddic_scoring` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "avgDealValueEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "deals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "accountName": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "dealValueEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "stage": {
+            "type": "string",
+            "enum": [
+              "prospecting",
+              "discovery",
+              "qualification",
+              "proposal",
+              "negotiation",
+              "closing"
+            ],
+            "maxLength": 20000
+          },
+          "closeTargetDays": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "meddic": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dimension": {
+                  "type": "string",
+                  "enum": [
+                    "metrics",
+                    "economic-buyer",
+                    "decision-criteria",
+                    "decision-process",
+                    "identify-pain",
+                    "champion"
+                  ],
+                  "maxLength": 20000
+                },
+                "score": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 10
+                },
+                "evidence": {
+                  "type": "string",
+                  "maxLength": 300
+                },
+                "gaps": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "maxLength": 20000
+                  },
+                  "maxItems": 5
+                },
+                "nextActions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "maxLength": 20000
+                  },
+                  "maxItems": 4
+                }
+              },
+              "required": [
+                "dimension",
+                "score",
+                "evidence",
+                "gaps",
+                "nextActions"
+              ],
+              "additionalProperties": false,
+              "maxProperties": 100
+            },
+            "minItems": 1,
+            "maxItems": 6
+          },
+          "competitorPresent": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "id",
+          "accountName",
+          "dealValueEur",
+          "stage",
+          "closeTargetDays",
+          "meddic"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "targetWinRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "salesCycle": {
+      "type": "object",
+      "properties": {
+        "targetDays": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "avgActualDays": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "targetDays"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "deals"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `monte_carlo_portfolio` | Pure-compute Monte Carlo portfolio simulation using Geometric Brownian Motion (GBM). Models a multi-asset portfolio across time with contributions, withdrawals, and annual rebalancing. Returns full probability distribution of terminal wealth, percentile paths, drawdown stats, and Sharpe ratio. Modes: simulate (full Monte Carlo) | glide_path (lifecycle 110-age target-date allocation) | stress_test (4 historical crises: 2008 GFC / 2000 dotcom / 1970s stagflation / 2020 COVID). No external data needed — all computed from asset assumptions. Ticker defaults built-in: SPY/VOO/VTI 7%/15%, QQQ 9%/20%, TLT/BND 3%/6%, GLD 5%/18%, BTC 30%/70%. ICP: asset managers, family offices, retail wealth advisors, robo-advisor agents, retirement planners. 10k simulations × 30 years runs in <3s on V8 JIT. | `mode, assets, initial_investment_eur, horizon_years, simulations, withdrawals_annual_eur, contributions_annual_eur, target_value_eur, confidence_intervals` |
+
+`monte_carlo_portfolio` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "simulate",
+        "glide_path",
+        "stress_test"
+      ],
+      "description": "simulate = full Monte Carlo GBM | glide_path = lifecycle target-date allocation | stress_test = 4 historical crisis scenarios",
+      "maxLength": 20000
+    },
+    "assets": {
+      "type": "array",
+      "description": "Portfolio assets. Weights must sum to 1.0 (auto-normalized if not).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ticker": {
+            "type": "string",
+            "description": "Asset ticker or identifier (e.g. SPY, QQQ, TLT, GLD, BTC, BND).",
+            "maxLength": 20000
+          },
+          "weight": {
+            "type": "number",
+            "description": "Portfolio weight (0-1). All weights must sum to 1."
+          },
+          "expected_return_pct": {
+            "type": "number",
+            "description": "Annual expected return in % (e.g. 7 for 7%). Uses ticker defaults if omitted."
+          },
+          "volatility_pct": {
+            "type": "number",
+            "description": "Annual volatility (std dev) in % (e.g. 15 for 15%). Uses ticker defaults if omitted."
+          }
+        },
+        "required": [
+          "ticker",
+          "weight"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "initial_investment_eur": {
+      "type": "number",
+      "description": "Initial capital in EUR (e.g. 100000 for €100k)."
+    },
+    "horizon_years": {
+      "type": "number",
+      "description": "Investment horizon in years (1-50).",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "simulations": {
+      "type": "number",
+      "description": "Number of Monte Carlo simulations (1000-100000). Default 10000.",
+      "minimum": 1000,
+      "maximum": 100000
+    },
+    "withdrawals_annual_eur": {
+      "type": "number",
+      "description": "Annual withdrawal amount in EUR for decumulation phase (e.g. 50000 for €50k/yr)."
+    },
+    "contributions_annual_eur": {
+      "type": "number",
+      "description": "Annual contribution in EUR (e.g. 12000 for €1000/month)."
+    },
+    "target_value_eur": {
+      "type": "number",
+      "description": "Target terminal portfolio value in EUR. Used to compute probability_target_achieved."
+    },
+    "confidence_intervals": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "description": "Percentiles to compute in the output distribution. Default [5, 25, 50, 75, 95].",
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "mode",
+    "assets",
+    "initial_investment_eur",
+    "horizon_years"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `mttr_breakdown_analyzer` | As a CTO, analyze your team's incident response efficiency by breaking down Mean Time To Recovery (MTTR) into root causes: code defects, infrastructure failures, or process bottlenecks. This tool ingests GitHub issue and pull request data alongside Snyk vulnerability reports to provide a detailed breakdown of MTTR components, helping you identify systemic weaknesses in your incident resolution pipeline. Input your GitHub repository details and time range to receive a structured analysis of MTTR contributors with actionable insights. | `repo, since, until, githubToken, snykToken` |
+
+`mttr_breakdown_analyzer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "repo": {
+      "type": "string",
+      "description": "Full GitHub repository name (owner/repo)",
+      "maxLength": 20000
+    },
+    "since": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Start date for analysis (ISO 8601)",
+      "maxLength": 20000
+    },
+    "until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "End date for analysis (ISO 8601)",
+      "maxLength": 20000
+    },
+    "githubToken": {
+      "type": "string",
+      "description": "GitHub personal access token for API access",
+      "maxLength": 20000
+    },
+    "snykToken": {
+      "type": "string",
+      "description": "Snyk API token for vulnerability data (optional)",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "repo",
+    "since",
+    "until",
+    "githubToken"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `nis2_supply_chain_dependency_map` | Generates a visual dependency map of supply chain relationships under the NIS2 Directive, scoring criticality based on regulatory sources like EUR-Lex and CNIL decisions. Designed for legal and compliance teams to identify high-risk third-party dependencies. Inputs include organization identifiers and optional scope filters. Outputs structured dependency data with criticality scores and regulatory references. | `organizationId, scope, sector, depth` |
+
+`nis2_supply_chain_dependency_map` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "organizationId": {
+      "type": "string",
+      "description": "Unique identifier for the organization (e.g., VAT number or LEI)",
+      "maxLength": 20000
+    },
+    "scope": {
+      "type": "string",
+      "enum": [
+        "full",
+        "critical_only"
+      ],
+      "description": "Analysis scope: full supply chain or critical dependencies only",
+      "maxLength": 20000
+    },
+    "sector": {
+      "type": "string",
+      "description": "NIS2 sector classification (e.g., 'energy', 'transport')",
+      "maxLength": 20000
+    },
+    "depth": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Dependency chain depth to analyze"
+    }
+  },
+  "required": [
+    "organizationId"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `observability_log_pattern_miner` | As a CTO, extract anomalous log patterns from public breach reports (e.g., Verizon DBIR) and MITRE ATT&CK techniques to optimize SIEM rules and observability pipelines. Inputs include threat actor groups, MITRE tactics (e.g., 'TA0005'), or log sources (e.g., 'AWS CloudTrail'). Outputs structured patterns with MITRE mappings, prevalence scores, and detection recommendations. Ideal for reducing false positives and improving breach detection coverage. Pass async:true to avoid timeout. | `tactic, technique, log_source, threat_actor, max_results` |
+
+`observability_log_pattern_miner` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "tactic": {
+      "type": "string",
+      "description": "MITRE ATT&CK tactic ID (e.g., 'TA0005')",
+      "maxLength": 20000
+    },
+    "technique": {
+      "type": "string",
+      "description": "MITRE ATT&CK technique ID (e.g., 'T1059')",
+      "maxLength": 20000
+    },
+    "log_source": {
+      "type": "string",
+      "description": "Log source type (e.g., 'AWS CloudTrail', 'Windows Event Log')",
+      "maxLength": 20000
+    },
+    "threat_actor": {
+      "type": "string",
+      "description": "Threat actor group name (e.g., 'APT29')",
+      "maxLength": 20000
+    },
+    "max_results": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10
+    }
+  },
+  "required": [
+    "tactic"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `observability_metric_anomaly_detector` | As a CTO, quickly identify anomalous cloud metrics (CPU, latency, memory) by comparing your infrastructure against AWS public benchmarks and CVE-linked hardware risks. Input your observed metrics (e.g., CPU utilization, request latency) and receive a risk assessment with potential root causes. Ideal for performance troubleshooting, security hardening, and capacity planning. Keywords: cloud observability, anomaly detection, CVE hardware risks, AWS benchmark comparison. | `metricType, observedValue, instanceType, region` |
+
+`observability_metric_anomaly_detector` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "metricType": {
+      "type": "string",
+      "enum": [
+        "cpu",
+        "latency",
+        "memory"
+      ],
+      "maxLength": 20000
+    },
+    "observedValue": {
+      "type": "number"
+    },
+    "instanceType": {
+      "type": "string",
+      "pattern": "^[a-z0-9\\.]+$",
+      "maxLength": 20000
+    },
+    "region": {
+      "type": "string",
+      "pattern": "^[a-z]{2}-[a-z]+-[0-9]$",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "metricType",
+    "observedValue"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `operational_dashboards` | Dashboards opérationnels — Gapup agent-payable C-suite expertise (COO). Returns a structured, audited deliverable. Reference case: Qonto (5 départements · 12 KPIs) — 4 dashboards live en 3 semaines · time-to-décision -55%. Inputs are validated server-side — send the documented case fields. | `company, departments, kpiRequests, techStack, primaryDashboardTool` |
+
+`operational_dashboards` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "departments": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 60
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "kpiRequests": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "department": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "currentTrackingMethod": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "spreadsheet",
+              "partial-tool",
+              "none"
+            ],
+            "maxLength": 20000
+          },
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "realtime",
+              "daily",
+              "weekly",
+              "monthly"
+            ],
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "name",
+          "department",
+          "currentTrackingMethod",
+          "frequency"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 3,
+      "maxItems": 12
+    },
+    "techStack": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 60
+      },
+      "minItems": 0,
+      "maxItems": 10
+    },
+    "primaryDashboardTool": {
+      "type": "string",
+      "enum": [
+        "metabase",
+        "tableau",
+        "powerbi",
+        "looker",
+        "grafana",
+        "notion",
+        "other",
+        "none"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "company",
+    "departments",
+    "kpiRequests",
+    "techStack"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `oss_dependency_velocity_tracker` | As a CTO, track the update velocity of your project's open-source dependencies to assess their impact on DORA metrics like deployment frequency and lead time. This tool fetches release history and version adoption data from npm registry and libraries.io, providing insights into dependency freshness, update frequency, and potential risks. Input a list of package names and optional version ranges to analyze. Outputs structured dependency velocity metrics and warnings about stale or rapidly changing packages. | `packages, lookbackDays` |
+
+`oss_dependency_velocity_tracker` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "version": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 100
+    },
+    "lookbackDays": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 365
+    }
+  },
+  "required": [
+    "packages"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `ossf_scorecard_trend_analyzer` | As a CTO, analyze OSSF Scorecard trends for your top 10-50 dependencies to identify security regressions or deteriorating project health. Input GitHub repository names (owner/repo), get structured trend data including score deltas, check failures, and risk flags. Uses OSSF Scorecard API and GitHub Archive for historical context. Ideal for proactive dependency management and risk assessment. | `repositories, lookbackDays, minScoreThreshold` |
+
+`ossf_scorecard_trend_analyzer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "repositories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9-]+/[a-zA-Z0-9-_.]+$",
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 50,
+      "description": "List of GitHub repositories in owner/repo format"
+    },
+    "lookbackDays": {
+      "type": "number",
+      "minimum": 7,
+      "maximum": 90,
+      "default": 30,
+      "description": "Number of days to analyze trends for"
+    },
+    "minScoreThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 10,
+      "default": 5,
+      "description": "Minimum acceptable score to flag as risky"
+    }
+  },
+  "required": [
+    "repositories"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `outbound_sequencer` | Séquences outbound — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Gapup Hub → CFO + CRO B2B SaaS France — Séquence 6 touches multi-canal · Taux réponse +180%. Inputs are validated server-side — send the documented case fields. | `offer, icp, targetAccounts, excludedAngles` |
+
+`outbound_sequencer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "offer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "valueProposition": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 400
+        },
+        "mainBenefit": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "name",
+        "valueProposition",
+        "mainBenefit"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "icp": {
+      "type": "object",
+      "properties": {
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "companySize": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "geography": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "personas": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ceo",
+              "cfo",
+              "cmo",
+              "cto",
+              "vp-sales",
+              "vp-ops",
+              "chro",
+              "founder",
+              "procurement",
+              "other"
+            ],
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 4
+        }
+      },
+      "required": [
+        "sector",
+        "companySize",
+        "geography",
+        "personas"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetAccounts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "excludedAngles": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "offer",
+    "icp"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `paid_ads_optimizer` | Optimiseur de publicités payantes — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Spendesk (Google + LinkedIn · €45k/mo) — €9k/mo gaspillés identifiés · ROAS LinkedIn ×2.4. Inputs are validated server-side — send the documented case fields. | `company, campaigns, totalMonthlyBudgetEur, targetMetric, audienceDescription` |
+
+`paid_ads_optimizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "campaigns": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "enum": [
+              "google",
+              "meta",
+              "linkedin",
+              "tiktok",
+              "twitter"
+            ],
+            "maxLength": 20000
+          },
+          "monthlyBudgetEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "currentRoas": {
+            "type": "number",
+            "minimum": 0
+          },
+          "cpc": {
+            "type": "number",
+            "minimum": 0
+          },
+          "objective": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 60
+          }
+        },
+        "required": [
+          "platform",
+          "monthlyBudgetEur",
+          "objective"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "totalMonthlyBudgetEur": {
+      "type": "number",
+      "minimum": 0
+    },
+    "targetMetric": {
+      "type": "string",
+      "enum": [
+        "roas",
+        "cpl",
+        "cac",
+        "ctr"
+      ],
+      "maxLength": 20000
+    },
+    "audienceDescription": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 300
+    }
+  },
+  "required": [
+    "company",
+    "campaigns",
+    "totalMonthlyBudgetEur",
+    "targetMetric",
+    "audienceDescription"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `partnership_synergies` | Identify and rank strategic partnership opportunities for a company. Returns 5-12 high-fit partnership targets, each scored on revenue lift, time-to-impact, integration complexity and regulatory risk, with a rationale and a recommended first-step outreach playbook. When to use this tool: the user wants business-development or alliance ideas, or M&A target screening before deeper due diligence. Inputs: the user's own company and the strategic axis to unlock through partnership (e.g. enter a new market via distribution, add AI infrastructure without rebuilding). Delivered by Antoine, the AI CSO of the Gapup portfolio. | `selfCompany, strategicAxis, constraints, currentPartnerships, focus` |
+
+`partnership_synergies` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "selfCompany": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 600
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "series-c",
+            "growth",
+            "public"
+          ],
+          "maxLength": 20000
+        },
+        "arrEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "pitch"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "strategicAxis": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 800,
+      "description": "What strategic axis to unlock through partnership (e.g. 'enter US market via distribution', 'leverage AI infra without rebuild')"
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "budgetCeilingEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "timeWindow": {
+          "type": "string",
+          "enum": [
+            "3mo",
+            "6mo",
+            "12mo",
+            "24mo"
+          ],
+          "maxLength": 20000
+        },
+        "regulatoryHotZones": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 100
+        },
+        "mustNotCompeteWith": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 100
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentPartnerships": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 20,
+      "description": "Existing alliances to factor in"
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 800
+    }
+  },
+  "required": [
+    "selfCompany",
+    "strategicAxis"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `patent_landscape` | Search, analyze and map patent landscapes across major jurisdictions (US, EP, WO, CN, JP, KR). Three modes: (1) search — find patents by keywords, company name or inventor name; (2) landscape — aggregate distributions: top assignees, top inventors, CPC class breakdown, filings by year, citation leaders, white-space innovation opportunities; (3) lookup — retrieve a specific patent by number (e.g. US10000000B2, EP3456789A1, WO2023/123456). Primary source: WIPO PatentScope (WO PCT, keyless). Optional sources: USPTO PatentsView (US, env PATENTSVIEW_API_KEY), EPO OPS (EP/WO, env EPO_OPS_CONSUMER_KEY + EPO_OPS_CONSUMER_SECRET), Lens.org (global, env LENS_API_TOKEN). Use cases: freedom-to-operate (FTO) analysis, R&D gap identification, VC due diligence IP audit, competitor patent portfolio mapping, inventor network analysis. SLA: <=24s p95 (parallel fetches, 8s per source). Cache: 24h TTL (patent data stable). Quality score: 30 pts per retrieved source (max 90), +10 if >=10 patents, +10 bonus for landscape mode with non-empty top_assignees. | `query, mode, jurisdictions, date_from, date_to, max_results` |
+
+`patent_landscape` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 500,
+      "description": "Keywords, company/inventor name, or patent number (e.g. \"machine learning\", \"Tesla Inc\", \"US10000000B2\")"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "search",
+        "landscape",
+        "lookup"
+      ],
+      "description": "search: keyword/inventor/assignee search; landscape: aggregate distributions; lookup: fetch by patent number. Default: \"search\"",
+      "maxLength": 20000
+    },
+    "jurisdictions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "US",
+          "EP",
+          "WO",
+          "CN",
+          "JP",
+          "KR"
+        ],
+        "maxLength": 20000
+      },
+      "description": "Jurisdictions to include. Default: [\"US\",\"EP\",\"WO\"]",
+      "maxItems": 100
+    },
+    "date_from": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — earliest filing date",
+      "maxLength": 20000
+    },
+    "date_to": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — latest filing date",
+      "maxLength": 20000
+    },
+    "max_results": {
+      "type": "number",
+      "description": "Max patents to return (5-50). Default: 20",
+      "minimum": 5,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `patent_ownership_audit` | Audits patent ownership for employees or contractors, identifying gaps where inventors may not have properly assigned patent rights to the company. Designed for CHROs to ensure IP compliance and mitigate legal risks. Inputs: employee/contractor names or IDs, optional date range. Outputs: list of patents, ownership status, flagged gaps, and assignment details. Sources: USPTO PatFT and EPO Espacenet public records. Keywords: patent audit, IP compliance, employee inventions, contractor agreements, CHRO. | `employeeNames, employeeIds, dateRange` |
+
+`patent_ownership_audit` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "employeeNames": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of employee or contractor full names to audit",
+      "maxItems": 100
+    },
+    "employeeIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of employee or contractor IDs (optional if names provided)",
+      "maxItems": 100
+    },
+    "dateRange": {
+      "type": "object",
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date",
+          "maxLength": 20000
+        },
+        "end": {
+          "type": "string",
+          "format": "date",
+          "maxLength": 20000
+        }
+      },
+      "description": "Optional date range for patent filings",
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "employeeNames"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `payment_rails_cost_analyzer` | As a CFO, compare cross-border payment rail costs (SWIFT, SEPA, local ACH, stablecoins) with FX conversion fees and settlement times. Input source/destination countries and amount, receive cost breakdown, FX rates, and settlement time estimates. Uses ECB FX rates and World Bank remittance price data for accurate cost analysis. Ideal for optimizing international payment strategies and reducing transaction expenses. | `source_country, destination_country, amount, source_currency, destination_currency` |
+
+`payment_rails_cost_analyzer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "source_country": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-2 country code of payment origin",
+      "maxLength": 20000
+    },
+    "destination_country": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-2 country code of payment destination",
+      "maxLength": 20000
+    },
+    "amount": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Transaction amount in source currency"
+    },
+    "source_currency": {
+      "type": "string",
+      "description": "ISO 4217 currency code of source amount",
+      "maxLength": 20000
+    },
+    "destination_currency": {
+      "type": "string",
+      "description": "ISO 4217 currency code of destination amount",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "source_country",
+    "destination_country",
+    "amount"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `pitch_deck_storyline` | Build a complete investor pitch-deck storyline for a company. Returns an 8-20 slide narrative tailored to the target audience (seed-vc / series-a-vc / growth-vc / strategic / bank / grant) — each slide carrying a title, key points, a speaker note and a visual hint — plus a Q&A bank of 10-15 likely board questions and traps to avoid. Output is deck JSON ready to export to Google Slides, Notion or Pitch.com. When to use this tool: the user is preparing a fundraise, a board meeting, or an investor presentation. Inputs: the company profile and the target audience type. Delivered by Sarah, the AI Fundraising lead of the Gapup portfolio. | `company, audience, slideCount, keyFacts` |
+
+`pitch_deck_storyline` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 800
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "series-c",
+            "growth"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "pitch",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "audience": {
+      "type": "string",
+      "enum": [
+        "seed-vc",
+        "series-a-vc",
+        "growth-vc",
+        "strategic",
+        "bank",
+        "grant"
+      ],
+      "description": "Target audience — adapts tone + emphasis + Q&A bank",
+      "maxLength": 20000
+    },
+    "slideCount": {
+      "type": "integer",
+      "minimum": 8,
+      "maximum": 20,
+      "description": "12 = standard VC deck, 15 = bank-friendly with annexes, 20 = growth/strategic"
+    },
+    "keyFacts": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 8,
+        "maxLength": 200
+      },
+      "minItems": 2,
+      "maxItems": 8,
+      "description": "Hard facts to weave into the deck (traction numbers, milestones, awards)"
+    }
+  },
+  "required": [
+    "company",
+    "audience",
+    "slideCount",
+    "keyFacts"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `positioning_strategist` | Stratège de positionnement — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Gapup Hub vs Tableau/Pigment/Looker — Angle de différenciation + 5 piliers messaging + battle plan. Inputs are validated server-side — send the documented case fields. | `company, product, market, competitors, customerPains, currentWeaknesses, aspirations` |
+
+`positioning_strategist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "currentTagline": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "mainFeatures": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "name",
+        "mainFeatures"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "market": {
+      "type": "object",
+      "properties": {
+        "targetSegment": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "geography": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "maturity": {
+          "type": "string",
+          "enum": [
+            "emerging",
+            "growing",
+            "mature",
+            "declining"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "targetSegment"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "positioning": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "strongPoints": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "maxItems": 5
+          },
+          "weakPoints": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "maxItems": 5
+          },
+          "targetSegment": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "name",
+          "positioning"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "customerPains": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 300
+      },
+      "minItems": 2,
+      "maxItems": 8
+    },
+    "currentWeaknesses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 300
+      },
+      "maxItems": 5
+    },
+    "aspirations": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "market",
+    "competitors",
+    "customerPains"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `press_influencer` | Presse & influenceurs — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Agicap (levée Série C €70M) — CP + 12 contacts presse Tier-1 · plan de diffusion 14 jours. Inputs are validated server-side — send the documented case fields. | `company, announcement, targetAudience, targetMedia, budget` |
+
+`press_influencer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "announcement": {
+      "type": "object",
+      "properties": {
+        "topic": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 300
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "funding",
+            "product-launch",
+            "milestone",
+            "report",
+            "executive-hire",
+            "partnership",
+            "other"
+          ],
+          "maxLength": 20000
+        },
+        "embargo": {
+          "type": "string",
+          "maxLength": 30
+        }
+      },
+      "required": [
+        "topic",
+        "type"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetAudience": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 200
+    },
+    "targetMedia": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "tech-press",
+          "financial-press",
+          "industry-press",
+          "generalist",
+          "podcasts",
+          "influencers-linkedin",
+          "influencers-instagram"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "budget": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "company",
+    "announcement",
+    "targetAudience",
+    "targetMedia"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `pricing_in_deal` | Pricing en Deal — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Agicap × Groupe Rocher — Deal €38k · stade négociation · contre-offre -30% · 3 scénarios pricing · ROI 12×. Inputs are validated server-side — send the documented case fields. | `company, deal, negotiationContext, redLines` |
+
+`pricing_in_deal` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "productName": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "pricingModel": {
+          "type": "string",
+          "enum": [
+            "per-seat",
+            "usage-based",
+            "flat-rate",
+            "tiered",
+            "hybrid"
+          ],
+          "maxLength": 20000
+        },
+        "averageContractValueEur": {
+          "type": "number"
+        },
+        "listPriceEur": {
+          "type": "number"
+        },
+        "avgDiscountPct": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "productName",
+        "pricingModel",
+        "averageContractValueEur",
+        "listPriceEur",
+        "avgDiscountPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "deal": {
+      "type": "object",
+      "properties": {
+        "prospectName": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "prospectSector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "prospectSize": {
+          "type": "string",
+          "enum": [
+            "startup",
+            "sme",
+            "midmarket",
+            "enterprise"
+          ],
+          "maxLength": 20000
+        },
+        "dealSizeEur": {
+          "type": "number"
+        },
+        "currentStage": {
+          "type": "string",
+          "enum": [
+            "discovery",
+            "evaluation",
+            "negotiation",
+            "closing"
+          ],
+          "maxLength": 20000
+        },
+        "competitorsMentioned": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 100
+        },
+        "decisionMakerTitle": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "budgetConstraintMentioned": {
+          "type": "boolean"
+        },
+        "contractLengthMonths": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "prospectName",
+        "prospectSector",
+        "prospectSize",
+        "dealSizeEur",
+        "currentStage",
+        "decisionMakerTitle",
+        "budgetConstraintMentioned",
+        "contractLengthMonths"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "negotiationContext": {
+      "type": "object",
+      "properties": {
+        "firstProposalSentEur": {
+          "type": "number"
+        },
+        "counterOfferEur": {
+          "type": "number"
+        },
+        "mainObjections": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 100
+        },
+        "urgencySignals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 100
+        },
+        "championStrength": {
+          "type": "string",
+          "enum": [
+            "weak",
+            "medium",
+            "strong"
+          ],
+          "maxLength": 20000
+        },
+        "competitivePressure": {
+          "type": "string",
+          "enum": [
+            "none",
+            "low",
+            "medium",
+            "high"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "mainObjections",
+        "championStrength",
+        "competitivePressure"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "redLines": {
+      "type": "object",
+      "properties": {
+        "minimumDealEur": {
+          "type": "number"
+        },
+        "maximumDiscountPct": {
+          "type": "number"
+        },
+        "mustHaveTerms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "minimumDealEur",
+        "maximumDiscountPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "deal",
+    "negotiationContext",
+    "redLines"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `pricing_strategist` | Stratège de pricing — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: Vercel Pricing 2026 — 4 tiers + usage metering · 3 scenarios pricing chiffrés · ARPU +28% target. Inputs are validated server-side — send the documented case fields. | `company, currentPricing, competitors, valueProposition, focus` |
+
+`pricing_strategist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "arrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currentArpu": {
+          "type": "number"
+        },
+        "customerCount": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentPricing": {
+      "type": "object",
+      "properties": {
+        "approach": {
+          "type": "string",
+          "enum": [
+            "cost-based",
+            "value-based",
+            "competitive-based",
+            "freemium",
+            "usage-based",
+            "tier-based",
+            "hybrid"
+          ],
+          "maxLength": 20000
+        },
+        "currentTiers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 8
+        },
+        "painPoints": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "approach",
+        "currentTiers",
+        "painPoints"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "competitors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "pricingApproach": {
+            "type": "string",
+            "enum": [
+              "cost-based",
+              "value-based",
+              "competitive-based",
+              "freemium",
+              "usage-based",
+              "tier-based",
+              "hybrid"
+            ],
+            "maxLength": 20000
+          },
+          "anchorPriceEur": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "name",
+          "pricingApproach"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 8
+    },
+    "valueProposition": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 500
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "currentPricing",
+    "competitors",
+    "valueProposition"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `privacy_compliance_audit` | Audit conformité vie privée — Gapup agent-payable C-suite expertise (RISK). Returns a structured, audited deliverable. Reference case: Lemlist SAS — SaaS outreach B2B, transferts UE→US Schrems II, RGPD + CCPA + LGPD + UK GDPR. Inputs are validated server-side — send the documented case fields. | `company, processingActivities, targetFrameworks, focus, presenterScript` |
+
+`privacy_compliance_audit` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "jurisdictions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "FR-EU",
+              "UK",
+              "US-CA",
+              "BR",
+              "other"
+            ],
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "hasDpo": {
+          "type": "boolean"
+        },
+        "dpaNotifications": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "country",
+        "jurisdictions",
+        "hasDpo"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "processingActivities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "dataCategories": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "identification",
+                "contact",
+                "financieres",
+                "comportementales",
+                "techniques",
+                "sensibles-art9",
+                "judiciaires-art10",
+                "professionnelles",
+                "localisation"
+              ],
+              "maxLength": 20000
+            },
+            "minItems": 1,
+            "maxItems": 8
+          },
+          "dataSubjects": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "estimatedVolume": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "subProcessors": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "maxItems": 10
+          },
+          "internationalTransfers": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "description",
+          "dataCategories",
+          "dataSubjects",
+          "subProcessors",
+          "internationalTransfers"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 30
+    },
+    "targetFrameworks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "RGPD",
+          "UK GDPR",
+          "CCPA-CPRA",
+          "LGPD",
+          "NIST Privacy Framework",
+          "ISO 27701"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 6
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "presenterScript": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "slideId": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "slideTitle": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "narration": {
+            "type": "string",
+            "minLength": 80,
+            "maxLength": 1200
+          },
+          "durationSec": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 120
+          },
+          "motionHint": {
+            "type": "string",
+            "enum": [
+              "opening-confidence",
+              "explaining",
+              "pointing-at-chart",
+              "thoughtful-pause",
+              "emphatic-point",
+              "nodding-listening",
+              "hand-gesture-open",
+              "summary-pose",
+              "closing-confidence"
+            ],
+            "maxLength": 20000
+          },
+          "keyPointsToAcknowledge": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 5,
+              "maxLength": 200
+            },
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "slideId",
+          "slideTitle",
+          "narration",
+          "durationSec"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 6,
+      "maxItems": 15
+    }
+  },
+  "required": [
+    "company",
+    "processingActivities",
+    "targetFrameworks"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `process_mapping` | Mapping des process opérationnels — Gapup agent-payable C-suite expertise (COO). Returns a structured, audited deliverable. Reference case: Decathlon France — process Retour produit en magasin · 1700 magasins · 200 retours/j/magasin · -30 à -50% temps cible. Inputs are validated server-side — send the documented case fields. | `company, processes, focus, presenterScript` |
+
+`process_mapping` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "locations": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "toolStack": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "maxItems": 30
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "processes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "processId": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "processName": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 160
+          },
+          "description": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 400
+          },
+          "currentPainPoints": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          },
+          "estimatedVolumePerDay": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "processId",
+          "processName",
+          "description"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    },
+    "presenterScript": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "slideId": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "slideTitle": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "narration": {
+            "type": "string",
+            "minLength": 80,
+            "maxLength": 1200
+          },
+          "durationSec": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 120
+          },
+          "motionHint": {
+            "type": "string",
+            "enum": [
+              "opening-confidence",
+              "explaining",
+              "pointing-at-chart",
+              "thoughtful-pause",
+              "emphatic-point",
+              "nodding-listening",
+              "hand-gesture-open",
+              "summary-pose",
+              "closing-confidence"
+            ],
+            "maxLength": 20000
+          },
+          "keyPointsToAcknowledge": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 5,
+              "maxLength": 200
+            },
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "slideId",
+          "slideTitle",
+          "narration",
+          "durationSec"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 6,
+      "maxItems": 15
+    }
+  },
+  "required": [
+    "company",
+    "processes"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `process_mining` | Mining des process — Gapup agent-payable C-suite expertise (COO). Returns a structured, audited deliverable. Reference case: Gapup Hub — 4 process · €320k gaspillage identifié · 3 quick wins · 5 automations. Inputs are validated server-side — send the documented case fields. | `companyName, employeeCount, topProcesses, revenueLostEstimateEur, objectives, mainSystems` |
+
+`process_mining` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "companyName": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "employeeCount": {
+      "type": "number"
+    },
+    "topProcesses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "department": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "estimatedDurationDays": {
+            "type": "number"
+          },
+          "stepCount": {
+            "type": "number"
+          },
+          "involvedRoles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "maxItems": 100
+          },
+          "currentPain": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "name",
+          "department",
+          "estimatedDurationDays",
+          "stepCount",
+          "involvedRoles",
+          "currentPain"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 6
+    },
+    "revenueLostEstimateEur": {
+      "type": "number"
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 4
+    },
+    "mainSystems": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 8
+    }
+  },
+  "required": [
+    "companyName",
+    "employeeCount",
+    "topProcesses",
+    "objectives",
+    "mainSystems"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `procurement_okr_esg_aligner` | Aligns procurement OKRs with ESG targets for COOs using GRI standards and EU TED procurement benchmarks. Inputs include procurement objectives and ESG focus areas (e.g., carbon reduction, supplier diversity). Outputs structured alignment scores, gap analysis, and actionable recommendations. Essential for COOs integrating sustainability into procurement strategy. Keywords: procurement, ESG, GRI, EU TED, OKR alignment, sustainability metrics. | `procurementObjectives, esgFocusAreas, industrySector` |
+
+`procurement_okr_esg_aligner` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "procurementObjectives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "weight": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          }
+        },
+        "required": [
+          "id",
+          "description"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 100
+    },
+    "esgFocusAreas": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "carbon_reduction",
+          "supplier_diversity",
+          "waste_reduction",
+          "ethical_sourcing",
+          "water_conservation"
+        ],
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "industrySector": {
+      "type": "string",
+      "enum": [
+        "manufacturing",
+        "retail",
+        "healthcare",
+        "technology",
+        "energy",
+        "transportation"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "procurementObjectives",
+    "esgFocusAreas"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `procurement_six_sigma_waste_hunter` | Analyzes procurement waste for COOs using Six Sigma DMAIC framework and EU TED tender data. Identifies non-value-added activities, overprocessing, and inefficiencies in procurement workflows. Inputs include procurement category, time period, and organizational unit. Outputs waste classification, cost impact estimates, and process improvement recommendations. — pass async:true REQUIRED to avoid x402 timeout. | `procurement_category, time_period, organizational_unit, six_sigma_tool, include_ted_data` |
+
+`procurement_six_sigma_waste_hunter` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "procurement_category": {
+      "type": "string",
+      "description": "Specific procurement category to analyze (e.g., 'IT hardware', 'facilities')",
+      "maxLength": 20000
+    },
+    "time_period": {
+      "type": "string",
+      "description": "Time period for analysis (e.g., '2023-01-01/2023-12-31')",
+      "maxLength": 20000
+    },
+    "organizational_unit": {
+      "type": "string",
+      "description": "Specific business unit or department (e.g., 'EMEA', 'Global Operations')",
+      "maxLength": 20000
+    },
+    "six_sigma_tool": {
+      "type": "string",
+      "enum": [
+        "DMAIC",
+        "SIPOC",
+        "ValueStreamMapping"
+      ],
+      "default": "DMAIC",
+      "maxLength": 20000
+    },
+    "include_ted_data": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "procurement_category",
+    "time_period"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `procurement_spend_optim` | Optimisation des achats / Spend strategy — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Reference case: Tech SaaS €60M ARR — 200 fournisseurs analysés · 20 leviers chiffrés · -€2.4M opex/an target. Inputs are validated server-side — send the documented case fields. | `company, spendCategories, topSuppliers, focus` |
+
+`procurement_spend_optim` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number"
+        },
+        "totalAnnualSpendEur": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "totalAnnualSpendEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "spendCategories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "annualSpendEur": {
+            "type": "number"
+          },
+          "supplierCount": {
+            "type": "integer"
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "category",
+          "annualSpendEur",
+          "supplierCount"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 5,
+      "maxItems": 20
+    },
+    "topSuppliers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "annualSpendEur": {
+            "type": "number"
+          },
+          "contractEnd": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "name",
+          "category",
+          "annualSpendEur"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 10,
+      "maxItems": 50
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "spendCategories",
+    "topSuppliers"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `programmatic_attribution_calibrator` | For ad_revenue_ops persona: calibrates marketing mix models (MMM) by ingesting OpenRTB impression-level data from FreeWheel Marketplace and other programmatic sources. Accepts model parameters, date ranges, and impression IDs as input, returning structured calibration metrics and attribution adjustments. Useful for improving model accuracy with real-time bidding data and validating revenue attribution across programmatic channels. | `modelId, startDate, endDate, impressionIds, confidenceThreshold` |
+
+`programmatic_attribution_calibrator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "modelId": {
+      "type": "string",
+      "description": "Identifier of the MMM model to calibrate",
+      "maxLength": 20000
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Start date for impression data (ISO 8601)",
+      "maxLength": 20000
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date",
+      "description": "End date for impression data (ISO 8601)",
+      "maxLength": 20000
+    },
+    "impressionIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of OpenRTB impression IDs to include in calibration",
+      "maxItems": 100
+    },
+    "confidenceThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.95,
+      "description": "Confidence threshold for calibration metrics"
+    }
+  },
+  "required": [
+    "modelId",
+    "startDate",
+    "endDate"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `programmatic_brand_safety_auditor` | Evaluates programmatic ad inventory for brand safety risks using IAB Tech Lab's standards and GDPR-compliant tracking methods. Designed for ad revenue operations teams to assess inventory quality before bidding. Inputs include domain, page URL, and optional contextual signals. Outputs a structured brand safety score with risk categorization and compliance warnings. | `domain, url, categories, gdprConsent` |
+
+`programmatic_brand_safety_auditor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "domain": {
+      "type": "string",
+      "description": "Root domain of the inventory (e.g., 'example.com')",
+      "maxLength": 20000
+    },
+    "url": {
+      "type": "string",
+      "description": "Full page URL being evaluated",
+      "maxLength": 2048
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "Optional IAB content categories for contextual analysis",
+      "maxItems": 100
+    },
+    "gdprConsent": {
+      "type": "string",
+      "description": "GDPR consent string (TCF v2.0)",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "domain",
+    "url"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `proposal_generator` | Générateur de propositions commerciales — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Spendesk × Gapup Hub — Proposition 7 sections · ROI 3Y €1.8M · Payback 4 mois. Inputs are validated server-side — send the documented case fields. | `company, prospect, offer, dealContext` |
+
+`proposal_generator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "prospect": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "contactName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "contactTitle": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "contactName",
+        "contactTitle"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "offer": {
+      "type": "object",
+      "properties": {
+        "productName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "pricing": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "mainBenefits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 6
+        },
+        "useCase": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        }
+      },
+      "required": [
+        "productName",
+        "pricing",
+        "mainBenefits",
+        "useCase"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "dealContext": {
+      "type": "object",
+      "properties": {
+        "budget": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "decisionTimeline": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "competitors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "minItems": 0,
+          "maxItems": 3
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "prospect",
+    "offer"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `qa_pre_flight` | Préparation Q&A investisseurs — Gapup agent-payable C-suite expertise (FUNDRAISING). Returns a structured, audited deliverable. Reference case: Agicap Série C €70M — 30 Q&A stratégiques · 8 questions pièges · Plan de préparation 21 jours. Inputs are validated server-side — send the documented case fields. | `company, round, founderContext` |
+
+`qa_pre_flight` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "currentArrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "teamSize": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "founded": {
+          "type": "number",
+          "minimum": 2000,
+          "maximum": 2030
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "currentArrEur",
+        "teamSize",
+        "founded"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "round": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "serie-a",
+            "serie-b",
+            "serie-c",
+            "growth"
+          ],
+          "maxLength": 20000
+        },
+        "targetEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "leadInvestorProfile": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "stage",
+        "targetEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "founderContext": {
+      "type": "object",
+      "properties": {
+        "pitch": {
+          "type": "string",
+          "minLength": 30,
+          "maxLength": 1000
+        },
+        "knownWeaknesses": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 0,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "pitch",
+        "knownWeaknesses"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "round",
+    "founderContext"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `qbr_auto` | QBR automatique CSM — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Gapup Hub × Alan — QBR Q1 2026 · Health score 82/100 · Upsell €18k détecté · Renewal low risk. Inputs are validated server-side — send the documented case fields. | `company, customer, period, metrics, wins, challenges, nextQuarterGoals` |
+
+`qbr_auto` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "customer": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "tier": {
+          "type": "string",
+          "enum": [
+            "strategic",
+            "enterprise",
+            "mid-market",
+            "smb"
+          ],
+          "maxLength": 20000
+        },
+        "contractValueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "contractStartDate": {
+          "type": "string",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "tier",
+        "contractValueEur",
+        "contractStartDate"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "period": {
+      "type": "object",
+      "properties": {
+        "quarter": {
+          "type": "string",
+          "enum": [
+            "Q1",
+            "Q2",
+            "Q3",
+            "Q4"
+          ],
+          "maxLength": 20000
+        },
+        "year": {
+          "type": "number",
+          "minimum": 2020,
+          "maximum": 2030
+        }
+      },
+      "required": [
+        "quarter",
+        "year"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "npsScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "usageRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "supportTickets": {
+          "type": "number",
+          "minimum": 0
+        },
+        "featureAdoptionPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "renewalDateDays": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "wins": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      },
+      "minItems": 1,
+      "maxItems": 6
+    },
+    "challenges": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      },
+      "minItems": 0,
+      "maxItems": 4
+    },
+    "nextQuarterGoals": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      },
+      "minItems": 1,
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "company",
+    "customer",
+    "period",
+    "metrics",
+    "wins",
+    "challenges",
+    "nextQuarterGoals"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `re_deal_screener` | Screener deal immobilier (EU) — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Answers: Screen this real estate deal: <address>, <deal_type>, asking €<price> — give me cap rate vs market, location score, risk flags, and deal recommendation. · Should I pursue this hotel investment at <address> for €<price> with <N> keys? Run an EU deal screener with DVF comparables and Géorisques risk data. · What is the real estate market valuation for a <deal_type> at <address> based on recent French DVF transactions? · Run a due diligence deal screen on this property: <address>, €<price>, <sqm> sqm — flood risk, cap rate, price vs comparables. · Evaluate this commercial real estate deal for an investment committee: <deal_type> at <address>, €<price>, NOI €<noi>. Reference case: Hôtel boutique 45 keys · 12 rue de la Paix 75002 Paris · €12.5M · €277k/key · comp DVF €250-380k/key · location 92/100 · score 72 · pursue-with-conditions. Inputs are validated server-side — send the documented case fields. | `deal_type, address, country_iso2, asking_price_eur, units_or_keys, gross_area_sqm, current_noi_eur, investment_thesis` |
+
+`re_deal_screener` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "deal_type": {
+      "type": "string",
+      "enum": [
+        "hotel",
+        "office",
+        "retail",
+        "residential-multifamily",
+        "mixed-use",
+        "industrial"
+      ],
+      "maxLength": 20000
+    },
+    "address": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 300
+    },
+    "country_iso2": {
+      "type": "string",
+      "default": "FR",
+      "maxLength": 20000
+    },
+    "asking_price_eur": {
+      "type": "number",
+      "minimum": 0
+    },
+    "units_or_keys": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "gross_area_sqm": {
+      "type": "number",
+      "minimum": 0
+    },
+    "current_noi_eur": {
+      "type": "number",
+      "minimum": 0
+    },
+    "investment_thesis": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "deal_type",
+    "address",
+    "country_iso2",
+    "asking_price_eur"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `real_estate_intel` | Real estate intelligence aggregator with a best-in-class French dataset (DVF — Demandes de Valeurs Foncières — 100% of FR transactions since 2019, public, keyless) plus UK Land Registry Price Paid (all UK transactions 1995+). Four modes: (1) property — full transaction history for a specific address; (2) comparables — median/std price/m² within a radius (default 500m); (3) market — annual price series, YoY change, volume, trend by commune; (4) valuation — two-method estimate (comparables median + hedonic regression if n≥30) with confidence scoring (high/medium/low). All sources are free and require no API key. ICP: PropTech agents, REITs, fund managers, family offices, insurance. SLA: ≤25s p95 (sources fetched in parallel, 8s budget each). Cache: 24h TTL (DVF data is stable). Quality score: 30 pts DVF retrieved, 20 pts geocoding, 20 pts UK LR retrieved, 15 pts if comparables count ≥10, 15 pts if method quality achieved. Status: failed/<60/≥60 → failed/partial/final. No env vars required. | `mode, location, property_type, date_from, date_to, surface_min, surface_max, max_results` |
+
+`real_estate_intel` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "property",
+        "comparables",
+        "market",
+        "valuation"
+      ],
+      "description": "property: transactions at an address | comparables: sample around a point | market: commune/neighbourhood market stats | valuation: price estimate for a given surface",
+      "maxLength": 20000
+    },
+    "location": {
+      "type": "object",
+      "description": "Location descriptor. One of: {address, city?, country?} | {lat, lon, radius_m?} | {insee_code} for FR communes.",
+      "properties": {
+        "address": {
+          "type": "string",
+          "description": "Street address (full or partial)",
+          "maxLength": 20000
+        },
+        "city": {
+          "type": "string",
+          "description": "City name",
+          "maxLength": 20000
+        },
+        "country": {
+          "type": "string",
+          "description": "ISO country code or full name",
+          "maxLength": 20000
+        },
+        "lat": {
+          "type": "number",
+          "description": "Latitude"
+        },
+        "lon": {
+          "type": "number",
+          "description": "Longitude"
+        },
+        "radius_m": {
+          "type": "number",
+          "description": "Search radius in metres for comparables (default 500)"
+        },
+        "insee_code": {
+          "type": "string",
+          "description": "French INSEE commune code (5 digits, e.g. '75104' for Paris 4e)",
+          "maxLength": 20000
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "property_type": {
+      "type": "string",
+      "enum": [
+        "apartment",
+        "house",
+        "land",
+        "commercial",
+        "all"
+      ],
+      "description": "Filter by property type (default: all)",
+      "maxLength": 20000
+    },
+    "date_from": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — earliest transaction date",
+      "maxLength": 20000
+    },
+    "date_to": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — latest transaction date",
+      "maxLength": 20000
+    },
+    "surface_min": {
+      "type": "number",
+      "description": "Minimum surface in m² (±20% tolerance applied for comparables)"
+    },
+    "surface_max": {
+      "type": "number",
+      "description": "Maximum surface in m² (±20% tolerance applied for comparables)"
+    },
+    "max_results": {
+      "type": "number",
+      "description": "Maximum number of results to return (5–50, default 20)",
+      "minimum": 5,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "mode",
+    "location"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `renewal_optimizer` | Optimiseur de renouvellements — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Gapup Hub — Renewals 10 comptes · €89k ARR à 90j · 3 comptes at-risk · Playbook 6 scénarios. Inputs are validated server-side — send the documented case fields. | `company, product, accounts, targetRenewalRatePct, horizon` |
+
+`renewal_optimizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "avgContractLengthMonths": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 60
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "arrEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "renewalInDays": {
+            "type": "number",
+            "minimum": 0
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "strategic",
+              "enterprise",
+              "mid-market",
+              "smb"
+            ],
+            "maxLength": 20000
+          },
+          "healthScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "npsScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "usageRatePct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "lastEngagementDays": {
+            "type": "number",
+            "minimum": 0
+          },
+          "openIssues": {
+            "type": "number",
+            "minimum": 0
+          },
+          "churnSignals": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "minItems": 0,
+            "maxItems": 5
+          },
+          "expansionSignals": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "minItems": 0,
+            "maxItems": 3
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "arrEur",
+          "renewalInDays",
+          "tier"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 20
+    },
+    "targetRenewalRatePct": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "30d",
+        "60d",
+        "90d",
+        "180d"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "accounts"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `repo_rate_arbitrage_scanner` | Scans for arbitrage opportunities between repo rates (ECB) and short-term funding markets (Treasury Direct). Designed for CFOs to identify cost-effective funding strategies. Inputs include optional date ranges and currency filters. Outputs structured arbitrage opportunities with rate differentials and confidence scores. | `startDate, endDate, currency, minDifferential` |
+
+`repo_rate_arbitrage_scanner` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "startDate": {
+      "type": "string",
+      "format": "date",
+      "maxLength": 20000
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date",
+      "maxLength": 20000
+    },
+    "currency": {
+      "type": "string",
+      "enum": [
+        "EUR",
+        "USD"
+      ],
+      "maxLength": 20000
+    },
+    "minDifferential": {
+      "type": "number",
+      "minimum": 0
+    }
+  },
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `reputation_engine` | Moteur de réputation — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Reference case: PayShield SaaS — Monitoring réputation Q2 2026. Inputs are validated server-side — send the documented case fields. | `brand, keywords, channels, industry, historicalCrises` |
+
+`reputation_engine` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "brand": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "twitter",
+          "linkedin",
+          "g2",
+          "trustpilot",
+          "news",
+          "reddit",
+          "glassdoor",
+          "youtube",
+          "instagram",
+          "other"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "industry": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 150
+    },
+    "historicalCrises": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      },
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "brand",
+    "keywords",
+    "channels",
+    "industry"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `research_paper_qa` | Synthèse littérature scientifique (PaperQA2) — Gapup agent-payable C-suite expertise (RISK). Returns a structured, audited deliverable. Answers: Conduct a literature review on <topic> — what does the evidence show across recent papers? · Evaluate the current hypothesis that <claim> — supporting and contradicting evidence with citations. · Map contradictions in the literature on <topic> — which camps exist, how many papers per side? · What is the state-of-the-art understanding of <phenomenon> as of <year>? · Perform an interdisciplinary synthesis on <topic> — findings from <domain A> and <domain B>. Reference case: Gut-brain axis · Cognitive performance in healthy adults · OpenAlex+SemanticScholar+CORE · Evidence synthesis · DOI-verified citations · Contradictions + gaps mapped. Inputs are validated server-side — send the documented case fields. | `research_question, focus_domain, year_range, max_papers, evidence_grade_required, include_preprints` |
+
+`research_paper_qa` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "research_question": {
+      "type": "string",
+      "minLength": 30,
+      "maxLength": 500
+    },
+    "focus_domain": {
+      "type": "string",
+      "enum": [
+        "biomedical",
+        "physics",
+        "chemistry",
+        "cs-ml",
+        "economics",
+        "climate",
+        "social-sciences",
+        "engineering",
+        "all"
+      ],
+      "default": "all",
+      "maxLength": 20000
+    },
+    "year_range": {
+      "type": "object",
+      "properties": {
+        "from": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2030
+        },
+        "to": {
+          "type": "integer",
+          "minimum": 1900,
+          "maximum": 2030
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "max_papers": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 30,
+      "default": 15
+    },
+    "evidence_grade_required": {
+      "type": "string",
+      "enum": [
+        "strict",
+        "standard",
+        "broad"
+      ],
+      "default": "standard",
+      "maxLength": 20000
+    },
+    "include_preprints": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "research_question",
+    "focus_domain",
+    "max_papers",
+    "evidence_grade_required",
+    "include_preprints"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `retail_media_attribution_bridge` | Provides unified attribution insights for retail media and programmatic campaigns by analyzing MMM signals from FreeWheel Marketplace and Common Crawl. Designed for ad revenue operations teams to bridge cross-channel performance gaps. Accepts campaign IDs, date ranges, and channel filters as input. Returns structured attribution data with source provenance and confidence scores. | `campaignIds, startDate, endDate, channels, confidenceThreshold` |
+
+`retail_media_attribution_bridge` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "campaignIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of campaign identifiers to analyze",
+      "maxItems": 100
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date",
+      "description": "Start date for attribution window (YYYY-MM-DD)",
+      "maxLength": 20000
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date",
+      "description": "End date for attribution window (YYYY-MM-DD)",
+      "maxLength": 20000
+    },
+    "channels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "retail_media",
+          "programmatic",
+          "both"
+        ],
+        "maxLength": 20000
+      },
+      "description": "Channels to include in analysis",
+      "maxItems": 100
+    },
+    "confidenceThreshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.7,
+      "description": "Minimum confidence score for included signals"
+    }
+  },
+  "required": [
+    "campaignIds",
+    "startDate",
+    "endDate"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `retail_media_esg_compliance` | Audits retail media networks for ESG compliance by analyzing ad placements, tracking cookies, and verifying ethical advertising standards. Designed for ad_revenue_ops teams to ensure GDPR and sustainability compliance across digital retail platforms. Accepts domain lists or network identifiers as input and returns structured compliance reports with warnings and source references. Requires async:true to avoid timeout errors. | `domains, networkIds, checkGDPR, checkESG` |
+
+`retail_media_esg_compliance` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of retail media network domains to audit",
+      "maxItems": 100
+    },
+    "networkIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of retail media network identifiers",
+      "maxItems": 100
+    },
+    "checkGDPR": {
+      "type": "boolean",
+      "description": "Enable GDPR cookie tracking compliance check",
+      "default": true
+    },
+    "checkESG": {
+      "type": "boolean",
+      "description": "Enable ESG advertising standards compliance check",
+      "default": true
+    }
+  },
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `revops_architect` | Architecte RevOps — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Qonto — ARR €200M · 200 reps · forecast ±35% · fuite €4,2M/an identifiée · plan RevOps 12 semaines. Inputs are validated server-side — send the documented case fields. | `company, revenueTeam, currentStack, currentPainPoints, keyMetrics, objectives, horizonMonths` |
+
+`revops_architect` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "currentArrEur": {
+          "type": "number"
+        },
+        "teamSize": {
+          "type": "number"
+        },
+        "salesMotion": {
+          "type": "string",
+          "enum": [
+            "inbound",
+            "outbound",
+            "plg",
+            "hybrid"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "currentArrEur",
+        "teamSize",
+        "salesMotion"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "revenueTeam": {
+      "type": "object",
+      "properties": {
+        "sdrs": {
+          "type": "number"
+        },
+        "aes": {
+          "type": "number"
+        },
+        "csms": {
+          "type": "number"
+        },
+        "hasRevOpsFunction": {
+          "type": "boolean"
+        },
+        "revOpsHeadcount": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "sdrs",
+        "aes",
+        "csms",
+        "hasRevOpsFunction"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentStack": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "tool": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "crm",
+              "marketing-automation",
+              "sdr-tool",
+              "analytics",
+              "revenue-intelligence",
+              "cs-platform",
+              "other"
+            ],
+            "maxLength": 20000
+          },
+          "satisfaction": {
+            "type": "string",
+            "enum": [
+              "poor",
+              "ok",
+              "good"
+            ],
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "tool",
+          "category",
+          "satisfaction"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 100
+    },
+    "currentPainPoints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "keyMetrics": {
+      "type": "object",
+      "properties": {
+        "forecastAccuracyPct": {
+          "type": "number"
+        },
+        "leadToOpportunityPct": {
+          "type": "number"
+        },
+        "opportunityToClosePct": {
+          "type": "number"
+        },
+        "avgSalesCycleDays": {
+          "type": "number"
+        },
+        "dataQualityScore": {
+          "type": "string",
+          "enum": [
+            "poor",
+            "fair",
+            "good",
+            "excellent"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "horizonMonths": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "company",
+    "revenueTeam",
+    "currentStack",
+    "currentPainPoints",
+    "keyMetrics",
+    "objectives",
+    "horizonMonths"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `rfp_tender_architect` | Architecte d'appels d'offres — Gapup agent-payable C-suite expertise (COO). Returns a structured, audited deliverable. Reference case: AO DINUM — Plateforme IA souveraine. Inputs are validated server-side — send the documented case fields. | `clientCompany, rfpType, rfpScope, ourPositioning, competitorsLikely, budgetRange, deadlineISO, compliancePoints` |
+
+`rfp_tender_architect` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "clientCompany": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200
+    },
+    "rfpType": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private"
+      ],
+      "maxLength": 20000
+    },
+    "rfpScope": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1000
+    },
+    "ourPositioning": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 800
+    },
+    "competitorsLikely": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 120
+      },
+      "minItems": 1,
+      "maxItems": 8
+    },
+    "budgetRange": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200
+    },
+    "deadlineISO": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 30
+    },
+    "compliancePoints": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 200
+      },
+      "minItems": 0,
+      "maxItems": 20
+    }
+  },
+  "required": [
+    "clientCompany",
+    "rfpType",
+    "rfpScope",
+    "ourPositioning",
+    "competitorsLikely",
+    "budgetRange",
+    "deadlineISO"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `rse_policy_builder` | Architecte de politique RSE — Gapup agent-payable C-suite expertise (SUSTAINABILITY). Returns a structured, audited deliverable. Reference case: TechCorp SAS — Politique RSE 2025-2028 (500 FTE, €60M CA, SaaS B2B France). Inputs are validated server-side — send the documented case fields. | `company, values, ambitions, currentInitiatives, targetStakeholders, targetLabels, focus` |
+
+`rse_policy_builder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "foundedYear": {
+          "type": "integer",
+          "minimum": 1800,
+          "maximum": 2100
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "country"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "values": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 100
+      },
+      "minItems": 2,
+      "maxItems": 10
+    },
+    "ambitions": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 800
+    },
+    "currentInitiatives": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 200
+      },
+      "maxItems": 10
+    },
+    "targetStakeholders": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "clients",
+          "employés",
+          "investisseurs",
+          "fournisseurs",
+          "communauté",
+          "régulateurs"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 6
+    },
+    "targetLabels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "B-Corp",
+          "EcoVadis Bronze",
+          "EcoVadis Silver",
+          "EcoVadis Gold",
+          "EcoVadis Platinum",
+          "Lucie 26000",
+          "ISO 14001",
+          "ISO 26000",
+          "Entreprise à mission"
+        ],
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "company",
+    "values",
+    "ambitions",
+    "targetStakeholders"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sales_enablement_architect` | Architecte Sales Enablement — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Spendesk — 45 reps · attainment 67% · ramp 5 mois → 3 mois · programme 8 modules · +€2,1M ARR. Inputs are validated server-side — send the documented case fields. | `company, salesTeam, currentEnablement, gaps, objectives` |
+
+`sales_enablement_architect` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "productName": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "averageDealSizeEur": {
+          "type": "number"
+        },
+        "salesCycleMonths": {
+          "type": "number"
+        },
+        "teamSize": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "productName",
+        "averageDealSizeEur",
+        "salesCycleMonths",
+        "teamSize"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "salesTeam": {
+      "type": "object",
+      "properties": {
+        "totalReps": {
+          "type": "number"
+        },
+        "sdrs": {
+          "type": "number"
+        },
+        "aes": {
+          "type": "number"
+        },
+        "avgRampMonths": {
+          "type": "number"
+        },
+        "avgQuotaAttainmentPct": {
+          "type": "number"
+        },
+        "avgTimeOnAdminPct": {
+          "type": "number"
+        },
+        "topPerformerPct": {
+          "type": "number"
+        },
+        "bottomPerformerPct": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "totalReps",
+        "sdrs",
+        "aes",
+        "avgRampMonths",
+        "avgQuotaAttainmentPct",
+        "avgTimeOnAdminPct",
+        "topPerformerPct",
+        "bottomPerformerPct"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "currentEnablement": {
+      "type": "object",
+      "properties": {
+        "hasPlaybook": {
+          "type": "boolean"
+        },
+        "hasCrm": {
+          "type": "boolean"
+        },
+        "crmName": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "hasOnboarding": {
+          "type": "boolean"
+        },
+        "onboardingDurationWeeks": {
+          "type": "number"
+        },
+        "trainingFrequency": {
+          "type": "string",
+          "enum": [
+            "never",
+            "quarterly",
+            "monthly",
+            "weekly"
+          ],
+          "maxLength": 20000
+        },
+        "contentLibraryExists": {
+          "type": "boolean"
+        },
+        "battlecardsExist": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "hasPlaybook",
+        "hasCrm",
+        "hasOnboarding",
+        "trainingFrequency",
+        "contentLibraryExists",
+        "battlecardsExist"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "company",
+    "salesTeam",
+    "currentEnablement",
+    "gaps",
+    "objectives"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sales_pipeline_forecast` | Prévision de pipeline commercial — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Doctolib Enterprise — pipeline Q2 2026 · 50 deals enterprise/mid-market · forecast confidence par deal + commit/best-case/worst-case. Inputs are validated server-side — send the documented case fields. | `company, pipeline, historicalConversionByStage, focus` |
+
+`sales_pipeline_forecast` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "arrCurrentEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "quotaTeamEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "pipeline": {
+      "type": "object",
+      "properties": {
+        "period": {
+          "type": "string",
+          "minLength": 4,
+          "maxLength": 40
+        },
+        "deals": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "dealId": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 80
+              },
+              "account": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 160
+              },
+              "segment": {
+                "type": "string",
+                "enum": [
+                  "enterprise",
+                  "mid-market",
+                  "smb",
+                  "self-serve"
+                ],
+                "maxLength": 20000
+              },
+              "amountEur": {
+                "type": "number",
+                "minimum": 0
+              },
+              "currentStage": {
+                "type": "string",
+                "enum": [
+                  "discovery",
+                  "qualification",
+                  "demo",
+                  "proposal",
+                  "negotiation",
+                  "closed-won",
+                  "closed-lost"
+                ],
+                "maxLength": 20000
+              },
+              "daysInCurrentStage": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "expectedCloseDate": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "ownerRep": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 80
+              },
+              "productsScope": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "maxLength": 20000
+                },
+                "maxItems": 8
+              },
+              "championIdentified": {
+                "type": "boolean"
+              },
+              "economicBuyerAccess": {
+                "type": "string",
+                "enum": [
+                  "direct",
+                  "via-champion",
+                  "blocked",
+                  "unknown"
+                ],
+                "maxLength": 20000
+              },
+              "competitor": {
+                "type": "string",
+                "maxLength": 120
+              },
+              "knownRisks": {
+                "type": "string",
+                "maxLength": 400
+              }
+            },
+            "required": [
+              "dealId",
+              "account",
+              "segment",
+              "amountEur",
+              "currentStage",
+              "daysInCurrentStage",
+              "expectedCloseDate",
+              "ownerRep"
+            ],
+            "additionalProperties": false,
+            "maxProperties": 100
+          },
+          "minItems": 3,
+          "maxItems": 60
+        }
+      },
+      "required": [
+        "period",
+        "deals"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "historicalConversionByStage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "fromStage": {
+            "type": "string",
+            "enum": [
+              "discovery",
+              "qualification",
+              "demo",
+              "proposal",
+              "negotiation",
+              "closed-won",
+              "closed-lost"
+            ],
+            "maxLength": 20000
+          },
+          "toStage": {
+            "type": "string",
+            "enum": [
+              "discovery",
+              "qualification",
+              "demo",
+              "proposal",
+              "negotiation",
+              "closed-won",
+              "closed-lost"
+            ],
+            "maxLength": 20000
+          },
+          "avgDays": {
+            "type": "number",
+            "minimum": 0
+          },
+          "conversionPct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "fromStage",
+          "toStage",
+          "avgDays",
+          "conversionPct"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 10
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "company",
+    "pipeline"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `save_plays` | Plans de sauvetage clients — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Kyriba — Plan sauvetage 30j · ARR €11.988 · Champion parti · Script 6 actions · 3 concessions. Inputs are validated server-side — send the documented case fields. | `company, account, product` |
+
+`save_plays` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "arrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "churnReason": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 300
+        },
+        "signals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 5
+        },
+        "championName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "daysToChurn": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 365
+        }
+      },
+      "required": [
+        "name",
+        "arrEur",
+        "churnReason",
+        "signals"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "account",
+    "product"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sci_literature_search` | Recherche bibliographique multi-sources sur la litterature scientifique. Sources : OpenAlex (200M+ works) · Semantic Scholar · arXiv · PubMed · CrossRef. Modes : search | meta_analysis | citation_network | expert_finder. Keyless / free tier. Cache LRU 12h. | `query, mode, domain, date_from, date_to, min_citations, max_results` |
+
+`sci_literature_search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "description": "Keywords, titre, auteur, DOI (ex: 10.xxxx/xxxx accepte)",
+      "maxLength": 20000
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "search",
+        "meta_analysis",
+        "citation_network",
+        "expert_finder"
+      ],
+      "description": "Mode de recherche. Defaut: search",
+      "maxLength": 20000
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "biomedical",
+        "physics",
+        "cs",
+        "chemistry",
+        "social",
+        "all"
+      ],
+      "description": "Domaine scientifique. Defaut: all",
+      "maxLength": 20000
+    },
+    "date_from": {
+      "type": "string",
+      "description": "Date ISO debut (YYYY-MM-DD)",
+      "maxLength": 20000
+    },
+    "date_to": {
+      "type": "string",
+      "description": "Date ISO fin (YYYY-MM-DD)",
+      "maxLength": 20000
+    },
+    "min_citations": {
+      "type": "number",
+      "description": "Nombre minimal de citations"
+    },
+    "max_results": {
+      "type": "number",
+      "description": "5-50. Defaut: 20"
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sec_filing_decoder` | Décodeur de filing SEC — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Answers: Read the 10-K of <ticker> and give me the material red flags, KPI movements, and a board-ready executive summary. · What has materially changed in <ticker>'s risk profile in its latest annual filing? Flag any going-concern or auditor-change signals. · Is there any M&A signal or strategic review hint in <ticker>'s most recent SEC filings? What's the evidence? · Prepare a due-diligence SEC filing brief for <ticker>: financial snapshot, red flags, governance changes, and recommended next actions. · What is the sentiment of <ticker>'s latest 10-K compared to its most recent 10-Q — bullish, neutral, or bearish? Reference case: SHOP · 10-K FY2024 · 4 red flags (1 critical: merchant concentration) · Revenue +24.7% YoY · . Inputs are validated server-side — send the documented case fields. | `ticker, cik, filing_types, lookback_months, focus` |
+
+`sec_filing_decoder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5
+    },
+    "cik": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10
+    },
+    "filing_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "DEF-14A",
+          "S-1",
+          "all"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 6,
+      "default": [
+        "10-K"
+      ]
+    },
+    "lookback_months": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 60,
+      "default": 12
+    },
+    "focus": {
+      "type": "string",
+      "enum": [
+        "financial-health",
+        "red-flags",
+        "m&a-clues",
+        "governance",
+        "all"
+      ],
+      "default": "all",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "filing_types",
+    "lookback_months",
+    "focus"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sentiment_news_pulse` | Pulse Média & Sentiment — Gapup agent-payable C-suite expertise (CMO). Returns a structured, audited deliverable. Answers: What is the current PR / brand sentiment for <company> over the last 7 days? Show top headlines, trend signals, and recommended actions. · Is there a crisis building for <brand>? Detect early-warning signals in press coverage and flag emerging negative narratives. · Track launch media coverage for <product> — what is the press sentiment and which topics dominate the conversation? · Compare media sentiment between <company> and its competitors over the past week. · What should our communications director prioritize in the next 48h based on current press coverage of <brand>? Reference case: Velora Payments — Pulse média 7j · sentiment neutre (score +5) · crise émergente détectée · . Inputs are validated server-side — send the documented case fields. | `entity_name, entity_type, date_range_days, language_filter, include_competitors, sentiment_lens` |
+
+`sentiment_news_pulse` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "entity_name": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200
+    },
+    "entity_type": {
+      "type": "string",
+      "enum": [
+        "company",
+        "product",
+        "person",
+        "topic",
+        "brand"
+      ],
+      "default": "company",
+      "maxLength": 20000
+    },
+    "date_range_days": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 7
+    },
+    "language_filter": {
+      "type": "string",
+      "enum": [
+        "en",
+        "fr",
+        "es",
+        "de",
+        "all"
+      ],
+      "default": "en",
+      "maxLength": 20000
+    },
+    "include_competitors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "maxItems": 5
+    },
+    "sentiment_lens": {
+      "type": "string",
+      "enum": [
+        "reputation",
+        "crisis-detection",
+        "launch-monitoring",
+        "general"
+      ],
+      "default": "reputation",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "entity_name",
+    "entity_type",
+    "date_range_days",
+    "language_filter",
+    "sentiment_lens"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `seo_cro_audit` | Full SEO + CRO audit of any public URL. Analyses technical SEO (HTTP status, HTTPS, title/meta/canonical/robots, H1-H2, JSON-LD structured data, sitemap, robots.txt, OG/Twitter cards), content SEO (word count, keyword density top-10, readability estimate, image alt coverage, internal/external links), performance signals (page size, estimated render time, inline scripts/styles, unoptimised images), and CRO (CTA detection, above-fold CTAs, forms, social proof, trust signals, pricing visibility). Optionally compares up to 5 competitor URLs. Returns 0-100 scores per dimension plus a prioritised (P0/P1/P2) recommendation list. ICP: marketing managers, SEO/CRO consultants, e-commerce ops, agency teams. Budget: 8s per URL. Cache TTL: 1h. | `url, mode, compare_competitors` |
+
+`seo_cro_audit` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "Fully-qualified URL to audit (e.g. https://stripe.com/pricing)",
+      "maxLength": 2048
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "full",
+        "seo_only",
+        "cro_only",
+        "technical_only",
+        "content_only",
+        "performance_only"
+      ],
+      "description": "Audit scope — defaults to 'full'",
+      "maxLength": 20000
+    },
+    "compare_competitors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 5,
+      "description": "Optional list of competitor URLs to compare (max 5)"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `seo_keyword_research` | SEO keyword research from a seed keyword or topic. Uses Google Suggest (public, keyless) to discover related queries at 2 expansion levels, then clusters them by intent: informational / commercial / transactional / navigational — via heuristic pattern matching. Search volume is bucketed (very_high / high / medium / low / very_low) and clearly labelled as ESTIMATED — no fabricated precise numbers. Returns all keywords, intent clusters, quality scores (0-100), and top 10 opportunities. Supports country (gl) and language (hl) targeting. 100% keyless. Cache TTL 6h. ICP: SEO managers, content strategists, SaaS founders, agency teams. | `seed_keyword, country, language` |
+
+`seo_keyword_research` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "seed_keyword": {
+      "type": "string",
+      "description": "The seed keyword or topic to research (e.g. 'invoice software', 'project management tool')",
+      "maxLength": 20000
+    },
+    "country": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-2 country code for Google Suggest (e.g. 'US', 'FR', 'DE'). Defaults to 'US'.",
+      "maxLength": 20000
+    },
+    "language": {
+      "type": "string",
+      "description": "BCP-47 language code for suggestions (e.g. 'en', 'fr', 'de', 'es'). Defaults to 'en'.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "seed_keyword"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sharia_compliance_screener` | Sharia compliance screening engine for Islamic banks, Sukuk issuers, Gulf sovereign funds, halal investment managers and MENA family offices. Zero competing MCP on this vertical.
+
+Standards supported: AAOIFI (default) | MSCI_Islamic | S&P_Sharia | DJIM
+
+Four modes:
+• company — Full Sharia screen of a listed company: business activity (halal/haram/mixed) + AAOIFI financial ratios (debt/market-cap <30%, interest-assets <30%, non-compliant revenue <5%)
+• instrument — Sukuk / halal fund classification by ISIN or name. Maps to known Sharia boards.
+• sector_screen — Industry classification (halal/haram/mixed) with rationale + examples. Static AAOIFI-based map covering 40+ sectors.
+• financial_ratios — AAOIFI ratio computation on fetched or provided financials.
+
+Prohibited activities screened: alcohol, gambling, pork, weapons, pornography, tobacco, conventional banking (riba), conventional insurance, adult entertainment, embryonic stem cells.
+
+Output includes compliance_status (halal/haram/doubtful_mixed/purification_required), purification_pct when applicable, P0/P1/P2 signals, quality_score, and sources. | `mode, query, standard` |
+
+`sharia_compliance_screener` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "company",
+        "instrument",
+        "sector_screen",
+        "financial_ratios"
+      ],
+      "description": "Screening mode. company=full listed company screen, instrument=Sukuk/fund classification, sector_screen=industry halal/haram classification, financial_ratios=AAOIFI ratio check.",
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 200,
+      "description": "Entity to screen. Company name, ticker or ISIN (e.g. \"Aramco\", \"AAPL\", \"tobacco\", \"XS1234567890\")."
+    },
+    "standard": {
+      "type": "string",
+      "enum": [
+        "AAOIFI",
+        "MSCI_Islamic",
+        "S&P_Sharia",
+        "DJIM"
+      ],
+      "description": "Sharia standard to apply. Default \"AAOIFI\" (most conservative, widely accepted by Islamic banks).",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode",
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `social_engagement_velocity_tracker` | Tracks hourly social engagement velocity (likes, shares, comments) across Twitter, LinkedIn, and Reddit for CMOs. Inputs include platform handles/subreddits and time range. Outputs engagement metrics, velocity trends, and platform-specific insights. Ideal for real-time marketing performance monitoring and competitive benchmarking. Keywords: social media analytics, engagement tracking, marketing KPIs, CMO dashboard. | `platforms, hours` |
+
+`social_engagement_velocity_tracker` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "platforms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "twitter",
+              "linkedin",
+              "reddit"
+            ],
+            "maxLength": 20000
+          },
+          "handle": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "subreddit": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 100
+    },
+    "hours": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 72,
+      "default": 24
+    }
+  },
+  "required": [
+    "platforms"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sovereign_data_breach_impact` | Estimates financial impact of a data breach across three jurisdictions (US, EU, UK) for CFO strategic planning. Inputs include breach size, industry sector, and affected jurisdictions. Outputs include direct costs, regulatory fines, reputational damage, and cyber insurance premium adjustments. Ideal for cross-border risk assessment, financial contingency planning, and board-level reporting. Keywords: data breach cost, regulatory fines, cyber insurance, financial risk, cross-jurisdiction impact. | `records_lost, industry, jurisdictions, detection_time_days` |
+
+`sovereign_data_breach_impact` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "records_lost": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Number of records compromised in the breach"
+    },
+    "industry": {
+      "type": "string",
+      "enum": [
+        "healthcare",
+        "financial",
+        "retail",
+        "technology",
+        "other"
+      ],
+      "description": "Industry sector of the affected organization",
+      "maxLength": 20000
+    },
+    "jurisdictions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "US",
+          "EU",
+          "UK"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 3,
+      "description": "Jurisdictions where the breach has legal or financial impact"
+    },
+    "detection_time_days": {
+      "type": "number",
+      "minimum": 1,
+      "description": "Time in days to detect the breach"
+    }
+  },
+  "required": [
+    "records_lost",
+    "jurisdictions"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sre_slo_breach_predictor` | As a CTO, predict potential SLO breaches 24 hours in advance by analyzing public incident reports and MITRE ATT&CK techniques. Input your service's critical components and reliability thresholds to receive breach probability scores, top contributing TTPs, and recommended mitigations. Uses MITRE ATT&CK, GitHub Advisories, and Cloudflare Radar data. Pass async:true to avoid timeout. | `service_components, time_window_hours` |
+
+`sre_slo_breach_predictor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "service_components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "slo_threshold": {
+            "type": "number"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "name",
+          "slo_threshold"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "maxItems": 100
+    },
+    "time_window_hours": {
+      "type": "number",
+      "default": 24
+    }
+  },
+  "required": [
+    "service_components"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `strategic_options_analyzer` | Analyseur d'options stratégiques — Gapup agent-payable C-suite expertise (CSO). Returns a structured, audited deliverable. Reference case: Aircall — 5 options stratégiques post-Série D (2023-2024). Inputs are validated server-side — send the documented case fields. | `company, strategicContext, optionHypotheses, founderConstraints` |
+
+`strategic_options_analyzer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "maxLength": 2048
+        },
+        "pitch": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 800
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "series-a",
+            "series-b",
+            "series-c",
+            "growth",
+            "public"
+          ],
+          "maxLength": 20000
+        },
+        "countryHQ": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 60
+        },
+        "foundedYear": {
+          "type": "integer",
+          "minimum": 1990,
+          "maximum": 2030
+        },
+        "currentArrEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "headcountNow": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "pitch",
+        "stage",
+        "countryHQ",
+        "foundedYear",
+        "currentArrEur",
+        "headcountNow"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "strategicContext": {
+      "type": "object",
+      "properties": {
+        "triggerEvent": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 500
+        },
+        "windowOpportunityMonths": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 36
+        },
+        "cashRunwayMonths": {
+          "type": "number",
+          "minimum": 0
+        },
+        "cashEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "burnMonthlyEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "coreCompetencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 6
+        }
+      },
+      "required": [
+        "triggerEvent",
+        "windowOpportunityMonths",
+        "cashRunwayMonths",
+        "cashEur",
+        "burnMonthlyEur",
+        "coreCompetencies"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "optionHypotheses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "label": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 120
+          },
+          "hypothesis": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 400
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "hypothesis"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 3,
+      "maxItems": 6
+    },
+    "founderConstraints": {
+      "type": "object",
+      "properties": {
+        "maxCashRequiredEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "maxDilutionPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "mustRetainControl": {
+          "type": "boolean"
+        },
+        "timeToFirstValidationWeeks": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 52
+        },
+        "noGoConditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 200
+          },
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "maxCashRequiredEur",
+        "maxDilutionPct",
+        "mustRetainControl",
+        "timeToFirstValidationWeeks"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "strategicContext",
+    "optionHypotheses",
+    "founderConstraints"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `supplier_esg_audit` | Audit ESG des fournisseurs — Gapup agent-payable C-suite expertise (SUSTAINABILITY). Returns a structured, audited deliverable. Reference case: TechCorp — Audit ESG fournisseurs 2025 (5 fournisseurs, €1.37M spend). Inputs are validated server-side — send the documented case fields. | `company, suppliers, auditCriteria, targetScore, focus` |
+
+`supplier_esg_audit` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "country"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "suppliers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "sector": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "country": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "annualSpendEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "Tier 1",
+              "Tier 2",
+              "Tier 3"
+            ],
+            "maxLength": 20000
+          },
+          "knownIssues": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "existingCertifications": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 20000
+            },
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "name",
+          "sector",
+          "country",
+          "annualSpendEur",
+          "tier"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "auditCriteria": {
+      "type": "object",
+      "properties": {
+        "environmental": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "social": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "governance": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 8
+        },
+        "supplyChain": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "minItems": 2,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "environmental",
+        "social",
+        "governance",
+        "supplyChain"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetScore": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "company",
+    "suppliers",
+    "auditCriteria"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `supply_chain_fx_exposure_dashboard` | Provides real-time foreign exchange exposure dashboard for supply chain monitoring. Designed for COO persona to track currency risk across suppliers and regions. Inputs include supplier IDs, base currency, and target currencies. Outputs structured FX exposure data with risk indicators, exchange rates, and supplier impact analysis sourced from World Bank LPI and live FX rate APIs. | `supplierIds, baseCurrency, targetCurrencies, riskThreshold` |
+
+`supply_chain_fx_exposure_dashboard` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "supplierIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of supplier identifiers to analyze",
+      "maxItems": 100
+    },
+    "baseCurrency": {
+      "type": "string",
+      "description": "Base currency code (ISO 4217) for exposure calculation",
+      "pattern": "^[A-Z]{3}$",
+      "maxLength": 20000
+    },
+    "targetCurrencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "Target currency codes (ISO 4217) to compare against base",
+      "minItems": 1,
+      "maxItems": 100
+    },
+    "riskThreshold": {
+      "type": "number",
+      "description": "Percentage threshold for high-risk exposure flagging",
+      "minimum": 0,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "baseCurrency",
+    "targetCurrencies"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sustainability_report` | Rapport de durabilité — Gapup agent-payable C-suite expertise (SUSTAINABILITY). Returns a structured, audited deliverable. Reference case: GreenLoop Solutions — rapport durabilité B-Corp 2025 (95 FTE, €18M CA). Inputs are validated server-side — send the documented case fields. | `company, existingLabels, targetLabels, pillars, stakeholders, audienceProfile, focus` |
+
+`sustainability_report` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 160
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "mission": {
+          "type": "string",
+          "minLength": 20,
+          "maxLength": 400
+        },
+        "foundedYear": {
+          "type": "integer",
+          "minimum": 1800,
+          "maximum": 2100
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "mission",
+        "foundedYear",
+        "country"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "existingLabels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "B-Corp",
+          "EcoVadis Bronze",
+          "EcoVadis Silver",
+          "EcoVadis Gold",
+          "EcoVadis Platinum",
+          "Lucie 26000",
+          "ISO 14001",
+          "ISO 26000",
+          "BSR"
+        ],
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "targetLabels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "B-Corp",
+          "EcoVadis Bronze",
+          "EcoVadis Silver",
+          "EcoVadis Gold",
+          "EcoVadis Platinum",
+          "Lucie 26000",
+          "ISO 14001",
+          "ISO 26000",
+          "BSR"
+        ],
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "pillars": {
+      "type": "object",
+      "properties": {
+        "environmental": {
+          "type": "object",
+          "properties": {
+            "kpis": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 20000
+            },
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "minItems": 1,
+              "maxItems": 8
+            },
+            "ambitions": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 20000
+            }
+          },
+          "required": [
+            "kpis",
+            "actions",
+            "ambitions"
+          ],
+          "additionalProperties": false,
+          "maxProperties": 100
+        },
+        "social": {
+          "type": "object",
+          "properties": {
+            "kpis": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 20000
+            },
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "minItems": 1,
+              "maxItems": 8
+            },
+            "ambitions": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 20000
+            }
+          },
+          "required": [
+            "kpis",
+            "actions",
+            "ambitions"
+          ],
+          "additionalProperties": false,
+          "maxProperties": 100
+        },
+        "governance": {
+          "type": "object",
+          "properties": {
+            "kpis": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 20000
+            },
+            "actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "minItems": 1,
+              "maxItems": 8
+            },
+            "ambitions": {
+              "type": "string",
+              "minLength": 10,
+              "maxLength": 20000
+            }
+          },
+          "required": [
+            "kpis",
+            "actions",
+            "ambitions"
+          ],
+          "additionalProperties": false,
+          "maxProperties": 100
+        }
+      },
+      "required": [
+        "environmental",
+        "social",
+        "governance"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "stakeholders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "clients",
+              "employés",
+              "investisseurs",
+              "fournisseurs",
+              "communauté",
+              "régulateurs"
+            ],
+            "maxLength": 20000
+          },
+          "engagement": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "type",
+          "engagement"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 8
+    },
+    "audienceProfile": {
+      "type": "string",
+      "enum": [
+        "investors",
+        "B2B-clients",
+        "talents",
+        "regulators",
+        "general-public",
+        "mixed"
+      ],
+      "maxLength": 20000
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "company",
+    "pillars",
+    "stakeholders",
+    "audienceProfile"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `sustainability_reporting_pilot` | Pilote de reporting durabilité — Gapup agent-payable C-suite expertise (RISK). Returns a structured, audited deliverable. Reference case: AlphaTech Industries SAS — premier rapport CSRD wave 2 (exercice 2025). Inputs are validated server-side — send the documented case fields. | `company, targetFrameworks, dataInputs, materiality, focus` |
+
+`sustainability_reporting_pilot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "naceCode": {
+          "type": "string",
+          "maxLength": 20000
+        },
+        "fte": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "revenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "listedStatus": {
+          "type": "string",
+          "enum": [
+            "listed",
+            "private-large",
+            "private-sme",
+            "public-sector"
+          ],
+          "maxLength": 20000
+        },
+        "country": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 80
+        },
+        "parentGroup": {
+          "type": "string",
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "fte",
+        "revenueEur",
+        "listedStatus",
+        "country"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "targetFrameworks": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "CSRD",
+          "SFDR Article 8",
+          "SFDR Article 9",
+          "GRI",
+          "TCFD",
+          "ISSB IFRS S1/S2",
+          "CDP"
+        ],
+        "maxLength": 20000
+      },
+      "minItems": 1,
+      "maxItems": 7
+    },
+    "dataInputs": {
+      "type": "object",
+      "properties": {
+        "governance": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false,
+          "maxProperties": 100
+        },
+        "environmental": {
+          "type": "object",
+          "properties": {
+            "scope1Tco2eq": {
+              "type": "number"
+            },
+            "scope2Tco2eqLocation": {
+              "type": "number"
+            },
+            "scope2Tco2eqMarket": {
+              "type": "number"
+            },
+            "scope3Tco2eq": {
+              "type": "number"
+            },
+            "energyMixPct": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": false,
+              "maxProperties": 100
+            },
+            "waterUseM3": {
+              "type": "number"
+            },
+            "wasteT": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false,
+          "maxProperties": 100
+        },
+        "social": {
+          "type": "object",
+          "properties": {
+            "fteByGenderPct": {
+              "type": "object",
+              "properties": {},
+              "additionalProperties": false,
+              "maxProperties": 100
+            },
+            "payGapPct": {
+              "type": "number"
+            },
+            "trainingHoursAvg": {
+              "type": "number"
+            },
+            "accidentsLTI": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false,
+          "maxProperties": 100
+        },
+        "valueChain": {
+          "type": "object",
+          "properties": {
+            "suppliersCount": {
+              "type": "integer"
+            },
+            "criticalRawMaterials": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 20000
+              },
+              "maxItems": 100
+            }
+          },
+          "additionalProperties": false,
+          "maxProperties": 100
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "materiality": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "financiallyMaterial": {
+            "type": "boolean"
+          },
+          "impactMaterial": {
+            "type": "boolean"
+          },
+          "justification": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "required": [
+          "topic",
+          "financiallyMaterial",
+          "impactMaterial",
+          "justification"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 3,
+      "maxItems": 30
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "company",
+    "targetFrameworks",
+    "dataInputs",
+    "materiality"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `syndicated_loan_covenant_breach_alert` | Monitors syndicated loan covenants for potential breaches by analyzing Tradeweb market data. Designed for CFOs to proactively identify financial compliance risks in loan agreements. Accepts loan identifiers, covenant thresholds, and reporting period as inputs. Returns structured breach alerts with market context and severity indicators. | `loanId, covenantThresholds, reportingPeriod, currency` |
+
+`syndicated_loan_covenant_breach_alert` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "loanId": {
+      "type": "string",
+      "description": "Unique identifier for the syndicated loan",
+      "maxLength": 20000
+    },
+    "covenantThresholds": {
+      "type": "object",
+      "properties": {
+        "debtServiceCoverageRatio": {
+          "type": "number"
+        },
+        "interestCoverageRatio": {
+          "type": "number"
+        },
+        "leverageRatio": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "debtServiceCoverageRatio",
+        "interestCoverageRatio",
+        "leverageRatio"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "reportingPeriod": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "description": "Time period for covenant compliance check",
+      "maxLength": 20000
+    },
+    "currency": {
+      "type": "string",
+      "description": "ISO currency code for financial values",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "loanId",
+    "covenantThresholds",
+    "reportingPeriod"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `syndicated_loan_pricing_benchmark` | Provides CFOs with peer benchmarking for syndicated loan pricing by comparing current loan terms against market data from Tradeweb and FRED. Inputs include loan amount, tenor, credit rating, and currency. Outputs structured pricing benchmarks with spread, yield, and fee comparisons. Ideal for quick validation of loan competitiveness or negotiation preparation. | `loanAmount, tenor, creditRating, currency, region` |
+
+`syndicated_loan_pricing_benchmark` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "loanAmount": {
+      "type": "number",
+      "description": "Loan amount in millions"
+    },
+    "tenor": {
+      "type": "string",
+      "description": "Loan tenor (e.g., '5Y', '3Y')",
+      "maxLength": 20000
+    },
+    "creditRating": {
+      "type": "string",
+      "description": "Borrower credit rating (e.g., 'BBB', 'BB+')",
+      "maxLength": 20000
+    },
+    "currency": {
+      "type": "string",
+      "description": "Currency code (e.g., 'USD', 'EUR')",
+      "maxLength": 20000
+    },
+    "region": {
+      "type": "string",
+      "description": "Region for benchmarking (e.g., 'US', 'EU')",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "loanAmount",
+    "tenor",
+    "creditRating",
+    "currency"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `tariff_arbitrage_finder` | As a COO, identify tariff reclassification opportunities to reduce import costs. Analyzes product HS codes against WTO TFA and USA Trade Online data to find lower-duty classifications. Inputs: product description, current HS code, country of origin, and annual import volume. Outputs: potential duty savings, alternative HS codes, and compliance considerations. | `productDescription, currentHsCode, countryOfOrigin, annualVolume, currentDutyRate` |
+
+`tariff_arbitrage_finder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "productDescription": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "currentHsCode": {
+      "type": "string",
+      "pattern": "^\\d{6,10}$",
+      "maxLength": 20000
+    },
+    "countryOfOrigin": {
+      "type": "string",
+      "maxLength": 20000
+    },
+    "annualVolume": {
+      "type": "number",
+      "minimum": 1
+    },
+    "currentDutyRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "productDescription",
+    "currentHsCode",
+    "countryOfOrigin"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `tariff_impact_simulator` | As a COO, model how proposed tariff changes affect landed costs for imported goods. Inputs: HS code, current tariff rate, proposed tariff rate, product value, shipping cost, and country of origin. Outputs: detailed cost breakdown including new duties, taxes, and total landed cost impact. Sources include WTO TFA and US Census trade data. | `hsCode, currentTariffRate, proposedTariffRate, productValue, shippingCost, countryOfOrigin` |
+
+`tariff_impact_simulator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "hsCode": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 10
+    },
+    "currentTariffRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "proposedTariffRate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "productValue": {
+      "type": "number",
+      "minimum": 0
+    },
+    "shippingCost": {
+      "type": "number",
+      "minimum": 0
+    },
+    "countryOfOrigin": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2
+    }
+  },
+  "required": [
+    "hsCode",
+    "currentTariffRate",
+    "proposedTariffRate",
+    "productValue",
+    "countryOfOrigin"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `tax_compliance_multi` | Multi-jurisdiction tax compliance data for international SaaS, cross-border marketplaces and expat services. Five modes: (1) vat_lookup — validate EU VAT numbers live via VIES SOAP (27 EU countries) or UK VRN via HMRC; (2) sales_tax — US state sales tax rates, nexus thresholds (post-Wayfair 2018), digital goods taxability for all 50 states + DC; (3) gst — APAC GST/SST/consumption-tax rates for IN, SG, AU, NZ, MY, JP, KR, TH, ID, PH, VN with reduced rates and registration thresholds; (4) oss_ioss_eligibility — EU One-Stop-Shop and Import-OSS eligibility analysis (EUR 10k OSS threshold, EUR 150 IOSS per-consignment); (5) transfer_pricing_benchmark — OECD/JTPF operating-margin benchmarks by industry and country (20+ sectors, country-specific adjustments). Returns P0/P1/P2 compliance signals: P0=invalid VAT used for zero-rating, P1=taxable digital goods detected/audit risk, P2=filing deadlines/nexus alerts. Keyless — no API key required. Optional env: HMRC_VAT_API_KEY for UK VAT live validation. Cache TTL 24h. | `mode, query, country, transaction_type` |
+
+`tax_compliance_multi` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "mode": {
+      "type": "string",
+      "enum": [
+        "vat_lookup",
+        "sales_tax",
+        "gst",
+        "oss_ioss_eligibility",
+        "transfer_pricing_benchmark"
+      ],
+      "description": "Tax mode to invoke.",
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "description": "Mode-specific query: vat_lookup -> VAT number with country prefix (e.g. 'FR40303265045'); sales_tax -> US state code or name (e.g. 'CA', 'California'); gst -> ISO country code (e.g. 'SG', 'IN', 'AU'); oss_ioss_eligibility -> annual EU B2C revenue in EUR or keyword (e.g. '5000', 'below'); transfer_pricing_benchmark -> industry name (e.g. 'manufacturing', 'saas', 'r&d').",
+      "maxLength": 20000
+    },
+    "country": {
+      "type": "string",
+      "description": "ISO 3166-1 alpha-2 country code. Required for gst when query is ambiguous. Used in transfer_pricing_benchmark for country-specific OECD adjustments.",
+      "maxLength": 20000
+    },
+    "transaction_type": {
+      "type": "string",
+      "enum": [
+        "B2B",
+        "B2C",
+        "digital",
+        "physical"
+      ],
+      "description": "Transaction type for signal generation. 'digital' triggers GST/sales-tax digital goods warnings.",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "mode",
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `tax_optimization` | Optimisation fiscale — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Reference case: Pennylane — Fiscalité optimisée · CIR €1.2M · IP Box France 10% · Économie totale €2.4M/an. Inputs are validated server-side — send the documented case fields. | `company, financials, jurisdictions, activities, currentTaxOptimizations, ipAssets` |
+
+`tax_optimization` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "serie-a",
+            "serie-b",
+            "serie-c",
+            "serie-d-plus",
+            "profitable-sme",
+            "enterprise"
+          ],
+          "maxLength": 20000
+        },
+        "legalForm": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "financials": {
+      "type": "object",
+      "properties": {
+        "annualRevenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "ebitdaEur": {
+          "type": "number"
+        },
+        "rdSpendEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "payrollEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currentTaxRateEffectivePct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "annualRevenueEur",
+        "ebitdaEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "jurisdictions": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 100
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "activities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 200
+      },
+      "minItems": 1,
+      "maxItems": 6
+    },
+    "currentTaxOptimizations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 200
+      },
+      "minItems": 0,
+      "maxItems": 5
+    },
+    "ipAssets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 200
+      },
+      "minItems": 0,
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "company",
+    "financials",
+    "jurisdictions",
+    "activities"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `term_sheet_negotiation` | Négociation term sheet — Gapup agent-payable C-suite expertise (FUNDRAISING). Returns a structured, audited deliverable. Reference case: Agicap Série C €50M — 8 clauses analysées · 3 rouges · Score fondateur 62/100 → plan pour 81. Inputs are validated server-side — send the documented case fields. | `company, round, termSheetClauses` |
+
+`term_sheet_negotiation` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "round": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 50
+        },
+        "amountMEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "leadInvestor": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "preMoneyValuation": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "stage",
+        "amountMEur",
+        "leadInvestor"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "termSheetClauses": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "clause": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "currentText": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "clause",
+          "currentText"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 3,
+      "maxItems": 15
+    }
+  },
+  "required": [
+    "company",
+    "round",
+    "termSheetClauses"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `trade_finance_eligibility` | Evaluates trade finance eligibility for CFOs by analyzing counterparty risk and jurisdiction using World Bank and BIS data. Inputs include counterparty country code (ISO 3166-1 alpha-3) and industry sector. Returns risk scores, eligibility flags, and financing terms. Ideal for assessing letters of credit, export credit agency guarantees, and other trade finance instruments. Keywords: trade finance, counterparty risk, jurisdiction risk, letters of credit, ECA guarantees. | `counterpartyCountryCode, industrySector, annualTradeVolumeUSD, counterpartyCreditRating` |
+
+`trade_finance_eligibility` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "counterpartyCountryCode": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "maxLength": 20000
+    },
+    "industrySector": {
+      "type": "string",
+      "enum": [
+        "manufacturing",
+        "agriculture",
+        "energy",
+        "mining",
+        "services",
+        "technology"
+      ],
+      "maxLength": 20000
+    },
+    "annualTradeVolumeUSD": {
+      "type": "number",
+      "minimum": 100000
+    },
+    "counterpartyCreditRating": {
+      "type": "string",
+      "enum": [
+        "AAA",
+        "AA",
+        "A",
+        "BBB",
+        "BB",
+        "B",
+        "CCC",
+        "CC",
+        "C",
+        "D"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "counterpartyCountryCode",
+    "industrySector"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `transcribe_chapterize_media` | Transcription and chapterization of long-form media (YouTube, podcasts, direct audio/video) for content marketing teams, podcast publishers, edu tech, journalists and accessibility/compliance.
+
+Pipeline:
+• YouTube → timedtext captions (keyless) + oEmbed metadata + native timecode chapters from description
+• Podcast RSS → episode description + duration + timecodes if embedded in show notes
+• Direct media → partial (requires Whisper API via OPENAI_API_KEY + force_whisper:true)
+• Chapters: native YouTube timecodes preferred; heuristic TF-IDF segmentation as fallback
+• Summary: extractive TF-IDF top-sentences (no LLM required)
+• Language detection: character-set heuristic (CJK→zh, kana→ja, hangul→ko, accents→fr/de/es)
+
+Output formats: json (full structured object) | text (plain transcript) | srt | vtt
+
+SLA: ≤15s budget total. Cache: 24h TTL. | `url, lang, chapters_max, output_format, include_summary` |
+
+`transcribe_chapterize_media` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "string",
+      "description": "YouTube URL, podcast RSS feed URL, or direct MP3/MP4 URL. Example: \"https://www.youtube.com/watch?v=jNQXAC9IVRw\"",
+      "maxLength": 2048
+    },
+    "lang": {
+      "type": "string",
+      "maxLength": 10,
+      "description": "ISO 639-1 language hint (e.g. \"en\", \"fr\", \"de\"). Default \"auto\"."
+    },
+    "chapters_max": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 30,
+      "description": "Maximum number of chapters. Default 8."
+    },
+    "output_format": {
+      "type": "string",
+      "enum": [
+        "text",
+        "srt",
+        "vtt",
+        "json"
+      ],
+      "description": "Transcript format. Default \"json\".",
+      "maxLength": 20000
+    },
+    "include_summary": {
+      "type": "boolean",
+      "description": "Include extractive summary. Default true."
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `treasury_optimizer` | Optimiseur de trésorerie — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Reference case: Alan — Trésorerie €380M post-Série F · Allocation optimale 4 instruments · Yield +145bp · +€5.5M/an. Inputs are validated server-side — send the documented case fields. | `company, cashPosition, constraints, horizon` |
+
+`treasury_optimizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "stage": {
+          "type": "string",
+          "maxLength": 50
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "cashPosition": {
+      "type": "object",
+      "properties": {
+        "totalCashEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "operationalReserveMonths": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 24
+        },
+        "monthlyBurnEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 1,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "totalCashEur",
+        "operationalReserveMonths",
+        "monthlyBurnEur",
+        "currencies"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "maxLockupDays": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 365
+        },
+        "riskAppetite": {
+          "type": "string",
+          "enum": [
+            "very-conservative",
+            "conservative",
+            "moderate"
+          ],
+          "maxLength": 20000
+        },
+        "bankPartners": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          },
+          "minItems": 0,
+          "maxItems": 5
+        }
+      },
+      "required": [
+        "bankPartners"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "3mo",
+        "6mo",
+        "12mo"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "company",
+    "cashPosition",
+    "constraints"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `trend_watcher` | Monitor emerging trends, regulatory shifts and adoption signals for a given market sector. Returns 5-12 trend cards, each with a momentum score (rising/stable/declining), a 3-month and 12-month outlook, opportunity windows, and recommended actions. When to use this tool: the user asks what is heating up in a market, wants to time a product roadmap or content calendar, or needs an early read on a sector. Inputs: a sector to monitor and 3-8 keywords defining the watch perimeter. Delivered by Manue, the AI CMO of the Gapup portfolio. | `sector, keywords, focus` |
+
+`trend_watcher` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "sector": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 160,
+      "description": "Sector to monitor (e.g. 'B2B SaaS productivity', 'EU fintech', 'climate-tech hardware')"
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 2,
+        "maxLength": 60
+      },
+      "minItems": 3,
+      "maxItems": 8,
+      "description": "3-8 keywords describing the watch perimeter"
+    },
+    "focus": {
+      "type": "string",
+      "maxLength": 400,
+      "description": "Optional context (geography, language target, comparator window, etc.)"
+    }
+  },
+  "required": [
+    "sector",
+    "keywords"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `upsell_hunter` | Chasseur d'upsell — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Gapup Hub — Upsell 8 comptes · €127k potentiel · Top 3 : Alan+Qonto+Pennylane · Playbook 5 étapes. Inputs are validated server-side — send the documented case fields. | `company, product, accounts, targetUpsellEur, horizon` |
+
+`upsell_hunter` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "availableUpsells": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "minItems": 1,
+          "maxItems": 8
+        }
+      },
+      "required": [
+        "name",
+        "availableUpsells"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "accounts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 200
+          },
+          "currentArrEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "strategic",
+              "enterprise",
+              "mid-market",
+              "smb"
+            ],
+            "maxLength": 20000
+          },
+          "contractRenewalDays": {
+            "type": "number",
+            "minimum": 0
+          },
+          "usageRatePct": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "npsScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "activeUsers": {
+            "type": "number",
+            "minimum": 0
+          },
+          "maxContractUsers": {
+            "type": "number",
+            "minimum": 0
+          },
+          "lastEngagementDays": {
+            "type": "number",
+            "minimum": 0
+          },
+          "signals": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "minItems": 0,
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "currentArrEur",
+          "tier"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 2,
+      "maxItems": 20
+    },
+    "targetUpsellEur": {
+      "type": "number",
+      "minimum": 0
+    },
+    "horizon": {
+      "type": "string",
+      "enum": [
+        "30d",
+        "90d",
+        "180d"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "accounts"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `vendor_esg_blacklist_monitor` | As a COO, quickly check if a vendor is blacklisted for ESG non-compliance using CDP and GRI data. Input the vendor's legal name or identifier to receive their ESG risk score, blacklist status, and compliance violations. Returns structured data including CDP disclosure score, GRI alignment, and any regulatory flags. Ideal for vendor due diligence, risk assessment, and sustainability reporting. Keywords: ESG, vendor risk, compliance, CDP, GRI, sustainability, blacklist. | `vendorName, vendorId, year` |
+
+`vendor_esg_blacklist_monitor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "vendorName": {
+      "type": "string",
+      "description": "Legal name of the vendor to check",
+      "maxLength": 20000
+    },
+    "vendorId": {
+      "type": "string",
+      "description": "Optional identifier (e.g., LEI, DUNS)",
+      "maxLength": 20000
+    },
+    "year": {
+      "type": "number",
+      "description": "Reporting year (default: current year)",
+      "default": 2026
+    }
+  },
+  "required": [
+    "vendorName"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `vendor_esg_diversity_scanner` | For COOs: scans vendor ESG reports to identify suppliers lacking diversity disclosures in GRI or CDP filings. Input a supplier name or identifier to receive a structured assessment of gender, ethnicity, and board diversity metrics. Returns compliance gaps, missing data flags, and source references from CDP open data and GRI standards. Ideal for vendor risk assessment and ESG compliance tracking. | `supplierName, supplierId, year` |
+
+`vendor_esg_diversity_scanner` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "supplierName": {
+      "type": "string",
+      "description": "Exact or partial name of the supplier to scan",
+      "maxLength": 20000
+    },
+    "supplierId": {
+      "type": "string",
+      "description": "CDP or GRI identifier for the supplier (e.g., CDP company ID)",
+      "maxLength": 20000
+    },
+    "year": {
+      "type": "number",
+      "description": "Reporting year to check (default: current year)"
+    }
+  },
+  "required": [
+    "supplierName"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `vendor_management` | Gestion des fournisseurs — Gapup agent-payable C-suite expertise (COO). Returns a structured, audited deliverable. Reference case: Qonto (12 fournisseurs · €2.4M/an) — €290k économies identifiées · 4 renegociations prioritaires. Inputs are validated server-side — send the documented case fields. | `company, vendors, objectives` |
+
+`vendor_management` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "totalVendorSpendEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "totalVendorSpendEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "vendors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "category": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 60
+          },
+          "annualSpendEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "contractEndDate": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "satisfactionScore": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+          },
+          "criticalityLevel": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "important",
+              "standard"
+            ],
+            "maxLength": 20000
+          },
+          "singleSource": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "category",
+          "annualSpendEur",
+          "criticalityLevel"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 3,
+      "maxItems": 20
+    },
+    "objectives": {
+      "type": "object",
+      "properties": {
+        "targetSavingsPct": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "consolidationTarget": {
+          "type": "boolean"
+        },
+        "complianceFocus": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    }
+  },
+  "required": [
+    "company",
+    "vendors",
+    "objectives"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `vendor_risk_assessor` | Évaluateur de risque fournisseurs — Gapup agent-payable C-suite expertise (RISK). Returns a structured, audited deliverable. Reference case: Gapup Hub — 15 fournisseurs · €1.8M spend · 3 critiques · Heatmap + plan de remédiation. Inputs are validated server-side — send the documented case fields. | `company, vendors, riskFramework, assessmentPurpose` |
+
+`vendor_risk_assessor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "sector": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "isRegulated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "sector"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "vendors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "maxLength": 20
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "annualSpendEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "criticality": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "important",
+              "standard",
+              "low"
+            ],
+            "maxLength": 20000
+          },
+          "dataAccess": {
+            "type": "boolean"
+          },
+          "soc2": {
+            "type": "boolean"
+          },
+          "iso27001": {
+            "type": "boolean"
+          },
+          "contractExpiryMonths": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "knownIssues": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "category"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 3,
+      "maxItems": 50
+    },
+    "riskFramework": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "cyber",
+          "financial",
+          "operational",
+          "regulatory",
+          "esg",
+          "concentration"
+        ],
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "assessmentPurpose": {
+      "type": "string",
+      "enum": [
+        "annual-review",
+        "due-diligence",
+        "audit",
+        "board-report"
+      ],
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "company",
+    "vendors"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `vertical_ai_agent_governance` | Generates a comprehensive vertical AI agent workforce integration plan for CHROs, including governance frameworks, human-AI collaboration metrics, and upskilling recommendations. Inputs: industry vertical, workforce size, and current AI adoption level. Outputs: role-specific AI integration roadmaps, skill gap analysis, and performance benchmarks. Uses O*NET skill taxonomies and Gartner AI adoption trends. For best results with large datasets, pass async:true to avoid timeout. | `industry, workforce_size, ai_adoption_level, target_roles, include_benchmarks` |
+
+`vertical_ai_agent_governance` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "industry": {
+      "type": "string",
+      "enum": [
+        "healthcare",
+        "finance",
+        "manufacturing",
+        "retail",
+        "technology",
+        "education"
+      ],
+      "maxLength": 20000
+    },
+    "workforce_size": {
+      "type": "number",
+      "minimum": 10,
+      "maximum": 500000
+    },
+    "ai_adoption_level": {
+      "type": "string",
+      "enum": [
+        "exploratory",
+        "pilot",
+        "scaling",
+        "mature"
+      ],
+      "maxLength": 20000
+    },
+    "target_roles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "maxItems": 100
+    },
+    "include_benchmarks": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "industry",
+    "workforce_size"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `vuln_exploitability_forecast` | As a CTO, assess the exploitability risk of CVEs using EPSS scores and cloud asset exposure data. Input a CVE ID (e.g., CVE-2021-44228) to receive exploitability likelihood, affected cloud services, and threat intelligence context. Returns structured risk metrics for prioritization. Sources: CVE NVD, OpenCVE, GitHub Advisories. Pass async:true to avoid timeout. | `cveId, cloudProvider, includeDetails` |
+
+`vuln_exploitability_forecast` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "cveId": {
+      "type": "string",
+      "pattern": "^CVE-\\d{4}-\\d{4,}$",
+      "maxLength": 20000
+    },
+    "cloudProvider": {
+      "type": "string",
+      "enum": [
+        "aws",
+        "gcp",
+        "azure",
+        ""
+      ],
+      "maxLength": 20000
+    },
+    "includeDetails": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "cveId"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `vuln_patch_priority_engine` | As a CTO, quickly prioritize unpatched CVEs by combining exploitability scores (EPSS) with cloud asset criticality. Input a list of CVE IDs and your AWS service types (e.g., EC2, RDS) to receive a ranked patching order with risk scores and estimated cloud impact. Uses public NVD, OpenCVE, and AWS pricing data. Ideal for vulnerability management and cloud security posture improvement. | `cveIds, awsServices, maxResults` |
+
+`vuln_patch_priority_engine` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "cveIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "List of CVE identifiers to analyze (e.g., [\"CVE-2021-44228\", \"CVE-2023-3824\"])",
+      "maxItems": 100
+    },
+    "awsServices": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "AWS service types affected by these CVEs (e.g., [\"EC2\", \"RDS\", \"Lambda\"])",
+      "maxItems": 100
+    },
+    "maxResults": {
+      "type": "number",
+      "description": "Maximum number of prioritized CVEs to return (default: 10)",
+      "default": 10
+    }
+  },
+  "required": [
+    "cveIds"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `weather_climate_intel` | Physical climate intelligence for insurance underwriting, agritech, logistics, energy trading and ESG/climate risk disclosure. Three modes: (1) forecast — 14-day daily weather forecast with temperature, precipitation, wind and humidity; (2) historical — daily records and monthly aggregates for any date range since 1940, with anomaly detection (P90/P95 heat events, extreme precipitation days); (3) climate_risk — long-term physical risk scoring combining CMIP6 ensemble projections (2020-2050), altitude, FEMA flood zones (US) and historical baselines. Risk dimensions: flood, heat (days >35°C/year), drought (SPI), wildfire, sea-level. Overall score 0-100 (100 = severe). Location: city string or lat/lon coordinates. Sources: Open-Meteo (keyless, global, 1940→2050), Open-Elevation, FEMA NFHL (US), NOAA CDO (optional NOAA_API_KEY env var for US+global station data). SLA: ≤25s p95. Cache: 1h forecast / 24h historical / 7d climate_risk. | `location, mode, date_from, date_to, metrics` |
+
+`weather_climate_intel` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "location": {
+      "type": "object",
+      "description": "Geographic location. Provide either {city, country?} or {lat, lon}.",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "City name (e.g. 'Paris', 'Miami', 'Tokyo')",
+          "maxLength": 20000
+        },
+        "country": {
+          "type": "string",
+          "description": "Country name or ISO code (e.g. 'France', 'US', 'JP')",
+          "maxLength": 20000
+        },
+        "lat": {
+          "type": "number",
+          "description": "Latitude in decimal degrees"
+        },
+        "lon": {
+          "type": "number",
+          "description": "Longitude in decimal degrees"
+        }
+      },
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "forecast",
+        "historical",
+        "climate_risk"
+      ],
+      "description": "'forecast' (14 days), 'historical' (date range since 1940), 'climate_risk' (long-term physical risk score)",
+      "maxLength": 20000
+    },
+    "date_from": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — start of date range (required for historical/climate_risk)",
+      "maxLength": 20000
+    },
+    "date_to": {
+      "type": "string",
+      "description": "ISO date YYYY-MM-DD — end of date range (required for historical/climate_risk)",
+      "maxLength": 20000
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "temperature",
+          "precipitation",
+          "wind",
+          "humidity",
+          "solar"
+        ],
+        "maxLength": 20000
+      },
+      "description": "Weather metrics to include. Default: all metrics.",
+      "maxItems": 100
+    }
+  },
+  "required": [
+    "location",
+    "mode"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `web_search_multilang` | Multi-language, multi-source web search that goes beyond Anglo-centric results. Supports 15 languages (fr/de/es/it/pt/nl/ja/zh/ko/ar/ru/sv/pl/tr/en) with automatic detection. Aggregates results from Mojeek (independent search engine, multilang) and Wikipedia (native multilang API), with DDG and HN as English-language complements. Returns deduplicated results ranked by cross-engine consensus. Use when you need non-English search results, when DDG fails, or for geographically-biased queries. Phase 2 #7 of the geo/lang expansion plan. Note: Brave/Bing/Searx are blocked from DO IPs — configure AICI_RESEARCH_PROXY_URL for residential proxy. | `query, lang, country, max_results` |
+
+`web_search_multilang` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 400,
+      "description": "Search query in any language"
+    },
+    "lang": {
+      "type": "string",
+      "pattern": "^(fr|de|es|it|pt|nl|ja|zh|ko|ar|ru|sv|pl|tr|en)$",
+      "description": "2-letter language code. If omitted, auto-detected from query characters and lexical markers.",
+      "maxLength": 20000
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO-3166-1 alpha-2 country code for geographic bias (e.g. FR, DE, JP, BR). Optional.",
+      "maxLength": 20000
+    },
+    "max_results": {
+      "type": "integer",
+      "minimum": 5,
+      "maximum": 20,
+      "description": "Maximum number of results to return (default 10)."
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `win_loss_decoder` | Analyse Win/Loss deals — Gapup agent-payable C-suite expertise (CRO). Returns a structured, audited deliverable. Reference case: Gapup Hub — Win/Loss 32 deals Q1 2026 · Win rate 41% → 68% potentiel · Playbook 8 actions CRO. Inputs are validated server-side — send the documented case fields. | `company, product, deals, primaryChallenge, topCompetitors, salesCycleTargetDays` |
+
+`win_loss_decoder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "serie-a",
+            "serie-b",
+            "serie-c",
+            "serie-d-plus",
+            "profitable-sme",
+            "enterprise"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "product": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "category": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "avgContractValueEur": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "category",
+        "avgContractValueEur"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "deals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          },
+          "outcome": {
+            "type": "string",
+            "enum": [
+              "won",
+              "lost",
+              "ghosted",
+              "no-decision"
+            ],
+            "maxLength": 20000
+          },
+          "dealValueEur": {
+            "type": "number",
+            "minimum": 0
+          },
+          "durationDays": {
+            "type": "number",
+            "minimum": 1
+          },
+          "lostReason": {
+            "type": "string",
+            "maxLength": 300
+          },
+          "competitor": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "id",
+          "outcome",
+          "dealValueEur",
+          "durationDays"
+        ],
+        "additionalProperties": false,
+        "maxProperties": 100
+      },
+      "minItems": 3,
+      "maxItems": 50
+    },
+    "primaryChallenge": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 400
+    },
+    "topCompetitors": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "minItems": 0,
+      "maxItems": 5
+    },
+    "salesCycleTargetDays": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 730
+    }
+  },
+  "required": [
+    "company",
+    "product",
+    "deals"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `working_capital` | Optimiseur du BFR — Gapup agent-payable C-suite expertise (CFO). Returns a structured, audited deliverable. Reference case: Agicap — BFR optimisation · DSO 52→38j · Cash libéré +€2.8M · 3 quick wins immédiats. Inputs are validated server-side — send the documented case fields. | `company, financials, challenges, topCustomers, topSuppliers, industry` |
+
+`working_capital` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "company": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 200
+        },
+        "sector": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "pre-seed",
+            "seed",
+            "serie-a",
+            "serie-b",
+            "serie-c",
+            "serie-d-plus",
+            "profitable-sme",
+            "enterprise"
+          ],
+          "maxLength": 20000
+        }
+      },
+      "required": [
+        "name",
+        "sector",
+        "stage"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "financials": {
+      "type": "object",
+      "properties": {
+        "annualRevenueEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currentCashEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "accountsReceivableEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "accountsPayableEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "inventoryEur": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currentDsoDays": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currentDpoDays": {
+          "type": "number",
+          "minimum": 0
+        },
+        "currentDioDays": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "annualRevenueEur",
+        "currentCashEur",
+        "accountsReceivableEur",
+        "accountsPayableEur",
+        "currentDsoDays",
+        "currentDpoDays"
+      ],
+      "additionalProperties": false,
+      "maxProperties": 100
+    },
+    "challenges": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 300
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "topCustomers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "minItems": 0,
+      "maxItems": 5
+    },
+    "topSuppliers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "minItems": 0,
+      "maxItems": 5
+    },
+    "industry": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 100
+    }
+  },
+  "required": [
+    "company",
+    "financials",
+    "challenges"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `working_capital_esg_impact_rater` | As a CFO, assess how ESG factors (Environmental, Social, Governance) influence working capital efficiency using IMF SDR and BIS data. Inputs include company sector, geographic exposure, and ESG risk scores. Outputs provide a quantitative impact rating on working capital metrics like days sales outstanding (DSO) and inventory turnover, alongside IMF SDR-aligned liquidity risk indicators. | `sector, region, esgRiskScore, workingCapitalRatio, currency` |
+
+`working_capital_esg_impact_rater` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "sector": {
+      "type": "string",
+      "description": "Industry sector (e.g., 'manufacturing', 'energy')",
+      "maxLength": 20000
+    },
+    "region": {
+      "type": "string",
+      "description": "Primary geographic exposure (e.g., 'EU', 'APAC')",
+      "maxLength": 20000
+    },
+    "esgRiskScore": {
+      "type": "number",
+      "description": "Aggregate ESG risk score (0-100)"
+    },
+    "workingCapitalRatio": {
+      "type": "number",
+      "description": "Current working capital ratio (current assets / current liabilities)"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Reporting currency (ISO 4217 code, e.g., 'USD', 'EUR')",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "sector",
+    "region",
+    "esgRiskScore"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+| `working_capital_fx_hedge_optimizer` | For CFOs managing multinational working capital, this tool analyzes real-time ECB and FRED foreign exchange rates to recommend optimal hedging strategies. Input base currency, target currencies, and working capital amounts to receive forward contract suggestions, natural hedge opportunities, and cost-benefit analysis of various hedging instruments (forwards, options, swaps). Outputs include hedge ratios, estimated cost savings, and risk reduction metrics. | `baseCurrency, targetCurrencies, workingCapitalAmounts, timeHorizonDays, riskAppetite` |
+
+`working_capital_fx_hedge_optimizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "baseCurrency": {
+      "type": "string",
+      "description": "ISO 4217 code of the company's functional currency (e.g., 'USD', 'EUR')",
+      "maxLength": 20000
+    },
+    "targetCurrencies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 20000
+      },
+      "description": "ISO 4217 codes of currencies to hedge against (e.g., ['EUR', 'GBP', 'JPY'])",
+      "maxItems": 100
+    },
+    "workingCapitalAmounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Working capital amounts in each target currency (e.g., { EUR: 5000000, GBP: 3000000 })",
+      "properties": {},
+      "maxProperties": 100
+    },
+    "timeHorizonDays": {
+      "type": "number",
+      "description": "Planning horizon in days (default: 90)",
+      "default": 90
+    },
+    "riskAppetite": {
+      "type": "string",
+      "enum": [
+        "conservative",
+        "balanced",
+        "aggressive"
+      ],
+      "description": "Company's risk tolerance for currency fluctuations",
+      "default": "balanced",
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "baseCurrency",
+    "targetCurrencies",
+    "workingCapitalAmounts"
+  ],
+  "additionalProperties": false,
+  "maxProperties": 100
+}
+```
+
+最近一次受控只读工具快照：
+
+```json
+{
+  "schema_version": "gapup-mcp-readonly-snapshot-v1",
+  "official_repository": "getgapup/gapup-mcp-public",
+  "official_endpoint": "https://mcp.gapup.io/mcp",
+  "official_tool_count": 271,
+  "allowed_tool_count": 208,
+  "blocked_tool_count": 63,
+  "allowed_tool_names": [
+    "abm_architect",
+    "abm_lookalike_account_finder",
+    "account_expansion_mapper",
+    "action_plan_esg",
+    "africa_trade_barrier_breaker",
+    "africa_trade_finance_esg_rater",
+    "africa_trade_preference_arbitrage",
+    "africa_trade_preference_optimizer",
+    "agoa_eba_intelligence",
+    "ai_act_incident_response",
+    "ai_act_sandbox_regulatory_sandbox",
+    "ai_act_training_data_audit",
+    "ai_governance_pilot",
+    "arbitration_awards_lookup",
+    "audit_pre_flight",
+    "banking_fee_negotiator",
+    "battle_cards_live",
+    "battle_plan",
+    "bond_covenant_esg_compliance_checker",
+    "bond_covenant_monitor",
+    "bp_narratif",
+    "brand_builder",
+    "brand_equity_voice_share_calculator",
+    "budget_variance_ai",
+    "cap_table_strategist",
+    "capacity_planning",
+    "capital_strategy",
+    "carbon_footprint_calculator",
+    "carbon_roadmap",
+    "champion_mapping",
+    "change_failure_root_cause_classifier",
+    "china_ecommerce_intel",
+    "china_market_data",
+    "churn_defender",
+    "climate_scenario_rcp",
+    "cloud_cost_ri_optimizer",
+    "code_review_depth_optimizer",
+    "competitive_deep_dive",
+    "competitor_intel",
+    "competitor_moves",
+    "competitor_pricing_radar",
+    "competitor_pricing_scrape",
+    "competitor_profiles",
+    "competitor_recommendations",
+    "content_audience_profile",
+    "content_catalog",
+    "content_compare",
+    "content_discovery",
+    "content_engine",
+    "content_enrichment",
+    "content_evergreen_score_analyzer",
+    "content_provenance",
+    "content_ranking",
+    "content_similar",
+    "content_taxonomy",
+    "corporate_registry_lookup",
+    "court_filings_multi",
+    "cross_sell_reco",
+    "customer_marketing",
+    "customer_voice_synth",
+    "cve_security_lookup",
+    "cyber_risk_auditor",
+    "deal_coach",
+    "deal_structurer",
+    "dependency_vulnerability_scan",
+    "discovery_prep",
+    "domain_tech_fingerprint",
+    "dora_metrics_deep_dive",
+    "dora_operational_resilience_stress_tes",
+    "dual_use_export_risk_mapper",
+    "dual_use_tech_diversion_monitor",
+    "earnings_reviewer",
+    "earnings_transcript_signals",
+    "economic_indicator",
+    "esg_audit_multi",
+    "esrs_narrative_builder",
+    "event_marketing",
+    "financial_model_3statement",
+    "ftg_business_ideas",
+    "ftg_business_plan",
+    "ftg_country_regulations",
+    "ftg_country_study",
+    "ftg_investor_directory",
+    "ftg_market_gap",
+    "ftg_opportunity_scout",
+    "ftg_production_economics",
+    "ftg_production_methods",
+    "ftg_seller_catalog",
+    "ftg_sourcing_buyers",
+    "funding_hunter",
+    "fx_rate",
+    "geo_logistics_intel",
+    "geographic_expansion",
+    "gl_reconciler",
+    "gov_procurement_multi",
+    "growth_path_architect",
+    "historical_price_series",
+    "india_market_data",
+    "industry_classifier_naics_sic",
+    "infra_blueprint_designer",
+    "insurance_coverage_analyzer",
+    "interest_rate",
+    "internal_communication",
+    "investor_list",
+    "investor_shortlist",
+    "ip_protection_pilot",
+    "job_postings_intelligence",
+    "knowledge_base_auto",
+    "labor_law_alert_geo",
+    "lead_magnets",
+    "lnd_ai_skill_forecast",
+    "lnd_skill_taxonomy_builder",
+    "logistics_esg_incident_tracker",
+    "ma_arbitrage_hunter",
+    "ma_deal_screener",
+    "ma_tax_efficiency_mapper",
+    "manufacturing_esg_compliance_mapper",
+    "manufacturing_waste_heatmap",
+    "margin_doctor",
+    "margin_doctor_finance",
+    "market_entry_strategist",
+    "market_research_brief",
+    "market_sizing",
+    "marketing_roi_dashboard",
+    "meddic_scoring",
+    "monte_carlo_portfolio",
+    "mttr_breakdown_analyzer",
+    "nis2_supply_chain_dependency_map",
+    "observability_log_pattern_miner",
+    "observability_metric_anomaly_detector",
+    "operational_dashboards",
+    "oss_dependency_velocity_tracker",
+    "ossf_scorecard_trend_analyzer",
+    "outbound_sequencer",
+    "paid_ads_optimizer",
+    "partnership_synergies",
+    "patent_landscape",
+    "patent_ownership_audit",
+    "payment_rails_cost_analyzer",
+    "pitch_deck_storyline",
+    "positioning_strategist",
+    "press_influencer",
+    "pricing_in_deal",
+    "pricing_strategist",
+    "privacy_compliance_audit",
+    "process_mapping",
+    "process_mining",
+    "procurement_okr_esg_aligner",
+    "procurement_six_sigma_waste_hunter",
+    "procurement_spend_optim",
+    "programmatic_attribution_calibrator",
+    "programmatic_brand_safety_auditor",
+    "proposal_generator",
+    "qa_pre_flight",
+    "qbr_auto",
+    "re_deal_screener",
+    "real_estate_intel",
+    "renewal_optimizer",
+    "repo_rate_arbitrage_scanner",
+    "reputation_engine",
+    "research_paper_qa",
+    "retail_media_attribution_bridge",
+    "retail_media_esg_compliance",
+    "revops_architect",
+    "rfp_tender_architect",
+    "rse_policy_builder",
+    "sales_enablement_architect",
+    "sales_pipeline_forecast",
+    "save_plays",
+    "sci_literature_search",
+    "sec_filing_decoder",
+    "sentiment_news_pulse",
+    "seo_cro_audit",
+    "seo_keyword_research",
+    "sharia_compliance_screener",
+    "social_engagement_velocity_tracker",
+    "sovereign_data_breach_impact",
+    "sre_slo_breach_predictor",
+    "strategic_options_analyzer",
+    "supplier_esg_audit",
+    "supply_chain_fx_exposure_dashboard",
+    "sustainability_report",
+    "sustainability_reporting_pilot",
+    "syndicated_loan_covenant_breach_alert",
+    "syndicated_loan_pricing_benchmark",
+    "tariff_arbitrage_finder",
+    "tariff_impact_simulator",
+    "tax_compliance_multi",
+    "tax_optimization",
+    "term_sheet_negotiation",
+    "trade_finance_eligibility",
+    "transcribe_chapterize_media",
+    "treasury_optimizer",
+    "trend_watcher",
+    "upsell_hunter",
+    "vendor_esg_blacklist_monitor",
+    "vendor_esg_diversity_scanner",
+    "vendor_management",
+    "vendor_risk_assessor",
+    "vertical_ai_agent_governance",
+    "vuln_exploitability_forecast",
+    "vuln_patch_priority_engine",
+    "weather_climate_intel",
+    "web_search_multilang",
+    "win_loss_decoder",
+    "working_capital",
+    "working_capital_esg_impact_rater",
+    "working_capital_fx_hedge_optimizer"
+  ],
+  "blocked_tools": [
+    {
+      "name": "adversarial_input_stress_tester",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "affiliate_fraud_clickstream_detector",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "ai_governance_full_report_async",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "ai_governance_full_report_result",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "anti_demissions_hr",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "attack_surface_monitor",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "bias_amplification_tracker",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "candidate_screening_ranking",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "clinical_evidence_briefer",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "clinical_pharma_intel",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "comp_benchmark_geo_delta",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "comp_plan_architect",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "competitive_deep_dive_async",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "competitive_deep_dive_result",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "contract_risk_scanner",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "crm_connector",
+      "reason": "official readOnlyHint=false"
+    },
+    {
+      "name": "crypto_wallet_intel",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "diversity_inclusion_metrics",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "dpdp_consent_artifact_generator",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "email_domain_health_check",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "enps_auto",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "executive_comp_peer_benchmark",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "fraud_detector",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "global_salary_inflation_adjuster",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "hallucination_confidence_meter",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "hr_benefits_esg_aligner",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "incident_response_evidence_collector",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "ip_contract_clause_extractor",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "ip_employee_invention_tracker",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "jailbreak_attempt_detector",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "job_result",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "kyc_screener",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "kyc_screener_batch",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "kyc_screener_batch_result",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "ld_architect",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "legal_clause_extractor",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "lgpd_data_subject_rights_automator",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "model_behavior_drift_monitor",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "model_safety_certification_checker",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "onboarding_salaries",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "patent_landscape_async",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "patent_landscape_result",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "pentest_scope_estimator",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "realtime_data_streams",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "recruiting_architect",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "sabbatical_policy_comparator",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "safety_guardrail_breach_analyzer",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "safety_violation_incident_logger",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "sanctions_screener_multi",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "social_influencer_fake_follower_detector",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "talent_contract_risk_mapper",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "talent_intelligence",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "talent_legal_dashboard",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "talent_litigation_exposure",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "talent_poaching_risk",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "tool_recommend",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "ugc_moderation_classifier",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "usdc_x402_payments_intel",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "webhooks_manage",
+      "reason": "official readOnlyHint=false"
+    },
+    {
+      "name": "workflow_orchestrator",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "x402_liquidity_monitor",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "x402_payment_flow_analyzer",
+      "reason": "local maximum-safe-readonly policy"
+    },
+    {
+      "name": "x402_payment_fraud_detector",
+      "reason": "local maximum-safe-readonly policy"
+    }
+  ],
+  "official_tools_sha256": "856a7502c9d5d554447fadf2bf607218b6cfc867f0e3efef386b96b60c2b3ef0",
+  "secret_values_exposed": false
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_request_bytes": 1000000,
+  "max_response_bytes": 20000000,
+  "fixed_api_host": "mcp.gapup.io",
+  "official_tool_count": 271,
+  "fixed_mcp_tool_count": 208,
+  "blocked_tool_count": 63,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 1,
+  "arbitrary_jsonrpc_methods_allowed": false,
+  "arbitrary_mcp_tool_names_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "async_jobs_allowed": false,
+  "job_polling_allowed": false,
+  "webhooks_allowed": false,
+  "background_monitoring_allowed": false,
+  "automatic_x402_payment_allowed": false,
+  "wallet_or_payment_credentials_allowed": false,
+  "write_operations_allowed": false,
+  "trading_or_order_execution_allowed": false,
+  "personal_data_allowed": false,
+  "confidential_data_allowed": false,
+  "public_https_url_inputs_allowed": true,
+  "private_network_url_inputs_allowed": false,
+  "secret_values_exposed": false,
+  "upstream_may_use_llm": true,
+  "upstream_calls_are_billable_or_quota_counted": true,
+  "free_tier_calls_per_month_documented": 100
 }
 ```
 

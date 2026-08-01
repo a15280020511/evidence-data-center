@@ -1,10 +1,10 @@
-# 独立外部 API 接入中心
+# 独立情报中心
 
-API 接入中心是三个业务中心中的受控取数层。它与专家研判中心、计算推演中心不共享依赖、任务状态、运行目录或业务逻辑，也不能直接调用它们。自定义 GPTs 是唯一使用中心和唯一跨中心中继；普通网页 GPT + GitHub 插件是维修中心。
+情报中心是三个业务中心中的受控取数层。它与专家研判中心、计算推演中心不共享依赖、任务状态、运行目录或业务逻辑，也不能直接调用它们。自定义 GPTs 是唯一使用中心和唯一跨中心中继；普通网页 GPT + GitHub 插件是维修中心。
 
 ## 最大安全只读策略
 
-API 中心执行 `maximum-safe-readonly`：在固定官方后端、固定只读能力、参数白名单、请求与响应上限、Secret 隔离和证据回执不变的前提下，最大化暴露已接入上游的高价值公共数据能力。
+情报中心执行 `maximum-safe-readonly`：在固定官方后端、固定只读能力、参数白名单、请求与响应上限、Secret 隔离和证据回执不变的前提下，最大化暴露已接入上游的高价值公共数据能力。
 
 统一能力规模不在本文硬编码，以以下确定性生成文件为准：
 
@@ -129,7 +129,7 @@ TUSHARE_API_TOKEN
 EODHD_API_TOKEN
 ```
 
-开放 25 项只读操作，覆盖全球交易所和证券目录、历史与实时行情、基本面、公司行动、技术指标、新闻情绪、股票筛选、企业日历、宏观事件以及交易时段和节假日。上游套餐决定实际数据范围与额度；API 中心不开放 WebSocket、交易、下单、账户操作、任意 URL 或任意请求头。
+开放 25 项只读操作，覆盖全球交易所和证券目录、历史与实时行情、基本面、公司行动、技术指标、新闻情绪、股票筛选、企业日历、宏观事件以及交易时段和节假日。上游套餐决定实际数据范围与额度；情报中心不开放 WebSocket、交易、下单、账户操作、任意 URL 或任意请求头。
 
 ## Alpha Vantage 全球金融与宏观数据
 
@@ -231,6 +231,20 @@ LlamaParse 仅接受固定白名单公共文档来源，当前包括 GitHub 原�
 
 解析操作使用官方 Parse v2 创建一次受限作业，再在同一票据中有限轮询；支持 `fast`、`cost_effective`、`agentic`、`agentic_plus` 四个固定 tier，最多 200 页，轮询最长 600 秒。输出会移除 Authorization、密钥以及 `presigned_url`、`download_url`、`signed_url` 等临时下载地址。
 
+## Gapup MCP 公共商业情报
+
+`api-center/gapup-mcp/` 固定访问Gapup官方MCP：
+
+```text
+[intel-gapup]
+POST https://mcp.gapup.io/mcp
+Repository Secret: GAPUP_API_KEY
+```
+
+官方 `tools/list` 实测返回271项工具。情报中心固化开放209项操作（1项本地目录、208项上游只读工具），覆盖公共商业、竞争、市场、贸易、公司、宏观、科研、专利、房地产、天气气候、内容数据与ESG情报。63项CRM写入、Webhook、异步批处理、个人KYC/HR、主动攻击面、钱包与x402支付、医疗个案、敏感合同和自动编排能力被明确阻断。
+
+每张票据只执行一次固定 `tools/call`；强制同步模式；遇到HTTP 402只返回失败，不自动支付；仅允许公开、非个人、非机密数据和公开HTTPS URL。
+
 ## 正式数据任务
 
 普通连接器创建标题以 `[api]` 开头的 Issue；托管提供方使用各自固定前缀。GitHub Actions 将执行：
@@ -250,7 +264,7 @@ LlamaParse 仅接受固定白名单公共文档来源，当前包括 GitHub 原�
 
 ## 安全边界
 
-API 中心拒绝：
+情报中心拒绝：
 
 - 明文密钥或客户端覆盖后端凭据；
 - 未启用连接器或未登记的托管操作；
@@ -266,10 +280,10 @@ API 中心拒绝：
 
 ## 与其他中心的关系
 
-API 中心不能直接调用计算推演中心或专家研判中心。允许的业务协作是：
+情报中心不能直接调用计算推演中心或专家研判中心。允许的业务协作是：
 
 ```text
-API 中心产生 Snapshot
+情报中心产生 Snapshot
 → GPTs 读取正文、Manifest 和 SHA
 → GPTs 按任务需要选择计算或专家中心
 → GPTs 创建新的正式票据
@@ -340,6 +354,7 @@ BROWSERLESS_TOKEN
 ```text
 Ticket prefix: [api-agent-toolbelt]
 Repository Secret: AGENT_TOOLBELT_KEY
+GAPUP_API_KEY
 Fixed origin: https://www.agenttoolbelt.live
 ```
 

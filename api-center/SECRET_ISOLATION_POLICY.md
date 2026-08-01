@@ -47,9 +47,19 @@ Xweather 的公开 Client ID 作为 GitHub Repository Variable `XWEATHER_CLIENT_
 
 ```text
 Repository Secret: AGENT_TOOLBELT_KEY
+GAPUP_API_KEY
 ```
 
 The key is injected only into the dedicated Agent Toolbelt GitHub Actions job
 as a Bearer token. It is never accepted from tickets, written to the unified
 catalog, printed in comments, or persisted in artifacts. Failure messages are
 redacted before diagnostics are written.
+
+
+## Gapup MCP
+
+```text
+Repository Secret: GAPUP_API_KEY
+```
+
+该Key只允许作为 `x-api-key` 请求头发送至 `https://mcp.gapup.io/mcp`。客户端不得提交或覆盖Key。情报中心不保存钱包、不生成x402付款证明、不自动支付，也不把Key、Authorization或支付信息写入Issue、日志、目录或Artifact。

@@ -17,7 +17,7 @@ center
 → manifest and SHA-256
 ```
 
-本契约不引入共享运行时依赖。专家团、计算和 API 中心分别生成自己的诊断文件，只共享字段语义。
+本契约不引入共享运行时依赖。专家团、计算和 情报中心分别生成自己的诊断文件，只共享字段语义。
 
 ## 通用字段
 
@@ -62,7 +62,7 @@ center
 
 计算诊断不再把 Manifest 写成长期 `PENDING`。`write_manifest=DEFERRED_TO_DELIVERY_STAGE` 表示 Manifest 由控制台捕获之后的独立交付步骤生成；最终是否成功以 Workflow Step 和 `artifact-manifest.json` 为准。这样避免诊断文件和 Manifest 相互哈希造成循环依赖。
 
-## API 接入中心
+## 情报中心
 
 ### 正式 `[api]` 任务
 
@@ -81,7 +81,7 @@ center
 
 `API_COMPLETED`、`API_PARTIAL`、`API_BLOCKED`、`API_FAILED` 是业务状态。HTTP 200 或 Workflow success 不能单独替代业务成功。
 
-### API中心验证任务
+### 情报中心验证任务
 
 权威文件：
 

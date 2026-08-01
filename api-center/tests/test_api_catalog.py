@@ -44,6 +44,7 @@ EXPECTED_OPERATION_COUNTS = {
     "oecd": 6,
     "alphafeed": 10,
     "agent-toolbelt": 21,
+    "gapup-mcp": 209,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -68,15 +69,17 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 30)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 30)
-        self.assertEqual(catalog["managed_operation_count"], 360)
+        self.assertEqual(catalog["managed_provider_count"], 31)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 31)
+        self.assertEqual(catalog["managed_operation_count"], 569)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
         self.assertEqual(catalog["maintenance_owner"], "web-gpt-github-plugin")
         self.assertEqual(catalog["schema_version"], "api-catalog-v3")
+        self.assertEqual(catalog["center_display_name_zh"], "情报中心")
+        self.assertEqual(catalog["center_display_name_en"], "Intelligence Center")
 
         providers = {
             row["provider_id"]: row for row in catalog["managed_providers"]
@@ -111,6 +114,7 @@ class ApiCatalogTests(unittest.TestCase):
             "alpha-vantage": "ALPHA_VANTAGE_API_KEY",
             "alphafeed": "ALPHAFEED_API_KEY",
             "agent-toolbelt": "AGENT_TOOLBELT_KEY",
+            "gapup-mcp": "GAPUP_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -252,6 +256,18 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(
             agent_toolbelt["limits"]["trading_or_order_execution_allowed"]
         )
+
+        gapup = providers["gapup-mcp"]
+        gapup_ids = {row["operation_id"] for row in gapup["operations"]}
+        self.assertEqual(gapup["ticket_prefix"], "[intel-gapup]")
+        self.assertEqual(gapup["required_secret_environment_variable_name"], "GAPUP_API_KEY")
+        self.assertEqual(len(gapup_ids), 209)
+        self.assertEqual(gapup["limits"]["fixed_mcp_tool_count"], 208)
+        self.assertFalse(gapup["limits"]["automatic_x402_payment_allowed"])
+        self.assertFalse(gapup["limits"]["async_jobs_allowed"])
+        self.assertFalse(gapup["limits"]["write_operations_allowed"])
+        self.assertNotIn("crm_connector", gapup_ids)
+        self.assertNotIn("webhooks_manage", gapup_ids)
 
         self.assertEqual(
             providers["tushare"]["ticket_prefix"],

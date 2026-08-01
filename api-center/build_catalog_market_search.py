@@ -28,6 +28,7 @@ ALPHA_VANTAGE_CATALOG = HERE / "alpha-vantage/provider-catalog.json"
 OVERTURE_MAPS_CATALOG = HERE / "overture-maps/provider-catalog.json"
 OECD_CATALOG = HERE / "oecd/provider-catalog.json"
 ALPHAFEED_CATALOG = HERE / "alphafeed/provider-catalog.json"
+GAPUP_MCP_CATALOG = HERE / "gapup-mcp/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -44,6 +45,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "overture-maps": 7,
     "oecd": 6,
     "alphafeed": 10,
+    "gapup-mcp": 209,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -62,6 +64,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     OVERTURE_MAPS_CATALOG,
     OECD_CATALOG,
     ALPHAFEED_CATALOG,
+    GAPUP_MCP_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -96,6 +99,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "overture-maps/provider-catalog.json",
         "oecd/provider-catalog.json",
         "alphafeed/provider-catalog.json",
+        "gapup-mcp/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:

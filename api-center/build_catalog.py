@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the deterministic maximum-safe API-center capability catalog.
+"""Generate the deterministic maximum-safe Intelligence Center capability catalog.
 
 The catalog embeds every repository-declared read-only request/response contract
 and every managed-provider operation schema. Credential names may be shown;
@@ -300,6 +300,9 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
     operation_count = sum(row["operation_count"] for row in managed_rows)
     catalog = {
         "schema_version": "api-catalog-v3",
+        "center_display_name_zh": "情报中心",
+        "center_display_name_en": "Intelligence Center",
+        "technical_compatibility_path": "api-center/",
         "exposure_mode": "maximum-safe-readonly",
         "generation": "deterministic-from-repository-state",
         "source_manifest_file": "connector-manifest.json",
@@ -363,7 +366,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
 
 def render_markdown(catalog: Mapping[str, Any]) -> str:
     lines = [
-        "# API 中心能力目录",
+        "# 情报中心能力目录",
         "",
         f"- 开放模式：`{catalog['exposure_mode']}`",
         f"- 普通连接器：`{catalog['enabled_connector_count']}/{catalog['connector_count']}` 已启用",
