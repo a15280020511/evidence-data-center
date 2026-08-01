@@ -50,6 +50,7 @@ EXPECTED_OPERATION_COUNTS = {
     "internet-archive": 6,
     "marketstack": 11,
     "nasa": 25,
+    "metno-geosatellite": 4,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -74,9 +75,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 36)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 36)
-        self.assertEqual(catalog["managed_operation_count"], 409)
+        self.assertEqual(catalog["managed_provider_count"], 37)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 37)
+        self.assertEqual(catalog["managed_operation_count"], 413)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
