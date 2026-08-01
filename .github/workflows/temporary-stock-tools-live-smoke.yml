@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
   group: temporary-stock-tools-live-smoke
@@ -47,7 +48,6 @@ jobs:
           import importlib.util
           import json
           import os
-          import re
           from pathlib import Path
           from typing import Any
 
@@ -73,7 +73,7 @@ jobs:
           )
 
           alpha_ticket = {
-              "task_id": "alphafeed-stock-live-20260802-0212",
+              "task_id": "alphafeed-stock-live-20260802-0213",
               "provider": "alphafeed",
               "operation": "quotes",
               "objective": "Verify current real A-share quote connectivity for Yonghui Superstores and Kweichow Moutai.",
@@ -169,7 +169,7 @@ jobs:
 
           gapup_parameters = sample(schema, "parameters")
           gapup_ticket = {
-              "task_id": "gapup-china-market-live-20260802-0212",
+              "task_id": "gapup-china-market-live-20260802-0213",
               "provider": "gapup-mcp",
               "operation": "china_market_data",
               "objective": "Verify authenticated Gapup China market data capability using public Yonghui Superstores information.",
@@ -227,9 +227,55 @@ jobs:
           PY
 
       - name: Upload secretless live evidence
+        id: upload
+        if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: stock-tools-live-smoke-${{ github.run_id }}
           path: stock-tools-live-artifacts/
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
+
+      - name: Publish secretless result to PR
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          root = Path("stock-tools-live-artifacts")
+          def read_diag(provider):
+              path = root / provider / "diagnostics.json"
+              return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+          alpha = read_diag("alphafeed")
+          gapup = read_diag("gapup")
+          summary_path = root / "summary.json"
+          passed = summary_path.exists()
+          artifact = os.getenv("ARTIFACT_URL") or "not available"
+          def failure(diag):
+              item = diag.get("failure") or {}
+              if not isinstance(item, dict):
+                  return "unknown"
+              return str(item.get("code") or item.get("type") or item.get("message") or "unknown")[:300]
+
+          lines = [
+              "## AlphaFeed 与 Gapup MCP 实时复测",
+              "",
+              f"- Run: `{os.getenv('GITHUB_RUN_ID')}`",
+              f"- Artifact: {artifact}",
+              f"- Overall: `{'PASS' if passed else 'FAIL'}`",
+              "",
+              f"- AlphaFeed: `{alpha.get('status', 'NOT_RUN')}`; upstream_called=`{alpha.get('metadata', {}).get('upstream_called')}`; failure=`{failure(alpha) if alpha.get('failure') else 'none'}`",
+              f"- Gapup MCP china_market_data: `{gapup.get('status', 'NOT_RUN')}`; upstream_called=`{gapup.get('metadata', {}).get('upstream_called')}`; HTTP=`{gapup.get('metadata', {}).get('http_status')}`; failure=`{failure(gapup) if gapup.get('failure') else 'none'}`",
+              "- Automatic x402 payment: prohibited",
+              "- Credential values in Artifact: prohibited and scanned",
+          ]
+          Path("stock-tools-comment.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/311/comments" -F body=@stock-tools-comment.md
