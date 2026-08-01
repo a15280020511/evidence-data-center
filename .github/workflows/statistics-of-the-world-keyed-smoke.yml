@@ -1,6 +1,10 @@
 name: Statistics of the World Keyed Smoke
 
 on:
+  pull_request:
+    paths:
+      - ".github/workflows/statistics-of-the-world-keyed-smoke.yml"
+      - ".github/statistics-of-the-world-keyed-smoke.once"
   push:
     branches:
       - feat/add-overture-oecd-alphafeed
