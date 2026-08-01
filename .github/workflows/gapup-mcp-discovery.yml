@@ -1,4 +1,4 @@
-name: Discover Gapup MCP Catalog
+name: Integrate Gapup MCP Into Intelligence Center
 
 on:
   pull_request:
@@ -7,19 +7,21 @@ on:
     paths:
       - ".github/workflows/gapup-mcp-discovery.yml"
       - ".github/gapup-mcp-discovery-trigger.txt"
+      - ".github/scripts/integrate_gapup_mcp.py"
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  discover:
+  integrate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          persist-credentials: false
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
@@ -43,7 +45,7 @@ jobs:
               headers={
                   "Content-Type": "application/json",
                   "Accept": "application/json, text/event-stream",
-                  "User-Agent": "intelligence-center-gapup-discovery/1",
+                  "User-Agent": "intelligence-center-gapup-integration/1",
               },
           )
           with urllib.request.urlopen(request, timeout=45) as response:
@@ -72,8 +74,8 @@ jobs:
               parsed = json.loads(text)
 
           tools = parsed.get("result", {}).get("tools")
-          if not isinstance(tools, list) or not tools:
-              raise SystemExit(f"invalid tools/list payload: {str(parsed)[:1000]}")
+          if not isinstance(tools, list) or len(tools) != 271:
+              raise SystemExit(f"expected 271 tools, received {len(tools or [])}")
           names = [str(row.get("name") or "") for row in tools]
           if any(not name for name in names) or len(names) != len(set(names)):
               raise SystemExit("empty or duplicate Gapup tool names")
@@ -92,20 +94,6 @@ jobs:
               json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8",
           )
-          summary = {
-              "tool_count": len(tools),
-              "read_only_hint_true": sum(
-                  1 for row in tools if row.get("annotations", {}).get("readOnlyHint") is True
-              ),
-              "open_world_hint_true": sum(
-                  1 for row in tools if row.get("annotations", {}).get("openWorldHint") is True
-              ),
-              "names": sorted(names),
-          }
-          Path("gapup-discovery/summary.json").write_text(
-              json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-              encoding="utf-8",
-          )
           print(json.dumps({
               "status": "PASS",
               "tool_count": len(tools),
@@ -114,10 +102,77 @@ jobs:
           }))
           PY
 
-      - name: Upload safe discovery snapshot
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: gapup-mcp-discovery-${{ github.run_id }}
-          path: gapup-discovery
-          if-no-files-found: error
-          retention-days: 7
+      - name: Generate fixed Gapup provider and rename center
+        run: |
+          set -euo pipefail
+          python .github/scripts/integrate_gapup_mcp.py
+
+      - name: Install validation dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/gapup-mcp/requirements.txt
+          python -m pip check
+
+      - name: Rebuild deterministic intelligence catalog
+        run: |
+          set -euo pipefail
+          python api-center/build_config.py
+          python api-center/build_catalog_market_search.py
+
+      - name: Validate generated provider and repository contracts
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            api-center/build_catalog.py \
+            api-center/build_catalog_market_search.py \
+            api-center/managed_provider_runtime.py \
+            api-center/gapup-mcp/gapup_mcp_task.py \
+            api-center/gapup-mcp/tests/*.py \
+            api-center/tests/*.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+
+          root = Path('api-center/gapup-mcp')
+          catalog = json.loads((root / 'provider-catalog.json').read_text(encoding='utf-8'))
+          ticket_schema = json.loads((root / 'ticket.schema.json').read_text(encoding='utf-8'))
+          Draft202012Validator.check_schema(ticket_schema)
+          provider = catalog['providers'][0]
+          for operation in provider['operations']:
+              Draft202012Validator.check_schema(operation['parameter_schema'])
+          ids = {row['operation_id'] for row in provider['operations']}
+          assert len(ids) == 209
+          assert provider['limits']['fixed_mcp_tool_count'] == 208
+          assert provider['limits']['blocked_tool_count'] == 63
+          assert provider['limits']['automatic_x402_payment_allowed'] is False
+          assert provider['limits']['async_jobs_allowed'] is False
+          assert provider['limits']['write_operations_allowed'] is False
+          print(json.dumps({'status':'PASS','operation_schemas':len(ids)}))
+          PY
+          python -m unittest discover -s api-center/gapup-mcp/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
+          python api-center/build_catalog_market_search.py
+          git diff --check
+          ! git grep -nE 'gpk_[A-Za-z0-9_-]{12,}' -- ':!api-center/gapup-mcp/tests/**'
+
+      - name: Remove one-shot integration files
+        run: |
+          rm -rf gapup-discovery
+          rm -f \
+            .github/scripts/integrate_gapup_mcp.py \
+            .github/workflows/gapup-mcp-discovery.yml \
+            .github/gapup-mcp-discovery-trigger.txt
+
+      - name: Commit integrated intelligence provider
+        run: |
+          set -euo pipefail
+          git config user.name "a15280020511"
+          git config user.email "270211234+a15280020511@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git status --short
+          git commit -m "feat: add Gapup MCP and rename API center to intelligence center"
+          git push origin HEAD:${{ github.head_ref }}
