@@ -1,0 +1,499 @@
+{
+  "schema_version": "mediastack-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "mediastack",
+      "display_name": "Mediastack 全球新闻情报",
+      "description": "通过 Mediastack 官方 REST API读取全球新闻文章与新闻来源目录；固定只读、单请求、受限分页，不自动抓取文章正文。",
+      "enabled": true,
+      "ticket_prefix": "[intel-mediastack]",
+      "required_secret_environment_variable": "MEDIASTACK_API_KEY",
+      "catalog_policy": "固定开放5项能力：1项本地目录、最新新闻、关键词新闻检索、历史新闻检索和来源目录；每张票据最多一次请求，limit不超过100，不自动翻页。",
+      "execution_policy": "API Key仅由GitHub Repository Secret注入为access_key查询参数；不接受客户端凭据、任意URL、任意路径、任意请求头、写操作、Webhook、后台轮询或文章正文抓取。",
+      "official_origin": "https://api.mediastack.com",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 10000000,
+        "max_rows": 100,
+        "max_offset": 10000,
+        "max_date_range_days": 366,
+        "free_plan_requests_per_month": 100,
+        "free_plan_delayed_news": true,
+        "historical_news_plan_dependent": true,
+        "commercial_use_plan_dependent": true,
+        "fixed_api_host": "api.mediastack.com",
+        "fixed_paths": [
+          "/v1/news",
+          "/v1/sources"
+        ],
+        "arbitrary_urls_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "redirects_allowed": false,
+        "automatic_pagination_allowed": false,
+        "background_monitoring_allowed": false,
+        "article_body_fetching_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Mediastack 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "execution": {
+            "local": true,
+            "path_template": "",
+            "http_method": "LOCAL"
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "automatic_pagination": false,
+            "article_body_fetching": false
+          }
+        },
+        {
+          "operation_id": "latest-news",
+          "description": "读取最新或延迟新闻，可按国家、语言、分类和来源过滤。",
+          "parameters": [
+            "countries",
+            "languages",
+            "categories",
+            "sources",
+            "sort",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "countries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 13,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "business",
+                    "entertainment",
+                    "health",
+                    "science",
+                    "sports",
+                    "technology"
+                  ]
+                }
+              },
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "published_desc",
+                  "published_asc",
+                  "popularity"
+                ],
+                "default": "published_desc"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            },
+            "maxProperties": 7
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v1/news",
+            "http_method": "GET"
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "access-key-query-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true
+          }
+        },
+        {
+          "operation_id": "search-news",
+          "description": "按关键词检索新闻，可组合国家、语言、分类、来源、排序和受限分页。",
+          "parameters": [
+            "keywords",
+            "countries",
+            "languages",
+            "categories",
+            "sources",
+            "sort",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "keywords": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "countries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 13,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "business",
+                    "entertainment",
+                    "health",
+                    "science",
+                    "sports",
+                    "technology"
+                  ]
+                }
+              },
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "published_desc",
+                  "published_asc",
+                  "popularity"
+                ],
+                "default": "published_desc"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            },
+            "maxProperties": 8,
+            "required": [
+              "keywords"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v1/news",
+            "http_method": "GET"
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "access-key-query-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true
+          }
+        },
+        {
+          "operation_id": "historical-news",
+          "description": "按单日或日期区间检索历史新闻；历史权限取决于 Mediastack 套餐。",
+          "parameters": [
+            "date",
+            "keywords",
+            "countries",
+            "languages",
+            "categories",
+            "sources",
+            "sort",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(,\\d{4}-\\d{2}-\\d{2})?$"
+              },
+              "keywords": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "countries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 13,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "business",
+                    "entertainment",
+                    "health",
+                    "science",
+                    "sports",
+                    "technology"
+                  ]
+                }
+              },
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "published_desc",
+                  "published_asc",
+                  "popularity"
+                ],
+                "default": "published_desc"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            },
+            "maxProperties": 9,
+            "required": [
+              "date"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v1/news",
+            "http_method": "GET"
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "access-key-query-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true,
+            "plan_requirement": "paid-plan-may-be-required"
+          }
+        },
+        {
+          "operation_id": "list-sources",
+          "description": "读取 Mediastack 支持的新闻来源目录，可按关键词、国家、语言和分类过滤。",
+          "parameters": [
+            "search",
+            "countries",
+            "languages",
+            "categories",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "search": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "countries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 13,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "business",
+                    "entertainment",
+                    "health",
+                    "science",
+                    "sports",
+                    "technology"
+                  ]
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            },
+            "maxProperties": 6
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v1/sources",
+            "http_method": "GET"
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "access-key-query-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true
+          }
+        }
+      ]
+    }
+  ]
+}
