@@ -5,13 +5,13 @@
   "providers": [
     {
       "provider_id": "agent-toolbelt",
-      "display_name": "Agent Toolbelt AI 股票研究与代理工具",
-      "description": "通过 Agent Toolbelt 官方 API 调用 8 项美股研究工具和 20 项通用代理工具；仅开放固定工具白名单，不开放 Watchlist CRUD、任意路径或其他写操作。",
+      "display_name": "Agent Toolbelt 通用代理工具",
+      "description": "通过 Agent Toolbelt 官方 API 调用20项通用代理工具；不开放其仅限美股的8项股票研究工具，也不开放任何写操作。",
       "enabled": true,
       "ticket_prefix": "[api-agent-toolbelt]",
       "required_secret_environment_variable": "AGENT_TOOLBELT_KEY",
-      "catalog_policy": "固定开放 29 项能力：1 项本地目录和 28 项官方工具；每个票据最多一次受限请求，参数、正文、数组、文本、图片、URL、超时和响应体积均受硬上限约束。",
-      "execution_policy": "API Key 仅由 GitHub Repository Secret 注入；不接受客户端凭据、任意工具名、任意路径、Watchlist CRUD、交易、下单、Webhook 或后台监控。URL 型工具仅接受公开 HTTPS 地址并拒绝本机、私网和保留地址字面量。",
+      "catalog_policy": "固定开放21项能力：1项本地目录和20项官方通用工具；每个票据最多一次受限请求，参数、正文、数组、文本、图片、URL、超时和响应体积均受硬上限约束。",
+      "execution_policy": "API Key仅由GitHub Repository Secret注入；不接受客户端凭据、任意工具名、任意路径、股票研究、Watchlist CRUD、交易、下单、Webhook或后台监控。URL型工具仅接受公开HTTPS地址并拒绝本机、私网和保留地址字面量。",
       "official_origin": "https://www.agenttoolbelt.live",
       "limits": {
         "requests_per_ticket_max": 1,
@@ -19,7 +19,7 @@
         "max_request_bytes": 15000000,
         "max_response_bytes": 20000000,
         "fixed_api_host": "www.agenttoolbelt.live",
-        "fixed_upstream_tool_count": 28,
+        "fixed_upstream_tool_count": 20,
         "provider_concurrency_max": 1,
         "transient_retry_max": 1,
         "arbitrary_hosts_allowed": false,
@@ -39,7 +39,9 @@
         "investment_execution_allowed": false,
         "secret_values_exposed": false,
         "upstream_may_use_llm": true,
-        "upstream_calls_are_billable_or_quota_counted": true
+        "upstream_calls_are_billable_or_quota_counted": true,
+        "stock_research_tools_allowed": false,
+        "us_equity_research_allowed": false
       },
       "operations": [
         {
@@ -1153,345 +1155,6 @@
             "billable": true,
             "pricing_is_provider_plan_dependent": true,
             "upstream_llm_may_be_used": false
-          }
-        },
-        {
-          "operation_id": "earnings-analysis",
-          "description": "分析美股盈利超预期/不及预期历史、收入趋势与下一次财报日期。",
-          "parameters": [
-            "ticker"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "ticker": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 12,
-                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-              }
-            },
-            "required": [
-              "ticker"
-            ],
-            "maxProperties": 1
-          },
-          "execution": {
-            "local": false,
-            "path_template": "/api/tools/earnings-analysis",
-            "http_method": "POST"
-          },
-          "result_contract": {
-            "provider": "agent-toolbelt",
-            "official_origin": "https://www.agenttoolbelt.live",
-            "http_method": "POST",
-            "read_only": true,
-            "credential_mode": "bearer-api-key-backend-only",
-            "billable": true,
-            "pricing_is_provider_plan_dependent": true,
-            "upstream_llm_may_be_used": true
-          }
-        },
-        {
-          "operation_id": "insider-signal",
-          "description": "解释美国 Form 4 内部人交易并区分公开市场买卖与常规交易。",
-          "parameters": [
-            "ticker"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "ticker": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 12,
-                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-              }
-            },
-            "required": [
-              "ticker"
-            ],
-            "maxProperties": 1
-          },
-          "execution": {
-            "local": false,
-            "path_template": "/api/tools/insider-signal",
-            "http_method": "POST"
-          },
-          "result_contract": {
-            "provider": "agent-toolbelt",
-            "official_origin": "https://www.agenttoolbelt.live",
-            "http_method": "POST",
-            "read_only": true,
-            "credential_mode": "bearer-api-key-backend-only",
-            "billable": true,
-            "pricing_is_provider_plan_dependent": true,
-            "upstream_llm_may_be_used": true
-          }
-        },
-        {
-          "operation_id": "valuation-snapshot",
-          "description": "综合估值倍数、现金流收益率、ROE 与利润率，生成估值结论。",
-          "parameters": [
-            "ticker"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "ticker": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 12,
-                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-              }
-            },
-            "required": [
-              "ticker"
-            ],
-            "maxProperties": 1
-          },
-          "execution": {
-            "local": false,
-            "path_template": "/api/tools/valuation-snapshot",
-            "http_method": "POST"
-          },
-          "result_contract": {
-            "provider": "agent-toolbelt",
-            "official_origin": "https://www.agenttoolbelt.live",
-            "http_method": "POST",
-            "read_only": true,
-            "credential_mode": "bearer-api-key-backend-only",
-            "billable": true,
-            "pricing_is_provider_plan_dependent": true,
-            "upstream_llm_may_be_used": true
-          }
-        },
-        {
-          "operation_id": "bear-vs-bull",
-          "description": "生成结构化多空论证、净结论和关键争议问题。",
-          "parameters": [
-            "ticker"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "ticker": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 12,
-                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-              }
-            },
-            "required": [
-              "ticker"
-            ],
-            "maxProperties": 1
-          },
-          "execution": {
-            "local": false,
-            "path_template": "/api/tools/bear-vs-bull",
-            "http_method": "POST"
-          },
-          "result_contract": {
-            "provider": "agent-toolbelt",
-            "official_origin": "https://www.agenttoolbelt.live",
-            "http_method": "POST",
-            "read_only": true,
-            "credential_mode": "bearer-api-key-backend-only",
-            "billable": true,
-            "pricing_is_provider_plan_dependent": true,
-            "upstream_llm_may_be_used": true
-          }
-        },
-        {
-          "operation_id": "moat-analysis",
-          "description": "生成巴菲特式竞争护城河评估。",
-          "parameters": [
-            "ticker"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "ticker": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 12,
-                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-              }
-            },
-            "required": [
-              "ticker"
-            ],
-            "maxProperties": 1
-          },
-          "execution": {
-            "local": false,
-            "path_template": "/api/tools/moat-analysis",
-            "http_method": "POST"
-          },
-          "result_contract": {
-            "provider": "agent-toolbelt",
-            "official_origin": "https://www.agenttoolbelt.live",
-            "http_method": "POST",
-            "read_only": true,
-            "credential_mode": "bearer-api-key-backend-only",
-            "billable": true,
-            "pricing_is_provider_plan_dependent": true,
-            "upstream_llm_may_be_used": true
-          }
-        },
-        {
-          "operation_id": "stock-thesis",
-          "description": "基于实时财务数据生成结构化美股投资论点。",
-          "parameters": [
-            "ticker",
-            "timeHorizon"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "ticker": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 12,
-                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-              },
-              "timeHorizon": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 1000,
-                "enum": [
-                  "1-2 years",
-                  "3-5 years",
-                  "5+ years"
-                ]
-              }
-            },
-            "required": [
-              "ticker"
-            ],
-            "maxProperties": 2
-          },
-          "execution": {
-            "local": false,
-            "path_template": "/api/tools/stock-thesis",
-            "http_method": "POST"
-          },
-          "result_contract": {
-            "provider": "agent-toolbelt",
-            "official_origin": "https://www.agenttoolbelt.live",
-            "http_method": "POST",
-            "read_only": true,
-            "credential_mode": "bearer-api-key-backend-only",
-            "billable": true,
-            "pricing_is_provider_plan_dependent": true,
-            "upstream_llm_may_be_used": true
-          }
-        },
-        {
-          "operation_id": "compare-stocks",
-          "description": "对 2 至 3 只美股进行横向比较并给出优胜者与适配场景。",
-          "parameters": [
-            "tickers"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "tickers": {
-                "type": "array",
-                "minItems": 2,
-                "maxItems": 3,
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 12,
-                  "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-                }
-              }
-            },
-            "required": [
-              "tickers"
-            ],
-            "maxProperties": 1
-          },
-          "execution": {
-            "local": false,
-            "path_template": "/api/tools/compare-stocks",
-            "http_method": "POST"
-          },
-          "result_contract": {
-            "provider": "agent-toolbelt",
-            "official_origin": "https://www.agenttoolbelt.live",
-            "http_method": "POST",
-            "read_only": true,
-            "credential_mode": "bearer-api-key-backend-only",
-            "billable": true,
-            "pricing_is_provider_plan_dependent": true,
-            "upstream_llm_may_be_used": true
-          }
-        },
-        {
-          "operation_id": "watchlist-scan",
-          "description": "扫描并按价值、质量、成长或收益对 2 至 15 只美股排序。",
-          "parameters": [
-            "tickers",
-            "focus"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "tickers": {
-                "type": "array",
-                "minItems": 2,
-                "maxItems": 15,
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 12,
-                  "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-                }
-              },
-              "focus": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 1000,
-                "enum": [
-                  "value",
-                  "quality",
-                  "growth",
-                  "income"
-                ]
-              }
-            },
-            "required": [
-              "tickers"
-            ],
-            "maxProperties": 2
-          },
-          "execution": {
-            "local": false,
-            "path_template": "/api/tools/watchlist-scan",
-            "http_method": "POST"
-          },
-          "result_contract": {
-            "provider": "agent-toolbelt",
-            "official_origin": "https://www.agenttoolbelt.live",
-            "http_method": "POST",
-            "read_only": true,
-            "credential_mode": "bearer-api-key-backend-only",
-            "billable": true,
-            "pricing_is_provider_plan_dependent": true,
-            "upstream_llm_may_be_used": true
           }
         },
         {

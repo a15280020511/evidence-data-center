@@ -3,9 +3,9 @@
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
 - 托管提供方：`30/30` 已启用
-- 托管操作总数：`368`
-- 已公开参数总数：`1441`
-- 目录 SHA-256：`5c386e1c645265b29f0c559920b779caec522c4bf0c5f09a7b8f99302d63e77d`
+- 托管操作总数：`360`
+- 已公开参数总数：`1431`
+- 目录 SHA-256：`dc5dbaaec1986d461046a11502eb3d486c6ff020c6e1aac8cdb3fa767950c804`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -30,7 +30,7 @@
 | Tavily Context API | `tavily` | 启用 | `[api-context]` | `5` | 否 |
 | Firecrawl Context API（火行者） | `firecrawl` | 启用 | `[api-context]` | `4` | 否 |
 | Browserless REST API | `browserless` | 启用 | `[api-browserless]` | `8` | 否 |
-| Agent Toolbelt AI 股票研究与代理工具 | `agent-toolbelt` | 启用 | `[api-agent-toolbelt]` | `29` | 否 |
+| Agent Toolbelt 通用代理工具 | `agent-toolbelt` | 启用 | `[api-agent-toolbelt]` | `21` | 否 |
 | TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
 | Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
@@ -4840,16 +4840,16 @@
 }
 ```
 
-## Agent Toolbelt AI 股票研究与代理工具 (`agent-toolbelt`)
+## Agent Toolbelt 通用代理工具 (`agent-toolbelt`)
 
 - 状态：`启用`
-- 说明：通过 Agent Toolbelt 官方 API 调用 8 项美股研究工具和 20 项通用代理工具；仅开放固定工具白名单，不开放 Watchlist CRUD、任意路径或其他写操作。
-- 目录策略：固定开放 29 项能力：1 项本地目录和 28 项官方工具；每个票据最多一次受限请求，参数、正文、数组、文本、图片、URL、超时和响应体积均受硬上限约束。
-- 执行策略：API Key 仅由 GitHub Repository Secret 注入；不接受客户端凭据、任意工具名、任意路径、Watchlist CRUD、交易、下单、Webhook 或后台监控。URL 型工具仅接受公开 HTTPS 地址并拒绝本机、私网和保留地址字面量。
+- 说明：通过 Agent Toolbelt 官方 API 调用20项通用代理工具；不开放其仅限美股的8项股票研究工具，也不开放任何写操作。
+- 目录策略：固定开放21项能力：1项本地目录和20项官方通用工具；每个票据最多一次受限请求，参数、正文、数组、文本、图片、URL、超时和响应体积均受硬上限约束。
+- 执行策略：API Key仅由GitHub Repository Secret注入；不接受客户端凭据、任意工具名、任意路径、股票研究、Watchlist CRUD、交易、下单、Webhook或后台监控。URL型工具仅接受公开HTTPS地址并拒绝本机、私网和保留地址字面量。
 - 票据前缀：`[api-agent-toolbelt]`
 - Secret环境变量名：`AGENT_TOOLBELT_KEY`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`123166ea013e3c813f56e306d9dd06f5c8cff3cdaa60370f5ed05ce50d101b35`
+- 提供方SHA-256：`b468be27cff57be7e3f785b3f99f6ee8d694a86221f8fe2de43bf7eb22175e44`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -5642,223 +5642,6 @@
 }
 ```
 
-| `earnings-analysis` | 分析美股盈利超预期/不及预期历史、收入趋势与下一次财报日期。 | `ticker` |
-
-`earnings-analysis` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "ticker": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 12,
-      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-    }
-  },
-  "required": [
-    "ticker"
-  ],
-  "maxProperties": 1
-}
-```
-
-| `insider-signal` | 解释美国 Form 4 内部人交易并区分公开市场买卖与常规交易。 | `ticker` |
-
-`insider-signal` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "ticker": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 12,
-      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-    }
-  },
-  "required": [
-    "ticker"
-  ],
-  "maxProperties": 1
-}
-```
-
-| `valuation-snapshot` | 综合估值倍数、现金流收益率、ROE 与利润率，生成估值结论。 | `ticker` |
-
-`valuation-snapshot` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "ticker": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 12,
-      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-    }
-  },
-  "required": [
-    "ticker"
-  ],
-  "maxProperties": 1
-}
-```
-
-| `bear-vs-bull` | 生成结构化多空论证、净结论和关键争议问题。 | `ticker` |
-
-`bear-vs-bull` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "ticker": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 12,
-      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-    }
-  },
-  "required": [
-    "ticker"
-  ],
-  "maxProperties": 1
-}
-```
-
-| `moat-analysis` | 生成巴菲特式竞争护城河评估。 | `ticker` |
-
-`moat-analysis` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "ticker": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 12,
-      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-    }
-  },
-  "required": [
-    "ticker"
-  ],
-  "maxProperties": 1
-}
-```
-
-| `stock-thesis` | 基于实时财务数据生成结构化美股投资论点。 | `ticker, timeHorizon` |
-
-`stock-thesis` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "ticker": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 12,
-      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-    },
-    "timeHorizon": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 1000,
-      "enum": [
-        "1-2 years",
-        "3-5 years",
-        "5+ years"
-      ]
-    }
-  },
-  "required": [
-    "ticker"
-  ],
-  "maxProperties": 2
-}
-```
-
-| `compare-stocks` | 对 2 至 3 只美股进行横向比较并给出优胜者与适配场景。 | `tickers` |
-
-`compare-stocks` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "tickers": {
-      "type": "array",
-      "minItems": 2,
-      "maxItems": 3,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 12,
-        "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-      }
-    }
-  },
-  "required": [
-    "tickers"
-  ],
-  "maxProperties": 1
-}
-```
-
-| `watchlist-scan` | 扫描并按价值、质量、成长或收益对 2 至 15 只美股排序。 | `tickers, focus` |
-
-`watchlist-scan` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "tickers": {
-      "type": "array",
-      "minItems": 2,
-      "maxItems": 15,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "minLength": 1,
-        "maxLength": 12,
-        "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
-      }
-    },
-    "focus": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 1000,
-      "enum": [
-        "value",
-        "quality",
-        "growth",
-        "income"
-      ]
-    }
-  },
-  "required": [
-    "tickers"
-  ],
-  "maxProperties": 2
-}
-```
-
 | `web-summarizer` | 抓取公开 HTTPS 页面正文并返回摘要、关键点或清洗后的内容。 | `url, mode, focus, maxContentLength, timeout` |
 
 `web-summarizer` 参数Schema：
@@ -6003,7 +5786,7 @@
   "max_request_bytes": 15000000,
   "max_response_bytes": 20000000,
   "fixed_api_host": "www.agenttoolbelt.live",
-  "fixed_upstream_tool_count": 28,
+  "fixed_upstream_tool_count": 20,
   "provider_concurrency_max": 1,
   "transient_retry_max": 1,
   "arbitrary_hosts_allowed": false,
@@ -6023,7 +5806,9 @@
   "investment_execution_allowed": false,
   "secret_values_exposed": false,
   "upstream_may_use_llm": true,
-  "upstream_calls_are_billable_or_quota_counted": true
+  "upstream_calls_are_billable_or_quota_counted": true,
+  "stock_research_tools_allowed": false,
+  "us_equity_research_allowed": false
 }
 ```
 

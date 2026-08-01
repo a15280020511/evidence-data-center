@@ -43,7 +43,7 @@ EXPECTED_OPERATION_COUNTS = {
     "overture-maps": 7,
     "oecd": 6,
     "alphafeed": 10,
-    "agent-toolbelt": 29,
+    "agent-toolbelt": 21,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -70,7 +70,7 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(catalog["connector_count"], 68)
         self.assertEqual(catalog["managed_provider_count"], 30)
         self.assertEqual(catalog["enabled_managed_provider_count"], 30)
-        self.assertEqual(catalog["managed_operation_count"], 368)
+        self.assertEqual(catalog["managed_operation_count"], 360)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -235,7 +235,11 @@ class ApiCatalogTests(unittest.TestCase):
             agent_toolbelt["required_secret_environment_variable_name"],
             "AGENT_TOOLBELT_KEY",
         )
-        self.assertEqual(len(agent_toolbelt["operations"]), 29)
+        self.assertEqual(len(agent_toolbelt["operations"]), 21)
+        self.assertFalse(
+            {row["operation_id"] for row in agent_toolbelt["operations"]}
+            & {"stock-thesis", "earnings-analysis", "insider-signal", "valuation-snapshot", "bear-vs-bull", "compare-stocks", "moat-analysis", "watchlist-scan"}
+        )
         self.assertEqual(
             agent_toolbelt["limits"]["fixed_api_host"],
             "www.agenttoolbelt.live",

@@ -43,14 +43,6 @@
         "brand-kit",
         "api-response-mocker",
         "dependency-auditor",
-        "earnings-analysis",
-        "insider-signal",
-        "valuation-snapshot",
-        "bear-vs-bull",
-        "moat-analysis",
-        "stock-thesis",
-        "compare-stocks",
-        "watchlist-scan",
         "web-summarizer",
         "context-window-packer"
       ]
