@@ -37,6 +37,7 @@ EXPECTED_OPERATION_COUNTS = {
     "tushare": 20,
     "baostock": 20,
     "eodhd": 25,
+    "east-asia-econ": 6,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -61,9 +62,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 23)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 23)
-        self.assertEqual(catalog["managed_operation_count"], 234)
+        self.assertEqual(catalog["managed_provider_count"], 24)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 24)
+        self.assertEqual(catalog["managed_operation_count"], 240)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -99,6 +100,7 @@ class ApiCatalogTests(unittest.TestCase):
             "serpapi": "SERPAPI_API_KEY",
             "tushare": "TUSHARE_API_TOKEN",
             "eodhd": "EODHD_API_TOKEN",
+            "east-asia-econ": "EAST_ASIA_ECON_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -145,6 +147,15 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(providers["eodhd"]["required_secret_environment_variable_name"], "EODHD_API_TOKEN")
         self.assertFalse(providers["eodhd"]["limits"]["arbitrary_urls_allowed"])
         self.assertFalse(providers["eodhd"]["limits"]["trading_or_order_execution_allowed"])
+
+        east_asia = providers["east-asia-econ"]
+        self.assertEqual(east_asia["ticket_prefix"], "[api-east-asia-econ]")
+        self.assertEqual(east_asia["required_secret_environment_variable_name"], "EAST_ASIA_ECON_API_KEY")
+        self.assertEqual(east_asia["limits"]["fixed_api_host"], "data-api.eastasiaecon.com")
+        self.assertEqual(east_asia["limits"]["requests_per_ticket_max"], 1)
+        self.assertFalse(east_asia["limits"]["arbitrary_urls_allowed"])
+        self.assertFalse(east_asia["limits"]["arbitrary_headers_allowed"])
+        self.assertFalse(east_asia["limits"]["write_operations_allowed"])
 
         self.assertEqual(
             providers["tushare"]["ticket_prefix"],
@@ -216,6 +227,7 @@ class ApiCatalogTests(unittest.TestCase):
             "data-commons/provider-catalog.json",
             "qweather/provider-catalog.json",
             "miaoxiang-mcp/provider-catalog.json",
+            "east-asia-econ/provider-catalog.json",
             "knowledge-tools/provider-catalog.json",
         ):
             self.assertIn(catalog_file, catalog["managed_provider_catalog_files"])

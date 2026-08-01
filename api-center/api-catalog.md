@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`23/23` 已启用
-- 托管操作总数：`234`
-- 已公开参数总数：`1128`
-- 目录 SHA-256：`f9770b97037210163aff46b9e7a7b376538b5e0a43430e5ec289470274025592`
+- 托管提供方：`24/24` 已启用
+- 托管操作总数：`240`
+- 已公开参数总数：`1137`
+- 目录 SHA-256：`4faef136fb4a1d521fc13f26f272f6805d3f918a487c97fd7a8e1e25cc936b8e`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -38,6 +38,7 @@
 | Google Data Commons | `data-commons` | 启用 | `[api-dc]` | `5` | 否 |
 | 和风天气 QWeather | `qweather` | 启用 | `[api-qweather]` | `18` | 否 |
 | 东方财富妙想 MCP | `miaoxiang-mcp` | 启用 | `[api-mx-mcp]` | `13` | 否 |
+| East Asia Econ 东亚宏观数据库 | `east-asia-econ` | 启用 | `[api-east-asia-econ]` | `6` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -9049,6 +9050,176 @@
   "watchlist_mutation_allowed": false,
   "simulated_trading_allowed": false,
   "trading_or_order_execution_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## East Asia Econ 东亚宏观数据库 (`east-asia-econ`)
+
+- 状态：`启用`
+- 说明：通过 East Asia Econ 官方只读 REST API 搜索并读取中国、日本、韩国、台湾及区域汇总的月度、季度和年度经济序列。
+- 目录策略：开放固定的搜索、序列元数据、数据库统计、序列数据和账户用量接口；搜索、元数据和统计无需密钥，序列数据与用量由后端注入独立 API Key。
+- 执行策略：仅允许固定 HTTPS GET 路径与白名单查询参数；每张票据最多一次上游请求，不重试付费或限额查询；API Key 仅写入 X-API-Key 请求头，不进入 Issue、日志、目录或 Artifact。
+- 票据前缀：`[api-east-asia-econ]`
+- Secret环境变量名：`EAST_ASIA_ECON_API_KEY`（仅名称）
+- 提供方SHA-256：`3e2fc4221e23c819841a6dcce9a50168a86f060074182666a3b99f62dbfe954d`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 East Asia Econ 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `search-series` | 按关键词、经济体和频率搜索可用经济序列；官方搜索接口无需认证。 | `q, country, freq, limit` |
+
+`search-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "q": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "country": {
+      "type": "string",
+      "enum": [
+        "cn",
+        "jp",
+        "kr",
+        "tw",
+        "regional"
+      ]
+    },
+    "freq": {
+      "type": "string",
+      "enum": [
+        "m",
+        "q",
+        "a"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "q"
+  ]
+}
+```
+
+| `series-info` | 读取指定序列的可用频率、日期范围和观测数量；无需下载数据或消耗序列查询额度。 | `series_name` |
+
+`series-info` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "series_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "series_name"
+  ]
+}
+```
+
+| `database-stats` | 读取数据库总序列数及按经济体、频率划分的汇总统计；无需认证。 | `无` |
+
+`database-stats` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `series-data` | 下载指定经济序列的月度、季度或年度观测值，可按起止日期过滤。 | `series_name, freq, start, end` |
+
+`series-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "series_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "freq": {
+      "type": "string",
+      "enum": [
+        "m",
+        "q",
+        "a"
+      ]
+    },
+    "start": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "series_name"
+  ]
+}
+```
+
+| `usage` | 读取当前 East Asia Econ API Key 的月度用量、额度和会员层级。 | `无` |
+
+`usage` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+限制：
+
+```json
+{
+  "fixed_api_host": "data-api.eastasiaecon.com",
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 20000000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_api_key_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
   "personal_data_allowed": false,
   "secret_values_exposed": false
 }
