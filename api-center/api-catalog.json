@@ -24,13 +24,13 @@
     "miaoxiang-mcp/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "c2df570fd3f06b9b2c52601190ce5fcc2e6e795ddb81072f2a7fe1cd4db3e758",
+  "managed_provider_catalog_sha256": "ca513396a76d03108e9ecaa745bad5ec276adfa2a39aa40c80c0ba8703de8373",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 22,
-  "enabled_managed_provider_count": 22,
-  "managed_operation_count": 226,
-  "exposed_parameter_count": 1107,
+  "managed_provider_count": 23,
+  "enabled_managed_provider_count": 23,
+  "managed_operation_count": 234,
+  "exposed_parameter_count": 1128,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -5169,6 +5169,398 @@
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
       "provider_sha256": "a44c4d567f550e422b27f53ae4531d69e2096d249e590d953835c16fedc56375",
+      "catalog_file": "web-retrieval/provider-catalog.json"
+    },
+    {
+      "provider_id": "browserless",
+      "display_name": "Browserless REST API",
+      "description": "通过 Browserless 托管无头浏览器读取 JavaScript 渲染网页、结构化抓取、生成截图和 PDF、执行 Lighthouse 审计，并提供受限的搜索与站点地图能力。",
+      "enabled": true,
+      "ticket_prefix": "[api-browserless]",
+      "catalog_policy": "仅允许固定 Browserless Cloud REST 主机和公开 HTTPS 目标；禁止任意 JavaScript、Function、Download、Export、BQL、BaaS、WebSocket、Profile、Cookie、Authorization、自定义请求头、代理、地理代理、Unblock、CAPTCHA 求解和登录态页面。",
+      "execution_policy": "BROWSERLESS_TOKEN 仅在后端固定查询参数中注入且不进入日志或 Artifact；每张票据只调用一个固定 REST 端点；目标 URL 必须通过公开 HTTPS 与 SSRF 防护；二进制结果只作为 Artifact 文件保存。",
+      "operation_count": 8,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取 Browserless 本地安全能力目录，不访问上游且不需要密钥。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "browserless",
+            "read_only": true,
+            "upstream_called": false
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.browserless.io/rest-apis/intro"
+          }
+        },
+        {
+          "operation_id": "content",
+          "description": "调用 /content 返回一个公开 HTTPS 页面的完整 JavaScript 渲染 HTML。",
+          "parameter_names": [
+            "url"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 9,
+                "maxLength": 2048,
+                "pattern": "^https://"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "browserless",
+            "official_endpoint": "https://production-sfo.browserless.io/content",
+            "http_method": "POST",
+            "response_type": "text/html",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.browserless.io/rest-apis/content"
+          }
+        },
+        {
+          "operation_id": "scrape",
+          "description": "调用 /scrape 在完整渲染后按最多20个 CSS 选择器提取结构化 JSON。",
+          "parameter_names": [
+            "url",
+            "selectors"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 9,
+                "maxLength": 2048,
+                "pattern": "^https://"
+              },
+              "selectors": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 500
+                }
+              }
+            },
+            "required": [
+              "url",
+              "selectors"
+            ]
+          },
+          "result_contract": {
+            "provider": "browserless",
+            "official_endpoint": "https://production-sfo.browserless.io/scrape",
+            "http_method": "POST",
+            "response_type": "application/json",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.browserless.io/rest-apis/scrape"
+          }
+        },
+        {
+          "operation_id": "screenshot",
+          "description": "调用 /screenshot 为一个公开 HTTPS 页面生成 PNG、JPEG 或 WebP 截图 Artifact。",
+          "parameter_names": [
+            "url",
+            "image_type",
+            "full_page",
+            "quality"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 9,
+                "maxLength": 2048,
+                "pattern": "^https://"
+              },
+              "image_type": {
+                "type": "string",
+                "enum": [
+                  "png",
+                  "jpeg",
+                  "webp"
+                ]
+              },
+              "full_page": {
+                "type": "boolean"
+              },
+              "quality": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "browserless",
+            "official_endpoint": "https://production-sfo.browserless.io/screenshot",
+            "http_method": "POST",
+            "response_type": "image/*",
+            "read_only": true,
+            "artifact_binary": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.browserless.io/rest-apis/screenshot-api"
+          }
+        },
+        {
+          "operation_id": "pdf",
+          "description": "调用 /pdf 为一个公开 HTTPS 页面生成受限 PDF Artifact。",
+          "parameter_names": [
+            "url",
+            "format",
+            "landscape",
+            "print_background"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 9,
+                "maxLength": 2048,
+                "pattern": "^https://"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "A4",
+                  "Letter",
+                  "Legal",
+                  "A3",
+                  "A5"
+                ]
+              },
+              "landscape": {
+                "type": "boolean"
+              },
+              "print_background": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "browserless",
+            "official_endpoint": "https://production-sfo.browserless.io/pdf",
+            "http_method": "POST",
+            "response_type": "application/pdf",
+            "read_only": true,
+            "artifact_binary": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.browserless.io/rest-apis/pdf-api"
+          }
+        },
+        {
+          "operation_id": "performance",
+          "description": "调用 /performance 对公开 HTTPS 页面执行受限 Lighthouse 分类审计。",
+          "parameter_names": [
+            "url",
+            "categories"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 9,
+                "maxLength": 2048,
+                "pattern": "^https://"
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "accessibility",
+                    "best-practices",
+                    "performance",
+                    "pwa",
+                    "seo"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "browserless",
+            "official_endpoint": "https://production-sfo.browserless.io/performance",
+            "http_method": "POST",
+            "response_type": "application/json",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.browserless.io/rest-apis/performance"
+          }
+        },
+        {
+          "operation_id": "search",
+          "description": "调用 Cloud /search 对公开网页执行受限 Web 搜索，最多3条结果且不自动抓取结果页。",
+          "parameter_names": [
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 3
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "browserless",
+            "official_endpoint": "https://production-sfo.browserless.io/search",
+            "http_method": "POST",
+            "response_type": "application/json",
+            "read_only": true,
+            "cloud_plan_may_be_required": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.browserless.io/rest-apis/search"
+          }
+        },
+        {
+          "operation_id": "map",
+          "description": "调用 Cloud /map 发现一个公开 HTTPS 站点的受限 URL 结构，最多100条。",
+          "parameter_names": [
+            "url",
+            "search",
+            "limit",
+            "sitemap",
+            "include_subdomains",
+            "ignore_query_parameters"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 9,
+                "maxLength": 2048,
+                "pattern": "^https://"
+              },
+              "search": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "sitemap": {
+                "type": "string",
+                "enum": [
+                  "include",
+                  "skip",
+                  "only"
+                ]
+              },
+              "include_subdomains": {
+                "type": "boolean"
+              },
+              "ignore_query_parameters": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "browserless",
+            "official_endpoint": "https://production-sfo.browserless.io/map",
+            "http_method": "POST",
+            "response_type": "application/json",
+            "read_only": true,
+            "cloud_plan_may_be_required": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.browserless.io/rest-apis/map"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 10000000,
+        "target_urls_max": 1,
+        "selectors_max": 20,
+        "search_results_max": 3,
+        "map_links_max": 100,
+        "fixed_api_host": "production-sfo.browserless.io",
+        "arbitrary_api_hosts_allowed": false,
+        "arbitrary_code_allowed": false,
+        "websocket_sessions_allowed": false,
+        "profiles_allowed": false,
+        "custom_headers_allowed": false,
+        "cookies_allowed": false,
+        "proxy_configuration_allowed": false,
+        "captcha_or_unblock_allowed": false,
+        "write_operations_allowed": false
+      },
+      "required_secret_environment_variable_name": "BROWSERLESS_TOKEN",
+      "optional_secret_environment_variable_name": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "930432038bc74e69f64242ed145e7dafc372bfb114b6a2fed2c625a01ab1f7d1",
       "catalog_file": "web-retrieval/provider-catalog.json"
     },
     {
@@ -19147,5 +19539,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "2dd5f268cc487cde820ba9dadf1f641917bf0f8f8e6288d66bdcef581f164c7c"
+  "catalog_sha256": "f9770b97037210163aff46b9e7a7b376538b5e0a43430e5ec289470274025592"
 }

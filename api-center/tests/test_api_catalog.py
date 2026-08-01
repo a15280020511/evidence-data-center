@@ -31,6 +31,7 @@ EXPECTED_OPERATION_COUNTS = {
     "exa": 3,
     "tavily": 5,
     "firecrawl": 4,
+    "browserless": 8,
     "tickflow": 5,
     "serpapi": 4,
     "tushare": 20,
@@ -60,9 +61,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 22)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 22)
-        self.assertEqual(catalog["managed_operation_count"], 226)
+        self.assertEqual(catalog["managed_provider_count"], 23)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 23)
+        self.assertEqual(catalog["managed_operation_count"], 234)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -93,6 +94,7 @@ class ApiCatalogTests(unittest.TestCase):
             "exa": "EXA_API_KEY",
             "tavily": "TAVILY_API_KEY",
             "firecrawl": "FIRECRAWL_API_KEY",
+            "browserless": "BROWSERLESS_TOKEN",
             "tickflow": "TICKFLOW_API_KEY",
             "serpapi": "SERPAPI_API_KEY",
             "tushare": "TUSHARE_API_TOKEN",
@@ -107,6 +109,13 @@ class ApiCatalogTests(unittest.TestCase):
                 ],
                 secret_name,
             )
+
+        self.assertEqual(providers["browserless"]["ticket_prefix"], "[api-browserless]")
+        self.assertEqual(providers["browserless"]["required_secret_environment_variable_name"], "BROWSERLESS_TOKEN")
+        self.assertEqual(providers["browserless"]["limits"]["fixed_api_host"], "production-sfo.browserless.io")
+        self.assertFalse(providers["browserless"]["limits"]["arbitrary_code_allowed"])
+        self.assertFalse(providers["browserless"]["limits"]["captcha_or_unblock_allowed"])
+        self.assertFalse(providers["browserless"]["limits"]["profiles_allowed"])
 
         self.assertEqual(providers["data-commons"]["ticket_prefix"], "[api-dc]")
         self.assertEqual(providers["data-commons"]["required_secret_environment_variable_name"], "GOOGLE_DATA_COMMONS_API_KEY")
