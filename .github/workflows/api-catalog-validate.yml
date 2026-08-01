@@ -38,13 +38,15 @@ jobs:
             api-center/requirements.txt
             api-center/baostock/requirements.txt
             api-center/eodhd/requirements.txt
+            api-center/data-commons/requirements.txt
 
       - name: Install isolated API dependencies
         run: |
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
             -r api-center/baostock/requirements.txt \
-            -r api-center/eodhd/requirements.txt
+            -r api-center/eodhd/requirements.txt \
+            -r api-center/data-commons/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -66,11 +68,14 @@ jobs:
             api-center/baostock/tests/*.py \
             api-center/eodhd/eodhd_task.py \
             api-center/eodhd/tests/*.py \
+            api-center/data-commons/data_commons_task.py \
+            api-center/data-commons/tests/*.py \
             api-center/tests/*.py
           python api-center/build_config.py
           python api-center/build_catalog_market_search.py
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Verify deterministic contracts and provider invariants
@@ -91,6 +96,7 @@ jobs:
           expected_counts = {
               'bigquery': 7,
               'earth-engine': 6,
+              'data-commons': 5,
               'akshare': 17,
               'ashare': 1,
               'aifin-market': 17,
@@ -112,15 +118,30 @@ jobs:
           assert manifest['connector_count'] == 68
           assert manifest['enabled_connector_count'] == 68
           assert catalog['schema_version'] == 'api-catalog-v3'
-          assert catalog['managed_provider_count'] == 19
-          assert catalog['enabled_managed_provider_count'] == 19
-          assert catalog['managed_operation_count'] == 190
+          assert catalog['managed_provider_count'] == 20
+          assert catalog['enabled_managed_provider_count'] == 20
+          assert catalog['managed_operation_count'] == 195
           assert catalog['secret_values_exposed'] is False
           assert set(providers) == set(expected_counts)
-          assert sum(len(row['operations']) for row in providers.values()) == 190
+          assert sum(len(row['operations']) for row in providers.values()) == 195
           for provider_id, count in expected_counts.items():
               assert len(providers[provider_id]['operations']) == count
               assert providers[provider_id]['secret_value_exposed'] is False
+
+          data_commons = providers['data-commons']
+          assert data_commons['ticket_prefix'] == '[api-dc]'
+          assert data_commons['required_secret_environment_variable_name'] == 'GOOGLE_DATA_COMMONS_API_KEY'
+          assert data_commons['limits']['requests_per_ticket_max'] == 1
+          assert data_commons['limits']['arbitrary_urls_allowed'] is False
+          assert data_commons['limits']['arbitrary_endpoints_allowed'] is False
+          assert data_commons['limits']['arbitrary_headers_allowed'] is False
+          assert data_commons['limits']['client_supplied_api_key_allowed'] is False
+          assert data_commons['limits']['sparql_allowed'] is False
+          assert data_commons['limits']['natural_language_api_allowed'] is False
+          assert data_commons['limits']['mcp_allowed'] is False
+          assert data_commons['limits']['write_operations_allowed'] is False
+          assert data_commons['limits']['personal_data_allowed'] is False
+
           baostock = providers['baostock']
           assert baostock['ticket_prefix'] == '[api-baostock]'
           assert baostock['required_secret_environment_variable_name'] == ''
@@ -129,6 +150,7 @@ jobs:
           assert baostock['limits']['arbitrary_hosts_allowed'] is False
           assert baostock['limits']['write_operations_allowed'] is False
           assert baostock['limits']['trading_or_order_execution_allowed'] is False
+
           eodhd = providers['eodhd']
           assert eodhd['ticket_prefix'] == '[api-eodhd]'
           assert eodhd['required_secret_environment_variable_name'] == 'EODHD_API_TOKEN'
@@ -139,18 +161,25 @@ jobs:
           assert eodhd['limits']['websocket_allowed'] is False
           assert eodhd['limits']['write_operations_allowed'] is False
           assert eodhd['limits']['trading_or_order_execution_allowed'] is False
-          for path in ('baostock/provider-catalog.json', 'eodhd/provider-catalog.json'):
+
+          for path in (
+              'baostock/provider-catalog.json',
+              'eodhd/provider-catalog.json',
+              'data-commons/provider-catalog.json',
+          ):
               assert path in catalog['managed_provider_catalog_files']
               assert path in catalog['detail_reading_order']
-          assert not Path('api-center/data-commons').exists()
-          assert 'data-commons' not in providers
+
+          serialized = json.dumps(data_commons, ensure_ascii=False)
+          assert 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' not in serialized
+          assert 'data_commons_api_key' not in serialized
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 19,
-              'managed_operations': 190,
-              'baostock_operations': 20,
-              'eodhd_operations': 25,
+              'managed_providers': 20,
+              'managed_operations': 195,
+              'data_commons_operations': 5,
+              'data_commons_secret': 'GOOGLE_DATA_COMMONS_API_KEY',
           }))
           PY
           git diff --check
@@ -168,6 +197,9 @@ jobs:
             api-center/krakend.tmpl
             api-center/krakend.validation.json
             api-center/google-cloud/provider-catalog.json
+            api-center/data-commons/provider-catalog.json
+            api-center/data-commons/ticket.schema.json
+            api-center/data-commons/china-starter-pack.json
             api-center/akshare/provider-catalog.json
             api-center/aifin-market/provider-catalog.json
             api-center/yuandian/provider-catalog.json

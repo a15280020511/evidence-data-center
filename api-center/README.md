@@ -212,3 +212,12 @@ API 中心产生 Snapshot
 ```
 
 调用顺序由 GPTs 组合，但必须满足治理仓库冻结合同中的输入依赖、证据和循环限制；业务运行时不得跨仓库直接读取或调用其他中心。
+
+## Google Data Commons
+
+- Provider: `data-commons`
+- Ticket prefix: `[api-dc]`
+- Secret: `GOOGLE_DATA_COMMONS_API_KEY`
+- Authentication: REST V2 `X-API-Key` header
+- Fixed read-only operations: 5
+- BigQuery and Earth Engine continue to use `GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`; Data Commons is intentionally isolated.

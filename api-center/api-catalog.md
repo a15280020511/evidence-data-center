@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`19/19` 已启用
-- 托管操作总数：`190`
-- 已公开参数总数：`1017`
-- 目录 SHA-256：`646fbb6f525403a6e21d2c9e9fa02c2b8cdce5c9c67adefa8742d1e468bb3b2c`
+- 托管提供方：`20/20` 已启用
+- 托管操作总数：`195`
+- 已公开参数总数：`1028`
+- 目录 SHA-256：`d054b45a5b6bcc9489a6650abdd72a4352d5989dc586306a478edf8d1221a73e`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -34,6 +34,7 @@
 | Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
 | BaoStock 中国证券免费数据 | `baostock` | 启用 | `[api-baostock]` | `20` | 否 |
 | EODHD 全球金融市场数据 | `eodhd` | 启用 | `[api-eodhd]` | `25` | 否 |
+| Google Data Commons | `data-commons` | 启用 | `[api-dc]` | `5` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -7397,6 +7398,170 @@
   "websocket_allowed": false,
   "write_operations_allowed": false,
   "trading_or_order_execution_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## Google Data Commons (`data-commons`)
+
+- 状态：`启用`
+- 说明：通过官方 REST V2 查询全球公共统计知识图谱，支持地点与指标解析、图节点关系和统计观测。
+- 目录策略：仅开放 REST V2 的 resolve、node 和 observation 三个固定 POST 端点；优先读取中国起步目录，不假设所有城市或县均有数据。
+- 执行策略：API Key 仅以 X-API-Key 后端请求头注入；每张票据只执行一个白名单操作，限制节点数、变量数、关系表达式、超时和响应体积。
+- 票据前缀：`[api-dc]`
+- Secret环境变量名：`GOOGLE_DATA_COMMONS_API_KEY`（仅名称）
+- 提供方SHA-256：`be48fabd30ef0c7cda43239e538ac2ea929f49d7fc323508c8301a8d93b7a2a7`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取受控能力和中国起步目录，不调用上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `resolve-place` | 按一个或多个公开地点名称解析 Data Commons 地点 DCID。 | `nodes_json, property` |
+
+`resolve-place` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "nodes_json": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 6000
+    },
+    "property": {
+      "type": "string",
+      "maxLength": 300
+    }
+  },
+  "required": [
+    "nodes_json"
+  ]
+}
+```
+
+| `resolve-indicator` | 按公开指标名称或描述解析统计变量或主题 DCID。 | `nodes_json` |
+
+`resolve-indicator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "nodes_json": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 6000
+    }
+  },
+  "required": [
+    "nodes_json"
+  ]
+}
+```
+
+| `node-properties` | 按受控关系表达式读取节点属性、相邻实体或行政层级关系。 | `nodes_json, property` |
+
+`node-properties` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "nodes_json": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 6000
+    },
+    "property": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    }
+  },
+  "required": [
+    "nodes_json",
+    "property"
+  ]
+}
+```
+
+| `observations` | 读取公开实体和统计变量的最新值、指定日期或完整时间序列，并保留 facet 来源。 | `entity_dcids_json, variable_dcids_json, date, select_json, facet_ids_json, domains_json` |
+
+`observations` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "entity_dcids_json": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 6000
+    },
+    "variable_dcids_json": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 6000
+    },
+    "date": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "select_json": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "facet_ids_json": {
+      "type": "string",
+      "maxLength": 6000
+    },
+    "domains_json": {
+      "type": "string",
+      "maxLength": 6000
+    }
+  },
+  "required": [
+    "entity_dcids_json",
+    "variable_dcids_json"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "max_nodes": 20,
+  "max_variables": 20,
+  "max_select_fields": 5,
+  "max_relation_expression_characters": 300,
+  "max_response_bytes": 1000000,
+  "timeout_seconds_max": 60,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_endpoints_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_api_key_allowed": false,
+  "sparql_allowed": false,
+  "natural_language_api_allowed": false,
+  "mcp_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
   "secret_values_exposed": false
 }
 ```

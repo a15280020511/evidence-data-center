@@ -19,15 +19,16 @@
     "tushare/provider-catalog.json",
     "baostock/provider-catalog.json",
     "eodhd/provider-catalog.json",
+    "data-commons/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "10e32d01e9f35d3abe9592995067223cb07b19a7d15f1252c2f5f23d9a02f53a",
+  "managed_provider_catalog_sha256": "c91c47cf14e42b00ee14df317241cab3727d27208eb82e68183eaea5ddfa46c0",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 19,
-  "enabled_managed_provider_count": 19,
-  "managed_operation_count": 190,
-  "exposed_parameter_count": 1017,
+  "managed_provider_count": 20,
+  "enabled_managed_provider_count": 20,
+  "managed_operation_count": 195,
+  "exposed_parameter_count": 1028,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -44,6 +45,7 @@
     "tushare/provider-catalog.json",
     "baostock/provider-catalog.json",
     "eodhd/provider-catalog.json",
+    "data-commons/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -8750,6 +8752,199 @@
       "secret_value_exposed": false,
       "provider_sha256": "124c5e16ef567d8df1bbbfd7b261ac7b6a23f70cc73799ab2c27c73d3fc5ed58",
       "catalog_file": "eodhd/provider-catalog.json"
+    },
+    {
+      "provider_id": "data-commons",
+      "display_name": "Google Data Commons",
+      "description": "通过官方 REST V2 查询全球公共统计知识图谱，支持地点与指标解析、图节点关系和统计观测。",
+      "enabled": true,
+      "ticket_prefix": "[api-dc]",
+      "catalog_policy": "仅开放 REST V2 的 resolve、node 和 observation 三个固定 POST 端点；优先读取中国起步目录，不假设所有城市或县均有数据。",
+      "execution_policy": "API Key 仅以 X-API-Key 后端请求头注入；每张票据只执行一个白名单操作，限制节点数、变量数、关系表达式、超时和响应体积。",
+      "operation_count": 5,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取受控能力和中国起步目录，不调用上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "resolve-place",
+          "description": "按一个或多个公开地点名称解析 Data Commons 地点 DCID。",
+          "parameter_names": [
+            "nodes_json",
+            "property"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nodes_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              },
+              "property": {
+                "type": "string",
+                "maxLength": 300
+              }
+            },
+            "required": [
+              "nodes_json"
+            ]
+          },
+          "result_contract": {
+            "endpoint": "/v2/resolve",
+            "method": "POST",
+            "read_only": true,
+            "authentication": "X-API-Key backend-only"
+          }
+        },
+        {
+          "operation_id": "resolve-indicator",
+          "description": "按公开指标名称或描述解析统计变量或主题 DCID。",
+          "parameter_names": [
+            "nodes_json"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nodes_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              }
+            },
+            "required": [
+              "nodes_json"
+            ]
+          },
+          "result_contract": {
+            "endpoint": "/v2/resolve",
+            "method": "POST",
+            "read_only": true,
+            "authentication": "X-API-Key backend-only"
+          }
+        },
+        {
+          "operation_id": "node-properties",
+          "description": "按受控关系表达式读取节点属性、相邻实体或行政层级关系。",
+          "parameter_names": [
+            "nodes_json",
+            "property"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nodes_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              },
+              "property": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              }
+            },
+            "required": [
+              "nodes_json",
+              "property"
+            ]
+          },
+          "result_contract": {
+            "endpoint": "/v2/node",
+            "method": "POST",
+            "read_only": true,
+            "authentication": "X-API-Key backend-only"
+          }
+        },
+        {
+          "operation_id": "observations",
+          "description": "读取公开实体和统计变量的最新值、指定日期或完整时间序列，并保留 facet 来源。",
+          "parameter_names": [
+            "entity_dcids_json",
+            "variable_dcids_json",
+            "date",
+            "select_json",
+            "facet_ids_json",
+            "domains_json"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entity_dcids_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              },
+              "variable_dcids_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              },
+              "date": {
+                "type": "string",
+                "maxLength": 40
+              },
+              "select_json": {
+                "type": "string",
+                "maxLength": 300
+              },
+              "facet_ids_json": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "domains_json": {
+                "type": "string",
+                "maxLength": 6000
+              }
+            },
+            "required": [
+              "entity_dcids_json",
+              "variable_dcids_json"
+            ]
+          },
+          "result_contract": {
+            "endpoint": "/v2/observation",
+            "method": "POST",
+            "read_only": true,
+            "authentication": "X-API-Key backend-only"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "max_nodes": 20,
+        "max_variables": 20,
+        "max_select_fields": 5,
+        "max_relation_expression_characters": 300,
+        "max_response_bytes": 1000000,
+        "timeout_seconds_max": 60,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_endpoints_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_api_key_allowed": false,
+        "sparql_allowed": false,
+        "natural_language_api_allowed": false,
+        "mcp_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "GOOGLE_DATA_COMMONS_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "be48fabd30ef0c7cda43239e538ac2ea929f49d7fc323508c8301a8d93b7a2a7",
+      "catalog_file": "data-commons/provider-catalog.json"
     },
     {
       "provider_id": "wolfram-alpha",
@@ -17504,5 +17699,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "646fbb6f525403a6e21d2c9e9fa02c2b8cdce5c9c67adefa8742d1e468bb3b2c"
+  "catalog_sha256": "d054b45a5b6bcc9489a6650abdd72a4352d5989dc586306a478edf8d1221a73e"
 }

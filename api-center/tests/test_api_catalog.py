@@ -18,6 +18,7 @@ SPEC.loader.exec_module(build_catalog)
 EXPECTED_OPERATION_COUNTS = {
     "bigquery": 7,
     "earth-engine": 6,
+    "data-commons": 5,
     "akshare": 17,
     "ashare": 1,
     "aifin-market": 17,
@@ -57,9 +58,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 19)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 19)
-        self.assertEqual(catalog["managed_operation_count"], 190)
+        self.assertEqual(catalog["managed_provider_count"], 20)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 20)
+        self.assertEqual(catalog["managed_operation_count"], 195)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -80,6 +81,7 @@ class ApiCatalogTests(unittest.TestCase):
         expected_secret_names = {
             "bigquery": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
             "earth-engine": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
+            "data-commons": "GOOGLE_DATA_COMMONS_API_KEY",
             "aifin-market": "WIND_API_KEY",
             "yuandian-law": "YUANDIAN_API_KEY",
             "tianyancha": "TIANYANCHA_API_TOKEN",
@@ -101,6 +103,11 @@ class ApiCatalogTests(unittest.TestCase):
                 ],
                 secret_name,
             )
+
+        self.assertEqual(providers["data-commons"]["ticket_prefix"], "[api-dc]")
+        self.assertEqual(providers["data-commons"]["required_secret_environment_variable_name"], "GOOGLE_DATA_COMMONS_API_KEY")
+        self.assertFalse(providers["data-commons"]["limits"]["arbitrary_urls_allowed"])
+        self.assertFalse(providers["data-commons"]["limits"]["sparql_allowed"])
 
         self.assertEqual(providers["baostock"]["ticket_prefix"], "[api-baostock]")
         self.assertEqual(providers["baostock"]["required_secret_environment_variable_name"], "")
@@ -179,6 +186,7 @@ class ApiCatalogTests(unittest.TestCase):
             "tushare/provider-catalog.json",
             "baostock/provider-catalog.json",
             "eodhd/provider-catalog.json",
+            "data-commons/provider-catalog.json",
             "knowledge-tools/provider-catalog.json",
         ):
             self.assertIn(catalog_file, catalog["managed_provider_catalog_files"])
