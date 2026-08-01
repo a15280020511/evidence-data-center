@@ -144,6 +144,20 @@ def normalize_message_types(parameters: Mapping[str, Any]) -> list[str]:
     return values
 
 
+def decode_websocket_frame(raw: Any) -> str:
+    """Return one JSON text frame, accepting the two types allowed by websockets.recv()."""
+    if isinstance(raw, str):
+        return raw
+    if isinstance(raw, (bytes, bytearray, memoryview)):
+        try:
+            return bytes(raw).decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise RuntimeError("AISstream returned a non-UTF-8 binary websocket frame") from exc
+    raise RuntimeError(
+        f"AISstream returned an unsupported websocket frame type: {type(raw).__name__}"
+    )
+
+
 def build_subscription(operation: str, parameters: Mapping[str, Any], api_key: str) -> dict[str, Any]:
     if operation == "catalog-capabilities":
         return {}
@@ -200,16 +214,15 @@ async def collect_stream(
                 raw = await asyncio.wait_for(websocket.recv(), timeout=min(remaining, 5.0))
             except asyncio.TimeoutError:
                 continue
-            if not isinstance(raw, str):
-                raise RuntimeError("AISstream returned a non-text websocket frame")
-            encoded = raw.encode("utf-8")
+            text = decode_websocket_frame(raw)
+            encoded = text.encode("utf-8")
             raw_bytes += len(encoded)
             if raw_bytes > max_response_bytes:
                 raise RuntimeError(
                     f"stream exceeds acceptance.max_response_bytes={max_response_bytes}"
                 )
             try:
-                parsed = json.loads(raw)
+                parsed = json.loads(text)
             except json.JSONDecodeError as exc:
                 raise RuntimeError("AISstream returned invalid JSON") from exc
             if not isinstance(parsed, Mapping):
