@@ -56,12 +56,10 @@ jobs:
           PY
           git diff --check
 
-      - name: Commit deterministic outputs and remove bootstrap
+      - name: Commit deterministic non-workflow outputs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm api-center/metno-geosatellite/bootstrap_patch.py
-          git rm .github/workflows/metno-geosatellite-bootstrap.yml
-          git add api-center/README.md api-center/api-catalog.json api-center/api-catalog.md .github/workflows/api-catalog-validate.yml
+          git add api-center/README.md api-center/api-catalog.json api-center/api-catalog.md
           git commit -m "chore: generate MET Norway Geosatellite contracts"
           git push origin HEAD:${{ github.head_ref }}
