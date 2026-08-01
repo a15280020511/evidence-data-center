@@ -1,0 +1,197 @@
+name: Live Smoke Agent Toolbelt
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - ".github/workflows/live-smoke-agent-toolbelt.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-smoke-agent-toolbelt-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  live-smoke:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      AGENT_TOOLBELT_KEY: ${{ secrets.AGENT_TOOLBELT_KEY }}
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Execute minimal live upstream matrix
+        id: smoke
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +x
+          mkdir -p agent-toolbelt-live-artifacts
+          python - <<'PY'
+          from __future__ import annotations
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          BASE = "https://www.agenttoolbelt.live"
+          OUT = Path("agent-toolbelt-live-artifacts")
+          KEY = os.environ.get("AGENT_TOOLBELT_KEY", "").strip()
+          report = {
+              "schema_version": "agent-toolbelt-live-smoke-v1",
+              "tested_at": datetime.now(timezone.utc).isoformat(),
+              "origin": BASE,
+              "credential_present": bool(KEY),
+              "credential_prefix_valid": KEY.startswith("atb_"),
+              "secret_values_exposed": False,
+              "tests": {},
+          }
+
+          def call(path: str, *, body=None, auth=False):
+              headers = {"Accept": "application/json", "User-Agent": "evidence-data-center-live-smoke/1.0"}
+              data = None
+              method = "GET"
+              if body is not None:
+                  data = json.dumps(body, separators=(",", ":")).encode("utf-8")
+                  headers["Content-Type"] = "application/json"
+                  method = "POST"
+              if auth:
+                  headers["Authorization"] = f"Bearer {KEY}"
+              req = urllib.request.Request(BASE + path, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=90) as response:
+                      raw = response.read(2_000_000)
+                      return response.status, json.loads(raw.decode("utf-8"))
+              except urllib.error.HTTPError as exc:
+                  raw = exc.read(100_000).decode("utf-8", errors="replace")
+                  try:
+                      payload = json.loads(raw)
+                  except Exception:
+                      payload = {"error": raw[:1000]}
+                  return exc.code, payload
+
+          failures = []
+
+          status, catalog = call("/api/tools/catalog")
+          tools = catalog.get("tools", []) if isinstance(catalog, dict) else []
+          names = sorted(str(row.get("name")) for row in tools if isinstance(row, dict) and row.get("name"))
+          report["tests"]["public_catalog"] = {
+              "http_status": status,
+              "reported_count": catalog.get("count") if isinstance(catalog, dict) else None,
+              "parsed_count": len(names),
+              "tool_names": names,
+          }
+          if status != 200 or len(names) < 20:
+              failures.append("public_catalog")
+
+          if not KEY:
+              report["tests"]["authenticated_calls"] = {"status": "SKIPPED_MISSING_SECRET"}
+              failures.append("missing_secret")
+          else:
+              status, token = call(
+                  "/api/tools/token-counter",
+                  body={"text": "Agent Toolbelt connectivity test"},
+                  auth=True,
+              )
+              result = token.get("result", {}) if isinstance(token, dict) else {}
+              report["tests"]["token_counter"] = {
+                  "http_status": status,
+                  "success": token.get("success") if isinstance(token, dict) else None,
+                  "tool": token.get("tool") if isinstance(token, dict) else None,
+                  "version": token.get("version") if isinstance(token, dict) else None,
+                  "duration_ms": token.get("durationMs") if isinstance(token, dict) else None,
+                  "character_count": result.get("characterCount") if isinstance(result, dict) else None,
+                  "word_count": result.get("wordCount") if isinstance(result, dict) else None,
+                  "supported_model_count": len(result.get("supportedModels", [])) if isinstance(result, dict) else None,
+              }
+              if status != 200 or token.get("success") is not True:
+                  failures.append("token_counter")
+
+              status, valuation = call(
+                  "/api/tools/valuation-snapshot",
+                  body={"ticker": "AAPL"},
+                  auth=True,
+              )
+              result = valuation.get("result", {}) if isinstance(valuation, dict) else {}
+              metrics = result.get("metrics", {}) if isinstance(result, dict) else {}
+              report["tests"]["valuation_snapshot"] = {
+                  "http_status": status,
+                  "success": valuation.get("success") if isinstance(valuation, dict) else None,
+                  "tool": valuation.get("tool") if isinstance(valuation, dict) else None,
+                  "version": valuation.get("version") if isinstance(valuation, dict) else None,
+                  "duration_ms": valuation.get("durationMs") if isinstance(valuation, dict) else None,
+                  "ticker": result.get("ticker") if isinstance(result, dict) else None,
+                  "company_name": result.get("companyName") if isinstance(result, dict) else None,
+                  "verdict": result.get("verdict") if isinstance(result, dict) else None,
+                  "one_liner": result.get("oneLiner") if isinstance(result, dict) else None,
+                  "metrics": {
+                      "pe_ratio": metrics.get("peRatio") if isinstance(metrics, dict) else None,
+                      "ps_ratio": metrics.get("psRatio") if isinstance(metrics, dict) else None,
+                      "ev_ebitda": metrics.get("evEbitda") if isinstance(metrics, dict) else None,
+                      "fcf_yield": metrics.get("fcfYield") if isinstance(metrics, dict) else None,
+                      "roe": metrics.get("roe") if isinstance(metrics, dict) else None,
+                  },
+                  "generated_at": result.get("generatedAt") if isinstance(result, dict) else None,
+              }
+              if status != 200 or valuation.get("success") is not True:
+                  report["tests"]["valuation_snapshot"]["safe_error"] = (
+                      valuation.get("message") or valuation.get("error") or "upstream request failed"
+                  ) if isinstance(valuation, dict) else "invalid response"
+                  failures.append("valuation_snapshot")
+
+          report["status"] = "PASS" if not failures else "FAIL"
+          report["failures"] = failures
+          OUT.joinpath("summary.json").write_text(
+              json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps({
+              "status": report["status"],
+              "catalog_tools": len(names),
+              "credential_present": bool(KEY),
+              "failures": failures,
+              "secret_values_exposed": False,
+          }))
+          sys.exit(0 if not failures else 1)
+          PY
+
+      - name: Verify no credential entered artifact
+        if: always()
+        shell: bash
+        run: |
+          set +x
+          test -f agent-toolbelt-live-artifacts/summary.json
+          if [ -n "${AGENT_TOOLBELT_KEY:-}" ]; then
+            if grep -Fq -- "$AGENT_TOOLBELT_KEY" agent-toolbelt-live-artifacts/summary.json; then
+              echo "Credential value found in artifact"
+              exit 1
+            fi
+          fi
+
+      - name: Upload live smoke evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agent-toolbelt-live-smoke-${{ github.run_id }}
+          path: agent-toolbelt-live-artifacts/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Mark failed live smoke
+        if: steps.smoke.outcome != 'success'
+        run: exit 1
