@@ -62,6 +62,22 @@ class BrowserlessTaskTests(unittest.TestCase):
             self.assertTrue((root / "result.png").is_file())
             self.assertNotIn("content", snapshot)
 
+    def test_catalog_execution_succeeds_without_secret(self) -> None:
+        value = ticket("catalog-capabilities", {})
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ticket_path = root / "ticket.json"
+            ticket_path.write_text(json.dumps(value), encoding="utf-8")
+            with mock.patch.dict("os.environ", {}, clear=True):
+                self.assertEqual(module.execute(ticket_path, root), 0)
+            diagnostics = json.loads((root / "diagnostics.json").read_text(encoding="utf-8"))
+            manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+            self.assertEqual(diagnostics["status"], "API_BROWSERLESS_COMPLETED")
+            self.assertEqual(manifest["status"], "API_BROWSERLESS_COMPLETED")
+            self.assertFalse(diagnostics["metadata"]["upstream_called"])
+            self.assertEqual(diagnostics["metadata"]["credential_mode"], "none")
+            self.assertIsNone(diagnostics["failure"])
+
     def test_missing_secret_fails_without_exposing_value(self) -> None:
         with mock.patch.dict("os.environ", {}, clear=True):
             with self.assertRaisesRegex(RuntimeError, "BROWSERLESS_TOKEN"):

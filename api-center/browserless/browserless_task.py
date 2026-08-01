@@ -269,6 +269,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         if operation == "catalog-capabilities":
             snapshot = {"provider": provider_catalog()}
             metadata["credential_mode"] = "none"
+            status = "API_BROWSERLESS_COMPLETED"
         else:
             body, binary_extension = request_body(operation, dict(ticket.get("parameters") or {}))
             http_status, raw, content_type = call_upstream(operation, body, timeout, max_bytes)
