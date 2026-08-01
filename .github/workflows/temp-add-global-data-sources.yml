@@ -71,7 +71,14 @@ jobs:
 
       - name: Defer workflow writes to GitHub connector
         run: |
-          git restore --source=HEAD -- .github/workflows
+          rm -f \
+            .github/workflows/alphafeed-api-ticket.yml \
+            .github/workflows/alphafeed-provider-validate.yml \
+            .github/workflows/oecd-api-ticket.yml \
+            .github/workflows/oecd-provider-validate.yml \
+            .github/workflows/overture-maps-api-ticket.yml \
+            .github/workflows/overture-maps-provider-validate.yml
+          git restore --source=HEAD -- .github/workflows/api-catalog-validate.yml
           git restore --source=HEAD -- .github/scripts/add_global_data_sources.py
 
       - name: Commit verified non-workflow implementation
