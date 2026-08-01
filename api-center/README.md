@@ -221,3 +221,12 @@ API 中心产生 Snapshot
 - Authentication: REST V2 `X-API-Key` header
 - Fixed read-only operations: 5
 - BigQuery and Earth Engine continue to use `GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`; Data Commons is intentionally isolated.
+
+## 和风天气 QWeather
+
+- Provider: `qweather`
+- Ticket prefix: `[api-qweather]`
+- Secret: `QWEATHER_API_KEY`
+- Fixed Host: `ka6r72kcc3.re.qweatherapi.com`
+- Authentication: backend-only `X-QW-Api-Key`
+- Fixed read-only operations: 18

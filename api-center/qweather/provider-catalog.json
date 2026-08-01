@@ -1,0 +1,348 @@
+{
+  "schema_version": "qweather-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "qweather",
+      "display_name": "和风天气 QWeather",
+      "description": "通过开发者专属 API Host 读取全球地理位置、城市天气、格点天气、分钟级降水、空气质量、生活指数、短期历史天气和太阳辐射数据。",
+      "enabled": true,
+      "ticket_prefix": "[api-qweather]",
+      "required_secret_environment_variable": "QWEATHER_API_KEY",
+      "catalog_policy": "仅开放显式登记的固定 GET 路径和参数 Schema；固定使用用户专属 Host ka6r72kcc3.re.qweatherapi.com。",
+      "execution_policy": "QWEATHER_API_KEY 仅在后端 X-QW-Api-Key 请求头注入，不写入日志、Issue 或 Artifact；禁止任意 URL、Host、路径、请求头和客户端密钥。",
+      "official_origin": "https://ka6r72kcc3.re.qweatherapi.com",
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地和风天气安全能力目录，不调用上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": true,
+            "path_template": "",
+            "path_parameters": [],
+            "query_parameter_map": {}
+          },
+          "result_contract": {
+            "provider": "qweather",
+            "official_origin": "https://ka6r72kcc3.re.qweatherapi.com",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "geo-city-lookup",
+          "description": "全球城市、行政区或坐标反向解析，返回 LocationID、经纬度、时区和行政层级。",
+          "parameters": ["location", "adm", "range", "number", "lang"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {"type": "string", "minLength": 1, "maxLength": 120, "pattern": "^[^/?#\\\\]{1,120}$"},
+              "adm": {"type": "string", "maxLength": 100},
+              "range": {"type": "string", "pattern": "^[A-Za-z]{2}$"},
+              "number": {"type": "integer", "minimum": 1, "maximum": 20},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]}
+            },
+            "required": ["location"]
+          },
+          "execution": {"local": false, "path_template": "/geo/v2/city/lookup", "path_parameters": [], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "geo-city-top",
+          "description": "读取全球或指定国家/地区的热门城市。",
+          "parameters": ["range", "number", "lang"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "range": {"type": "string", "pattern": "^[A-Za-z]{2}$"},
+              "number": {"type": "integer", "minimum": 1, "maximum": 20},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]}
+            }
+          },
+          "execution": {"local": false, "path_template": "/geo/v2/city/top", "path_parameters": [], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "geo-poi-lookup",
+          "description": "按关键字、坐标、LocationID 或 Adcode 搜索景点或潮汐站。",
+          "parameters": ["location", "type", "city", "number", "lang"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "location": {"type": "string", "minLength": 1, "maxLength": 120, "pattern": "^[^/?#\\\\]{1,120}$"},
+              "type": {"type": "string", "enum": ["scenic", "TSTA"]},
+              "city": {"type": "string", "maxLength": 100},
+              "number": {"type": "integer", "minimum": 1, "maximum": 20},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]}
+            },
+            "required": ["location", "type"]
+          },
+          "execution": {"local": false, "path_template": "/geo/v2/poi/lookup", "path_parameters": [], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "geo-poi-range",
+          "description": "在指定坐标半径内搜索景点或潮汐站。",
+          "parameters": ["location", "type", "radius", "number", "lang"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "location": {"type": "string", "maxLength": 32, "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"},
+              "type": {"type": "string", "enum": ["scenic", "TSTA"]},
+              "radius": {"type": "integer", "minimum": 1, "maximum": 50},
+              "number": {"type": "integer", "minimum": 1, "maximum": 20},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]}
+            },
+            "required": ["location", "type"]
+          },
+          "execution": {"local": false, "path_template": "/geo/v2/poi/range", "path_parameters": [], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "weather-now",
+          "description": "读取全球城市实时天气观测。",
+          "parameters": ["location", "lang", "unit"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "location": {"type": "string", "minLength": 1, "maxLength": 120, "pattern": "^[^/?#\\\\]{1,120}$"},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "unit": {"type": "string", "enum": ["m", "i"]}
+            },
+            "required": ["location"]
+          },
+          "execution": {"local": false, "path_template": "/v7/weather/now", "path_parameters": [], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "weather-daily",
+          "description": "读取全球城市 3 至 30 日天气预报。",
+          "parameters": ["days", "location", "lang", "unit"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "days": {"type": "string", "enum": ["3d", "7d", "10d", "15d", "30d"]},
+              "location": {"type": "string", "minLength": 1, "maxLength": 120, "pattern": "^[^/?#\\\\]{1,120}$"},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "unit": {"type": "string", "enum": ["m", "i"]}
+            },
+            "required": ["days", "location"]
+          },
+          "execution": {"local": false, "path_template": "/v7/weather/{days}", "path_parameters": ["days"], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "weather-hourly",
+          "description": "读取全球城市未来 24 至 168 小时逐小时天气预报。",
+          "parameters": ["hours", "location", "lang", "unit"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "hours": {"type": "string", "enum": ["24h", "72h", "168h"]},
+              "location": {"type": "string", "minLength": 1, "maxLength": 120, "pattern": "^[^/?#\\\\]{1,120}$"},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "unit": {"type": "string", "enum": ["m", "i"]}
+            },
+            "required": ["hours", "location"]
+          },
+          "execution": {"local": false, "path_template": "/v7/weather/{hours}", "path_parameters": ["hours"], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "minutely-precipitation",
+          "description": "读取中国坐标未来两小时每 5 分钟降水临近预报。",
+          "parameters": ["location", "lang"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "location": {"type": "string", "maxLength": 32, "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]}
+            },
+            "required": ["location"]
+          },
+          "execution": {"local": false, "path_template": "/v7/minutely/5m", "path_parameters": [], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "grid-weather-now",
+          "description": "读取全球坐标 3–5 公里格点实时天气。",
+          "parameters": ["location", "lang", "unit"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "location": {"type": "string", "maxLength": 32, "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "unit": {"type": "string", "enum": ["m", "i"]}
+            },
+            "required": ["location"]
+          },
+          "execution": {"local": false, "path_template": "/v7/grid-weather/now", "path_parameters": [], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "grid-weather-daily",
+          "description": "读取全球坐标 3 或 7 日格点天气预报。",
+          "parameters": ["days", "location", "lang", "unit"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "days": {"type": "string", "enum": ["3d", "7d"]},
+              "location": {"type": "string", "maxLength": 32, "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "unit": {"type": "string", "enum": ["m", "i"]}
+            },
+            "required": ["days", "location"]
+          },
+          "execution": {"local": false, "path_template": "/v7/grid-weather/{days}", "path_parameters": ["days"], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "grid-weather-hourly",
+          "description": "读取全球坐标 24 或 72 小时格点天气预报。",
+          "parameters": ["hours", "location", "lang", "unit"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "hours": {"type": "string", "enum": ["24h", "72h"]},
+              "location": {"type": "string", "maxLength": 32, "pattern": "^-?(?:180(?:\\.0{1,2})?|(?:1[0-7]\\d|[1-9]?\\d)(?:\\.\\d{1,2})?),-?(?:90(?:\\.0{1,2})?|(?:[1-8]?\\d)(?:\\.\\d{1,2})?)$"},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "unit": {"type": "string", "enum": ["m", "i"]}
+            },
+            "required": ["hours", "location"]
+          },
+          "execution": {"local": false, "path_template": "/v7/grid-weather/{hours}", "path_parameters": ["hours"], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "air-quality-current",
+          "description": "读取全球坐标 1×1 公里实时空气质量、污染物和健康建议。",
+          "parameters": ["latitude", "longitude", "lang"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+              "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]}
+            },
+            "required": ["latitude", "longitude"]
+          },
+          "execution": {"local": false, "path_template": "/airquality/v1/current/{latitude}/{longitude}", "path_parameters": ["latitude", "longitude"], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "air-quality-hourly",
+          "description": "读取全球坐标未来 24 小时空气质量预报。",
+          "parameters": ["latitude", "longitude", "lang", "local_time"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+              "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "local_time": {"type": "boolean"}
+            },
+            "required": ["latitude", "longitude"]
+          },
+          "execution": {"local": false, "path_template": "/airquality/v1/hourly/{latitude}/{longitude}", "path_parameters": ["latitude", "longitude"], "query_parameter_map": {"local_time": "localTime"}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "air-quality-daily",
+          "description": "读取全球坐标未来 3 日空气质量预报。",
+          "parameters": ["latitude", "longitude", "lang", "local_time"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+              "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "local_time": {"type": "boolean"}
+            },
+            "required": ["latitude", "longitude"]
+          },
+          "execution": {"local": false, "path_template": "/airquality/v1/daily/{latitude}/{longitude}", "path_parameters": ["latitude", "longitude"], "query_parameter_map": {"local_time": "localTime"}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "weather-indices",
+          "description": "读取中国和全球城市 1 或 3 日天气生活指数。",
+          "parameters": ["days", "location", "type", "lang"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "days": {"type": "string", "enum": ["1d", "3d"]},
+              "location": {"type": "string", "minLength": 1, "maxLength": 120, "pattern": "^[^/?#\\\\]{1,120}$"},
+              "type": {"type": "string", "pattern": "^(?:[1-9]|1[0-6])(?:,(?:[1-9]|1[0-6])){0,15}$", "maxLength": 64},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]}
+            },
+            "required": ["days", "location", "type"]
+          },
+          "execution": {"local": false, "path_template": "/v7/indices/{days}", "path_parameters": ["days"], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "historical-weather",
+          "description": "读取最近 10 天内指定日期的历史天气再分析数据。",
+          "parameters": ["location", "date", "lang", "unit"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "location": {"type": "string", "pattern": "^[0-9A-Za-z_-]{3,32}$"},
+              "date": {"type": "string", "pattern": "^[0-9]{8}$"},
+              "lang": {"type": "string", "enum": ["zh", "en", "fr", "es", "ja", "ko", "ru", "de", "pt", "it", "th", "ar"]},
+              "unit": {"type": "string", "enum": ["m", "i"]}
+            },
+            "required": ["location", "date"]
+          },
+          "execution": {"local": false, "path_template": "/v7/historical/weather", "path_parameters": [], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        },
+        {
+          "operation_id": "solar-radiation-forecast",
+          "description": "读取全球坐标未来 1–60 小时太阳辐射预报。",
+          "parameters": ["latitude", "longitude", "hours", "interval", "tilt", "azimuth", "extra"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "latitude": {"type": "number", "minimum": -90, "maximum": 90},
+              "longitude": {"type": "number", "minimum": -180, "maximum": 180},
+              "hours": {"type": "integer", "minimum": 1, "maximum": 60},
+              "interval": {"type": "integer", "enum": [15, 30, 60]},
+              "tilt": {"type": "integer", "minimum": 0, "maximum": 90},
+              "azimuth": {"type": "integer", "minimum": 0, "maximum": 359},
+              "extra": {"type": "string", "pattern": "^(?:weather|poa)(?:,(?:weather|poa))?$"}
+            },
+            "required": ["latitude", "longitude"]
+          },
+          "execution": {"local": false, "path_template": "/solarradiation/v1/forecast/{latitude}/{longitude}", "path_parameters": ["latitude", "longitude"], "query_parameter_map": {}},
+          "result_contract": {"provider": "qweather", "official_origin": "https://ka6r72kcc3.re.qweatherapi.com", "http_method": "GET", "read_only": true, "credential_mode": "x_qw_api_key_backend_only"}
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 2,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 5000000,
+        "max_rows": 5000,
+        "fixed_api_host": "ka6r72kcc3.re.qweatherapi.com",
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_api_key_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      }
+    }
+  ]
+}

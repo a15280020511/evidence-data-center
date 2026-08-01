@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            195,
+            213,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -66,6 +66,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "bigquery": 7,
             "earth-engine": 6,
             "data-commons": 5,
+            "qweather": 18,
             "yuandian-law": 40,
             "jina-reader": 2,
             "exa": 3,
@@ -200,6 +201,17 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(dc_provider["limits"]["arbitrary_endpoints_allowed"])
         self.assertFalse(dc_provider["limits"]["sparql_allowed"])
         self.assertFalse(dc_provider["limits"]["write_operations_allowed"])
+
+        qweather = json.loads(
+            (ROOT / "qweather/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        qw_provider = qweather["providers"][0]
+        self.assertEqual(qw_provider["required_secret_environment_variable"], "QWEATHER_API_KEY")
+        self.assertEqual(qw_provider["limits"]["fixed_api_host"], "ka6r72kcc3.re.qweatherapi.com")
+        self.assertFalse(qw_provider["limits"]["arbitrary_urls_allowed"])
+        self.assertFalse(qw_provider["limits"]["arbitrary_hosts_allowed"])
+        self.assertFalse(qw_provider["limits"]["redirects_allowed"])
+        self.assertFalse(qw_provider["limits"]["write_operations_allowed"])
 
         eodhd = json.loads(
             (ROOT / "eodhd/provider-catalog.json").read_text(encoding="utf-8")
