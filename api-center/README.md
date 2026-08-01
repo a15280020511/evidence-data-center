@@ -45,6 +45,7 @@ EODHD_API_TOKEN
 ALPHA_VANTAGE_API_KEY
 ALPHAFEED_API_KEY
 MARKETSTACK_ACCESS_KEY
+NASA_API_KEY
 XWEATHER_CLIENT_SECRET
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
@@ -153,6 +154,17 @@ MARKETSTACK_ACCESS_KEY
 ```
 
 固定开放 11 项免费计划只读能力，覆盖最新 EOD、最大一年历史 EOD、指定日期 EOD、拆股、分红、证券目录、单一证券信息、交易所、币种和时区。为保护免费计划每月 100 次请求额度，每张票据只发送一次请求、不自动重试或翻页、最多 5 个证券代码、历史跨度最多 366 天。盘中、实时轮询、债券、ETF、商品、企业基本面、EDGAR、交易和写入能力均不开放。
+
+## NASA Open APIs 与 Earthdata GIBS
+
+`api-center/nasa/` 固定访问 NASA 官方只读主机：
+
+```text
+[intel-nasa]
+NASA_API_KEY
+```
+
+固定开放 25 项操作，覆盖 APOD、近地小行星 NeoWs、DONKI 空间天气、EPIC 地球影像元数据、NASA 图像与视频资料库，以及 Earthdata GIBS 的 WMTS/WMS 能力、图层元数据和单瓦片影像。旧 Earth API 和 Mars Rover Photos API 已归档，不予接入；地球影像由官方替代的 GIBS 提供。每张票据只发送一次请求、不自动重试或翻页，GIBS 每票据最多一张瓦片，禁止整图层下载、任意 URL、后台轮询和写入。
 
 ## World Bank 世界银行开放数据
 

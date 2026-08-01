@@ -27,6 +27,7 @@ TUSHARE_API_TOKEN
 ALPHA_VANTAGE_API_KEY
 ALPHAFEED_API_KEY
 MARKETSTACK_ACCESS_KEY
+NASA_API_KEY
 XWEATHER_CLIENT_SECRET
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
@@ -52,6 +53,14 @@ Repository Secret: MARKETSTACK_ACCESS_KEY
 ```
 
 该Key只允许作为`access_key`查询参数注入`https://api.marketstack.com/v2`的11项固定免费计划GET端点。客户端不得提交或覆盖Key；Key不得进入Issue、目录、日志、诊断或Artifact。每张票据单请求、不自动重试，最多5个证券代码和366天历史范围。
+
+## NASA Open APIs
+
+```text
+Repository Secret: NASA_API_KEY
+```
+
+该Key只允许作为`api_key`查询参数注入`https://api.nasa.gov`的固定只读端点。NASA Image Library与Earthdata GIBS为免密固定主机，不接收该Key。旧Earth API和Mars Rover Photos API已归档且禁止调用；Key不得进入Issue、目录、日志、诊断或Artifact。
 
 ## AISstream
 

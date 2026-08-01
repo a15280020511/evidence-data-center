@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`35/35` 已启用
-- 托管操作总数：`384`
-- 已公开参数总数：`1483`
-- 目录 SHA-256：`7ff5354abb3947ddb36c1150a09f8b9df53610bae3cffaa33481098b290b7c29`
+- 托管提供方：`36/36` 已启用
+- 托管操作总数：`409`
+- 已公开参数总数：`1545`
+- 目录 SHA-256：`e1701bb0417b7fdcd831cbb10308e6e5d9ed089295b12a84d3577a38b763b739`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -50,6 +50,7 @@
 | AISstream 全球船舶实时AIS | `aisstream` | 启用 | `[intel-aisstream]` | `4` | 否 |
 | 互联网档案馆 Internet Archive | `internet-archive` | 启用 | `[intel-internet-archive]` | `6` | 否 |
 | Marketstack 全球股票 EOD 与历史数据 | `marketstack` | 启用 | `[intel-marketstack]` | `11` | 否 |
+| NASA Open APIs 与 Earthdata GIBS | `nasa` | 启用 | `[intel-nasa]` | `25` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -14300,6 +14301,731 @@
   "trading_or_order_execution_allowed": false,
   "secret_values_exposed": false,
   "authentication_required": true
+}
+```
+
+## NASA Open APIs 与 Earthdata GIBS (`nasa`)
+
+- 状态：`启用`
+- 说明：通过 NASA 官方固定只读端点读取天文图片、近地小行星、空间天气、EPIC 地球影像元数据、NASA 图像资料库以及 Earthdata GIBS 地球观测图层和单瓦片影像。
+- 目录策略：只开放25项固定只读操作；旧 Earth API 与 Mars Rover Photos API 已归档且不开放；禁止任意URL、任意主机、任意路径、批量影像下载、后台轮询、上传和写入。
+- 执行策略：每张票据最多一次上游GET且不自动重试；api.nasa.gov操作由后端注入NASA_API_KEY；NASA Image Library和GIBS免密；所有响应受字节上限约束。
+- 票据前缀：`[intel-nasa]`
+- Secret环境变量名：`NASA_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`4215636150fb5168bf1a45d7c7433ac6f6ec014d1e03c758548b459956f9c679`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 NASA 安全能力目录，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `apod` | 读取 NASA Astronomy Picture of the Day 单日、有限日期范围或有限随机结果. | `date, start_date, end_date, count, thumbs` |
+
+`apod` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10
+    },
+    "thumbs": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+| `neo-feed` | 按最多7天接近日期窗口读取近地小行星列表. | `start_date, end_date` |
+
+`neo-feed` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "start_date"
+  ]
+}
+```
+
+| `neo-lookup` | 按 NASA JPL 小天体 ID 查询单个近地天体. | `asteroid_id` |
+
+`neo-lookup` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "asteroid_id": {
+      "type": "string",
+      "pattern": "^[0-9]{1,20}$"
+    }
+  },
+  "required": [
+    "asteroid_id"
+  ]
+}
+```
+
+| `neo-browse` | 分页浏览近地天体目录. | `page, size` |
+
+`neo-browse` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "page": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  }
+}
+```
+
+| `donki-cme` | 读取日冕物质抛射事件. | `start_date, end_date` |
+
+`donki-cme` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `donki-cme-analysis` | 读取日冕物质抛射分析结果. | `start_date, end_date, most_accurate_only, complete_entry_only, speed, half_angle, catalog` |
+
+`donki-cme-analysis` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "most_accurate_only": {
+      "type": "boolean"
+    },
+    "complete_entry_only": {
+      "type": "boolean"
+    },
+    "speed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5000
+    },
+    "half_angle": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 180
+    },
+    "catalog": {
+      "type": "string",
+      "enum": [
+        "ALL",
+        "SWRC_CATALOG",
+        "JANG_ET_AL_CATALOG"
+      ]
+    }
+  }
+}
+```
+
+| `donki-gst` | 读取地磁暴事件. | `start_date, end_date` |
+
+`donki-gst` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `donki-ips` | 读取行星际激波事件. | `start_date, end_date, location, catalog` |
+
+`donki-ips` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "location": {
+      "type": "string",
+      "enum": [
+        "ALL",
+        "Earth",
+        "MESSENGER",
+        "STEREO A",
+        "STEREO B"
+      ]
+    },
+    "catalog": {
+      "type": "string",
+      "enum": [
+        "ALL",
+        "SWRC_CATALOG",
+        "WINSLOW_MESSENGER_ICME_CATALOG"
+      ]
+    }
+  }
+}
+```
+
+| `donki-flr` | 读取太阳耀斑事件. | `start_date, end_date` |
+
+`donki-flr` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `donki-sep` | 读取太阳高能粒子事件. | `start_date, end_date` |
+
+`donki-sep` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `donki-mpc` | 读取磁层顶穿越事件. | `start_date, end_date` |
+
+`donki-mpc` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `donki-rbe` | 读取辐射带增强事件. | `start_date, end_date` |
+
+`donki-rbe` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `donki-hss` | 读取高速太阳风流事件. | `start_date, end_date` |
+
+`donki-hss` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `donki-notifications` | 读取 DONKI 空间天气通知. | `start_date, end_date, type` |
+
+`donki-notifications` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "all",
+        "FLR",
+        "SEP",
+        "CME",
+        "IPS",
+        "MPC",
+        "GST",
+        "RBE",
+        "report"
+      ]
+    }
+  }
+}
+```
+
+| `epic-natural` | 读取 EPIC 自然色地球影像元数据，可限定单日. | `date` |
+
+`epic-natural` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `epic-enhanced` | 读取 EPIC 增强色地球影像元数据，可限定单日. | `date` |
+
+`epic-enhanced` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `nasa-images-search` | 检索 NASA 图像与视频资料库单页结果. | `q, media_type, year_start, year_end, page` |
+
+`nasa-images-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "q": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "media_type": {
+      "type": "string",
+      "enum": [
+        "image",
+        "video",
+        "audio"
+      ]
+    },
+    "year_start": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "year_end": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "q"
+  ]
+}
+```
+
+| `nasa-images-asset` | 读取单一 NASA ID 的媒体资产清单. | `nasa_id` |
+
+`nasa-images-asset` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "nasa_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$"
+    }
+  },
+  "required": [
+    "nasa_id"
+  ]
+}
+```
+
+| `nasa-images-metadata` | 读取单一 NASA ID 的原始元数据. | `nasa_id` |
+
+`nasa-images-metadata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "nasa_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$"
+    }
+  },
+  "required": [
+    "nasa_id"
+  ]
+}
+```
+
+| `nasa-images-captions` | 读取单一 NASA ID 的字幕或文本轨道. | `nasa_id` |
+
+`nasa-images-captions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "nasa_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$"
+    }
+  },
+  "required": [
+    "nasa_id"
+  ]
+}
+```
+
+| `gibs-wmts-capabilities` | 读取 Earthdata GIBS WMTS 能力 XML. | `projection, catalog` |
+
+`gibs-wmts-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "projection": {
+      "type": "string",
+      "enum": [
+        "epsg4326",
+        "epsg3857"
+      ]
+    },
+    "catalog": {
+      "type": "string",
+      "enum": [
+        "best",
+        "nrt",
+        "std",
+        "all"
+      ]
+    }
+  }
+}
+```
+
+| `gibs-wms-capabilities` | 读取 Earthdata GIBS WMS 1.3.0 能力 XML. | `projection, catalog` |
+
+`gibs-wms-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "projection": {
+      "type": "string",
+      "enum": [
+        "epsg4326",
+        "epsg3857"
+      ]
+    },
+    "catalog": {
+      "type": "string",
+      "enum": [
+        "best",
+        "nrt",
+        "std",
+        "all"
+      ]
+    }
+  }
+}
+```
+
+| `gibs-layer-metadata` | 读取单一 GIBS 图层元数据 JSON. | `layer` |
+
+`gibs-layer-metadata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "layer": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$"
+    }
+  },
+  "required": [
+    "layer"
+  ]
+}
+```
+
+| `gibs-tile` | 读取单一 Earthdata GIBS WMTS 影像瓦片. | `projection, catalog, layer, date, tile_matrix_set, tile_matrix, tile_row, tile_col, format` |
+
+`gibs-tile` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "projection": {
+      "type": "string",
+      "enum": [
+        "epsg4326",
+        "epsg3857"
+      ]
+    },
+    "catalog": {
+      "type": "string",
+      "enum": [
+        "best",
+        "nrt",
+        "std",
+        "all"
+      ]
+    },
+    "layer": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "tile_matrix_set": {
+      "type": "string",
+      "enum": [
+        "31.25m",
+        "62.5m",
+        "125m",
+        "250m",
+        "500m",
+        "1km",
+        "2km",
+        "4km",
+        "8km",
+        "16km"
+      ]
+    },
+    "tile_matrix": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 30
+    },
+    "tile_row": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "tile_col": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "jpg",
+        "png"
+      ]
+    }
+  },
+  "required": [
+    "layer",
+    "date",
+    "tile_matrix_set",
+    "tile_matrix",
+    "tile_row",
+    "tile_col",
+    "format"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 10000000,
+  "apod_date_span_days_max": 31,
+  "apod_random_count_max": 10,
+  "neo_feed_span_days_max": 7,
+  "donki_date_span_days_max": 31,
+  "nasa_images_page_max": 100,
+  "gibs_tiles_per_ticket_max": 1,
+  "fixed_hosts": [
+    "api.nasa.gov",
+    "images-api.nasa.gov",
+    "gibs.earthdata.nasa.gov"
+  ],
+  "automatic_pagination_allowed": false,
+  "bulk_download_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "background_polling_allowed": false,
+  "archived_earth_api_allowed": false,
+  "archived_mars_rover_api_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 

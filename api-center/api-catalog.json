@@ -37,15 +37,16 @@
     "aisstream/provider-catalog.json",
     "internet-archive/provider-catalog.json",
     "marketstack/provider-catalog.json",
+    "nasa/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "88f7499702507b74987fa6be15f3440366f7e37808d4beb225ea648adbdc3f40",
+  "managed_provider_catalog_sha256": "022113ba29e0df1b1aab01fda54c9b1e41396927c61c5ea6f7c1d409e46a0348",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 35,
-  "enabled_managed_provider_count": 35,
-  "managed_operation_count": 384,
-  "exposed_parameter_count": 1483,
+  "managed_provider_count": 36,
+  "enabled_managed_provider_count": 36,
+  "managed_operation_count": 409,
+  "exposed_parameter_count": 1545,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -77,6 +78,7 @@
     "aisstream/provider-catalog.json",
     "internet-archive/provider-catalog.json",
     "marketstack/provider-catalog.json",
+    "nasa/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -17358,6 +17360,942 @@
       "catalog_file": "marketstack/provider-catalog.json"
     },
     {
+      "provider_id": "nasa",
+      "display_name": "NASA Open APIs 与 Earthdata GIBS",
+      "description": "通过 NASA 官方固定只读端点读取天文图片、近地小行星、空间天气、EPIC 地球影像元数据、NASA 图像资料库以及 Earthdata GIBS 地球观测图层和单瓦片影像。",
+      "enabled": true,
+      "ticket_prefix": "[intel-nasa]",
+      "catalog_policy": "只开放25项固定只读操作；旧 Earth API 与 Mars Rover Photos API 已归档且不开放；禁止任意URL、任意主机、任意路径、批量影像下载、后台轮询、上传和写入。",
+      "execution_policy": "每张票据最多一次上游GET且不自动重试；api.nasa.gov操作由后端注入NASA_API_KEY；NASA Image Library和GIBS免密；所有响应受字节上限约束。",
+      "operation_count": 25,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 NASA 安全能力目录，不访问上游.",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "nasa",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "apod",
+          "description": "读取 NASA Astronomy Picture of the Day 单日、有限日期范围或有限随机结果.",
+          "parameter_names": [
+            "date",
+            "start_date",
+            "end_date",
+            "count",
+            "thumbs"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10
+              },
+              "thumbs": {
+                "type": "boolean"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/planetary/apod",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "neo-feed",
+          "description": "按最多7天接近日期窗口读取近地小行星列表.",
+          "parameter_names": [
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "start_date"
+            ]
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/neo/rest/v1/feed",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "neo-lookup",
+          "description": "按 NASA JPL 小天体 ID 查询单个近地天体.",
+          "parameter_names": [
+            "asteroid_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "asteroid_id": {
+                "type": "string",
+                "pattern": "^[0-9]{1,20}$"
+              }
+            },
+            "required": [
+              "asteroid_id"
+            ]
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/neo/rest/v1/neo/{asteroid_id}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "neo-browse",
+          "description": "分页浏览近地天体目录.",
+          "parameter_names": [
+            "page",
+            "size"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/neo/rest/v1/neo/browse",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-cme",
+          "description": "读取日冕物质抛射事件.",
+          "parameter_names": [
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/CME",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-cme-analysis",
+          "description": "读取日冕物质抛射分析结果.",
+          "parameter_names": [
+            "start_date",
+            "end_date",
+            "most_accurate_only",
+            "complete_entry_only",
+            "speed",
+            "half_angle",
+            "catalog"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "most_accurate_only": {
+                "type": "boolean"
+              },
+              "complete_entry_only": {
+                "type": "boolean"
+              },
+              "speed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5000
+              },
+              "half_angle": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 180
+              },
+              "catalog": {
+                "type": "string",
+                "enum": [
+                  "ALL",
+                  "SWRC_CATALOG",
+                  "JANG_ET_AL_CATALOG"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/CMEAnalysis",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-gst",
+          "description": "读取地磁暴事件.",
+          "parameter_names": [
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/GST",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-ips",
+          "description": "读取行星际激波事件.",
+          "parameter_names": [
+            "start_date",
+            "end_date",
+            "location",
+            "catalog"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "location": {
+                "type": "string",
+                "enum": [
+                  "ALL",
+                  "Earth",
+                  "MESSENGER",
+                  "STEREO A",
+                  "STEREO B"
+                ]
+              },
+              "catalog": {
+                "type": "string",
+                "enum": [
+                  "ALL",
+                  "SWRC_CATALOG",
+                  "WINSLOW_MESSENGER_ICME_CATALOG"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/IPS",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-flr",
+          "description": "读取太阳耀斑事件.",
+          "parameter_names": [
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/FLR",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-sep",
+          "description": "读取太阳高能粒子事件.",
+          "parameter_names": [
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/SEP",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-mpc",
+          "description": "读取磁层顶穿越事件.",
+          "parameter_names": [
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/MPC",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-rbe",
+          "description": "读取辐射带增强事件.",
+          "parameter_names": [
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/RBE",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-hss",
+          "description": "读取高速太阳风流事件.",
+          "parameter_names": [
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/HSS",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "donki-notifications",
+          "description": "读取 DONKI 空间天气通知.",
+          "parameter_names": [
+            "start_date",
+            "end_date",
+            "type"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "FLR",
+                  "SEP",
+                  "CME",
+                  "IPS",
+                  "MPC",
+                  "GST",
+                  "RBE",
+                  "report"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/DONKI/notifications",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "epic-natural",
+          "description": "读取 EPIC 自然色地球影像元数据，可限定单日.",
+          "parameter_names": [
+            "date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/EPIC/api/natural[/date/{date}]",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "epic-enhanced",
+          "description": "读取 EPIC 增强色地球影像元数据，可限定单日.",
+          "parameter_names": [
+            "date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "host": "api.nasa.gov",
+            "path": "/EPIC/api/enhanced[/date/{date}]",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_key_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "nasa-images-search",
+          "description": "检索 NASA 图像与视频资料库单页结果.",
+          "parameter_names": [
+            "q",
+            "media_type",
+            "year_start",
+            "year_end",
+            "page"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "media_type": {
+                "type": "string",
+                "enum": [
+                  "image",
+                  "video",
+                  "audio"
+                ]
+              },
+              "year_start": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "year_end": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "q"
+            ]
+          },
+          "result_contract": {
+            "host": "images-api.nasa.gov",
+            "path": "/search",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "nasa-images-asset",
+          "description": "读取单一 NASA ID 的媒体资产清单.",
+          "parameter_names": [
+            "nasa_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nasa_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$"
+              }
+            },
+            "required": [
+              "nasa_id"
+            ]
+          },
+          "result_contract": {
+            "host": "images-api.nasa.gov",
+            "path": "/asset/{nasa_id}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "nasa-images-metadata",
+          "description": "读取单一 NASA ID 的原始元数据.",
+          "parameter_names": [
+            "nasa_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nasa_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$"
+              }
+            },
+            "required": [
+              "nasa_id"
+            ]
+          },
+          "result_contract": {
+            "host": "images-api.nasa.gov",
+            "path": "/metadata/{nasa_id}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "nasa-images-captions",
+          "description": "读取单一 NASA ID 的字幕或文本轨道.",
+          "parameter_names": [
+            "nasa_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nasa_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,127}$"
+              }
+            },
+            "required": [
+              "nasa_id"
+            ]
+          },
+          "result_contract": {
+            "host": "images-api.nasa.gov",
+            "path": "/captions/{nasa_id}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "gibs-wmts-capabilities",
+          "description": "读取 Earthdata GIBS WMTS 能力 XML.",
+          "parameter_names": [
+            "projection",
+            "catalog"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "projection": {
+                "type": "string",
+                "enum": [
+                  "epsg4326",
+                  "epsg3857"
+                ]
+              },
+              "catalog": {
+                "type": "string",
+                "enum": [
+                  "best",
+                  "nrt",
+                  "std",
+                  "all"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "host": "gibs.earthdata.nasa.gov",
+            "path": "/wmts/{projection}/{catalog}/1.0.0/WMTSCapabilities.xml",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "gibs-wms-capabilities",
+          "description": "读取 Earthdata GIBS WMS 1.3.0 能力 XML.",
+          "parameter_names": [
+            "projection",
+            "catalog"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "projection": {
+                "type": "string",
+                "enum": [
+                  "epsg4326",
+                  "epsg3857"
+                ]
+              },
+              "catalog": {
+                "type": "string",
+                "enum": [
+                  "best",
+                  "nrt",
+                  "std",
+                  "all"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "host": "gibs.earthdata.nasa.gov",
+            "path": "/wms/{projection}/{catalog}/wms.cgi",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "gibs-layer-metadata",
+          "description": "读取单一 GIBS 图层元数据 JSON.",
+          "parameter_names": [
+            "layer"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "layer": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$"
+              }
+            },
+            "required": [
+              "layer"
+            ]
+          },
+          "result_contract": {
+            "host": "gibs.earthdata.nasa.gov",
+            "path": "/layer-metadata/v1.0/{layer}.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "gibs-tile",
+          "description": "读取单一 Earthdata GIBS WMTS 影像瓦片.",
+          "parameter_names": [
+            "projection",
+            "catalog",
+            "layer",
+            "date",
+            "tile_matrix_set",
+            "tile_matrix",
+            "tile_row",
+            "tile_col",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "projection": {
+                "type": "string",
+                "enum": [
+                  "epsg4326",
+                  "epsg3857"
+                ]
+              },
+              "catalog": {
+                "type": "string",
+                "enum": [
+                  "best",
+                  "nrt",
+                  "std",
+                  "all"
+                ]
+              },
+              "layer": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,199}$"
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "tile_matrix_set": {
+                "type": "string",
+                "enum": [
+                  "31.25m",
+                  "62.5m",
+                  "125m",
+                  "250m",
+                  "500m",
+                  "1km",
+                  "2km",
+                  "4km",
+                  "8km",
+                  "16km"
+                ]
+              },
+              "tile_matrix": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30
+              },
+              "tile_row": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              },
+              "tile_col": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "jpg",
+                  "png"
+                ]
+              }
+            },
+            "required": [
+              "layer",
+              "date",
+              "tile_matrix_set",
+              "tile_matrix",
+              "tile_row",
+              "tile_col",
+              "format"
+            ]
+          },
+          "result_contract": {
+            "host": "gibs.earthdata.nasa.gov",
+            "path": "/wmts/{projection}/{catalog}/{layer}/default/{date}/{tile_matrix_set}/{tile_matrix}/{tile_row}/{tile_col}.{format}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "binary": true
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "transient_retry_max": 0,
+        "provider_concurrency_max": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 10000000,
+        "apod_date_span_days_max": 31,
+        "apod_random_count_max": 10,
+        "neo_feed_span_days_max": 7,
+        "donki_date_span_days_max": 31,
+        "nasa_images_page_max": 100,
+        "gibs_tiles_per_ticket_max": 1,
+        "fixed_hosts": [
+          "api.nasa.gov",
+          "images-api.nasa.gov",
+          "gibs.earthdata.nasa.gov"
+        ],
+        "automatic_pagination_allowed": false,
+        "bulk_download_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "background_polling_allowed": false,
+        "archived_earth_api_allowed": false,
+        "archived_mars_rover_api_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "NASA_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "4215636150fb5168bf1a45d7c7433ac6f6ec014d1e03c758548b459956f9c679",
+      "catalog_file": "nasa/provider-catalog.json"
+    },
+    {
       "provider_id": "wolfram-alpha",
       "display_name": "Wolfram|Alpha 计算知识 API",
       "description": "通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。",
@@ -17790,7 +18728,9 @@
     {
       "connector_id": "worldpop-population-stats",
       "replacement": "earth-engine catalog and compute using WorldPop/GP/100m/pop"
-    }
+    },
+    "nasa-earth-api",
+    "nasa-mars-rover-photos-api"
   ],
   "connectors": [
     {
@@ -26112,5 +27052,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "7ff5354abb3947ddb36c1150a09f8b9df53610bae3cffaa33481098b290b7c29"
+  "catalog_sha256": "e1701bb0417b7fdcd831cbb10308e6e5d9ed089295b12a84d3577a38b763b739"
 }
