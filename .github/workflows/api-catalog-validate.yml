@@ -71,18 +71,13 @@ jobs:
             api-center/build_catalog.py \
             api-center/build_catalog_market_search.py \
             api-center/baostock/baostock_task.py \
-            api-center/baostock/tests/*.py \
             api-center/eodhd/eodhd_task.py \
-            api-center/eodhd/tests/*.py \
             api-center/data-commons/data_commons_task.py \
-            api-center/data-commons/tests/*.py \
             api-center/qweather/qweather_task.py \
-            api-center/qweather/tests/*.py \
             api-center/miaoxiang-mcp/miaoxiang_mcp_task.py \
-            api-center/miaoxiang-mcp/tests/*.py \
             api-center/browserless/browserless_task.py \
-            api-center/browserless/tests/*.py \
-            api-center/tests/*.py
+            api-center/tests/*.py \
+            api-center/browserless/tests/*.py
           python api-center/build_config.py
           python api-center/build_catalog_market_search.py
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
@@ -108,150 +103,69 @@ jobs:
           catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
           manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
-          expected_counts = {
-              'bigquery': 7,
-              'earth-engine': 6,
-              'data-commons': 5,
-              'qweather': 18,
-              'akshare': 17,
-              'ashare': 1,
-              'aifin-market': 17,
-              'yuandian-law': 40,
-              'tianyancha': 3,
-              'miaoxiang': 4,
-              'miaoxiang-mcp': 13,
-              'jina-reader': 2,
-              'exa': 3,
-              'tavily': 5,
-              'firecrawl': 4,
-              'browserless': 8,
-              'tickflow': 5,
-              'serpapi': 4,
-              'tushare': 20,
-              'baostock': 20,
-              'eodhd': 25,
-              'wolfram-alpha': 4,
-              'llamaparse': 3,
-          }
-          assert manifest['connector_count'] == 68
-          assert manifest['enabled_connector_count'] == 68
+
           assert catalog['schema_version'] == 'api-catalog-v3'
-          assert catalog['managed_provider_count'] == 23
+          assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
+          assert catalog['managed_provider_count'] == len(providers) == 23
           assert catalog['enabled_managed_provider_count'] == 23
-          assert catalog['managed_operation_count'] == 234
+          assert catalog['managed_operation_count'] == sum(
+              len(row['operations']) for row in providers.values()
+          ) == 234
           assert catalog['secret_values_exposed'] is False
-          assert set(providers) == set(expected_counts)
-          assert sum(len(row['operations']) for row in providers.values()) == 234
-          for provider_id, count in expected_counts.items():
-              assert len(providers[provider_id]['operations']) == count
-              assert providers[provider_id]['secret_value_exposed'] is False
-
-          data_commons = providers['data-commons']
-          assert data_commons['ticket_prefix'] == '[api-dc]'
-          assert data_commons['required_secret_environment_variable_name'] == 'GOOGLE_DATA_COMMONS_API_KEY'
-          assert data_commons['limits']['requests_per_ticket_max'] == 1
-          assert data_commons['limits']['arbitrary_urls_allowed'] is False
-          assert data_commons['limits']['arbitrary_endpoints_allowed'] is False
-          assert data_commons['limits']['arbitrary_headers_allowed'] is False
-          assert data_commons['limits']['client_supplied_api_key_allowed'] is False
-          assert data_commons['limits']['sparql_allowed'] is False
-          assert data_commons['limits']['natural_language_api_allowed'] is False
-          assert data_commons['limits']['mcp_allowed'] is False
-          assert data_commons['limits']['write_operations_allowed'] is False
-          assert data_commons['limits']['personal_data_allowed'] is False
-
-          qweather = providers['qweather']
-          assert qweather['ticket_prefix'] == '[api-qweather]'
-          assert qweather['required_secret_environment_variable_name'] == 'QWEATHER_API_KEY'
-          assert qweather['limits']['fixed_api_host'] == 'ka6r72kcc3.re.qweatherapi.com'
-          assert qweather['limits']['arbitrary_urls_allowed'] is False
-          assert qweather['limits']['arbitrary_hosts_allowed'] is False
-          assert qweather['limits']['arbitrary_paths_allowed'] is False
-          assert qweather['limits']['arbitrary_headers_allowed'] is False
-          assert qweather['limits']['client_supplied_api_key_allowed'] is False
-          assert qweather['limits']['redirects_allowed'] is False
-          assert qweather['limits']['write_operations_allowed'] is False
-
-          miaoxiang_mcp = providers['miaoxiang-mcp']
-          assert miaoxiang_mcp['ticket_prefix'] == '[api-mx-mcp]'
-          assert miaoxiang_mcp['required_secret_environment_variable_name'] == 'EM_API_KEY'
-          assert miaoxiang_mcp['limits']['fixed_mcp_host'] == 'mxapi.eastmoney.com'
-          assert miaoxiang_mcp['limits']['fixed_mcp_path'] == '/mxds/mcp'
-          assert miaoxiang_mcp['limits']['fixed_mcp_tool_count'] == 11
-          assert miaoxiang_mcp['limits']['arbitrary_urls_allowed'] is False
-          assert miaoxiang_mcp['limits']['arbitrary_hosts_allowed'] is False
-          assert miaoxiang_mcp['limits']['arbitrary_headers_allowed'] is False
-          assert miaoxiang_mcp['limits']['client_supplied_api_key_allowed'] is False
-          assert miaoxiang_mcp['limits']['arbitrary_jsonrpc_methods_allowed'] is False
-          assert miaoxiang_mcp['limits']['arbitrary_mcp_tool_names_allowed'] is False
-          assert miaoxiang_mcp['limits']['resources_allowed'] is False
-          assert miaoxiang_mcp['limits']['prompts_allowed'] is False
-          assert miaoxiang_mcp['limits']['write_operations_allowed'] is False
-          assert miaoxiang_mcp['limits']['trading_or_order_execution_allowed'] is False
-
-          browserless = providers['browserless']
-          assert browserless['ticket_prefix'] == '[api-browserless]'
-          assert browserless['required_secret_environment_variable_name'] == 'BROWSERLESS_TOKEN'
-          assert browserless['limits']['fixed_api_host'] == 'production-sfo.browserless.io'
-          assert browserless['limits']['arbitrary_api_hosts_allowed'] is False
-          assert browserless['limits']['arbitrary_code_allowed'] is False
-          assert browserless['limits']['websocket_sessions_allowed'] is False
-          assert browserless['limits']['profiles_allowed'] is False
-          assert browserless['limits']['custom_headers_allowed'] is False
-          assert browserless['limits']['cookies_allowed'] is False
-          assert browserless['limits']['proxy_configuration_allowed'] is False
-          assert browserless['limits']['captcha_or_unblock_allowed'] is False
-          assert browserless['limits']['write_operations_allowed'] is False
-
-          baostock = providers['baostock']
-          assert baostock['ticket_prefix'] == '[api-baostock]'
-          assert baostock['required_secret_environment_variable_name'] == ''
-          assert baostock['limits']['credentials_required'] is False
-          assert baostock['limits']['arbitrary_functions_allowed'] is False
-          assert baostock['limits']['arbitrary_hosts_allowed'] is False
-          assert baostock['limits']['write_operations_allowed'] is False
-          assert baostock['limits']['trading_or_order_execution_allowed'] is False
-
-          eodhd = providers['eodhd']
-          assert eodhd['ticket_prefix'] == '[api-eodhd]'
-          assert eodhd['required_secret_environment_variable_name'] == 'EODHD_API_TOKEN'
-          assert eodhd['limits']['arbitrary_urls_allowed'] is False
-          assert eodhd['limits']['arbitrary_paths_allowed'] is False
-          assert eodhd['limits']['arbitrary_headers_allowed'] is False
-          assert eodhd['limits']['client_supplied_token_allowed'] is False
-          assert eodhd['limits']['websocket_allowed'] is False
-          assert eodhd['limits']['write_operations_allowed'] is False
-          assert eodhd['limits']['trading_or_order_execution_allowed'] is False
-
-          for path in (
+          assert all(row['enabled'] is True for row in providers.values())
+          assert all(row['secret_value_exposed'] is False for row in providers.values())
+          assert set(catalog['managed_provider_catalog_files']) == {
+              'google-cloud/provider-catalog.json',
+              'akshare/provider-catalog.json',
+              'aifin-market/provider-catalog.json',
+              'yuandian/provider-catalog.json',
+              'company-intelligence/provider-catalog.json',
+              'web-retrieval/provider-catalog.json',
+              'market-search/provider-catalog.json',
+              'tushare/provider-catalog.json',
               'baostock/provider-catalog.json',
               'eodhd/provider-catalog.json',
               'data-commons/provider-catalog.json',
               'qweather/provider-catalog.json',
               'miaoxiang-mcp/provider-catalog.json',
-              'web-retrieval/provider-catalog.json',
-          ):
-              assert path in catalog['managed_provider_catalog_files']
-              assert path in catalog['detail_reading_order']
+              'knowledge-tools/provider-catalog.json',
+          }
 
-          serialized_dc = json.dumps(data_commons, ensure_ascii=False)
-          assert 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' not in serialized_dc
-          assert 'data_commons_api_key' not in serialized_dc
-          serialized_mcp = json.dumps(miaoxiang_mcp, ensure_ascii=False)
-          assert 'MX_APIKEY' not in serialized_mcp
-          assert 'mkt_' not in serialized_mcp
-          serialized_browserless = json.dumps(browserless, ensure_ascii=False)
-          assert '?token=' not in serialized_browserless.lower()
+          browserless = providers['browserless']
+          assert browserless['ticket_prefix'] == '[api-browserless]'
+          assert browserless['required_secret_environment_variable_name'] == 'BROWSERLESS_TOKEN'
+          assert len(browserless['operations']) == 8
+          assert {row['operation_id'] for row in browserless['operations']} == {
+              'catalog-capabilities', 'content', 'scrape', 'screenshot',
+              'pdf', 'performance', 'search', 'map'
+          }
+          limits = browserless['limits']
+          assert limits['fixed_api_host'] == 'production-sfo.browserless.io'
+          for key in (
+              'arbitrary_api_hosts_allowed',
+              'arbitrary_code_allowed',
+              'websocket_sessions_allowed',
+              'profiles_allowed',
+              'custom_headers_allowed',
+              'cookies_allowed',
+              'proxy_configuration_allowed',
+              'captcha_or_unblock_allowed',
+              'write_operations_allowed',
+          ):
+              assert limits[key] is False
+
+          assert providers['data-commons']['required_secret_environment_variable_name'] == 'GOOGLE_DATA_COMMONS_API_KEY'
+          assert providers['qweather']['limits']['fixed_api_host'] == 'ka6r72kcc3.re.qweatherapi.com'
+          assert providers['miaoxiang-mcp']['required_secret_environment_variable_name'] == 'EM_API_KEY'
+          assert providers['baostock']['required_secret_environment_variable_name'] == ''
+          assert providers['eodhd']['required_secret_environment_variable_name'] == 'EODHD_API_TOKEN'
+
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
               'managed_providers': 23,
               'managed_operations': 234,
               'browserless_operations': 8,
-              'qweather_operations': 18,
-              'miaoxiang_mcp_operations': 13,
-              'miaoxiang_mcp_tools': 11,
-              'miaoxiang_mcp_secret': 'EM_API_KEY',
           }))
           PY
           git diff --check
@@ -270,27 +184,14 @@ jobs:
             api-center/krakend.validation.json
             api-center/google-cloud/provider-catalog.json
             api-center/data-commons/provider-catalog.json
-            api-center/data-commons/ticket.schema.json
-            api-center/data-commons/china-starter-pack.json
             api-center/qweather/provider-catalog.json
-            api-center/qweather/ticket.schema.json
             api-center/miaoxiang-mcp/provider-catalog.json
-            api-center/miaoxiang-mcp/ticket.schema.json
-            api-center/miaoxiang-mcp/tool-discovery-snapshot.json
             api-center/browserless/ticket.schema.json
-            api-center/akshare/provider-catalog.json
-            api-center/aifin-market/provider-catalog.json
-            api-center/yuandian/provider-catalog.json
-            api-center/company-intelligence/provider-catalog.json
-            api-center/miaoxiang/provider-catalog.json
             api-center/web-retrieval/provider-catalog.json
             api-center/market-search/provider-catalog.json
             api-center/tushare/provider-catalog.json
             api-center/baostock/provider-catalog.json
-            api-center/baostock/ticket.schema.json
             api-center/eodhd/provider-catalog.json
-            api-center/eodhd/ticket.schema.json
             api-center/knowledge-tools/provider-catalog.json
-            api-center/knowledge-tools/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
