@@ -41,6 +41,7 @@ jobs:
             api-center/data-commons/requirements.txt
             api-center/qweather/requirements.txt
             api-center/miaoxiang-mcp/requirements.txt
+            api-center/browserless/requirements.txt
 
       - name: Install isolated API dependencies
         run: |
@@ -50,7 +51,8 @@ jobs:
             -r api-center/eodhd/requirements.txt \
             -r api-center/data-commons/requirements.txt \
             -r api-center/qweather/requirements.txt \
-            -r api-center/miaoxiang-mcp/requirements.txt
+            -r api-center/miaoxiang-mcp/requirements.txt \
+            -r api-center/browserless/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -78,6 +80,8 @@ jobs:
             api-center/qweather/tests/*.py \
             api-center/miaoxiang-mcp/miaoxiang_mcp_task.py \
             api-center/miaoxiang-mcp/tests/*.py \
+            api-center/browserless/browserless_task.py \
+            api-center/browserless/tests/*.py \
             api-center/tests/*.py
           python api-center/build_config.py
           python api-center/build_catalog_market_search.py
@@ -86,6 +90,7 @@ jobs:
           python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/qweather/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/miaoxiang-mcp/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/browserless/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Verify deterministic contracts and provider invariants
@@ -119,6 +124,7 @@ jobs:
               'exa': 3,
               'tavily': 5,
               'firecrawl': 4,
+              'browserless': 8,
               'tickflow': 5,
               'serpapi': 4,
               'tushare': 20,
@@ -130,12 +136,12 @@ jobs:
           assert manifest['connector_count'] == 68
           assert manifest['enabled_connector_count'] == 68
           assert catalog['schema_version'] == 'api-catalog-v3'
-          assert catalog['managed_provider_count'] == 22
-          assert catalog['enabled_managed_provider_count'] == 22
-          assert catalog['managed_operation_count'] == 226
+          assert catalog['managed_provider_count'] == 23
+          assert catalog['enabled_managed_provider_count'] == 23
+          assert catalog['managed_operation_count'] == 234
           assert catalog['secret_values_exposed'] is False
           assert set(providers) == set(expected_counts)
-          assert sum(len(row['operations']) for row in providers.values()) == 226
+          assert sum(len(row['operations']) for row in providers.values()) == 234
           for provider_id, count in expected_counts.items():
               assert len(providers[provider_id]['operations']) == count
               assert providers[provider_id]['secret_value_exposed'] is False
@@ -183,6 +189,20 @@ jobs:
           assert miaoxiang_mcp['limits']['write_operations_allowed'] is False
           assert miaoxiang_mcp['limits']['trading_or_order_execution_allowed'] is False
 
+          browserless = providers['browserless']
+          assert browserless['ticket_prefix'] == '[api-browserless]'
+          assert browserless['required_secret_environment_variable_name'] == 'BROWSERLESS_TOKEN'
+          assert browserless['limits']['fixed_api_host'] == 'production-sfo.browserless.io'
+          assert browserless['limits']['arbitrary_api_hosts_allowed'] is False
+          assert browserless['limits']['arbitrary_code_allowed'] is False
+          assert browserless['limits']['websocket_sessions_allowed'] is False
+          assert browserless['limits']['profiles_allowed'] is False
+          assert browserless['limits']['custom_headers_allowed'] is False
+          assert browserless['limits']['cookies_allowed'] is False
+          assert browserless['limits']['proxy_configuration_allowed'] is False
+          assert browserless['limits']['captcha_or_unblock_allowed'] is False
+          assert browserless['limits']['write_operations_allowed'] is False
+
           baostock = providers['baostock']
           assert baostock['ticket_prefix'] == '[api-baostock]'
           assert baostock['required_secret_environment_variable_name'] == ''
@@ -209,6 +229,7 @@ jobs:
               'data-commons/provider-catalog.json',
               'qweather/provider-catalog.json',
               'miaoxiang-mcp/provider-catalog.json',
+              'web-retrieval/provider-catalog.json',
           ):
               assert path in catalog['managed_provider_catalog_files']
               assert path in catalog['detail_reading_order']
@@ -219,11 +240,14 @@ jobs:
           serialized_mcp = json.dumps(miaoxiang_mcp, ensure_ascii=False)
           assert 'MX_APIKEY' not in serialized_mcp
           assert 'mkt_' not in serialized_mcp
+          serialized_browserless = json.dumps(browserless, ensure_ascii=False)
+          assert 'browserless_token' not in serialized_browserless.lower()
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 22,
-              'managed_operations': 226,
+              'managed_providers': 23,
+              'managed_operations': 234,
+              'browserless_operations': 8,
               'qweather_operations': 18,
               'miaoxiang_mcp_operations': 13,
               'miaoxiang_mcp_tools': 11,
@@ -253,6 +277,7 @@ jobs:
             api-center/miaoxiang-mcp/provider-catalog.json
             api-center/miaoxiang-mcp/ticket.schema.json
             api-center/miaoxiang-mcp/tool-discovery-snapshot.json
+            api-center/browserless/ticket.schema.json
             api-center/akshare/provider-catalog.json
             api-center/aifin-market/provider-catalog.json
             api-center/yuandian/provider-catalog.json
