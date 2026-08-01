@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/a15280020511/evidence-data-center/api-center/eodhd/ticket.schema.json",
+  "title": "EODHD managed read-only ticket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "provider",
+    "operation",
+    "objective",
+    "parameters",
+    "data_policy",
+    "acceptance"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$"
+    },
+    "provider": {
+      "const": "eodhd"
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "catalog-capabilities",
+        "exchanges-list",
+        "exchange-symbols",
+        "symbol-search",
+        "eod-history",
+        "intraday-history",
+        "real-time-quote",
+        "fundamentals",
+        "dividends-history",
+        "splits-history",
+        "bulk-eod",
+        "historical-market-cap",
+        "technical-indicator",
+        "financial-news",
+        "sentiments",
+        "screener",
+        "calendar-earnings",
+        "calendar-trends",
+        "calendar-ipos",
+        "calendar-splits",
+        "calendar-dividends",
+        "macro-indicator",
+        "economic-events",
+        "exchange-details-list",
+        "exchange-details"
+      ]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "parameters": {
+      "type": "object"
+    },
+    "data_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification",
+        "contains_personal_data"
+      ],
+      "properties": {
+        "classification": {
+          "const": "public"
+        },
+        "contains_personal_data": {
+          "const": false
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeout_seconds",
+        "max_response_bytes",
+        "max_rows"
+      ],
+      "properties": {
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 60
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 20000000
+        },
+        "max_rows": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50000
+        }
+      }
+    }
+  }
+}

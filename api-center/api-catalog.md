@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`18/18` 已启用
-- 托管操作总数：`165`
-- 已公开参数总数：`938`
-- 目录 SHA-256：`71d6f1e9596534e8b89c376299288b44d7a65a690be32dc5e56b0e40f7c79566`
+- 托管提供方：`19/19` 已启用
+- 托管操作总数：`190`
+- 已公开参数总数：`1017`
+- 目录 SHA-256：`646fbb6f525403a6e21d2c9e9fa02c2b8cdce5c9c67adefa8742d1e468bb3b2c`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -33,6 +33,7 @@
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
 | Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
 | BaoStock 中国证券免费数据 | `baostock` | 启用 | `[api-baostock]` | `20` | 否 |
+| EODHD 全球金融市场数据 | `eodhd` | 启用 | `[api-eodhd]` | `25` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -6564,6 +6565,838 @@
   "write_operations_allowed": false,
   "trading_or_order_execution_allowed": false,
   "credentials_required": false,
+  "secret_values_exposed": false
+}
+```
+
+## EODHD 全球金融市场数据 (`eodhd`)
+
+- 状态：`启用`
+- 说明：通过 EODHD 官方 HTTPS REST API 读取全球交易所、证券目录、历史和实时行情、基本面、公司行动、技术指标、新闻情绪、筛选器、企业日历、宏观事件及交易时段。
+- 目录策略：仅开放显式登记的固定 GET 路径和参数 Schema；禁止任意 URL、任意路径、任意请求头、用户自定义 api_token、WebSocket、交易、下单、账户修改和数据写入。
+- 执行策略：EODHD_API_TOKEN 仅在后端查询参数中注入且不会进入日志、Issue 或 Artifact；每张票据最多一次正常请求和一次瞬态故障重试，并限制超时、响应体积、结果行数和筛选器结构。
+- 票据前缀：`[api-eodhd]`
+- Secret环境变量名：`EODHD_API_TOKEN`（仅名称）
+- 提供方SHA-256：`124c5e16ef567d8df1bbbfd7b261ac7b6a23f70cc73799ab2c27c73d3fc5ed58`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 EODHD 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `exchanges-list` | 读取 EODHD 支持的全球交易所、虚拟市场和基础元数据。 | `无` |
+
+`exchanges-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `exchange-symbols` | 读取指定交易所当前或退市证券目录。 | `exchange, delisted, type` |
+
+`exchange-symbols` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "exchange": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$"
+    },
+    "delisted": {
+      "type": "boolean"
+    },
+    "type": {
+      "type": "string",
+      "maxLength": 32,
+      "enum": [
+        "common_stock",
+        "preferred_stock",
+        "stock",
+        "etf",
+        "fund"
+      ]
+    }
+  },
+  "required": [
+    "exchange"
+  ]
+}
+```
+
+| `symbol-search` | 按代码或名称搜索全球证券、基金、指数、外汇、债券和数字资产。 | `query, exchange, limit, bonds_only` |
+
+`symbol-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\]{1,120}$"
+    },
+    "exchange": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "bonds_only": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `eod-history` | 读取单一证券的日、周或月末历史 OHLCV 与复权价格。 | `symbol, from_date, to_date, period, order` |
+
+`eod-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "period": {
+      "type": "string",
+      "maxLength": 1,
+      "enum": [
+        "d",
+        "w",
+        "m"
+      ]
+    },
+    "order": {
+      "type": "string",
+      "maxLength": 1,
+      "enum": [
+        "a",
+        "d"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `intraday-history` | 读取单一证券的分钟或小时级历史行情。 | `symbol, interval, from_timestamp, to_timestamp` |
+
+`intraday-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "interval": {
+      "type": "string",
+      "maxLength": 2,
+      "enum": [
+        "1m",
+        "5m",
+        "1h"
+      ]
+    },
+    "from_timestamp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4102444800
+    },
+    "to_timestamp": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4102444800
+    }
+  },
+  "required": [
+    "symbol",
+    "interval"
+  ]
+}
+```
+
+| `real-time-quote` | 读取单一证券的实时或延迟报价快照；数据权限由 EODHD 套餐决定。 | `symbol` |
+
+`real-time-quote` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `fundamentals` | 读取股票、ETF、基金或指数的结构化基本面数据。 | `symbol, filter` |
+
+`fundamentals` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "filter": {
+      "type": "string",
+      "maxLength": 300,
+      "pattern": "^[A-Za-z0-9._,-]+$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `dividends-history` | 读取单一证券的历史分红记录。 | `symbol, from_date, to_date` |
+
+`dividends-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `splits-history` | 读取单一证券的历史拆股和合股记录。 | `symbol, from_date, to_date` |
+
+`splits-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `bulk-eod` | 按交易所和日期读取整市场 EOD、拆股或分红批量数据。 | `exchange, date, type, symbols` |
+
+`bulk-eod` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "exchange": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$"
+    },
+    "date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "type": {
+      "type": "string",
+      "maxLength": 16,
+      "enum": [
+        "eod",
+        "splits",
+        "dividends"
+      ]
+    },
+    "symbols": {
+      "type": "string",
+      "maxLength": 1000,
+      "pattern": "^[A-Za-z0-9._,:-]+$"
+    }
+  },
+  "required": [
+    "exchange"
+  ]
+}
+```
+
+| `historical-market-cap` | 读取美国股票或数字资产的历史市值序列。 | `symbol, from_date, to_date` |
+
+`historical-market-cap` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `technical-indicator` | 在固定证券和日期范围上计算 EODHD 技术指标。 | `symbol, function, period, from_date, to_date, order, splitadjusted` |
+
+`technical-indicator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "function": {
+      "type": "string",
+      "maxLength": 24,
+      "enum": [
+        "sma",
+        "ema",
+        "wma",
+        "volatility",
+        "rsi",
+        "stddev",
+        "stoch",
+        "stochrsi",
+        "slope",
+        "dmi",
+        "adx",
+        "macd",
+        "atr",
+        "cci",
+        "sar",
+        "beta",
+        "bbands"
+      ]
+    },
+    "period": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 1000
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "order": {
+      "type": "string",
+      "maxLength": 1,
+      "enum": [
+        "a",
+        "d"
+      ]
+    },
+    "splitadjusted": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "symbol",
+    "function"
+  ]
+}
+```
+
+| `financial-news` | 读取按证券或主题过滤的金融新闻。 | `symbols, tag, from_date, to_date, limit, offset` |
+
+`financial-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "string",
+      "maxLength": 1000,
+      "pattern": "^[A-Za-z0-9._,:-]+$"
+    },
+    "tag": {
+      "type": "string",
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\]{1,120}$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    }
+  }
+}
+```
+
+| `sentiments` | 读取一个或多个证券的每日新闻情绪分数。 | `symbols, from_date, to_date` |
+
+`sentiments` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "string",
+      "maxLength": 1000,
+      "pattern": "^[A-Za-z0-9._,:-]+$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `screener` | 使用受控字段和比较运算筛选全球股票。 | `filters_json, sort, signals, limit, offset` |
+
+`screener` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "filters_json": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "sort": {
+      "type": "string",
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9_]+\\.(asc|desc)$"
+    },
+    "signals": {
+      "type": "string",
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9_,.-]+$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    }
+  }
+}
+```
+
+| `calendar-earnings` | 读取历史和未来财报发布日期。 | `symbols, from_date, to_date` |
+
+`calendar-earnings` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "string",
+      "maxLength": 1000,
+      "pattern": "^[A-Za-z0-9._,:-]+$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `calendar-trends` | 读取证券盈利预期趋势。 | `symbols, from_date, to_date` |
+
+`calendar-trends` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "string",
+      "maxLength": 1000,
+      "pattern": "^[A-Za-z0-9._,:-]+$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `calendar-ipos` | 读取历史和未来 IPO 日历。 | `symbols, from_date, to_date` |
+
+`calendar-ipos` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "string",
+      "maxLength": 1000,
+      "pattern": "^[A-Za-z0-9._,:-]+$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `calendar-splits` | 读取历史和未来拆股日历。 | `symbols, from_date, to_date` |
+
+`calendar-splits` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "string",
+      "maxLength": 1000,
+      "pattern": "^[A-Za-z0-9._,:-]+$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `calendar-dividends` | 读取历史和未来分红日历并支持分页。 | `symbol, from_date, to_date, limit, offset` |
+
+`calendar-dividends` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+    },
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    }
+  }
+}
+```
+
+| `macro-indicator` | 读取指定国家和宏观指标的历史序列。 | `country, indicator` |
+
+`macro-indicator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "country": {
+      "type": "string",
+      "maxLength": 80,
+      "pattern": "^[A-Za-z][A-Za-z ._-]{1,79}$"
+    },
+    "indicator": {
+      "type": "string",
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9_ -]{1,80}$"
+    }
+  },
+  "required": [
+    "country",
+    "indicator"
+  ]
+}
+```
+
+| `economic-events` | 读取受控日期、国家和事件范围内的宏观经济事件。 | `from_date, to_date, country, comparison, limit, offset` |
+
+`economic-events` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to_date": {
+      "type": "string",
+      "maxLength": 10,
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "country": {
+      "type": "string",
+      "maxLength": 80,
+      "pattern": "^[A-Za-z][A-Za-z ,._-]{1,79}$"
+    },
+    "comparison": {
+      "type": "string",
+      "maxLength": 16,
+      "enum": [
+        "mom",
+        "qoq",
+        "yoy"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    }
+  }
+}
+```
+
+| `exchange-details-list` | 读取 EODHD v2 交易所详情目录。 | `无` |
+
+`exchange-details-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `exchange-details` | 读取指定交易所时区、交易时段、节假日和提前收市信息。 | `exchange` |
+
+`exchange-details` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "exchange": {
+      "type": "string",
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$"
+    }
+  },
+  "required": [
+    "exchange"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 2,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 20000000,
+  "max_rows": 50000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_token_allowed": false,
+  "websocket_allowed": false,
+  "write_operations_allowed": false,
+  "trading_or_order_execution_allowed": false,
   "secret_values_exposed": false
 }
 ```

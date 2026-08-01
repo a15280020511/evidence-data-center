@@ -37,12 +37,14 @@ jobs:
           cache-dependency-path: |
             api-center/requirements.txt
             api-center/baostock/requirements.txt
+            api-center/eodhd/requirements.txt
 
       - name: Install isolated API dependencies
         run: |
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
-            -r api-center/baostock/requirements.txt
+            -r api-center/baostock/requirements.txt \
+            -r api-center/eodhd/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -62,10 +64,13 @@ jobs:
             api-center/build_catalog_market_search.py \
             api-center/baostock/baostock_task.py \
             api-center/baostock/tests/*.py \
+            api-center/eodhd/eodhd_task.py \
+            api-center/eodhd/tests/*.py \
             api-center/tests/*.py
           python api-center/build_config.py
           python api-center/build_catalog_market_search.py
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Verify deterministic contracts and provider invariants
@@ -100,18 +105,19 @@ jobs:
               'serpapi': 4,
               'tushare': 20,
               'baostock': 20,
+              'eodhd': 25,
               'wolfram-alpha': 4,
               'llamaparse': 3,
           }
           assert manifest['connector_count'] == 68
           assert manifest['enabled_connector_count'] == 68
           assert catalog['schema_version'] == 'api-catalog-v3'
-          assert catalog['managed_provider_count'] == 18
-          assert catalog['enabled_managed_provider_count'] == 18
-          assert catalog['managed_operation_count'] == 165
+          assert catalog['managed_provider_count'] == 19
+          assert catalog['enabled_managed_provider_count'] == 19
+          assert catalog['managed_operation_count'] == 190
           assert catalog['secret_values_exposed'] is False
           assert set(providers) == set(expected_counts)
-          assert sum(len(row['operations']) for row in providers.values()) == 165
+          assert sum(len(row['operations']) for row in providers.values()) == 190
           for provider_id, count in expected_counts.items():
               assert len(providers[provider_id]['operations']) == count
               assert providers[provider_id]['secret_value_exposed'] is False
@@ -123,17 +129,28 @@ jobs:
           assert baostock['limits']['arbitrary_hosts_allowed'] is False
           assert baostock['limits']['write_operations_allowed'] is False
           assert baostock['limits']['trading_or_order_execution_allowed'] is False
-          assert 'baostock/provider-catalog.json' in catalog['managed_provider_catalog_files']
-          assert 'baostock/provider-catalog.json' in catalog['detail_reading_order']
+          eodhd = providers['eodhd']
+          assert eodhd['ticket_prefix'] == '[api-eodhd]'
+          assert eodhd['required_secret_environment_variable_name'] == 'EODHD_API_TOKEN'
+          assert eodhd['limits']['arbitrary_urls_allowed'] is False
+          assert eodhd['limits']['arbitrary_paths_allowed'] is False
+          assert eodhd['limits']['arbitrary_headers_allowed'] is False
+          assert eodhd['limits']['client_supplied_token_allowed'] is False
+          assert eodhd['limits']['websocket_allowed'] is False
+          assert eodhd['limits']['write_operations_allowed'] is False
+          assert eodhd['limits']['trading_or_order_execution_allowed'] is False
+          for path in ('baostock/provider-catalog.json', 'eodhd/provider-catalog.json'):
+              assert path in catalog['managed_provider_catalog_files']
+              assert path in catalog['detail_reading_order']
           assert not Path('api-center/data-commons').exists()
           assert 'data-commons' not in providers
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 18,
-              'managed_operations': 165,
+              'managed_providers': 19,
+              'managed_operations': 190,
               'baostock_operations': 20,
-              'baostock_credentials_required': False,
+              'eodhd_operations': 25,
           }))
           PY
           git diff --check
@@ -161,6 +178,8 @@ jobs:
             api-center/tushare/provider-catalog.json
             api-center/baostock/provider-catalog.json
             api-center/baostock/ticket.schema.json
+            api-center/eodhd/provider-catalog.json
+            api-center/eodhd/ticket.schema.json
             api-center/knowledge-tools/provider-catalog.json
             api-center/knowledge-tools/ticket.schema.json
           if-no-files-found: error
