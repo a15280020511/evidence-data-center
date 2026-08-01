@@ -1,0 +1,223 @@
+name: Live Smoke Agent Toolbelt Yonghui Superstores
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - ".github/workflows/live-smoke-agent-toolbelt-yonghui.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-smoke-agent-toolbelt-yonghui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  yonghui-probe:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      AGENT_TOOLBELT_KEY: ${{ secrets.AGENT_TOOLBELT_KEY }}
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Probe all stock tools with Yonghui Superstores
+        id: probe
+        shell: bash
+        run: |
+          set +x
+          mkdir -p agent-toolbelt-yonghui
+          python - <<'PY'
+          from __future__ import annotations
+          import json
+          import os
+          import sys
+          import time
+          import urllib.error
+          import urllib.request
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          BASE = "https://www.agenttoolbelt.live"
+          KEY = os.environ.get("AGENT_TOOLBELT_KEY", "").strip()
+          OUT = Path("agent-toolbelt-yonghui")
+          TOOLS = [
+              "stock-thesis",
+              "earnings-analysis",
+              "insider-signal",
+              "valuation-snapshot",
+              "bear-vs-bull",
+              "compare-stocks",
+              "moat-analysis",
+              "watchlist-scan",
+          ]
+
+          def call(path: str, body=None, auth=False):
+              headers = {
+                  "Accept": "application/json",
+                  "User-Agent": "evidence-data-center-agent-toolbelt-yonghui/1.0",
+              }
+              data = None
+              method = "GET"
+              if body is not None:
+                  data = json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                  headers["Content-Type"] = "application/json"
+                  method = "POST"
+              if auth:
+                  headers["Authorization"] = f"Bearer {KEY}"
+              request = urllib.request.Request(BASE + path, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(request, timeout=120) as response:
+                      raw = response.read(2_000_000)
+                      return response.status, json.loads(raw.decode("utf-8"))
+              except urllib.error.HTTPError as exc:
+                  raw = exc.read(500_000).decode("utf-8", errors="replace")
+                  try:
+                      payload = json.loads(raw)
+                  except Exception:
+                      payload = {"error": raw[:1000]}
+                  return exc.code, payload
+              except Exception as exc:
+                  return 0, {"error": type(exc).__name__, "message": str(exc)[:500]}
+
+          def replace_tickers(value):
+              if isinstance(value, dict):
+                  result = {}
+                  for key, item in value.items():
+                      if key == "ticker":
+                          result[key] = "601933.SH"
+                      elif key == "tickers":
+                          size = max(2, len(item) if isinstance(item, list) else 2)
+                          candidates = ["601933.SH", "601933", "YONGHUI"]
+                          result[key] = [candidates[i % len(candidates)] for i in range(size)]
+                      else:
+                          result[key] = replace_tickers(item)
+                  return result
+              if isinstance(value, list):
+                  return [replace_tickers(item) for item in value]
+              return value
+
+          report = {
+              "schema_version": "agent-toolbelt-yonghui-probe-v1",
+              "tested_at": datetime.now(timezone.utc).isoformat(),
+              "company": "Yonghui Superstores Co., Ltd.",
+              "a_share_symbol": "601933.SH",
+              "credential_present": bool(KEY),
+              "credential_prefix_valid": KEY.startswith("atb_"),
+              "secret_values_exposed": False,
+              "results": [],
+          }
+          if not KEY:
+              report["status"] = "FAIL"
+              report["failure_reason"] = "missing AGENT_TOOLBELT_KEY"
+              OUT.joinpath("summary.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+              sys.exit(1)
+
+          catalog_status, catalog_payload = call("/api/tools/catalog")
+          catalog_rows = catalog_payload.get("tools", []) if isinstance(catalog_payload, dict) else []
+          catalog = {row.get("name"): row for row in catalog_rows if isinstance(row, dict)}
+          report["catalog_http_status"] = catalog_status
+          report["catalog_tool_count"] = len(catalog)
+
+          # Clear any previous free-tier stock rate window.
+          time.sleep(65)
+
+          for index, tool in enumerate(TOOLS, 1):
+              metadata = (catalog.get(tool) or {}).get("metadata") or {}
+              example = metadata.get("exampleInput")
+              payload = replace_tickers(example if isinstance(example, dict) else {})
+              if tool not in {"compare-stocks", "watchlist-scan"}:
+                  payload["ticker"] = "601933.SH"
+
+              started = time.monotonic()
+              status, response = call(f"/api/tools/{tool}", payload, auth=True)
+              elapsed_ms = round((time.monotonic() - started) * 1000)
+              response_text = json.dumps(response, ensure_ascii=False)
+              error_code = response.get("error") if isinstance(response, dict) else None
+              message = response.get("message") if isinstance(response, dict) else None
+              expected_rejection = (
+                  status == 400
+                  and error_code == "validation_error"
+                  and ("US-listed equities only" in response_text or "valid US ticker" in response_text)
+              ) or (
+                  status == 422 and error_code == "unsupported_ticker"
+              )
+              record = {
+                  "tool": tool,
+                  "input_symbol": "601933.SH",
+                  "http_status": status,
+                  "error_code": error_code,
+                  "expected_unsupported_rejection": expected_rejection,
+                  "elapsed_ms": elapsed_ms,
+                  "safe_message": str(message or "")[:500],
+              }
+              report["results"].append(record)
+              print(json.dumps(record, ensure_ascii=False))
+              if index < len(TOOLS):
+                  time.sleep(13)
+
+          # Name-like ASCII probe passes the syntax shape but should still have no US-listed data.
+          time.sleep(13)
+          status, response = call(
+              "/api/tools/valuation-snapshot",
+              {"ticker": "YONGHUI"},
+              auth=True,
+          )
+          response_text = json.dumps(response, ensure_ascii=False)
+          error_code = response.get("error") if isinstance(response, dict) else None
+          name_probe_expected = (
+              status == 422 and error_code == "unsupported_ticker"
+          ) or (
+              status == 400 and error_code == "validation_error" and "US-listed equities only" in response_text
+          )
+          report["name_probe"] = {
+              "tool": "valuation-snapshot",
+              "input_symbol": "YONGHUI",
+              "http_status": status,
+              "error_code": error_code,
+              "expected_unsupported_rejection": name_probe_expected,
+              "safe_message": str(response.get("message") if isinstance(response, dict) else "")[:500],
+          }
+
+          expected_count = sum(1 for row in report["results"] if row["expected_unsupported_rejection"])
+          report["summary"] = {
+              "stock_tools_tested": len(report["results"]),
+              "expected_unsupported_rejections": expected_count,
+              "unexpected_successes": sum(1 for row in report["results"] if row["http_status"] == 200),
+              "unexpected_results": [row["tool"] for row in report["results"] if not row["expected_unsupported_rejection"]],
+              "name_probe_expected_rejection": name_probe_expected,
+          }
+          report["status"] = "UNSUPPORTED_AS_EXPECTED" if expected_count == len(TOOLS) and name_probe_expected else "INCONCLUSIVE"
+          OUT.joinpath("summary.json").write_text(
+              json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps({"status": report["status"], **report["summary"], "secret_values_exposed": False}, ensure_ascii=False))
+          sys.exit(0 if report["status"] == "UNSUPPORTED_AS_EXPECTED" else 1)
+          PY
+
+      - name: Verify no credential entered evidence
+        if: always()
+        shell: bash
+        run: |
+          set +x
+          test -f agent-toolbelt-yonghui/summary.json
+          if [ -n "${AGENT_TOOLBELT_KEY:-}" ] && grep -R -Fq -- "$AGENT_TOOLBELT_KEY" agent-toolbelt-yonghui; then
+            echo "Credential value found in evidence"
+            exit 1
+          fi
+
+      - name: Upload Yonghui probe evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agent-toolbelt-yonghui-${{ github.run_id }}
+          path: agent-toolbelt-yonghui/
+          if-no-files-found: error
+          retention-days: 7
