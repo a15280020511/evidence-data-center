@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            226,
+            234,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -73,6 +73,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "exa": 3,
             "tavily": 5,
             "firecrawl": 4,
+            "browserless": 8,
             "tickflow": 5,
             "serpapi": 4,
             "tushare": 20,
@@ -152,6 +153,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         providers = {row["provider_id"]: row for row in web["providers"]}
         tavily_limits = providers["tavily"]["limits"]
         firecrawl_limits = providers["firecrawl"]["limits"]
+        browserless_limits = providers["browserless"]["limits"]
         self.assertFalse(tavily_limits["research_allowed"])
         self.assertFalse(tavily_limits["auto_parameters_allowed"])
         self.assertEqual(tavily_limits["crawl_pages_max"], 20)
@@ -160,6 +162,18 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(firecrawl_limits["actions_allowed"])
         self.assertFalse(firecrawl_limits["arbitrary_headers_allowed"])
         self.assertFalse(firecrawl_limits["async_crawl_allowed"])
+        self.assertEqual(
+            browserless_limits["fixed_api_host"],
+            "production-sfo.browserless.io",
+        )
+        self.assertFalse(browserless_limits["arbitrary_code_allowed"])
+        self.assertFalse(browserless_limits["websocket_sessions_allowed"])
+        self.assertFalse(browserless_limits["profiles_allowed"])
+        self.assertFalse(browserless_limits["custom_headers_allowed"])
+        self.assertFalse(browserless_limits["cookies_allowed"])
+        self.assertFalse(browserless_limits["proxy_configuration_allowed"])
+        self.assertFalse(browserless_limits["captcha_or_unblock_allowed"])
+        self.assertFalse(browserless_limits["write_operations_allowed"])
 
         market = json.loads(
             (ROOT / "market-search/provider-catalog.json").read_text(

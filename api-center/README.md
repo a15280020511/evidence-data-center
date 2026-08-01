@@ -252,3 +252,23 @@ EM_API_KEY
 MCP 协议固定为 `2025-11-25`，鉴权只通过后端 `em_api_key` 请求头注入。当前固定开放 11 个上游只读工具，覆盖 A股、港股、美股、基金、债券、指数板块、宏观经济、新闻研报、公告披露和证券筛选；连同本地能力目录与 `tools/list`，总计 13 项操作。禁止任意 JSON-RPC 方法、任意 MCP 工具名、Resources、Prompts、自选股修改、模拟交易和真实交易。
 
 原有 `api-center/miaoxiang/` 是 Skills REST Provider，使用 `MX_APIKEY`（`mkt_` 类型）；MCP Provider 使用 `EM_API_KEY`（`em_` 类型）。两类密钥必须独立保存，不能互换。
+
+
+## Browserless 托管浏览器 API
+
+`api-center/browserless/` 使用 Browserless Cloud 固定 REST 主机：
+
+```text
+https://production-sfo.browserless.io
+```
+
+正式票据前缀和独立 Repository Secret：
+
+```text
+[api-browserless]
+BROWSERLESS_TOKEN
+```
+
+固定开放 8 项操作：本地能力目录、JavaScript 渲染 HTML、CSS 选择器结构化抓取、截图、PDF、Lighthouse 性能审计、受限 Web 搜索和站点地图。Search 与 Map 可能要求 Browserless Cloud 套餐。
+
+安全边界禁止 BrowserQL、BaaS/WebSocket、Function、Download、Export、Unblock、任意 JavaScript、Profile、Cookie、Authorization、自定义请求头、代理配置、CAPTCHA 求解和登录态页面。目标只允许公开 HTTPS URL；二进制截图和 PDF 只进入 Artifact。

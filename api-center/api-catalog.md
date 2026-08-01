@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`22/22` 已启用
-- 托管操作总数：`226`
-- 已公开参数总数：`1107`
-- 目录 SHA-256：`2dd5f268cc487cde820ba9dadf1f641917bf0f8f8e6288d66bdcef581f164c7c`
+- 托管提供方：`23/23` 已启用
+- 托管操作总数：`234`
+- 已公开参数总数：`1128`
+- 目录 SHA-256：`f9770b97037210163aff46b9e7a7b376538b5e0a43430e5ec289470274025592`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -29,6 +29,7 @@
 | Exa Search API | `exa` | 启用 | `[api-web]` | `3` | 否 |
 | Tavily Context API | `tavily` | 启用 | `[api-context]` | `5` | 否 |
 | Firecrawl Context API（火行者） | `firecrawl` | 启用 | `[api-context]` | `4` | 否 |
+| Browserless REST API | `browserless` | 启用 | `[api-browserless]` | `8` | 否 |
 | TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
 | Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
@@ -4526,6 +4527,296 @@
   "actions_allowed": false,
   "arbitrary_headers_allowed": false,
   "async_crawl_allowed": false
+}
+```
+
+## Browserless REST API (`browserless`)
+
+- 状态：`启用`
+- 说明：通过 Browserless 托管无头浏览器读取 JavaScript 渲染网页、结构化抓取、生成截图和 PDF、执行 Lighthouse 审计，并提供受限的搜索与站点地图能力。
+- 目录策略：仅允许固定 Browserless Cloud REST 主机和公开 HTTPS 目标；禁止任意 JavaScript、Function、Download、Export、BQL、BaaS、WebSocket、Profile、Cookie、Authorization、自定义请求头、代理、地理代理、Unblock、CAPTCHA 求解和登录态页面。
+- 执行策略：BROWSERLESS_TOKEN 仅在后端固定查询参数中注入且不进入日志或 Artifact；每张票据只调用一个固定 REST 端点；目标 URL 必须通过公开 HTTPS 与 SSRF 防护；二进制结果只作为 Artifact 文件保存。
+- 票据前缀：`[api-browserless]`
+- Secret环境变量名：`BROWSERLESS_TOKEN`（仅名称）
+- 提供方SHA-256：`930432038bc74e69f64242ed145e7dafc372bfb114b6a2fed2c625a01ab1f7d1`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取 Browserless 本地安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `content` | 调用 /content 返回一个公开 HTTPS 页面的完整 JavaScript 渲染 HTML。 | `url` |
+
+`content` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+| `scrape` | 调用 /scrape 在完整渲染后按最多20个 CSS 选择器提取结构化 JSON。 | `url, selectors` |
+
+`scrape` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "selectors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 500
+      }
+    }
+  },
+  "required": [
+    "url",
+    "selectors"
+  ]
+}
+```
+
+| `screenshot` | 调用 /screenshot 为一个公开 HTTPS 页面生成 PNG、JPEG 或 WebP 截图 Artifact。 | `url, image_type, full_page, quality` |
+
+`screenshot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "image_type": {
+      "type": "string",
+      "enum": [
+        "png",
+        "jpeg",
+        "webp"
+      ]
+    },
+    "full_page": {
+      "type": "boolean"
+    },
+    "quality": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+| `pdf` | 调用 /pdf 为一个公开 HTTPS 页面生成受限 PDF Artifact。 | `url, format, landscape, print_background` |
+
+`pdf` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "A4",
+        "Letter",
+        "Legal",
+        "A3",
+        "A5"
+      ]
+    },
+    "landscape": {
+      "type": "boolean"
+    },
+    "print_background": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+| `performance` | 调用 /performance 对公开 HTTPS 页面执行受限 Lighthouse 分类审计。 | `url, categories` |
+
+`performance` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "accessibility",
+          "best-practices",
+          "performance",
+          "pwa",
+          "seo"
+        ]
+      }
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+| `search` | 调用 Cloud /search 对公开网页执行受限 Web 搜索，最多3条结果且不自动抓取结果页。 | `query, limit` |
+
+`search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `map` | 调用 Cloud /map 发现一个公开 HTTPS 站点的受限 URL 结构，最多100条。 | `url, search, limit, sitemap, include_subdomains, ignore_query_parameters` |
+
+`map` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 9,
+      "maxLength": 2048,
+      "pattern": "^https://"
+    },
+    "search": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "sitemap": {
+      "type": "string",
+      "enum": [
+        "include",
+        "skip",
+        "only"
+      ]
+    },
+    "include_subdomains": {
+      "type": "boolean"
+    },
+    "ignore_query_parameters": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 10000000,
+  "target_urls_max": 1,
+  "selectors_max": 20,
+  "search_results_max": 3,
+  "map_links_max": 100,
+  "fixed_api_host": "production-sfo.browserless.io",
+  "arbitrary_api_hosts_allowed": false,
+  "arbitrary_code_allowed": false,
+  "websocket_sessions_allowed": false,
+  "profiles_allowed": false,
+  "custom_headers_allowed": false,
+  "cookies_allowed": false,
+  "proxy_configuration_allowed": false,
+  "captcha_or_unblock_allowed": false,
+  "write_operations_allowed": false
 }
 ```
 
