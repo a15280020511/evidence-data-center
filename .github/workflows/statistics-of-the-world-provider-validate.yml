@@ -8,10 +8,10 @@ on:
       - "api-center/build_catalog_market_search.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
+      - "api-center/tests/test_api_catalog.py"
       - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/statistics-of-the-world-provider-validate.yml"
       - ".github/workflows/statistics-of-the-world-api-ticket.yml"
-      - ".github/statistics-of-the-world-live-smoke.once"
   push:
     branches: [main]
     paths:
@@ -20,6 +20,7 @@ on:
       - "api-center/build_catalog_market_search.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
+      - "api-center/tests/test_api_catalog.py"
       - "api-center/tests/test_capability_maximization.py"
       - ".github/workflows/statistics-of-the-world-provider-validate.yml"
       - ".github/workflows/statistics-of-the-world-api-ticket.yml"
@@ -76,53 +77,6 @@ jobs:
           assert limits['secret_values_exposed'] is False
           print(json.dumps({'status': 'PASS', 'operations': 11}))
           PY
-
-      - name: Execute one-shot anonymous live probe
-        if: hashFiles('.github/statistics-of-the-world-live-smoke.once') != ''
-        run: |
-          set -euo pipefail
-          mkdir -p sotw-live-evidence
-          python - <<'PY'
-          import json
-          import sys
-          from pathlib import Path
-          provider_dir = Path('api-center/statistics-of-the-world').resolve()
-          sys.path.insert(0, str(provider_dir))
-          import statistics_of_the_world_task as task
-          payload, metadata = task.query_sotw(
-              'list-countries', {}, timeout=20, max_bytes=2000000, max_rows=500
-          )
-          data = payload.get('data') if isinstance(payload, dict) else None
-          summary = {
-              'provider': 'statistics-of-the-world',
-              'operation': 'list-countries',
-              'status': 'PASS',
-              'real_upstream_request_attempted': True,
-              'authentication_mode': 'anonymous',
-              'returned_rows': len(data) if isinstance(data, list) else metadata.get('row_count'),
-              'request_origin': metadata.get('request_origin'),
-              'http_status': metadata.get('http_status'),
-              'rate_limit_limit': metadata.get('rate_limit_limit'),
-              'rate_limit_remaining': metadata.get('rate_limit_remaining'),
-              'rate_limit_tier': metadata.get('rate_limit_tier'),
-              'secret_value_exposed': False,
-          }
-          Path('sotw-live-evidence/summary.json').write_text(
-              json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
-          )
-          print(json.dumps(summary, ensure_ascii=False))
-          assert summary['http_status'] == 200
-          assert isinstance(summary['returned_rows'], int) and summary['returned_rows'] >= 200
-          PY
-
-      - name: Upload one-shot live evidence
-        if: always() && hashFiles('.github/statistics-of-the-world-live-smoke.once') != ''
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: statistics-of-the-world-live-smoke-${{ github.run_id }}
-          path: sotw-live-evidence/summary.json
-          if-no-files-found: error
-          retention-days: 7
 
       - name: Verify repository contains no credential material
         run: git diff --check
