@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`31/31` 已启用
-- 托管操作总数：`569`
-- 已公开参数总数：`2320`
-- 目录 SHA-256：`6536efdf0ae4f9ab1a1c0a53a19cc3546ca19e64de951a79180d9ff3a04b5c60`
+- 托管提供方：`32/32` 已启用
+- 托管操作总数：`577`
+- 已公开参数总数：`2343`
+- 目录 SHA-256：`725397febe31ad641dc49578b14129aca34c4f163426d8ae24c45740db995e55`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -46,6 +46,7 @@
 | OECD Data Explorer SDMX | `oecd` | 启用 | `[api-oecd]` | `6` | 否 |
 | AlphaFeed 中国与全球证券行情 | `alphafeed` | 启用 | `[api-alphafeed]` | `10` | 否 |
 | Gapup MCP 公共商业情报 | `gapup-mcp` | 启用 | `[intel-gapup]` | `209` | 否 |
+| WHO GHO OData 全球卫生数据 | `who-gho-odata` | 启用 | `[intel-who-gho]` | `8` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -31541,6 +31542,312 @@ SLA: ≤15s budget total. Cache: 24h TTL. | `url, lang, chapters_max, output_for
   "upstream_may_use_llm": true,
   "upstream_calls_are_billable_or_quota_counted": true,
   "free_tier_calls_per_month_documented": 100
+}
+```
+
+## WHO GHO OData 全球卫生数据 (`who-gho-odata`)
+
+- 状态：`启用`
+- 说明：通过世界卫生组织 Global Health Observatory 公开 OData 接口读取全球卫生指标、维度、国家、地区和历史观测值。
+- 目录策略：开放8项固定免密只读操作；指标代码、维度、国家、地区、年份、性别和分页均受Schema约束，不接受任意OData表达式。
+- 执行策略：每张票据最多一次固定HTTPS GET；不跟随重定向，不接受任意URL、主机、路径、请求头、$filter、$select、$expand、函数或写操作。
+- 票据前缀：`[intel-who-gho]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`484b5f3f91587357dd6391cf06859362f9f8a100a09270ce55fd505e82225fed`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 WHO GHO OData 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `list-dimensions` | 读取 WHO GHO 可用维度目录。 | `top, skip` |
+
+`list-dimensions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `list-dimension-values` | 读取固定公共维度的代码和值。 | `dimension, top, skip` |
+
+`list-dimension-values` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dimension": {
+      "type": "string",
+      "enum": [
+        "COUNTRY",
+        "REGION",
+        "SEX",
+        "AGEGROUP",
+        "GHO",
+        "PUBLISHSTATE",
+        "WORLDBANKINCOMEGROUP"
+      ]
+    },
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  },
+  "required": [
+    "dimension"
+  ]
+}
+```
+
+| `list-indicators` | 分页读取 WHO GHO 指标代码和名称目录。 | `top, skip` |
+
+`list-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `search-indicators` | 按受控文本条件搜索 WHO GHO 指标名称。 | `query, match, top, skip` |
+
+`search-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9 .,/()%-]+$"
+    },
+    "match": {
+      "type": "string",
+      "enum": [
+        "contains",
+        "exact"
+      ],
+      "default": "contains"
+    },
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `get-indicator-data` | 按指标、国家或地区、年份和性别读取 WHO GHO 观测值；只构造固定 OData 条件。 | `indicator_code, country, region, year_from, year_to, sex, top, skip` |
+
+`get-indicator-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "indicator_code": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 128,
+      "pattern": "^[A-Z0-9][A-Z0-9_]{1,127}$"
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "AFR",
+        "AMR",
+        "SEAR",
+        "EUR",
+        "EMR",
+        "WPR",
+        "GLOBAL"
+      ]
+    },
+    "year_from": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "year_to": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "sex": {
+      "type": "string",
+      "enum": [
+        "BTSX",
+        "MLE",
+        "FMLE"
+      ]
+    },
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  },
+  "required": [
+    "indicator_code"
+  ]
+}
+```
+
+| `get-countries` | 读取 WHO GHO 国家代码和值目录。 | `top, skip` |
+
+`get-countries` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `get-regions` | 读取 WHO GHO 地区代码和值目录。 | `top, skip` |
+
+`get-regions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_host": "ghoapi.azureedge.net",
+  "fixed_api_prefix": "/api",
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "arbitrary_odata_filters_allowed": false,
+  "arbitrary_odata_select_allowed": false,
+  "arbitrary_odata_expand_allowed": false,
+  "arbitrary_odata_functions_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": false,
+  "automatic_pagination_allowed": false,
+  "whole_database_download_allowed": false,
+  "legacy_endpoint_migration_watch_required": true
 }
 ```
 

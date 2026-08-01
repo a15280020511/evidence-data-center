@@ -364,3 +364,16 @@ operations. The integration forbids arbitrary tool names, Watchlist CRUD,
 background monitoring, trading, orders, redirects, client-supplied
 credentials, and non-public/private-network URL targets. Upstream calls may
 consume quota or incur provider charges.
+
+
+## WHO GHO OData 全球卫生数据
+
+`api-center/who-gho/` 通过 WHO Global Health Observatory 的公开 OData 兼容端点读取全球卫生指标：
+
+```text
+[intel-who-gho]
+https://ghoapi.azureedge.net/api
+无需 Repository Secret
+```
+
+固定开放 8 项只读操作，覆盖维度、维度值、指标目录、指标搜索、国家、地区和按国家/地区、年份、性别筛选的指标观测值。禁止客户端提交任意 OData 表达式、任意 URL、自动翻页和整库下载。WHO 已公告旧 GHO OData 将迁移至 World Health Data Hub 新实现，因此该 Provider 保留迁移监测标记，不把当前兼容端点视为永久合同。

@@ -45,6 +45,7 @@ EXPECTED_OPERATION_COUNTS = {
     "alphafeed": 10,
     "agent-toolbelt": 21,
     "gapup-mcp": 209,
+    "who-gho-odata": 8,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -69,9 +70,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 31)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 31)
-        self.assertEqual(catalog["managed_operation_count"], 569)
+        self.assertEqual(catalog["managed_provider_count"], 32)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 32)
+        self.assertEqual(catalog["managed_operation_count"], 577)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -268,6 +269,16 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(gapup["limits"]["write_operations_allowed"])
         self.assertNotIn("crm_connector", gapup_ids)
         self.assertNotIn("webhooks_manage", gapup_ids)
+
+        who = providers["who-gho-odata"]
+        self.assertEqual(who["ticket_prefix"], "[intel-who-gho]")
+        self.assertEqual(who["required_secret_environment_variable_name"], "")
+        self.assertEqual(len(who["operations"]), 8)
+        self.assertEqual(who["limits"]["fixed_api_host"], "ghoapi.azureedge.net")
+        self.assertFalse(who["limits"]["arbitrary_odata_filters_allowed"])
+        self.assertFalse(who["limits"]["automatic_pagination_allowed"])
+        self.assertFalse(who["limits"]["write_operations_allowed"])
+        self.assertTrue(who["limits"]["legacy_endpoint_migration_watch_required"])
 
         self.assertEqual(
             providers["tushare"]["ticket_prefix"],

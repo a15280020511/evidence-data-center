@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            569,
+            577,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -87,6 +87,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "alphafeed": 10,
             "agent-toolbelt": 21,
             "gapup-mcp": 209,
+            "who-gho-odata": 8,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -430,6 +431,22 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(llama_limits["presigned_urls_exposed"])
         self.assertLessEqual(llama_limits["max_pages"], 200)
         self.assertLessEqual(llama_limits["poll_timeout_seconds_max"], 600)
+
+
+    def test_who_gho_odata_has_no_unbounded_query_escape_hatch(self) -> None:
+        provider = json.loads(
+            (ROOT / "who-gho/provider-catalog.json").read_text(encoding="utf-8")
+        )["providers"][0]
+        limits = provider["limits"]
+        self.assertEqual(provider["required_secret_environment_variable"], "")
+        self.assertEqual(limits["fixed_api_host"], "ghoapi.azureedge.net")
+        self.assertFalse(limits["arbitrary_urls_allowed"])
+        self.assertFalse(limits["arbitrary_odata_filters_allowed"])
+        self.assertFalse(limits["arbitrary_odata_select_allowed"])
+        self.assertFalse(limits["automatic_pagination_allowed"])
+        self.assertFalse(limits["whole_database_download_allowed"])
+        self.assertFalse(limits["write_operations_allowed"])
+        self.assertTrue(limits["legacy_endpoint_migration_watch_required"])
 
 
 if __name__ == "__main__":

@@ -27,3 +27,8 @@
 ## V3 data quality controls
 
 Connector status is classified as PRODUCTION / DEGRADED / BLOCKED / RETIRED. Formal outputs require immutable snapshot metadata and a source-comparison report; correlated sources may not be naively averaged.
+
+
+### WHO GHO OData
+
+情报中心新增免密、只读的 WHO Global Health Observatory OData Provider，固定开放 8 项受控操作并保留官方接口迁移监测。
