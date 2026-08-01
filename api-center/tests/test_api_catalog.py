@@ -43,6 +43,7 @@ EXPECTED_OPERATION_COUNTS = {
     "overture-maps": 7,
     "oecd": 6,
     "alphafeed": 10,
+    "agent-toolbelt": 29,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -67,9 +68,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 29)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 29)
-        self.assertEqual(catalog["managed_operation_count"], 339)
+        self.assertEqual(catalog["managed_provider_count"], 30)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 30)
+        self.assertEqual(catalog["managed_operation_count"], 368)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -109,6 +110,7 @@ class ApiCatalogTests(unittest.TestCase):
             "east-asia-econ": "EAST_ASIA_ECON_API_KEY",
             "alpha-vantage": "ALPHA_VANTAGE_API_KEY",
             "alphafeed": "ALPHAFEED_API_KEY",
+            "agent-toolbelt": "AGENT_TOOLBELT_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -222,6 +224,30 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(alphafeed["limits"]["fixed_api_host"], "api.alphafeed.org")
         self.assertFalse(alphafeed["limits"]["arbitrary_sdk_methods_allowed"])
         self.assertFalse(alphafeed["limits"]["trading_or_order_execution_allowed"])
+
+
+        agent_toolbelt = providers["agent-toolbelt"]
+        self.assertEqual(
+            agent_toolbelt["ticket_prefix"],
+            "[api-agent-toolbelt]",
+        )
+        self.assertEqual(
+            agent_toolbelt["required_secret_environment_variable_name"],
+            "AGENT_TOOLBELT_KEY",
+        )
+        self.assertEqual(len(agent_toolbelt["operations"]), 29)
+        self.assertEqual(
+            agent_toolbelt["limits"]["fixed_api_host"],
+            "www.agenttoolbelt.live",
+        )
+        self.assertFalse(
+            agent_toolbelt["limits"]["arbitrary_tool_names_allowed"]
+        )
+        self.assertFalse(agent_toolbelt["limits"]["watchlist_crud_allowed"])
+        self.assertFalse(agent_toolbelt["limits"]["write_operations_allowed"])
+        self.assertFalse(
+            agent_toolbelt["limits"]["trading_or_order_execution_allowed"]
+        )
 
         self.assertEqual(
             providers["tushare"]["ticket_prefix"],

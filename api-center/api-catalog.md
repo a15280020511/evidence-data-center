@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`29/29` 已启用
-- 托管操作总数：`339`
-- 已公开参数总数：`1358`
-- 目录 SHA-256：`0705b563082394273daed695e47e69505ac39fd55433d2c700b1fc418fb93b6e`
+- 托管提供方：`30/30` 已启用
+- 托管操作总数：`368`
+- 已公开参数总数：`1441`
+- 目录 SHA-256：`5c386e1c645265b29f0c559920b779caec522c4bf0c5f09a7b8f99302d63e77d`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -30,6 +30,7 @@
 | Tavily Context API | `tavily` | 启用 | `[api-context]` | `5` | 否 |
 | Firecrawl Context API（火行者） | `firecrawl` | 启用 | `[api-context]` | `4` | 否 |
 | Browserless REST API | `browserless` | 启用 | `[api-browserless]` | `8` | 否 |
+| Agent Toolbelt AI 股票研究与代理工具 | `agent-toolbelt` | 启用 | `[api-agent-toolbelt]` | `29` | 否 |
 | TickFlow 金融行情 API | `tickflow` | 启用 | `[api-tickflow]` | `5` | 否 |
 | SerpAPI 搜索结果 API | `serpapi` | 启用 | `[api-serpapi]` | `4` | 否 |
 | Tushare Pro 中国金融数据 API | `tushare` | 启用 | `[api-tushare]` | `20` | 否 |
@@ -4836,6 +4837,1193 @@
   "proxy_configuration_allowed": false,
   "captcha_or_unblock_allowed": false,
   "write_operations_allowed": false
+}
+```
+
+## Agent Toolbelt AI 股票研究与代理工具 (`agent-toolbelt`)
+
+- 状态：`启用`
+- 说明：通过 Agent Toolbelt 官方 API 调用 8 项美股研究工具和 20 项通用代理工具；仅开放固定工具白名单，不开放 Watchlist CRUD、任意路径或其他写操作。
+- 目录策略：固定开放 29 项能力：1 项本地目录和 28 项官方工具；每个票据最多一次受限请求，参数、正文、数组、文本、图片、URL、超时和响应体积均受硬上限约束。
+- 执行策略：API Key 仅由 GitHub Repository Secret 注入；不接受客户端凭据、任意工具名、任意路径、Watchlist CRUD、交易、下单、Webhook 或后台监控。URL 型工具仅接受公开 HTTPS 地址并拒绝本机、私网和保留地址字面量。
+- 票据前缀：`[api-agent-toolbelt]`
+- Secret环境变量名：`AGENT_TOOLBELT_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`123166ea013e3c813f56e306d9dd06f5c8cff3cdaa60370f5ed05ce50d101b35`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Agent Toolbelt 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `schema-generator` | 根据自然语言描述生成 JSON Schema、TypeScript 接口或 Zod 校验器。 | `description, format, strict` |
+
+`schema-generator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "format": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "json_schema",
+        "zod",
+        "typescript"
+      ]
+    },
+    "strict": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "description"
+  ],
+  "maxProperties": 3
+}
+```
+
+| `text-extractor` | 从文本中提取邮箱、URL、电话、日期、货币、地址、姓名或 JSON 代码块。 | `text, extractors, deduplicate` |
+
+`text-extractor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "extractors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000,
+        "enum": [
+          "emails",
+          "urls",
+          "phone_numbers",
+          "dates",
+          "currencies",
+          "addresses",
+          "names",
+          "json_blocks"
+        ]
+      }
+    },
+    "deduplicate": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "text",
+    "extractors"
+  ],
+  "maxProperties": 3
+}
+```
+
+| `token-counter` | 按多个大模型计算 Token 数量并估算调用成本。 | `text, models` |
+
+`token-counter` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80,
+        "pattern": "^[A-Za-z0-9._:/+-]{1,80}$"
+      }
+    }
+  },
+  "required": [
+    "text"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `csv-to-json` | 将 CSV 转换为带类型推断的 JSON。 | `csv, delimiter, hasHeader, typeCast, limit, skipEmptyRows` |
+
+`csv-to-json` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "csv": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "delimiter": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "auto",
+        ",",
+        ";",
+        "\t",
+        "|"
+      ]
+    },
+    "hasHeader": {
+      "type": "boolean"
+    },
+    "typeCast": {
+      "type": "boolean"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000
+    },
+    "skipEmptyRows": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "csv"
+  ],
+  "maxProperties": 6
+}
+```
+
+| `markdown-converter` | 在 HTML 与 Markdown 之间转换。 | `content, from, to, options` |
+
+`markdown-converter` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "html",
+        "markdown"
+      ]
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "html",
+        "markdown"
+      ]
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "headingStyle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "enum": [
+            "atx",
+            "setext"
+          ]
+        },
+        "bulletListMarker": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "enum": [
+            "-",
+            "*",
+            "+"
+          ]
+        },
+        "codeBlockStyle": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "enum": [
+            "fenced",
+            "indented"
+          ]
+        }
+      },
+      "maxProperties": 3
+    }
+  },
+  "required": [
+    "content",
+    "from",
+    "to"
+  ],
+  "maxProperties": 4
+}
+```
+
+| `url-metadata` | 读取公开 HTTPS 页面标题、描述、Open Graph、作者和发布日期等元数据。 | `url, timeout` |
+
+`url-metadata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^ \\t\\r\\n]+$"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 15000
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `regex-builder` | 根据自然语言说明生成并测试正则表达式。 | `description, testStrings, flags` |
+
+`regex-builder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "testStrings": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "string",
+        "minLength": 0,
+        "maxLength": 5000
+      }
+    },
+    "flags": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 8,
+      "pattern": "^[dgimsuvy]*$"
+    }
+  },
+  "required": [
+    "description"
+  ],
+  "maxProperties": 3
+}
+```
+
+| `cron-builder` | 将自然语言时间安排转换为 Cron 表达式。 | `description, timezone` |
+
+`cron-builder` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5000
+    },
+    "timezone": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9_+./:-]{1,100}$"
+    }
+  },
+  "required": [
+    "description"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `address-normalizer` | 将美国地址标准化为 USPS 风格并解析组成部分。 | `address, includeComponents` |
+
+`address-normalizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "address": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "includeComponents": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "address"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `color-palette` | 根据描述或颜色生成色板、可访问性评分和 CSS 变量。 | `description, count, format, includeShades` |
+
+`color-palette` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5000
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 2,
+      "maximum": 20
+    },
+    "format": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "hex",
+        "rgb",
+        "hsl",
+        "all"
+      ]
+    },
+    "includeShades": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "description"
+  ],
+  "maxProperties": 4
+}
+```
+
+| `document-comparator` | 对两个文档版本执行语义差异比较。 | `original, revised, mode, context` |
+
+`document-comparator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "original": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "revised": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "mode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "summary",
+        "detailed",
+        "structured"
+      ]
+    },
+    "context": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    }
+  },
+  "required": [
+    "original",
+    "revised"
+  ],
+  "maxProperties": 4
+}
+```
+
+| `contract-clause-extractor` | 从公开合同文本中提取指定条款并标记风险；结果不构成法律意见。 | `contract, clauses, flagRisks` |
+
+`contract-clause-extractor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contract": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "clauses": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000,
+        "enum": [
+          "parties",
+          "dates",
+          "payment_terms",
+          "termination",
+          "liability",
+          "ip_ownership",
+          "confidentiality",
+          "governing_law",
+          "penalties",
+          "renewal",
+          "warranties",
+          "dispute_resolution"
+        ]
+      }
+    },
+    "flagRisks": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "contract"
+  ],
+  "maxProperties": 3
+}
+```
+
+| `prompt-optimizer` | 分析、评分并改写大模型提示词。 | `prompt, model, task, mode` |
+
+`prompt-optimizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "prompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50000
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "task": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "mode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "improve",
+        "analyze",
+        "both"
+      ]
+    }
+  },
+  "required": [
+    "prompt"
+  ],
+  "maxProperties": 4
+}
+```
+
+| `meeting-action-items` | 从公开会议记录中提取行动项、决定和摘要。 | `notes, format, participants` |
+
+`meeting-action-items` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "notes": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "format": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "action_items_only",
+        "full"
+      ]
+    },
+    "participants": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      }
+    }
+  },
+  "required": [
+    "notes"
+  ],
+  "maxProperties": 3
+}
+```
+
+| `image-metadata-stripper` | 移除 Base64 图片的 EXIF、GPS、ICC、IPTC 和 XMP 元数据。 | `image, format, quality` |
+
+`image-metadata-stripper` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 12000000,
+      "pattern": "^[A-Za-z0-9+/=_:\\-.,;]+$"
+    },
+    "format": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "jpeg",
+        "png",
+        "webp",
+        "preserve"
+      ]
+    },
+    "quality": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "image"
+  ],
+  "maxProperties": 3
+}
+```
+
+| `brand-kit` | 生成品牌色板、字体、CSS 和 Tailwind 设计令牌。 | `name, industry, vibe, targetAudience, format` |
+
+`brand-kit` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "industry": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "vibe": {
+      "type": "array",
+      "maxItems": 20,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    },
+    "targetAudience": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "format": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "full",
+        "tokens",
+        "css",
+        "tailwind"
+      ]
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "maxProperties": 5
+}
+```
+
+| `api-response-mocker` | 根据 JSON Schema 生成受限数量的模拟 API 响应。 | `schema, count, seed` |
+
+`api-response-mocker` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "object",
+      "maxProperties": 200
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    }
+  },
+  "required": [
+    "schema"
+  ],
+  "maxProperties": 3
+}
+```
+
+| `dependency-auditor` | 使用 OSV 数据库审计 npm 或 PyPI 依赖的已知漏洞。 | `packages, manifest, manifestType, includeDevDependencies, minSeverity` |
+
+`dependency-auditor` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "packages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 214,
+            "pattern": "^[A-Za-z0-9@._/+-]{1,214}$"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "ecosystem": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000,
+            "enum": [
+              "npm",
+              "pypi"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "ecosystem"
+        ],
+        "maxProperties": 3
+      }
+    },
+    "manifest": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100000
+    },
+    "manifestType": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "package.json",
+        "requirements.txt",
+        "auto"
+      ]
+    },
+    "includeDevDependencies": {
+      "type": "boolean"
+    },
+    "minSeverity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "LOW",
+        "MODERATE",
+        "HIGH",
+        "CRITICAL"
+      ]
+    }
+  },
+  "maxProperties": 5
+}
+```
+
+| `earnings-analysis` | 分析美股盈利超预期/不及预期历史、收入趋势与下一次财报日期。 | `ticker` |
+
+`earnings-analysis` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12,
+      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+    }
+  },
+  "required": [
+    "ticker"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `insider-signal` | 解释美国 Form 4 内部人交易并区分公开市场买卖与常规交易。 | `ticker` |
+
+`insider-signal` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12,
+      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+    }
+  },
+  "required": [
+    "ticker"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `valuation-snapshot` | 综合估值倍数、现金流收益率、ROE 与利润率，生成估值结论。 | `ticker` |
+
+`valuation-snapshot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12,
+      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+    }
+  },
+  "required": [
+    "ticker"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `bear-vs-bull` | 生成结构化多空论证、净结论和关键争议问题。 | `ticker` |
+
+`bear-vs-bull` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12,
+      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+    }
+  },
+  "required": [
+    "ticker"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `moat-analysis` | 生成巴菲特式竞争护城河评估。 | `ticker` |
+
+`moat-analysis` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12,
+      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+    }
+  },
+  "required": [
+    "ticker"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `stock-thesis` | 基于实时财务数据生成结构化美股投资论点。 | `ticker, timeHorizon` |
+
+`stock-thesis` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ticker": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 12,
+      "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+    },
+    "timeHorizon": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "1-2 years",
+        "3-5 years",
+        "5+ years"
+      ]
+    }
+  },
+  "required": [
+    "ticker"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `compare-stocks` | 对 2 至 3 只美股进行横向比较并给出优胜者与适配场景。 | `tickers` |
+
+`compare-stocks` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "tickers": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 12,
+        "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+      }
+    }
+  },
+  "required": [
+    "tickers"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `watchlist-scan` | 扫描并按价值、质量、成长或收益对 2 至 15 只美股排序。 | `tickers, focus` |
+
+`watchlist-scan` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "tickers": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 15,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 12,
+        "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+      }
+    },
+    "focus": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "value",
+        "quality",
+        "growth",
+        "income"
+      ]
+    }
+  },
+  "required": [
+    "tickers"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `web-summarizer` | 抓取公开 HTTPS 页面正文并返回摘要、关键点或清洗后的内容。 | `url, mode, focus, maxContentLength, timeout` |
+
+`web-summarizer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^ \\t\\r\\n]+$"
+    },
+    "mode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "summary",
+        "content",
+        "both"
+      ]
+    },
+    "focus": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5000
+    },
+    "maxContentLength": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 100000
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 15000
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 5
+}
+```
+
+| `context-window-packer` | 按 Token 预算和优先级将文本块装入模型上下文。 | `chunks, tokenBudget, model, strategy, separator, systemPrompt, reserveForOutput` |
+
+`context-window-packer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "chunks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "priority": {
+            "type": "number",
+            "minimum": -1000,
+            "maximum": 1000
+          },
+          "metadata": {
+            "type": "object",
+            "maxProperties": 50
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "maxProperties": 4
+      }
+    },
+    "tokenBudget": {
+      "type": "integer",
+      "minimum": 128,
+      "maximum": 200000
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "strategy": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000,
+      "enum": [
+        "priority",
+        "greedy",
+        "balanced"
+      ]
+    },
+    "separator": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 1000
+    },
+    "systemPrompt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50000
+    },
+    "reserveForOutput": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    }
+  },
+  "required": [
+    "chunks",
+    "tokenBudget"
+  ],
+  "maxProperties": 7
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_request_bytes": 15000000,
+  "max_response_bytes": 20000000,
+  "fixed_api_host": "www.agenttoolbelt.live",
+  "fixed_upstream_tool_count": 28,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 1,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_tool_names_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "watchlist_crud_allowed": false,
+  "background_monitoring_allowed": false,
+  "trading_or_order_execution_allowed": false,
+  "public_https_url_inputs_allowed": true,
+  "private_network_url_inputs_allowed": false,
+  "personal_data_allowed": false,
+  "sensitive_contracts_allowed": false,
+  "investment_execution_allowed": false,
+  "secret_values_exposed": false,
+  "upstream_may_use_llm": true,
+  "upstream_calls_are_billable_or_quota_counted": true
 }
 ```
 

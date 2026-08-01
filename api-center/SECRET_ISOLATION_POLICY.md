@@ -42,3 +42,14 @@ Alpha Vantage Key 仅允许作为 `apikey` 查询参数注入 `https://www.alpha
 AlphaFeed Key 仅允许由 `api-center/alphafeed/` 的固定工作流注入官方 `alphafeed==0.1.4` SDK；客户端不得提交或覆盖 Key，不开放任意 SDK 方法、WebSocket、交易或下单。Overture Maps、OECD 和 World Bank 均为无密钥只读数据源。
 
 Xweather 的公开 Client ID 作为 GitHub Repository Variable `XWEATHER_CLIENT_ID` 注入，唯一敏感凭据为 Repository Secret `XWEATHER_CLIENT_SECRET`。两者只发送至 `https://data.api.xweather.com` 的固定白名单 GET 端点，不写入仓库、Issue、日志或 Artifact。
+
+## Agent Toolbelt
+
+```text
+Repository Secret: AGENT_TOOLBELT_KEY
+```
+
+The key is injected only into the dedicated Agent Toolbelt GitHub Actions job
+as a Bearer token. It is never accepted from tickets, written to the unified
+catalog, printed in comments, or persisted in artifacts. Failure messages are
+redacted before diagnostics are written.

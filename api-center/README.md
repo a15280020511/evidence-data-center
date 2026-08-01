@@ -334,3 +334,18 @@ BROWSERLESS_TOKEN
 固定开放 8 项操作：本地能力目录、JavaScript 渲染 HTML、CSS 选择器结构化抓取、截图、PDF、Lighthouse 性能审计、受限 Web 搜索和站点地图。Search 与 Map 可能要求 Browserless Cloud 套餐。
 
 安全边界禁止 BrowserQL、BaaS/WebSocket、Function、Download、Export、Unblock、任意 JavaScript、Profile、Cookie、Authorization、自定义请求头、代理配置、CAPTCHA 求解和登录态页面。目标只允许公开 HTTPS URL；二进制截图和 PDF 只进入 Artifact。
+
+## Agent Toolbelt
+
+```text
+Ticket prefix: [api-agent-toolbelt]
+Repository Secret: AGENT_TOOLBELT_KEY
+Fixed origin: https://www.agenttoolbelt.live
+```
+
+Agent Toolbelt exposes 29 bounded operations in the API catalog: one local
+capability catalog, eight US-stock research operations, and twenty utility
+operations. The integration forbids arbitrary tool names, Watchlist CRUD,
+background monitoring, trading, orders, redirects, client-supplied
+credentials, and non-public/private-network URL targets. Upstream calls may
+consume quota or incur provider charges.
