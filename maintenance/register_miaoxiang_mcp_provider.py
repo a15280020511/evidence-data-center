@@ -149,12 +149,27 @@ def update_capability_tests() -> None:
 def update_readme() -> None:
     path = "api-center/README.md"
     text = read(path)
-    text = replace_once(
-        text,
-        'LLAMA_CLOUD_API_KEY\n```\n',
-        'LLAMA_CLOUD_API_KEY\nMX_APIKEY\nEM_API_KEY\n```\n',
-        path,
-    )
+    old_block = '''新增托管提供方分别使用：
+
+```text
+TUSHARE_API_TOKEN
+EODHD_API_TOKEN
+WOLFRAM_ALPHA_APP_ID
+LLAMA_CLOUD_API_KEY
+```
+'''
+    new_block = '''新增托管提供方分别使用：
+
+```text
+TUSHARE_API_TOKEN
+EODHD_API_TOKEN
+WOLFRAM_ALPHA_APP_ID
+LLAMA_CLOUD_API_KEY
+MX_APIKEY
+EM_API_KEY
+```
+'''
+    text = replace_once(text, old_block, new_block, path)
     section = '''\n\n## 东方财富妙想 MCP\n\n`api-center/miaoxiang-mcp/` 使用东方财富官方 Streamable HTTP MCP Server：\n\n```text\nhttps://mxapi.eastmoney.com/mxds/mcp\n```\n\n正式票据前缀和独立 Secret：\n\n```text\n[api-mx-mcp]\nEM_API_KEY\n```\n\nMCP 协议固定为 `2025-11-25`，鉴权只通过后端 `em_api_key` 请求头注入。当前固定开放 11 个上游只读工具，覆盖 A股、港股、美股、基金、债券、指数板块、宏观经济、新闻研报、公告披露和证券筛选；连同本地能力目录与 `tools/list`，总计 13 项操作。禁止任意 JSON-RPC 方法、任意 MCP 工具名、Resources、Prompts、自选股修改、模拟交易和真实交易。\n\n原有 `api-center/miaoxiang/` 是 Skills REST Provider，使用 `MX_APIKEY`（`mkt_` 类型）；MCP Provider 使用 `EM_API_KEY`（`em_` 类型）。两类密钥必须独立保存，不能互换。\n'''
     if "## 东方财富妙想 MCP" not in text:
         text += section
@@ -181,13 +196,15 @@ def update_dependabot() -> None:
         "    open-pull-requests-limit: 5",
     ]
     for directory in directories:
-        lines.extend([
-            '  - package-ecosystem: "pip"',
-            f'    directory: "{directory}"',
-            "    schedule:",
-            '      interval: "weekly"',
-            "    open-pull-requests-limit: 5",
-        ])
+        lines.extend(
+            [
+                '  - package-ecosystem: "pip"',
+                f'    directory: "{directory}"',
+                "    schedule:",
+                '      interval: "weekly"',
+                "    open-pull-requests-limit: 5",
+            ]
+        )
     write(path, "\n".join(lines) + "\n")
 
 
