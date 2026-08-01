@@ -103,15 +103,16 @@ def response_value(case: Mapping[str, Any]) -> Any:
 
 
 def period_stamp(row: Mapping[str, Any]) -> Any:
-    ob = row.get("ob") if isinstance(row.get("ob"), Mapping) else row
+    summary = row.get("summary") if isinstance(row.get("summary"), Mapping) else row
+    ob = summary.get("ob") if isinstance(summary.get("ob"), Mapping) else summary
     return (
         ob.get("dateTimeISO")
         or ob.get("validTime")
         or ob.get("timestamp")
-        or row.get("dateTimeISO")
-        or row.get("validTime")
-        or row.get("timestamp")
-        or row.get("dateTime")
+        or summary.get("dateTimeISO")
+        or summary.get("validTime")
+        or summary.get("timestamp")
+        or summary.get("dateTime")
     )
 
 
@@ -177,14 +178,25 @@ def summarize(case: Mapping[str, Any]) -> dict[str, Any]:
     if periods:
         for label, row in (("first_period", periods[0]), ("last_period", periods[-1])):
             if isinstance(row, Mapping):
+                selected = row.get("summary") if isinstance(row.get("summary"), Mapping) else row
                 base[label] = {
-                    key: row.get(key)
+                    key: selected.get(key)
                     for key in (
                         "dateTimeISO", "validTime", "maxTempC", "minTempC", "tempC",
                         "weather", "weatherPrimary", "pop", "precipMM", "humidity",
                     )
-                    if key in row
+                    if key in selected
                 }
+                if isinstance(selected.get("temp"), Mapping):
+                    base[label]["temp"] = {
+                        key: selected["temp"].get(key)
+                        for key in ("maxC", "minC", "avgC", "count")
+                    }
+                if isinstance(selected.get("precip"), Mapping):
+                    base[label]["precip"] = {
+                        key: selected["precip"].get(key)
+                        for key in ("totalMM", "count", "trace")
+                    }
     return base
 
 
@@ -210,7 +222,7 @@ for name, operation, parameters in (
     cases.append(run_case(name, "xweather", operation, parameters, xweather.execute))
 
 summary = {
-    "schema_version": "alphafeed-xweather-live-smoke-v3",
+    "schema_version": "alphafeed-xweather-live-smoke-v4",
     "credentials_configured": {
         "ALPHAFEED_API_KEY": bool(str(os.getenv("ALPHAFEED_API_KEY") or "").strip()),
         "XWEATHER_CLIENT_ID": bool(str(os.getenv("XWEATHER_CLIENT_ID") or "").strip()),
