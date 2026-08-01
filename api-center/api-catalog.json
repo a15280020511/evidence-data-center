@@ -40,15 +40,16 @@
     "nasa/provider-catalog.json",
     "metno-geosatellite/provider-catalog.json",
     "copernicus/provider-catalog.json",
+    "gbif/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "c7608bd0220a0bc1055798aeae411b50eebbcb1e8eced7e024177c1f7981968b",
+  "managed_provider_catalog_sha256": "f750d45bf2207ad7a32812d0c94d75a415851cd3e0b454bc74cd077ef270058b",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 38,
-  "enabled_managed_provider_count": 38,
-  "managed_operation_count": 420,
-  "exposed_parameter_count": 1580,
+  "managed_provider_count": 39,
+  "enabled_managed_provider_count": 39,
+  "managed_operation_count": 430,
+  "exposed_parameter_count": 1623,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -83,6 +84,7 @@
     "nasa/provider-catalog.json",
     "metno-geosatellite/provider-catalog.json",
     "copernicus/provider-catalog.json",
+    "gbif/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -18905,6 +18907,533 @@
       "catalog_file": "copernicus/provider-catalog.json"
     },
     {
+      "provider_id": "gbif",
+      "display_name": "全球生物多样性信息设施 GBIF",
+      "description": "通过GBIF官方REST API查询物种名称、分类单元、全球物种出现记录及数据集元数据。",
+      "enabled": true,
+      "ticket_prefix": "[intel-gbif]",
+      "catalog_policy": "固定开放10项免密只读能力；不开放认证下载、批量导出、发布、注册、修改、删除、实验端点或网站抓取。",
+      "execution_policy": "每张票据最多一次固定HTTPS GET；分页、空间半径、时间、分类键、国家代码、返回行数和响应体积均受硬上限约束，不自动翻页、不跟随重定向。",
+      "operation_count": 10,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地GBIF安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "species-match",
+          "description": "将科学名称及可选分类上下文匹配到GBIF分类主干。",
+          "parameter_names": [
+            "name",
+            "rank",
+            "kingdom",
+            "phylum",
+            "class_name",
+            "order",
+            "family",
+            "genus",
+            "strict",
+            "verbose"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "rank": {
+                "type": "string",
+                "enum": [
+                  "KINGDOM",
+                  "PHYLUM",
+                  "CLASS",
+                  "ORDER",
+                  "FAMILY",
+                  "GENUS",
+                  "SPECIES",
+                  "SUBSPECIES",
+                  "VARIETY",
+                  "FORM",
+                  "UNRANKED"
+                ]
+              },
+              "kingdom": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "phylum": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "class_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "order": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "family": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "genus": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "strict": {
+                "type": "boolean"
+              },
+              "verbose": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "species-search",
+          "description": "全文搜索GBIF名称使用记录。",
+          "parameter_names": [
+            "q",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 99999,
+                "default": 0
+              }
+            },
+            "required": [
+              "q"
+            ]
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "species-suggest",
+          "description": "按科学名或俗名进行受控自动补全。",
+          "parameter_names": [
+            "q",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 20
+              }
+            },
+            "required": [
+              "q"
+            ]
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "species-get",
+          "description": "按GBIF usage key读取单一分类单元。",
+          "parameter_names": [
+            "usage_key"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "usage_key": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              }
+            },
+            "required": [
+              "usage_key"
+            ]
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "occurrence-search",
+          "description": "按名称、分类键、国家、年份、日期或点位半径搜索有限物种出现记录。",
+          "parameter_names": [
+            "q",
+            "scientific_name",
+            "taxon_key",
+            "country",
+            "year",
+            "event_date",
+            "geo_distance",
+            "has_coordinate",
+            "has_geospatial_issue",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "scientific_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "taxon_key": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              "year": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(,[0-9]{4})?$"
+              },
+              "event_date": {
+                "type": "string",
+                "minLength": 4,
+                "maxLength": 64
+              },
+              "geo_distance": {
+                "type": "string",
+                "minLength": 5,
+                "maxLength": 80
+              },
+              "has_coordinate": {
+                "type": "boolean"
+              },
+              "has_geospatial_issue": {
+                "type": "boolean"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 300,
+                "default": 50
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 99999,
+                "default": 0
+              }
+            },
+            "minProperties": 1
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "occurrence-get",
+          "description": "按GBIF occurrence id读取单条出现记录。",
+          "parameter_names": [
+            "gbif_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "gbif_id": {
+                "type": "integer",
+                "minimum": 1
+              }
+            },
+            "required": [
+              "gbif_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "occurrence-count",
+          "description": "按受控分类、时空或国家过滤条件返回出现记录计数。",
+          "parameter_names": [
+            "q",
+            "scientific_name",
+            "taxon_key",
+            "country",
+            "year",
+            "event_date",
+            "geo_distance",
+            "has_coordinate",
+            "has_geospatial_issue"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "scientific_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "taxon_key": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              "year": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(,[0-9]{4})?$"
+              },
+              "event_date": {
+                "type": "string",
+                "minLength": 4,
+                "maxLength": 64
+              },
+              "geo_distance": {
+                "type": "string",
+                "minLength": 5,
+                "maxLength": 80
+              },
+              "has_coordinate": {
+                "type": "boolean"
+              },
+              "has_geospatial_issue": {
+                "type": "boolean"
+              }
+            },
+            "minProperties": 1
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "dataset-search",
+          "description": "搜索GBIF数据集注册元数据。",
+          "parameter_names": [
+            "q",
+            "type",
+            "publishing_country",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "OCCURRENCE",
+                  "CHECKLIST",
+                  "SAMPLING_EVENT",
+                  "METADATA"
+                ]
+              },
+              "publishing_country": {
+                "type": "string",
+                "pattern": "^[A-Z]{2}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 50
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 99999,
+                "default": 0
+              }
+            },
+            "required": [
+              "q"
+            ]
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "dataset-get",
+          "description": "按GBIF dataset UUID读取单一数据集元数据。",
+          "parameter_names": [
+            "dataset_key"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dataset_key": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "dataset_key"
+            ]
+          },
+          "result_contract": {
+            "provider": "gbif",
+            "official_origin": "https://api.gbif.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "max_rows": 5000,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "fixed_api_host": "api.gbif.org",
+        "fixed_paths": [
+          "/v1/species/match",
+          "/v1/species/search",
+          "/v1/species/suggest",
+          "/v1/species/{usageKey}",
+          "/v1/occurrence/search",
+          "/v1/occurrence/{gbifId}",
+          "/v1/occurrence/count",
+          "/v1/dataset/search",
+          "/v1/dataset/{datasetKey}"
+        ],
+        "occurrence_page_size_max": 300,
+        "search_offset_plus_limit_max": 100000,
+        "automatic_pagination_allowed": false,
+        "authenticated_occurrence_downloads_allowed": false,
+        "bulk_download_allowed": false,
+        "experimental_endpoints_allowed": false,
+        "website_scraping_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "arbitrary_query_parameters_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "authentication_required": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "97d8bd077465f9553e473cc5c39bd502bf7cefad3ec6a2ca5a30f4b2aeac5014",
+      "catalog_file": "gbif/provider-catalog.json"
+    },
+    {
       "provider_id": "wolfram-alpha",
       "display_name": "Wolfram|Alpha 计算知识 API",
       "description": "通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。",
@@ -27661,5 +28190,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "0c0d29323e05fba2b09b0d44b681d24f6bfb246cde2514880e7f63f7b21f7935"
+  "catalog_sha256": "ef99d8d134f6c849a9a166ebce307b5af541ceb0d5f35af075d0e10c2207090e"
 }
