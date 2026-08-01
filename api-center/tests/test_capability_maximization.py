@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            306,
+            329,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -81,6 +81,9 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "eodhd": 25,
             "east-asia-econ": 6,
             "alpha-vantage": 66,
+            "overture-maps": 7,
+            "oecd": 6,
+            "alphafeed": 10,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -334,6 +337,33 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(alpha_limits["client_supplied_api_key_allowed"])
         self.assertFalse(alpha_limits["write_operations_allowed"])
         self.assertFalse(alpha_limits["trading_or_order_execution_allowed"])
+
+        overture = json.loads(
+            (ROOT / "overture-maps/provider-catalog.json").read_text(
+                encoding="utf-8"
+            )
+        )["providers"][0]
+        self.assertEqual(overture["required_secret_environment_variable"], "")
+        self.assertFalse(overture["limits"]["whole_world_download_allowed"])
+        self.assertFalse(overture["limits"]["arbitrary_s3_paths_allowed"])
+
+        oecd = json.loads(
+            (ROOT / "oecd/provider-catalog.json").read_text(encoding="utf-8")
+        )["providers"][0]
+        self.assertEqual(oecd["required_secret_environment_variable"], "")
+        self.assertEqual(oecd["limits"]["fixed_api_host"], "sdmx.oecd.org")
+        self.assertFalse(oecd["limits"]["arbitrary_sdmx_resource_types_allowed"])
+
+        alphafeed = json.loads(
+            (ROOT / "alphafeed/provider-catalog.json").read_text(encoding="utf-8")
+        )["providers"][0]
+        self.assertEqual(
+            alphafeed["required_secret_environment_variable"],
+            "ALPHAFEED_API_KEY",
+        )
+        self.assertFalse(alphafeed["limits"]["arbitrary_sdk_methods_allowed"])
+        self.assertFalse(alphafeed["limits"]["client_supplied_api_key_allowed"])
+        self.assertFalse(alphafeed["limits"]["trading_or_order_execution_allowed"])
 
         baostock = json.loads(
             (ROOT / "baostock/provider-catalog.json").read_text(encoding="utf-8")

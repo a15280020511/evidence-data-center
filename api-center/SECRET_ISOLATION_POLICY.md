@@ -25,6 +25,7 @@ BAIDU_MAP_API_KEY
 NEWSAPI_API_KEY
 TUSHARE_API_TOKEN
 ALPHA_VANTAGE_API_KEY
+ALPHAFEED_API_KEY
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
 ```
@@ -36,3 +37,5 @@ Wolfram|Alpha 的 AppID 仅允许作为 `appid` 查询参数注入三个固定�
 天地图提供方已删除；`TIANDITU_API_KEY` 不再被任何工作流或代码读取。仓库设置中残留的旧 Secret 需由仓库所有者在 GitHub Settings 中手动删除。
 
 Alpha Vantage Key 仅允许作为 `apikey` 查询参数注入 `https://www.alphavantage.co/query`；客户端不得覆盖 `function` 白名单或传入自己的密钥。
+
+AlphaFeed Key 仅允许由 `api-center/alphafeed/` 的固定工作流注入官方 `alphafeed==0.1.4` SDK；客户端不得提交或覆盖 Key，不开放任意 SDK 方法、WebSocket、交易或下单。Overture Maps、OECD 和 World Bank 均为无密钥只读数据源。

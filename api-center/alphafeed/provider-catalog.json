@@ -1,0 +1,417 @@
+{
+  "schema_version": "alphafeed-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "alphafeed",
+      "display_name": "AlphaFeed 中国与全球证券行情",
+      "description": "通过 AlphaFeed 官方 Python SDK 读取 A股、ETF、美股和港股行情、K线、分时、盘口、标的信息与复权因子。",
+      "enabled": true,
+      "ticket_prefix": "[api-alphafeed]",
+      "required_secret_environment_variable": "ALPHAFEED_API_KEY",
+      "catalog_policy": "固定开放官方 SDK 的 9 类只读数据操作；一个票据只执行一个固定 SDK 方法，批量标的数量和 K 线条数受硬限制。",
+      "execution_policy": "API Key 仅由 GitHub Actions 后端注入；不接受客户端密钥、任意方法、任意主机、交易、下单、WebSocket 或写操作。",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "api.alphafeed.org",
+        "sdk_version": "0.1.4",
+        "sdk_calls_per_ticket_max": 1,
+        "symbols_per_batch_max": 100,
+        "kline_batch_symbols_max": 20,
+        "kline_rows_per_symbol_max": 1000,
+        "arbitrary_sdk_methods_allowed": false,
+        "client_supplied_api_key_allowed": false,
+        "websocket_allowed": false,
+        "trading_or_order_execution_allowed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 AlphaFeed 安全能力目录，不访问上游.",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "quotes",
+          "description": "按证券代码或固定标的池读取 A股、美股、港股和 ETF 实时行情.",
+          "parameters": [
+            "symbols",
+            "universe"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              },
+              "universe": {
+                "type": "string",
+                "enum": [
+                  "CN_Stock",
+                  "US_Stock",
+                  "HK_Stock",
+                  "CN_ETF"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "klines",
+          "description": "读取单只证券的分钟、日、周或月 K 线.",
+          "parameters": [
+            "symbol",
+            "period",
+            "count",
+            "adjust"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "60m",
+                  "1d",
+                  "1w",
+                  "1mo"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "adjust": {
+                "type": "string",
+                "enum": [
+                  "forward",
+                  "backward",
+                  "forward_additive",
+                  "backward_additive",
+                  "none"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "klines-batch",
+          "description": "批量读取最多 20 只证券的有限 K 线.",
+          "parameters": [
+            "symbols",
+            "period",
+            "count",
+            "adjust"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "60m",
+                  "1d",
+                  "1w",
+                  "1mo"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 500
+              },
+              "adjust": {
+                "type": "string",
+                "enum": [
+                  "forward",
+                  "backward",
+                  "forward_additive",
+                  "backward_additive",
+                  "none"
+                ]
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "intraday",
+          "description": "读取单只证券当日 1 分钟或 5 分钟分时.",
+          "parameters": [
+            "symbol",
+            "period"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "intraday-batch",
+          "description": "批量读取最多 20 只证券的当日分时.",
+          "parameters": [
+            "symbols",
+            "period"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m"
+                ]
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "depth",
+          "description": "读取单只 A 股证券五档盘口.",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "instrument",
+          "description": "读取单只证券基础信息.",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "instruments-batch",
+          "description": "批量读取最多 100 只证券基础信息.",
+          "parameters": [
+            "symbols"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "adjustment-factors",
+          "description": "批量读取最多 100 只证券复权因子.",
+          "parameters": [
+            "symbols"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        }
+      ]
+    }
+  ]
+}

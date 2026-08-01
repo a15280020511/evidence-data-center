@@ -43,6 +43,7 @@ NEWSAPI_API_KEY
 TUSHARE_API_TOKEN
 EODHD_API_TOKEN
 ALPHA_VANTAGE_API_KEY
+ALPHAFEED_API_KEY
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
 MX_APIKEY
@@ -139,6 +140,42 @@ ALPHA_VANTAGE_API_KEY
 ```
 
 固定开放 66 项只读操作，覆盖全球股票、指数、期权、基本面、公司行动、新闻情绪、外汇、数字资产、商品、美国宏观经济和技术指标。每张票据最多一次上游请求，Provider 全局串行，不自动重试，以保护官方免费密钥每日 25 次的标准额度。部分函数、实时或延迟市场数据以及完整历史范围需要 Alpha Vantage 付费权限；权限或额度不足会返回结构化诊断，不会伪造空数据。
+
+## World Bank 世界银行开放数据
+
+World Bank 已通过 9 个普通只读连接器接入，无需 API Key，覆盖指标目录、指标元数据、国家/地区、收入等级、贷款类型、主题、数据源、指标观测值和 JSON-stat 输出。本次不重复建设第二套 Provider，只强化统一目录和回归验收。
+
+## Overture Maps 全球开放地图数据
+
+`api-center/overture-maps/` 使用 Overture 官方 STAC 目录、匿名对象存储和固定 Python 客户端：
+
+```text
+[api-overture]
+```
+
+无需 Repository Secret。固定开放 7 项只读操作，覆盖发布版本、要素类型、城市级边界框计数与有限 GeoJSON 提取、GERS 查询。禁止全量全球下载、任意对象存储路径、任意 URL 和写操作。
+
+## OECD Data Explorer SDMX
+
+`api-center/oecd/` 固定访问 OECD 官方免费 SDMX REST API：
+
+```text
+[api-oecd]
+https://sdmx.oecd.org/public/rest/v1
+```
+
+无需 Repository Secret。固定开放 6 项只读操作，覆盖数据流、数据结构、代码表和按维度键/时间范围取数；每张票据最多一次上游请求。
+
+## AlphaFeed 中国与全球证券行情
+
+`api-center/alphafeed/` 使用官方 Python SDK，正式票据前缀和独立 Secret 为：
+
+```text
+[api-alphafeed]
+ALPHAFEED_API_KEY
+```
+
+固定开放 10 项只读操作，覆盖 A股、ETF、美股、港股实时行情、K线、分时、盘口、标的信息和复权因子。禁止任意 SDK 方法、WebSocket、交易、下单和写操作。
 
 ## Wolfram|Alpha 计算知识
 

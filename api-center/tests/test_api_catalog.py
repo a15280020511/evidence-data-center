@@ -39,6 +39,9 @@ EXPECTED_OPERATION_COUNTS = {
     "eodhd": 25,
     "east-asia-econ": 6,
     "alpha-vantage": 66,
+    "overture-maps": 7,
+    "oecd": 6,
+    "alphafeed": 10,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -63,9 +66,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 25)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 25)
-        self.assertEqual(catalog["managed_operation_count"], 306)
+        self.assertEqual(catalog["managed_provider_count"], 28)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 28)
+        self.assertEqual(catalog["managed_operation_count"], 329)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -103,6 +106,7 @@ class ApiCatalogTests(unittest.TestCase):
             "eodhd": "EODHD_API_TOKEN",
             "east-asia-econ": "EAST_ASIA_ECON_API_KEY",
             "alpha-vantage": "ALPHA_VANTAGE_API_KEY",
+            "alphafeed": "ALPHAFEED_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -179,6 +183,31 @@ class ApiCatalogTests(unittest.TestCase):
             alpha_vantage["limits"]["trading_or_order_execution_allowed"]
         )
 
+        overture = providers["overture-maps"]
+        self.assertEqual(overture["ticket_prefix"], "[api-overture]")
+        self.assertEqual(overture["required_secret_environment_variable_name"], "")
+        self.assertEqual(len(overture["operations"]), 7)
+        self.assertFalse(overture["limits"]["whole_world_download_allowed"])
+        self.assertFalse(overture["limits"]["arbitrary_s3_paths_allowed"])
+
+        oecd = providers["oecd"]
+        self.assertEqual(oecd["ticket_prefix"], "[api-oecd]")
+        self.assertEqual(oecd["required_secret_environment_variable_name"], "")
+        self.assertEqual(len(oecd["operations"]), 6)
+        self.assertEqual(oecd["limits"]["fixed_api_host"], "sdmx.oecd.org")
+        self.assertFalse(oecd["limits"]["arbitrary_sdmx_resource_types_allowed"])
+
+        alphafeed = providers["alphafeed"]
+        self.assertEqual(alphafeed["ticket_prefix"], "[api-alphafeed]")
+        self.assertEqual(
+            alphafeed["required_secret_environment_variable_name"],
+            "ALPHAFEED_API_KEY",
+        )
+        self.assertEqual(len(alphafeed["operations"]), 10)
+        self.assertEqual(alphafeed["limits"]["fixed_api_host"], "api.alphafeed.org")
+        self.assertFalse(alphafeed["limits"]["arbitrary_sdk_methods_allowed"])
+        self.assertFalse(alphafeed["limits"]["trading_or_order_execution_allowed"])
+
         self.assertEqual(
             providers["tushare"]["ticket_prefix"],
             "[api-tushare]",
@@ -251,6 +280,9 @@ class ApiCatalogTests(unittest.TestCase):
             "miaoxiang-mcp/provider-catalog.json",
             "east-asia-econ/provider-catalog.json",
             "alpha-vantage/provider-catalog.json",
+            "overture-maps/provider-catalog.json",
+            "oecd/provider-catalog.json",
+            "alphafeed/provider-catalog.json",
             "knowledge-tools/provider-catalog.json",
         ):
             self.assertIn(catalog_file, catalog["managed_provider_catalog_files"])

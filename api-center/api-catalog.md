@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`25/25` 已启用
-- 托管操作总数：`306`
-- 已公开参数总数：`1275`
-- 目录 SHA-256：`9366530a5c6c777a16dcd801a097dac121829c772f11d8c3d5384c6f610e8d6a`
+- 托管提供方：`28/28` 已启用
+- 托管操作总数：`329`
+- 已公开参数总数：`1322`
+- 目录 SHA-256：`e0589dc7aae4cba6fb121b2027e309c1177e3f66a88aad85bf6b3efb89edb8e6`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -40,6 +40,9 @@
 | 东方财富妙想 MCP | `miaoxiang-mcp` | 启用 | `[api-mx-mcp]` | `13` | 否 |
 | East Asia Econ 东亚宏观数据库 | `east-asia-econ` | 启用 | `[api-east-asia-econ]` | `6` | 否 |
 | Alpha Vantage 全球金融与宏观数据 | `alpha-vantage` | 启用 | `[api-alpha-vantage]` | `66` | 否 |
+| Overture Maps 全球开放地图数据 | `overture-maps` | 启用 | `[api-overture]` | `7` | 否 |
+| OECD Data Explorer SDMX | `oecd` | 启用 | `[api-oecd]` | `6` | 否 |
+| AlphaFeed 中国与全球证券行情 | `alphafeed` | 启用 | `[api-alphafeed]` | `10` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -11167,6 +11170,797 @@
   "trading_or_order_execution_allowed": false,
   "personal_data_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## Overture Maps 全球开放地图数据 (`overture-maps`)
+
+- 状态：`启用`
+- 说明：通过 Overture 官方 STAC 目录和匿名对象存储，以受限边界框读取全球地址、建筑、行政区、地点、交通与基础底图要素。
+- 目录策略：开放固定发布目录、要素类型、计数、城市级边界框提取和 GERS 查询；不开放全量全球下载、任意对象存储路径或任意 URL。
+- 执行策略：只调用 Overture 官方 Python 客户端固定只读函数；边界框面积、要素类型、发布格式、返回条数和响应体积均受硬限制。
+- 票据前缀：`[api-overture]`
+- Secret环境变量名：`无`（仅名称）
+- 提供方SHA-256：`acec22ea8fb41dd662e964c99293ee8ae1fd72fed70b8332069a485e44787459`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Overture Maps 安全能力目录，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-feature-types` | 读取固定开放的 Overture 主题与要素类型清单，不访问上游. | `无` |
+
+`list-feature-types` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-releases` | 读取 Overture STAC 目录中的当前可用发布版本. | `无` |
+
+`list-releases` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `latest-release` | 读取 Overture STAC 目录标记的最新发布版本. | `无` |
+
+`latest-release` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `count-features` | 按城市级经纬度边界框统计指定 Overture 要素类型数量. | `feature_type, bbox, release` |
+
+`count-features` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "feature_type": {
+      "type": "string",
+      "enum": [
+        "address",
+        "bathymetry",
+        "building",
+        "building_part",
+        "division",
+        "division_area",
+        "division_boundary",
+        "place",
+        "segment",
+        "connector",
+        "infrastructure",
+        "land",
+        "land_cover",
+        "land_use",
+        "water"
+      ]
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "release": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[0-9]+$"
+    }
+  },
+  "required": [
+    "feature_type",
+    "bbox"
+  ]
+}
+```
+
+| `query-features` | 按城市级边界框提取指定类型的有限条 GeoJSON 要素. | `feature_type, bbox, release, limit` |
+
+`query-features` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "feature_type": {
+      "type": "string",
+      "enum": [
+        "address",
+        "bathymetry",
+        "building",
+        "building_part",
+        "division",
+        "division_area",
+        "division_boundary",
+        "place",
+        "segment",
+        "connector",
+        "infrastructure",
+        "land",
+        "land_cover",
+        "land_use",
+        "water"
+      ]
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "release": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[0-9]+$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    }
+  },
+  "required": [
+    "feature_type",
+    "bbox"
+  ]
+}
+```
+
+| `lookup-gers` | 按固定 UUID 格式查询 Overture Global Entity Reference System 注册表. | `gers_id` |
+
+`lookup-gers` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "gers_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "required": [
+    "gers_id"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_hosts": [
+    "stac.overturemaps.org",
+    "overturemaps-us-west-2.s3.us-west-2.amazonaws.com"
+  ],
+  "bbox_area_square_degrees_max": 4.0,
+  "features_per_ticket_max": 1000,
+  "anonymous_object_storage_only": true,
+  "whole_world_download_allowed": false,
+  "arbitrary_s3_paths_allowed": false,
+  "arbitrary_feature_types_allowed": false
+}
+```
+
+## OECD Data Explorer SDMX (`oecd`)
+
+- 状态：`启用`
+- 说明：通过 OECD 官方免费 SDMX REST API 读取经济、社会、贸易、产业、就业、教育、能源与公共治理统计。
+- 目录策略：开放固定的数据流、结构、代码表和数据查询操作；所有路径组件、维度键、格式、时间范围和响应体积均受白名单约束。
+- 执行策略：仅允许对 sdmx.oecd.org/public/rest/v1 发起一次 HTTPS GET；不跟随重定向，不接受任意 URL、请求头或写操作。
+- 票据前缀：`[api-oecd]`
+- Secret环境变量名：`无`（仅名称）
+- 提供方SHA-256：`83c66dfcf37eb0574142e6053818daa536289f693541997a211ff20dd2f935bb`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 OECD SDMX 安全能力目录，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-dataflows` | 读取 OECD 当前公开数据流目录. | `format` |
+
+`list-dataflows` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  }
+}
+```
+
+| `get-dataflow` | 读取指定 OECD SDMX 数据流定义. | `agency, flow, version, format` |
+
+`get-dataflow` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "flow"
+  ]
+}
+```
+
+| `get-datastructure` | 读取指定 OECD SDMX 数据结构定义. | `agency, structure_id, version, format` |
+
+`get-datastructure` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "structure_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "structure_id"
+  ]
+}
+```
+
+| `get-codelist` | 读取指定 OECD SDMX 代码表. | `agency, codelist_id, version, format` |
+
+`get-codelist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "codelist_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "codelist_id"
+  ]
+}
+```
+
+| `get-data` | 按固定数据流、维度键和时间范围读取 OECD 统计数据. | `agency, flow, version, key, start_period, end_period, dimension_at_observation, format` |
+
+`get-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9+._@-]+$"
+    },
+    "start_period": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 32,
+      "pattern": "^[0-9]{4}(?:-[A-Za-z0-9]{1,8})?$"
+    },
+    "end_period": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 32,
+      "pattern": "^[0-9]{4}(?:-[A-Za-z0-9]{1,8})?$"
+    },
+    "dimension_at_observation": {
+      "type": "string",
+      "enum": [
+        "AllDimensions",
+        "TimeDimension",
+        "MeasureDimension"
+      ]
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "flow",
+    "key"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_host": "sdmx.oecd.org",
+  "fixed_api_prefix": "/public/rest/v1",
+  "rate_limit_policy": "single-request-per-ticket",
+  "arbitrary_sdmx_resource_types_allowed": false,
+  "bulk_download_endpoints_allowed": false
+}
+```
+
+## AlphaFeed 中国与全球证券行情 (`alphafeed`)
+
+- 状态：`启用`
+- 说明：通过 AlphaFeed 官方 Python SDK 读取 A股、ETF、美股和港股行情、K线、分时、盘口、标的信息与复权因子。
+- 目录策略：固定开放官方 SDK 的 9 类只读数据操作；一个票据只执行一个固定 SDK 方法，批量标的数量和 K 线条数受硬限制。
+- 执行策略：API Key 仅由 GitHub Actions 后端注入；不接受客户端密钥、任意方法、任意主机、交易、下单、WebSocket 或写操作。
+- 票据前缀：`[api-alphafeed]`
+- Secret环境变量名：`ALPHAFEED_API_KEY`（仅名称）
+- 提供方SHA-256：`f74609460418fd7363f97d939eefa8b1c711801f9c9ecf61fcb77fcf465ba289`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 AlphaFeed 安全能力目录，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `quotes` | 按证券代码或固定标的池读取 A股、美股、港股和 ETF 实时行情. | `symbols, universe` |
+
+`quotes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    },
+    "universe": {
+      "type": "string",
+      "enum": [
+        "CN_Stock",
+        "US_Stock",
+        "HK_Stock",
+        "CN_ETF"
+      ]
+    }
+  }
+}
+```
+
+| `klines` | 读取单只证券的分钟、日、周或月 K 线. | `symbol, period, count, adjust` |
+
+`klines` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "60m",
+        "1d",
+        "1w",
+        "1mo"
+      ]
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "adjust": {
+      "type": "string",
+      "enum": [
+        "forward",
+        "backward",
+        "forward_additive",
+        "backward_additive",
+        "none"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `klines-batch` | 批量读取最多 20 只证券的有限 K 线. | `symbols, period, count, adjust` |
+
+`klines-batch` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "60m",
+        "1d",
+        "1w",
+        "1mo"
+      ]
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    },
+    "adjust": {
+      "type": "string",
+      "enum": [
+        "forward",
+        "backward",
+        "forward_additive",
+        "backward_additive",
+        "none"
+      ]
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `intraday` | 读取单只证券当日 1 分钟或 5 分钟分时. | `symbol, period` |
+
+`intraday` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `intraday-batch` | 批量读取最多 20 只证券的当日分时. | `symbols, period` |
+
+`intraday-batch` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m"
+      ]
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `depth` | 读取单只 A 股证券五档盘口. | `symbol` |
+
+`depth` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `instrument` | 读取单只证券基础信息. | `symbol` |
+
+`instrument` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `instruments-batch` | 批量读取最多 100 只证券基础信息. | `symbols` |
+
+`instruments-batch` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `adjustment-factors` | 批量读取最多 100 只证券复权因子. | `symbols` |
+
+`adjustment-factors` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_host": "api.alphafeed.org",
+  "sdk_version": "0.1.4",
+  "sdk_calls_per_ticket_max": 1,
+  "symbols_per_batch_max": 100,
+  "kline_batch_symbols_max": 20,
+  "kline_rows_per_symbol_max": 1000,
+  "arbitrary_sdk_methods_allowed": false,
+  "client_supplied_api_key_allowed": false,
+  "websocket_allowed": false,
+  "trading_or_order_execution_allowed": false
 }
 ```
 
