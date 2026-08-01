@@ -1,0 +1,151 @@
+name: Diagnose Tianyancha HTTP 418
+
+on:
+  issues:
+    types: [opened, reopened]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: diagnose-tianyancha-http-418
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.issue.title == '[maintenance] diagnose-tianyancha-418'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+      TIANYANCHA_API_TOKEN: ${{ secrets.TIANYANCHA_API_TOKEN }}
+    steps:
+      - name: Probe fixed official endpoints with controlled headers
+        run: |
+          set -euo pipefail
+          test -n "${TIANYANCHA_API_TOKEN:-}"
+          mkdir -p tyc-diagnostic/raw
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          import subprocess
+          from pathlib import Path
+
+          token = os.environ['TIANYANCHA_API_TOKEN'].strip()
+          out = Path('tyc-diagnostic')
+          raw_dir = out / 'raw'
+          tests = [
+              {
+                  'name': 'v2_current_user_agent',
+                  'url': 'https://open.api.tianyancha.com/services/open/ic/baseinfoV2/2.0?keyword=%E8%85%BE%E8%AE%AF%E7%A7%91%E6%8A%80%EF%BC%88%E6%B7%B1%E5%9C%B3%EF%BC%89%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8',
+                  'user_agent': 'gpts-company-intelligence-api-center/2',
+              },
+              {
+                  'name': 'v2_empty_user_agent',
+                  'url': 'https://open.api.tianyancha.com/services/open/ic/baseinfoV2/2.0?keyword=%E8%85%BE%E8%AE%AF%E7%A7%91%E6%8A%80%EF%BC%88%E6%B7%B1%E5%9C%B3%EF%BC%89%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8',
+                  'user_agent': '',
+              },
+              {
+                  'name': 'v2_browser_user_agent',
+                  'url': 'https://open.api.tianyancha.com/services/open/ic/baseinfoV2/2.0?keyword=%E8%85%BE%E8%AE%AF%E7%A7%91%E6%8A%80%EF%BC%88%E6%B7%B1%E5%9C%B3%EF%BC%89%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8',
+                  'user_agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/127 Safari/537.36',
+              },
+              {
+                  'name': 'v4_empty_user_agent',
+                  'url': 'https://open.api.tianyancha.com/services/v4/open/baseinfo?keyword=%E8%85%BE%E8%AE%AF%E7%A7%91%E6%8A%80%EF%BC%88%E6%B7%B1%E5%9C%B3%EF%BC%89%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8',
+                  'user_agent': '',
+              },
+          ]
+          results = []
+          safe_header_names = {
+              'content-type', 'content-length', 'server', 'date',
+              'via', 'x-cache', 'x-request-id', 'x-trace-id',
+              'x-powered-by', 'x-cdn-request-id', 'cf-ray',
+          }
+          for test in tests:
+              body_path = raw_dir / f"{test['name']}.body"
+              headers_path = raw_dir / f"{test['name']}.headers"
+              command = [
+                  'curl', '--silent', '--show-error', '--http1.1',
+                  '--connect-timeout', '10', '--max-time', '30',
+                  '--output', str(body_path), '--dump-header', str(headers_path),
+                  '--write-out', '%{http_code}',
+                  '--header', f'Authorization: {token}',
+                  '--header', 'Accept: application/json',
+                  '--header', f"User-Agent: {test['user_agent']}",
+                  test['url'],
+              ]
+              completed = subprocess.run(command, text=True, capture_output=True, check=False)
+              raw = body_path.read_bytes() if body_path.exists() else b''
+              headers_text = headers_path.read_text(encoding='utf-8', errors='replace') if headers_path.exists() else ''
+              safe_headers = {}
+              for line in headers_text.splitlines():
+                  if ':' not in line:
+                      continue
+                  name, value = line.split(':', 1)
+                  if name.strip().lower() in safe_header_names:
+                      safe_headers[name.strip().lower()] = value.strip()[:500]
+              decoded = raw.decode('utf-8', errors='replace').replace(token, '[REDACTED]')
+              content_type = safe_headers.get('content-type', '')
+              json_summary = None
+              if 'json' in content_type.lower() or decoded.lstrip().startswith(('{', '[')):
+                  try:
+                      payload = json.loads(decoded)
+                      if isinstance(payload, dict):
+                          json_summary = {
+                              'root_keys': sorted(str(k) for k in payload.keys())[:30],
+                              'error_code': payload.get('error_code'),
+                              'reason': str(payload.get('reason') or '')[:500],
+                          }
+                  except json.JSONDecodeError:
+                      pass
+              preview = ' '.join(decoded[:1000].split())
+              results.append({
+                  'name': test['name'],
+                  'endpoint_path': test['url'].split('tianyancha.com', 1)[-1].split('?', 1)[0],
+                  'user_agent_mode': 'empty' if not test['user_agent'] else ('browser' if test['user_agent'].startswith('Mozilla/') else 'current-runtime'),
+                  'curl_exit_code': completed.returncode,
+                  'http_status': int(completed.stdout.strip() or 0),
+                  'response_bytes': len(raw),
+                  'body_sha256': hashlib.sha256(raw).hexdigest(),
+                  'safe_response_headers': safe_headers,
+                  'json_summary': json_summary,
+                  'body_preview': preview,
+              })
+          serialized = json.dumps(results, ensure_ascii=False)
+          if token in serialized:
+              raise SystemExit('token leakage detected')
+          summary = {
+              'schema_version': 'tianyancha-418-diagnostic-v1',
+              'results': results,
+              'credential_present': True,
+              'credential_value_exposed': False,
+              'model_calls': 0,
+          }
+          (out / 'diagnostic.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          for path in raw_dir.iterdir():
+              path.unlink()
+          raw_dir.rmdir()
+          print(json.dumps(summary, ensure_ascii=False))
+          PY
+
+      - name: Upload sanitized diagnostic evidence
+        id: upload
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tianyancha-418-diagnostic-${{ github.run_id }}
+          path: tyc-diagnostic/diagnostic.json
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish receipt
+        env:
+          ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -f body="TIANYANCHA_418_DIAGNOSTIC_COMPLETED artifact=${ARTIFACT_URL} credential_value_exposed=false model_calls=0"
