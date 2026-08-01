@@ -1,12 +1,6 @@
 name: One-shot Add Global Data Sources
 
 on:
-  push:
-    branches:
-      - feat/add-overture-oecd-alphafeed
-    paths:
-      - ".github/scripts/add_global_data_sources.py"
-      - ".github/workflows/temp-add-global-data-sources.yml"
   pull_request:
     types: [opened, synchronize, reopened]
     branches: [main]
@@ -18,8 +12,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: one-shot-add-global-data-sources
-  cancel-in-progress: false
+  group: one-shot-add-global-data-sources-pr
+  cancel-in-progress: true
 
 jobs:
   migrate-test-commit:
