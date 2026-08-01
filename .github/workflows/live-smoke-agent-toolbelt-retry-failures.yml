@@ -1,0 +1,197 @@
+name: Live Smoke Agent Toolbelt Retry Failures
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - ".github/workflows/live-smoke-agent-toolbelt-retry-failures.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-smoke-agent-toolbelt-retry-failures-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  retry-failures:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      AGENT_TOOLBELT_KEY: ${{ secrets.AGENT_TOOLBELT_KEY }}
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Retry only previously blocked tools at free-tier-safe cadence
+        id: retry
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +x
+          mkdir -p agent-toolbelt-retry
+          python - <<'PY'
+          from __future__ import annotations
+          import hashlib, json, os, sys, time, urllib.error, urllib.request
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          BASE = "https://www.agenttoolbelt.live"
+          KEY = os.environ.get("AGENT_TOOLBELT_KEY", "").strip()
+          OUT = Path("agent-toolbelt-retry")
+          TOOLS = [
+              "url-metadata",
+              "document-comparator",
+              "contract-clause-extractor",
+              "prompt-optimizer",
+              "meeting-action-items",
+              "image-metadata-stripper",
+              "brand-kit",
+              "api-response-mocker",
+              "dependency-auditor",
+              "earnings-analysis",
+              "insider-signal",
+              "valuation-snapshot",
+              "bear-vs-bull",
+              "moat-analysis",
+          ]
+          STOCK = {"earnings-analysis", "insider-signal", "valuation-snapshot", "bear-vs-bull", "moat-analysis"}
+
+          def call(path, body=None, auth=False):
+              headers = {"Accept": "application/json", "User-Agent": "evidence-data-center-agent-toolbelt-retry/1.0"}
+              data = None
+              method = "GET"
+              if body is not None:
+                  data = json.dumps(body, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+                  headers["Content-Type"] = "application/json"
+                  method = "POST"
+              if auth:
+                  headers["Authorization"] = f"Bearer {KEY}"
+              req = urllib.request.Request(BASE + path, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=120) as response:
+                      raw = response.read(20_000_000)
+                      return response.status, json.loads(raw.decode("utf-8")), len(raw)
+              except urllib.error.HTTPError as exc:
+                  raw = exc.read(1_000_000)
+                  try:
+                      payload = json.loads(raw.decode("utf-8", errors="replace"))
+                  except Exception:
+                      payload = {"error": raw.decode("utf-8", errors="replace")[:1000]}
+                  return exc.code, payload, len(raw)
+              except Exception as exc:
+                  return 0, {"error": type(exc).__name__, "message": str(exc)[:500]}, 0
+
+          report = {
+              "schema_version": "agent-toolbelt-retry-live-v1",
+              "tested_at": datetime.now(timezone.utc).isoformat(),
+              "credential_present": bool(KEY),
+              "credential_prefix_valid": KEY.startswith("atb_"),
+              "secret_values_exposed": False,
+              "cadence_seconds": 13,
+              "results": [],
+          }
+          if not KEY:
+              report["status"] = "FAIL"
+              report["failure_reason"] = "missing AGENT_TOOLBELT_KEY"
+              OUT.joinpath("summary.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+              sys.exit(1)
+
+          status, catalog_payload, _ = call("/api/tools/catalog")
+          rows = catalog_payload.get("tools", []) if isinstance(catalog_payload, dict) else []
+          catalog = {row.get("name"): row for row in rows if isinstance(row, dict)}
+          report["catalog_http_status"] = status
+
+          # Ensure previous rate windows have expired before the first authenticated call.
+          time.sleep(65)
+
+          for index, tool in enumerate(TOOLS, 1):
+              metadata = (catalog.get(tool) or {}).get("metadata") or {}
+              payload = metadata.get("exampleInput")
+              if not isinstance(payload, dict):
+                  payload = {}
+              if tool == "url-metadata":
+                  payload = {"url": "https://example.com", "timeout": 8000}
+              elif tool in STOCK:
+                  payload = {"ticker": "AAPL"}
+              elif tool == "dependency-auditor":
+                  payload = {"packages": [{"name": "lodash", "version": "4.17.19", "ecosystem": "npm"}], "minSeverity": "LOW"}
+
+              started = time.monotonic()
+              http_status, response, response_bytes = call(f"/api/tools/{tool}", body=payload, auth=True)
+              elapsed_ms = round((time.monotonic() - started) * 1000)
+              success = http_status == 200 and isinstance(response, dict) and response.get("success") is True
+              safe_error = None
+              if not success and isinstance(response, dict):
+                  safe_error = str(response.get("message") or response.get("error") or response.get("details") or "request failed")[:1000]
+              result = response.get("result") if isinstance(response, dict) else None
+              result_keys = sorted(result.keys())[:50] if isinstance(result, dict) else []
+              record = {
+                  "index": index,
+                  "tool": tool,
+                  "category": "stock" if tool in STOCK else "utility",
+                  "input_source": "safe_override" if tool in {"url-metadata", "dependency-auditor"} | STOCK else "upstream_catalog_example",
+                  "input_sha256": hashlib.sha256(json.dumps(payload, sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
+                  "http_status": http_status,
+                  "success": success,
+                  "elapsed_ms": elapsed_ms,
+                  "reported_duration_ms": response.get("durationMs") if isinstance(response, dict) else None,
+                  "cached": response.get("cached") if isinstance(response, dict) else None,
+                  "version": response.get("version") if isinstance(response, dict) else None,
+                  "response_bytes": response_bytes,
+                  "result_type": type(result).__name__,
+                  "result_keys": result_keys,
+                  "safe_error": safe_error,
+              }
+              report["results"].append(record)
+              print(json.dumps(record, ensure_ascii=False))
+              if index < len(TOOLS):
+                  time.sleep(13)
+
+          failed = [row for row in report["results"] if not row["success"]]
+          report["summary"] = {
+              "total": len(report["results"]),
+              "passed": len(report["results"]) - len(failed),
+              "failed": len(failed),
+              "failed_tools": [row["tool"] for row in failed],
+              "utility_passed": sum(1 for row in report["results"] if row["category"] == "utility" and row["success"]),
+              "stock_passed": sum(1 for row in report["results"] if row["category"] == "stock" and row["success"]),
+          }
+          report["status"] = "PASS" if not failed else "FAIL"
+          OUT.joinpath("summary.json").write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+          OUT.joinpath("results.tsv").write_text(
+              "tool\tcategory\thttp_status\tsuccess\telapsed_ms\tcached\tsafe_error\n" +
+              "\n".join(f"{r['tool']}\t{r['category']}\t{r['http_status']}\t{str(r['success']).lower()}\t{r['elapsed_ms']}\t{r['cached']}\t{(r['safe_error'] or '').replace(chr(9),' ').replace(chr(10),' ')}" for r in report["results"]) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps({"status": report["status"], **report["summary"], "secret_values_exposed": False}, ensure_ascii=False))
+          sys.exit(0 if report["status"] == "PASS" else 1)
+          PY
+
+      - name: Verify no credential entered evidence
+        if: always()
+        shell: bash
+        run: |
+          set +x
+          test -f agent-toolbelt-retry/summary.json
+          if [ -n "${AGENT_TOOLBELT_KEY:-}" ] && grep -R -Fq -- "$AGENT_TOOLBELT_KEY" agent-toolbelt-retry; then
+            echo "Credential value found in evidence"
+            exit 1
+          fi
+
+      - name: Upload retry evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agent-toolbelt-retry-${{ github.run_id }}
+          path: agent-toolbelt-retry/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Mark failed retry
+        if: steps.retry.outcome != 'success'
+        run: exit 1
