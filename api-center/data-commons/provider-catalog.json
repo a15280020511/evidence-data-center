@@ -1,0 +1,201 @@
+{
+  "schema_version": "data-commons-provider-catalog-v3",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "data-commons",
+      "display_name": "Google Data Commons",
+      "description": "通过官方 REST V2 查询全球公共统计知识图谱，支持地点与指标解析、图节点关系和统计观测。",
+      "enabled": true,
+      "ticket_prefix": "[api-dc]",
+      "required_secret_environment_variable": "GOOGLE_DATA_COMMONS_API_KEY",
+      "catalog_policy": "仅开放 REST V2 的 resolve、node 和 observation 三个固定 POST 端点；优先读取中国起步目录，不假设所有城市或县均有数据。",
+      "execution_policy": "API Key 仅以 X-API-Key 后端请求头注入；每张票据只执行一个白名单操作，限制节点数、变量数、关系表达式、超时和响应体积。",
+      "official_origin": "https://api.datacommons.org",
+      "allowed_endpoints": [
+        "/resolve",
+        "/node",
+        "/observation"
+      ],
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取受控能力和中国起步目录，不调用上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "resolve-place",
+          "description": "按一个或多个公开地点名称解析 Data Commons 地点 DCID。",
+          "parameters": [
+            "nodes_json",
+            "property"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nodes_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              },
+              "property": {
+                "type": "string",
+                "maxLength": 300
+              }
+            },
+            "required": [
+              "nodes_json"
+            ]
+          },
+          "result_contract": {
+            "endpoint": "/v2/resolve",
+            "method": "POST",
+            "read_only": true,
+            "authentication": "X-API-Key backend-only"
+          }
+        },
+        {
+          "operation_id": "resolve-indicator",
+          "description": "按公开指标名称或描述解析统计变量或主题 DCID。",
+          "parameters": [
+            "nodes_json"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nodes_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              }
+            },
+            "required": [
+              "nodes_json"
+            ]
+          },
+          "result_contract": {
+            "endpoint": "/v2/resolve",
+            "method": "POST",
+            "read_only": true,
+            "authentication": "X-API-Key backend-only"
+          }
+        },
+        {
+          "operation_id": "node-properties",
+          "description": "按受控关系表达式读取节点属性、相邻实体或行政层级关系。",
+          "parameters": [
+            "nodes_json",
+            "property"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "nodes_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              },
+              "property": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              }
+            },
+            "required": [
+              "nodes_json",
+              "property"
+            ]
+          },
+          "result_contract": {
+            "endpoint": "/v2/node",
+            "method": "POST",
+            "read_only": true,
+            "authentication": "X-API-Key backend-only"
+          }
+        },
+        {
+          "operation_id": "observations",
+          "description": "读取公开实体和统计变量的最新值、指定日期或完整时间序列，并保留 facet 来源。",
+          "parameters": [
+            "entity_dcids_json",
+            "variable_dcids_json",
+            "date",
+            "select_json",
+            "facet_ids_json",
+            "domains_json"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "entity_dcids_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              },
+              "variable_dcids_json": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 6000
+              },
+              "date": {
+                "type": "string",
+                "maxLength": 40
+              },
+              "select_json": {
+                "type": "string",
+                "maxLength": 300
+              },
+              "facet_ids_json": {
+                "type": "string",
+                "maxLength": 6000
+              },
+              "domains_json": {
+                "type": "string",
+                "maxLength": 6000
+              }
+            },
+            "required": [
+              "entity_dcids_json",
+              "variable_dcids_json"
+            ]
+          },
+          "result_contract": {
+            "endpoint": "/v2/observation",
+            "method": "POST",
+            "read_only": true,
+            "authentication": "X-API-Key backend-only"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "max_nodes": 20,
+        "max_variables": 20,
+        "max_select_fields": 5,
+        "max_relation_expression_characters": 300,
+        "max_response_bytes": 1000000,
+        "timeout_seconds_max": 60,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_endpoints_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_api_key_allowed": false,
+        "sparql_allowed": false,
+        "natural_language_api_allowed": false,
+        "mcp_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      }
+    }
+  ]
+}

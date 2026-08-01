@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            190,
+            195,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -65,6 +65,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "akshare": 17,
             "bigquery": 7,
             "earth-engine": 6,
+            "data-commons": 5,
             "yuandian-law": 40,
             "jina-reader": 2,
             "exa": 3,
@@ -189,6 +190,16 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(tushare_limits["write_operations_allowed"])
         self.assertFalse(tushare_limits["trading_or_order_execution_allowed"])
         self.assertFalse(tushare_limits["secret_values_exposed"])
+
+        data_commons = json.loads(
+            (ROOT / "data-commons/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        dc_provider = data_commons["providers"][0]
+        self.assertEqual(dc_provider["required_secret_environment_variable"], "GOOGLE_DATA_COMMONS_API_KEY")
+        self.assertFalse(dc_provider["limits"]["arbitrary_urls_allowed"])
+        self.assertFalse(dc_provider["limits"]["arbitrary_endpoints_allowed"])
+        self.assertFalse(dc_provider["limits"]["sparql_allowed"])
+        self.assertFalse(dc_provider["limits"]["write_operations_allowed"])
 
         eodhd = json.loads(
             (ROOT / "eodhd/provider-catalog.json").read_text(encoding="utf-8")

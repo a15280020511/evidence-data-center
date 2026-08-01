@@ -19,6 +19,7 @@ MARKET_SEARCH_CATALOG = HERE / "market-search/provider-catalog.json"
 TUSHARE_CATALOG = HERE / "tushare/provider-catalog.json"
 BAOSTOCK_CATALOG = HERE / "baostock/provider-catalog.json"
 EODHD_CATALOG = HERE / "eodhd/provider-catalog.json"
+DATA_COMMONS_CATALOG = HERE / "data-commons/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -26,6 +27,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "tushare": 20,
     "baostock": 20,
     "eodhd": 25,
+    "data-commons": 5,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -35,6 +37,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     TUSHARE_CATALOG,
     BAOSTOCK_CATALOG,
     EODHD_CATALOG,
+    DATA_COMMONS_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -60,6 +63,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "tushare/provider-catalog.json",
         "baostock/provider-catalog.json",
         "eodhd/provider-catalog.json",
+        "data-commons/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:
