@@ -39,15 +39,16 @@
     "marketstack/provider-catalog.json",
     "nasa/provider-catalog.json",
     "metno-geosatellite/provider-catalog.json",
+    "copernicus/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "896dea0c7c5082d74a6eebe521caa0e2c3ad812ceb7991c9e144eecde7a72b72",
+  "managed_provider_catalog_sha256": "c7608bd0220a0bc1055798aeae411b50eebbcb1e8eced7e024177c1f7981968b",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 37,
-  "enabled_managed_provider_count": 37,
-  "managed_operation_count": 413,
-  "exposed_parameter_count": 1551,
+  "managed_provider_count": 38,
+  "enabled_managed_provider_count": 38,
+  "managed_operation_count": 420,
+  "exposed_parameter_count": 1580,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -81,6 +82,7 @@
     "marketstack/provider-catalog.json",
     "nasa/provider-catalog.json",
     "metno-geosatellite/provider-catalog.json",
+    "copernicus/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -18492,6 +18494,417 @@
       "catalog_file": "metno-geosatellite/provider-catalog.json"
     },
     {
+      "provider_id": "copernicus-cdse",
+      "display_name": "哥白尼数据空间 Copernicus CDSE",
+      "description": "通过 Copernicus Data Space Ecosystem 的公开 STAC 目录和 Sentinel Hub Processing API 搜索、定位并渲染 Sentinel 卫星影像。",
+      "enabled": true,
+      "ticket_prefix": "[intel-copernicus]",
+      "catalog_policy": "固定开放7项只读能力：本地目录、公开STAC集合/检索/单产品元数据，以及Sentinel-2 L2A真彩色、假彩色和NDVI PNG渲染。",
+      "execution_policy": "STAC目录操作免密；渲染操作使用Repository Variable中的OAuth Client ID和Repository Secret中的Client Secret。每票据最多一次目录请求，或一次令牌请求加一次处理请求；不自动重试、翻页、批量下载或写入。",
+      "operation_count": 7,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地Copernicus安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "copernicus-cdse",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "stac-list-collections",
+          "description": "读取公开CDSE STAC集合目录，受返回条数和体积上限约束。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "host": "stac.dataspace.copernicus.eu",
+            "path": "/v1/collections",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "stac-search-items",
+          "description": "按集合、WGS84范围、时间和可选云量搜索最新Sentinel产品元数据。",
+          "parameter_names": [
+            "collection",
+            "bbox",
+            "start_time",
+            "end_time",
+            "cloud_cover_max",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "collection": {
+                "type": "string",
+                "enum": [
+                  "sentinel-1-grd",
+                  "sentinel-2-l1c",
+                  "sentinel-2-l2a",
+                  "sentinel-2-global-mosaics"
+                ]
+              },
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "end_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "cloud_cover_max": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              }
+            },
+            "required": [
+              "collection",
+              "bbox",
+              "start_time",
+              "end_time"
+            ]
+          },
+          "result_contract": {
+            "host": "stac.dataspace.copernicus.eu",
+            "path": "/v1/search",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "stac-get-item",
+          "description": "读取白名单集合中的单个STAC产品元数据。",
+          "parameter_names": [
+            "collection",
+            "item_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "collection": {
+                "type": "string",
+                "enum": [
+                  "sentinel-1-grd",
+                  "sentinel-2-l1c",
+                  "sentinel-2-l2a",
+                  "sentinel-2-global-mosaics"
+                ]
+              },
+              "item_id": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 256,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,255}$"
+              }
+            },
+            "required": [
+              "collection",
+              "item_id"
+            ]
+          },
+          "result_contract": {
+            "host": "stac.dataspace.copernicus.eu",
+            "path": "/v1/collections/{collection}/items/{item_id}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "render-true-color-png",
+          "description": "使用固定真彩色脚本渲染指定区域和时间段的Sentinel-2 L2A PNG。",
+          "parameter_names": [
+            "bbox",
+            "start_time",
+            "end_time",
+            "cloud_cover_max",
+            "mosaicking_order",
+            "width",
+            "height"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "end_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "cloud_cover_max": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "mosaicking_order": {
+                "type": "string",
+                "enum": [
+                  "leastCC",
+                  "mostRecent",
+                  "leastRecent"
+                ]
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              }
+            },
+            "required": [
+              "bbox",
+              "start_time",
+              "end_time"
+            ]
+          },
+          "result_contract": {
+            "host": "sh.dataspace.copernicus.eu",
+            "path": "/process/v1",
+            "http_method": "POST",
+            "read_only": true,
+            "content_type": "image/png",
+            "credential_mode": "oauth-client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "render-false-color-png",
+          "description": "使用固定近红外假彩色脚本渲染Sentinel-2 L2A PNG，用于突出植被和地表差异。",
+          "parameter_names": [
+            "bbox",
+            "start_time",
+            "end_time",
+            "cloud_cover_max",
+            "mosaicking_order",
+            "width",
+            "height"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "end_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "cloud_cover_max": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "mosaicking_order": {
+                "type": "string",
+                "enum": [
+                  "leastCC",
+                  "mostRecent",
+                  "leastRecent"
+                ]
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              }
+            },
+            "required": [
+              "bbox",
+              "start_time",
+              "end_time"
+            ]
+          },
+          "result_contract": {
+            "host": "sh.dataspace.copernicus.eu",
+            "path": "/process/v1",
+            "http_method": "POST",
+            "read_only": true,
+            "content_type": "image/png",
+            "credential_mode": "oauth-client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "render-ndvi-png",
+          "description": "使用固定NDVI脚本渲染Sentinel-2 L2A植被指数PNG。",
+          "parameter_names": [
+            "bbox",
+            "start_time",
+            "end_time",
+            "cloud_cover_max",
+            "mosaicking_order",
+            "width",
+            "height"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "end_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "cloud_cover_max": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "mosaicking_order": {
+                "type": "string",
+                "enum": [
+                  "leastCC",
+                  "mostRecent",
+                  "leastRecent"
+                ]
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              }
+            },
+            "required": [
+              "bbox",
+              "start_time",
+              "end_time"
+            ]
+          },
+          "result_contract": {
+            "host": "sh.dataspace.copernicus.eu",
+            "path": "/process/v1",
+            "http_method": "POST",
+            "read_only": true,
+            "content_type": "image/png",
+            "credential_mode": "oauth-client-id-variable-plus-client-secret-backend-only"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 2,
+        "catalog_requests_per_ticket_max": 1,
+        "processing_requests_per_ticket_max": 1,
+        "oauth_requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "timeout_seconds_max": 180,
+        "max_response_bytes": 30000000,
+        "max_rows": 100,
+        "bbox_span_degrees_max": 1.0,
+        "render_time_span_days_max": 90,
+        "search_time_span_days_max": 366,
+        "render_width_max": 2048,
+        "render_height_max": 2048,
+        "render_pixels_max": 4194304,
+        "supported_collections": [
+          "sentinel-1-grd",
+          "sentinel-2-l1c",
+          "sentinel-2-l2a",
+          "sentinel-2-global-mosaics"
+        ],
+        "render_collection": "sentinel-2-l2a",
+        "fixed_stac_host": "stac.dataspace.copernicus.eu",
+        "fixed_processing_host": "sh.dataspace.copernicus.eu",
+        "fixed_identity_host": "identity.dataspace.copernicus.eu",
+        "automatic_pagination_allowed": false,
+        "automatic_retry_allowed": false,
+        "bulk_download_allowed": false,
+        "native_product_download_allowed": false,
+        "batch_processing_allowed": false,
+        "arbitrary_evalscripts_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "oauth_token_persistence_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "COPERNICUS_CLIENT_SECRET",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "COPERNICUS_CLIENT_ID",
+      "secret_value_exposed": false,
+      "provider_sha256": "69acc2742d25b169c9a97e8d2e5e86b550cc2922bbb1e6a8563a2af8c7078fee",
+      "catalog_file": "copernicus/provider-catalog.json"
+    },
+    {
       "provider_id": "wolfram-alpha",
       "display_name": "Wolfram|Alpha 计算知识 API",
       "description": "通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。",
@@ -27248,5 +27661,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "7b8a588be52e66f19d05bf8ec85c9ad65cdc245529b8b840cfb563fe9b438243"
+  "catalog_sha256": "0c0d29323e05fba2b09b0d44b681d24f6bfb246cde2514880e7f63f7b21f7935"
 }

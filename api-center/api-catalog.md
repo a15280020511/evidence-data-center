@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`37/37` 已启用
-- 托管操作总数：`413`
-- 已公开参数总数：`1551`
-- 目录 SHA-256：`7b8a588be52e66f19d05bf8ec85c9ad65cdc245529b8b840cfb563fe9b438243`
+- 托管提供方：`38/38` 已启用
+- 托管操作总数：`420`
+- 已公开参数总数：`1580`
+- 目录 SHA-256：`0c0d29323e05fba2b09b0d44b681d24f6bfb246cde2514880e7f63f7b21f7935`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -52,6 +52,7 @@
 | Marketstack 全球股票 EOD 与历史数据 | `marketstack` | 启用 | `[intel-marketstack]` | `11` | 否 |
 | NASA Open APIs 与 Earthdata GIBS | `nasa` | 启用 | `[intel-nasa]` | `25` | 否 |
 | 挪威气象研究所 Geosatellite | `metno-geosatellite` | 启用 | `[intel-metno-geosatellite]` | `4` | 否 |
+| 哥白尼数据空间 Copernicus CDSE | `copernicus-cdse` | 启用 | `[intel-copernicus]` | `7` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -15191,6 +15192,346 @@
     "/weatherapi/geosatellite/1.4/europe.webm",
     "/weatherapi/geosatellite/1.4/available.json"
   ]
+}
+```
+
+## 哥白尼数据空间 Copernicus CDSE (`copernicus-cdse`)
+
+- 状态：`启用`
+- 说明：通过 Copernicus Data Space Ecosystem 的公开 STAC 目录和 Sentinel Hub Processing API 搜索、定位并渲染 Sentinel 卫星影像。
+- 目录策略：固定开放7项只读能力：本地目录、公开STAC集合/检索/单产品元数据，以及Sentinel-2 L2A真彩色、假彩色和NDVI PNG渲染。
+- 执行策略：STAC目录操作免密；渲染操作使用Repository Variable中的OAuth Client ID和Repository Secret中的Client Secret。每票据最多一次目录请求，或一次令牌请求加一次处理请求；不自动重试、翻页、批量下载或写入。
+- 票据前缀：`[intel-copernicus]`
+- Secret环境变量名：`COPERNICUS_CLIENT_SECRET`（仅名称）
+- Repository Variable名：`COPERNICUS_CLIENT_ID`（仅名称）
+- 提供方SHA-256：`69acc2742d25b169c9a97e8d2e5e86b550cc2922bbb1e6a8563a2af8c7078fee`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地Copernicus安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `stac-list-collections` | 读取公开CDSE STAC集合目录，受返回条数和体积上限约束。 | `无` |
+
+`stac-list-collections` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `stac-search-items` | 按集合、WGS84范围、时间和可选云量搜索最新Sentinel产品元数据。 | `collection, bbox, start_time, end_time, cloud_cover_max, limit` |
+
+`stac-search-items` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "collection": {
+      "type": "string",
+      "enum": [
+        "sentinel-1-grd",
+        "sentinel-2-l1c",
+        "sentinel-2-l2a",
+        "sentinel-2-global-mosaics"
+      ]
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number"
+      }
+    },
+    "start_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "end_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "cloud_cover_max": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    }
+  },
+  "required": [
+    "collection",
+    "bbox",
+    "start_time",
+    "end_time"
+  ]
+}
+```
+
+| `stac-get-item` | 读取白名单集合中的单个STAC产品元数据。 | `collection, item_id` |
+
+`stac-get-item` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "collection": {
+      "type": "string",
+      "enum": [
+        "sentinel-1-grd",
+        "sentinel-2-l1c",
+        "sentinel-2-l2a",
+        "sentinel-2-global-mosaics"
+      ]
+    },
+    "item_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,255}$"
+    }
+  },
+  "required": [
+    "collection",
+    "item_id"
+  ]
+}
+```
+
+| `render-true-color-png` | 使用固定真彩色脚本渲染指定区域和时间段的Sentinel-2 L2A PNG。 | `bbox, start_time, end_time, cloud_cover_max, mosaicking_order, width, height` |
+
+`render-true-color-png` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number"
+      }
+    },
+    "start_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "end_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "cloud_cover_max": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "mosaicking_order": {
+      "type": "string",
+      "enum": [
+        "leastCC",
+        "mostRecent",
+        "leastRecent"
+      ]
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 64,
+      "maximum": 2048
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 64,
+      "maximum": 2048
+    }
+  },
+  "required": [
+    "bbox",
+    "start_time",
+    "end_time"
+  ]
+}
+```
+
+| `render-false-color-png` | 使用固定近红外假彩色脚本渲染Sentinel-2 L2A PNG，用于突出植被和地表差异。 | `bbox, start_time, end_time, cloud_cover_max, mosaicking_order, width, height` |
+
+`render-false-color-png` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number"
+      }
+    },
+    "start_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "end_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "cloud_cover_max": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "mosaicking_order": {
+      "type": "string",
+      "enum": [
+        "leastCC",
+        "mostRecent",
+        "leastRecent"
+      ]
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 64,
+      "maximum": 2048
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 64,
+      "maximum": 2048
+    }
+  },
+  "required": [
+    "bbox",
+    "start_time",
+    "end_time"
+  ]
+}
+```
+
+| `render-ndvi-png` | 使用固定NDVI脚本渲染Sentinel-2 L2A植被指数PNG。 | `bbox, start_time, end_time, cloud_cover_max, mosaicking_order, width, height` |
+
+`render-ndvi-png` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number"
+      }
+    },
+    "start_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "end_time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "cloud_cover_max": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "mosaicking_order": {
+      "type": "string",
+      "enum": [
+        "leastCC",
+        "mostRecent",
+        "leastRecent"
+      ]
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 64,
+      "maximum": 2048
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 64,
+      "maximum": 2048
+    }
+  },
+  "required": [
+    "bbox",
+    "start_time",
+    "end_time"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 2,
+  "catalog_requests_per_ticket_max": 1,
+  "processing_requests_per_ticket_max": 1,
+  "oauth_requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "timeout_seconds_max": 180,
+  "max_response_bytes": 30000000,
+  "max_rows": 100,
+  "bbox_span_degrees_max": 1.0,
+  "render_time_span_days_max": 90,
+  "search_time_span_days_max": 366,
+  "render_width_max": 2048,
+  "render_height_max": 2048,
+  "render_pixels_max": 4194304,
+  "supported_collections": [
+    "sentinel-1-grd",
+    "sentinel-2-l1c",
+    "sentinel-2-l2a",
+    "sentinel-2-global-mosaics"
+  ],
+  "render_collection": "sentinel-2-l2a",
+  "fixed_stac_host": "stac.dataspace.copernicus.eu",
+  "fixed_processing_host": "sh.dataspace.copernicus.eu",
+  "fixed_identity_host": "identity.dataspace.copernicus.eu",
+  "automatic_pagination_allowed": false,
+  "automatic_retry_allowed": false,
+  "bulk_download_allowed": false,
+  "native_product_download_allowed": false,
+  "batch_processing_allowed": false,
+  "arbitrary_evalscripts_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "oauth_token_persistence_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 

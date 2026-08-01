@@ -51,6 +51,7 @@ EXPECTED_OPERATION_COUNTS = {
     "marketstack": 11,
     "nasa": 25,
     "metno-geosatellite": 4,
+    "copernicus-cdse": 7,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -75,9 +76,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 37)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 37)
-        self.assertEqual(catalog["managed_operation_count"], 413)
+        self.assertEqual(catalog["managed_provider_count"], 38)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 38)
+        self.assertEqual(catalog["managed_operation_count"], 420)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -123,6 +124,7 @@ class ApiCatalogTests(unittest.TestCase):
             "aisstream": "AISSTREAM_API_KEY",
             "marketstack": "MARKETSTACK_ACCESS_KEY",
             "nasa": "NASA_API_KEY",
+            "copernicus-cdse": "COPERNICUS_CLIENT_SECRET",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
