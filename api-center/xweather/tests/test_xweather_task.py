@@ -65,6 +65,17 @@ class XweatherTests(unittest.TestCase):
         ):
             self.assertEqual(task.credentials(), ("test-client-id", "test-client-secret"))
 
+    def test_combined_dashboard_key_is_split_without_exposure(self):
+        with patch.dict(
+            os.environ,
+            {
+                "XWEATHER_CLIENT_ID": "test-client-id",
+                "XWEATHER_CLIENT_SECRET": "test-client-id_test-client-secret",
+            },
+            clear=False,
+        ):
+            self.assertEqual(task.credentials(), ("test-client-id", "test-client-secret"))
+
     def test_schema_rejects_path_escape(self):
         bad = self.ticket("forecasts", {"location": "https://example.com", "limit": 1})
         with self.assertRaises(ValueError):
