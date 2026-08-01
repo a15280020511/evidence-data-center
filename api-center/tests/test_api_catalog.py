@@ -46,6 +46,7 @@ EXPECTED_OPERATION_COUNTS = {
     "agent-toolbelt": 21,
     "gapup-mcp": 209,
     "who-gho-odata": 8,
+    "mediastack": 5,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -70,9 +71,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 32)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 32)
-        self.assertEqual(catalog["managed_operation_count"], 577)
+        self.assertEqual(catalog["managed_provider_count"], 33)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 33)
+        self.assertEqual(catalog["managed_operation_count"], 582)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -116,6 +117,7 @@ class ApiCatalogTests(unittest.TestCase):
             "alphafeed": "ALPHAFEED_API_KEY",
             "agent-toolbelt": "AGENT_TOOLBELT_KEY",
             "gapup-mcp": "GAPUP_API_KEY",
+            "mediastack": "MEDIASTACK_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -279,6 +281,19 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(who["limits"]["automatic_pagination_allowed"])
         self.assertFalse(who["limits"]["write_operations_allowed"])
         self.assertTrue(who["limits"]["legacy_endpoint_migration_watch_required"])
+
+        mediastack = providers["mediastack"]
+        self.assertEqual(mediastack["ticket_prefix"], "[intel-mediastack]")
+        self.assertEqual(
+            mediastack["required_secret_environment_variable_name"],
+            "MEDIASTACK_API_KEY",
+        )
+        self.assertEqual(len(mediastack["operations"]), 5)
+        self.assertEqual(mediastack["limits"]["fixed_api_host"], "api.mediastack.com")
+        self.assertEqual(mediastack["limits"]["free_plan_requests_per_month"], 100)
+        self.assertFalse(mediastack["limits"]["automatic_pagination_allowed"])
+        self.assertFalse(mediastack["limits"]["article_body_fetching_allowed"])
+        self.assertFalse(mediastack["limits"]["write_operations_allowed"])
 
         self.assertEqual(
             providers["tushare"]["ticket_prefix"],

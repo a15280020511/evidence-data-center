@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`32/32` 已启用
-- 托管操作总数：`577`
-- 已公开参数总数：`2343`
-- 目录 SHA-256：`725397febe31ad641dc49578b14129aca34c4f163426d8ae24c45740db995e55`
+- 托管提供方：`33/33` 已启用
+- 托管操作总数：`582`
+- 已公开参数总数：`2373`
+- 目录 SHA-256：`443c069cf9315496d80873316a41af865950dfe84fca2bc9caefa5a0e7357bd0`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -47,6 +47,7 @@
 | AlphaFeed 中国与全球证券行情 | `alphafeed` | 启用 | `[api-alphafeed]` | `10` | 否 |
 | Gapup MCP 公共商业情报 | `gapup-mcp` | 启用 | `[intel-gapup]` | `209` | 否 |
 | WHO GHO OData 全球卫生数据 | `who-gho-odata` | 启用 | `[intel-who-gho]` | `8` | 否 |
+| Mediastack 全球新闻情报 | `mediastack` | 启用 | `[intel-mediastack]` | `5` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -31848,6 +31849,404 @@ SLA: ≤15s budget total. Cache: 24h TTL. | `url, lang, chapters_max, output_for
   "automatic_pagination_allowed": false,
   "whole_database_download_allowed": false,
   "legacy_endpoint_migration_watch_required": true
+}
+```
+
+## Mediastack 全球新闻情报 (`mediastack`)
+
+- 状态：`启用`
+- 说明：通过 Mediastack 官方 REST API读取全球新闻文章与新闻来源目录；固定只读、单请求、受限分页，不自动抓取文章正文。
+- 目录策略：固定开放5项能力：1项本地目录、最新新闻、关键词新闻检索、历史新闻检索和来源目录；每张票据最多一次请求，limit不超过100，不自动翻页。
+- 执行策略：API Key仅由GitHub Repository Secret注入为access_key查询参数；不接受客户端凭据、任意URL、任意路径、任意请求头、写操作、Webhook、后台轮询或文章正文抓取。
+- 票据前缀：`[intel-mediastack]`
+- Secret环境变量名：`MEDIASTACK_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`8b5110b8cf56941059252e4aa874b6f9d8e1771c1a520a2c663a92d5b27e8c32`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Mediastack 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `latest-news` | 读取最新或延迟新闻，可按国家、语言、分类和来源过滤。 | `countries, languages, categories, sources, sort, limit, offset` |
+
+`latest-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "general",
+          "business",
+          "entertainment",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "published_desc",
+        "published_asc",
+        "popularity"
+      ],
+      "default": "published_desc"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 7
+}
+```
+
+| `search-news` | 按关键词检索新闻，可组合国家、语言、分类、来源、排序和受限分页。 | `keywords, countries, languages, categories, sources, sort, limit, offset` |
+
+`search-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keywords": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "general",
+          "business",
+          "entertainment",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "published_desc",
+        "published_asc",
+        "popularity"
+      ],
+      "default": "published_desc"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 8,
+  "required": [
+    "keywords"
+  ]
+}
+```
+
+| `historical-news` | 按单日或日期区间检索历史新闻；历史权限取决于 Mediastack 套餐。 | `date, keywords, countries, languages, categories, sources, sort, limit, offset` |
+
+`historical-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(,\\d{4}-\\d{2}-\\d{2})?$"
+    },
+    "keywords": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "general",
+          "business",
+          "entertainment",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "published_desc",
+        "published_asc",
+        "popularity"
+      ],
+      "default": "published_desc"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 9,
+  "required": [
+    "date"
+  ]
+}
+```
+
+| `list-sources` | 读取 Mediastack 支持的新闻来源目录，可按关键词、国家、语言和分类过滤。 | `search, countries, languages, categories, limit, offset` |
+
+`list-sources` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "general",
+          "business",
+          "entertainment",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 6
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 1,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 10000000,
+  "max_rows": 100,
+  "max_offset": 10000,
+  "max_date_range_days": 366,
+  "free_plan_requests_per_month": 100,
+  "free_plan_delayed_news": true,
+  "historical_news_plan_dependent": true,
+  "commercial_use_plan_dependent": true,
+  "fixed_api_host": "api.mediastack.com",
+  "fixed_paths": [
+    "/v1/news",
+    "/v1/sources"
+  ],
+  "arbitrary_urls_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "automatic_pagination_allowed": false,
+  "background_monitoring_allowed": false,
+  "article_body_fetching_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 

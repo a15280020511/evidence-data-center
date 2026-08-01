@@ -30,6 +30,7 @@ OECD_CATALOG = HERE / "oecd/provider-catalog.json"
 ALPHAFEED_CATALOG = HERE / "alphafeed/provider-catalog.json"
 GAPUP_MCP_CATALOG = HERE / "gapup-mcp/provider-catalog.json"
 WHO_GHO_CATALOG = HERE / "who-gho/provider-catalog.json"
+MEDIASTACK_CATALOG = HERE / "mediastack/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -48,6 +49,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "alphafeed": 10,
     "gapup-mcp": 209,
     "who-gho-odata": 8,
+    "mediastack": 5,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -68,6 +70,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     ALPHAFEED_CATALOG,
     GAPUP_MCP_CATALOG,
     WHO_GHO_CATALOG,
+    MEDIASTACK_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -104,6 +107,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "alphafeed/provider-catalog.json",
         "gapup-mcp/provider-catalog.json",
         "who-gho/provider-catalog.json",
+        "mediastack/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:

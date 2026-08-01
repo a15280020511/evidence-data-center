@@ -377,3 +377,12 @@ https://ghoapi.azureedge.net/api
 ```
 
 固定开放 8 项只读操作，覆盖维度、维度值、指标目录、指标搜索、国家、地区和按国家/地区、年份、性别筛选的指标观测值。禁止客户端提交任意 OData 表达式、任意 URL、自动翻页和整库下载。WHO 已公告旧 GHO OData 将迁移至 World Health Data Hub 新实现，因此该 Provider 保留迁移监测标记，不把当前兼容端点视为永久合同。
+
+## Mediastack 全球新闻情报
+
+- Provider：`mediastack`
+- 票据前缀：`[intel-mediastack]`
+- 独立 Secret：`MEDIASTACK_API_KEY`
+- 固定开放：最新新闻、关键词检索、历史新闻和来源目录，共5项能力。
+- 免费层：官方当前标示每月100次请求，使用延迟新闻；历史数据和商业使用取决于套餐。
+- 强制单请求、最多100条、禁止自动翻页、后台监控和文章正文抓取。
