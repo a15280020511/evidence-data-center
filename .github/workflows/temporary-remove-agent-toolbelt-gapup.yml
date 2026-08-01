@@ -142,12 +142,12 @@ jobs:
           text = load("api-center/README.md")
           text = remove_markdown_section(text, r"Gapup MCP 公共商业情报")
           text = remove_markdown_section(text, r"Agent Toolbelt")
-          save("api-center/README.md", text)
+          save("api-center/README.md", text.rstrip() + "\n")
 
           text = load("api-center/SECRET_ISOLATION_POLICY.md")
           text = remove_markdown_section(text, r"Agent Toolbelt")
           text = remove_markdown_section(text, r"Gapup MCP")
-          save("api-center/SECRET_ISOLATION_POLICY.md", text)
+          save("api-center/SECRET_ISOLATION_POLICY.md", text.rstrip() + "\n")
 
           text = load(".github/workflows/api-catalog-validate.yml")
           text = remove_exact_lines(
