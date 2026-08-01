@@ -1,0 +1,225 @@
+{
+  "schema_version": "marketstack-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "marketstack",
+      "display_name": "Marketstack 全球股票 EOD 与历史数据",
+      "description": "通过 Marketstack v2 固定 HTTPS REST 端点读取免费计划可用的全球股票日线、最多一年历史、拆股、分红以及证券、交易所、币种和时区目录。",
+      "enabled": true,
+      "ticket_prefix": "[intel-marketstack]",
+      "required_secret_environment_variable": "MARKETSTACK_ACCESS_KEY",
+      "catalog_policy": "仅开放免费计划明确提供的11项固定只读操作；禁止任意URL、路径、请求头、客户端密钥、盘中与实时轮询、付费数据面、自动翻页、交易和写入。",
+      "execution_policy": "MARKETSTACK_ACCESS_KEY仅由GitHub Actions后端注入查询参数；每张票据只发送一次GET请求且不自动重试，最多5个证券代码，历史跨度最多366天，limit最大100。",
+      "official_documentation": "https://docs.apilayer.com/marketstack/docs/api-documentation",
+      "official_origin": "https://api.marketstack.com/v2",
+      "service_status_notice": "免费计划公开额度为每月100次请求，支持EOD和最多一年历史；账户实际权限与上游计划变化以Marketstack响应为准。",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "transient_retry_max": 0,
+        "provider_concurrency_max": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 10000000,
+        "rows_per_request_max": 100,
+        "symbols_per_ticket_max": 5,
+        "historical_span_days_max": 366,
+        "free_plan_requests_per_month": 100,
+        "fixed_api_host": "api.marketstack.com",
+        "fixed_api_prefix": "/v2",
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "arbitrary_query_parameters_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "intraday_or_realtime_operations_allowed": false,
+        "paid_plan_only_operations_allowed": false,
+        "websocket_allowed": false,
+        "write_operations_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "secret_values_exposed": false,
+        "authentication_required": true
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地Marketstack安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "marketstack",
+            "official_origin": "https://api.marketstack.com/v2",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "eod-latest",
+          "description": "读取最多5个证券的最新可用日终OHLCV与复权数据。",
+          "parameters": ["symbols", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"}},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            },
+            "required": ["symbols"]
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/eod/latest", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        },
+        {
+          "operation_id": "eod-history",
+          "description": "读取最多5个证券、最大366天范围的历史日终OHLCV与复权数据。",
+          "parameters": ["symbols", "date_from", "date_to", "sort", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"}},
+              "date_from": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+              "date_to": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+              "sort": {"type": "string", "enum": ["ASC", "DESC", "asc", "desc"], "default": "DESC"},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            },
+            "required": ["symbols"]
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/eod", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free", "history_days_max": 366}
+        },
+        {
+          "operation_id": "eod-by-date",
+          "description": "读取指定交易日、最多5个证券的日终数据。",
+          "parameters": ["date", "symbols", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+              "symbols": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"}},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            },
+            "required": ["date", "symbols"]
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/eod/{date}", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        },
+        {
+          "operation_id": "dividends",
+          "description": "读取最多5个证券、最大366天范围的历史分红记录。",
+          "parameters": ["symbols", "date_from", "date_to", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"}},
+              "date_from": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+              "date_to": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            },
+            "required": ["symbols"]
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/dividends", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        },
+        {
+          "operation_id": "splits",
+          "description": "读取最多5个证券、最大366天范围的历史拆股记录。",
+          "parameters": ["symbols", "date_from", "date_to", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"}},
+              "date_from": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+              "date_to": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            },
+            "required": ["symbols"]
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/splits", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        },
+        {
+          "operation_id": "tickers-list",
+          "description": "按有限搜索词和可选交易所代码读取Marketstack证券目录。",
+          "parameters": ["search", "exchange", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "search": {"type": "string", "minLength": 1, "maxLength": 100},
+              "exchange": {"type": "string", "pattern": "^[A-Za-z0-9]{2,12}$"},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            }
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/tickerslist", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        },
+        {
+          "operation_id": "ticker-info",
+          "description": "读取单一证券代码的静态目录和交易所信息。",
+          "parameters": ["symbol"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"symbol": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,31}$"}},
+            "required": ["symbol"]
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/tickers/{symbol}", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        },
+        {
+          "operation_id": "exchanges-list",
+          "description": "读取Marketstack支持的交易所目录。",
+          "parameters": ["limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            }
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/exchanges", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        },
+        {
+          "operation_id": "currencies-list",
+          "description": "读取Marketstack支持的币种目录。",
+          "parameters": ["limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            }
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/currencies", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        },
+        {
+          "operation_id": "timezones-list",
+          "description": "读取Marketstack支持的时区目录。",
+          "parameters": ["limit", "offset"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100, "default": 100},
+              "offset": {"type": "integer", "minimum": 0, "maximum": 10000, "default": 0}
+            }
+          },
+          "result_contract": {"provider": "marketstack", "path": "/v2/timezones", "http_method": "GET", "read_only": true, "credential_mode": "access_key_query_backend_only", "plan": "free"}
+        }
+      ]
+    }
+  ]
+}
