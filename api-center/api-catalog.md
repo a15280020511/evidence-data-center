@@ -1,11 +1,11 @@
-# API 中心能力目录
+# 情报中心能力目录
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`25/25` 已启用
-- 托管操作总数：`306`
-- 已公开参数总数：`1275`
-- 目录 SHA-256：`9366530a5c6c777a16dcd801a097dac121829c772f11d8c3d5384c6f610e8d6a`
+- 托管提供方：`34/34` 已启用
+- 托管操作总数：`373`
+- 已公开参数总数：`1449`
+- 目录 SHA-256：`d46e3ad3808867a0af1fb0e286d133e831746e5af2cd50d8f2df3d5fcd99c508`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -37,9 +37,18 @@
 | EODHD 全球金融市场数据 | `eodhd` | 启用 | `[api-eodhd]` | `25` | 否 |
 | Google Data Commons | `data-commons` | 启用 | `[api-dc]` | `5` | 否 |
 | 和风天气 QWeather | `qweather` | 启用 | `[api-qweather]` | `18` | 否 |
+| Xweather 全球专业天气数据 | `xweather` | 启用 | `[api-xweather]` | `10` | 否 |
 | 东方财富妙想 MCP | `miaoxiang-mcp` | 启用 | `[api-mx-mcp]` | `13` | 否 |
 | East Asia Econ 东亚宏观数据库 | `east-asia-econ` | 启用 | `[api-east-asia-econ]` | `6` | 否 |
 | Alpha Vantage 全球金融与宏观数据 | `alpha-vantage` | 启用 | `[api-alpha-vantage]` | `66` | 否 |
+| Overture Maps 全球开放地图数据 | `overture-maps` | 启用 | `[api-overture]` | `7` | 否 |
+| OECD Data Explorer SDMX | `oecd` | 启用 | `[api-oecd]` | `6` | 否 |
+| AlphaFeed 中国与全球证券行情 | `alphafeed` | 启用 | `[api-alphafeed]` | `10` | 否 |
+| WHO GHO OData 全球卫生数据 | `who-gho-odata` | 启用 | `[intel-who-gho]` | `8` | 否 |
+| Mediastack 全球新闻情报 | `mediastack` | 启用 | `[intel-mediastack]` | `5` | 否 |
+| Statistics of the World 全球统计 | `statistics-of-the-world` | 启用 | `[intel-sotw]` | `11` | 否 |
+| AISstream 全球船舶实时AIS | `aisstream` | 启用 | `[intel-aisstream]` | `4` | 否 |
+| 互联网档案馆 Internet Archive | `internet-archive` | 启用 | `[intel-internet-archive]` | `6` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -132,6 +141,7 @@
 - 执行策略：只允许单条SELECT或WITH查询；禁止DDL、DML、脚本、导出、外部查询、远程函数和私有项目访问。
 - 票据前缀：`[api-gcp]`
 - Secret环境变量名：`GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`92ce9c51980065a31186c2bc2273959f6e43c6441df5f29dea8affef1b6659c3`
 
 | 操作 | 说明 | 参数 |
@@ -438,6 +448,7 @@
 - 执行策略：只允许返回JSON值的只读计算；禁止导出、写资产、删除、复制、重命名、上传、外部URL和视频或缩略图任务。
 - 票据前缀：`[api-gcp]`
 - Secret环境变量名：`GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`90546500a5762ec00c17ea64e49cf60bada2bfe850551587abd8f0e161c73938`
 
 | 操作 | 说明 | 参数 |
@@ -610,6 +621,7 @@
 - 执行策略：每张票据只执行一个固定白名单函数；严格校验证券代码、市场、周期、日期、报表类型、指标枚举、行数和超时；不连接券商、不下单。
 - 票据前缀：`[api-akshare]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`51c98e310e75aa22eb2cf474ed39a82cef707470af3d0d88a487271cb7ddc4d1`
 
 | 操作 | 说明 | 参数 |
@@ -1170,6 +1182,7 @@
 - 执行策略：每张票据只读取一个证券代码；腾讯为主源，新浪为备用；限制周期、行数、超时和响应大小；不下单、不连接券商。
 - 票据前缀：`[api-ashare]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`f763ed3c3a2aa7e979a6de86ffa20527b6f93b9d9e8613d21df21e0a4cffe481`
 
 | 操作 | 说明 | 参数 |
@@ -1272,6 +1285,7 @@
 - 执行策略：每张票据只执行一个固定只读操作；先初始化MCP，再调用固定映射工具；限制输入、日期、条数和响应大小；不下单、不写入、不执行任意代码。
 - 票据前缀：`[api-aifin]`
 - Secret环境变量名：`WIND_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`b630c7bf2699e4ff10856cc68063f54bbb5d64e14de27273f38dded0aa6ff819`
 
 | 操作 | 说明 | 参数 |
@@ -1841,6 +1855,7 @@
 - 执行策略：每张票据只执行一个只读调用；固定https://open.chineselaw.com主机，使用后端X-API-Key；限制参数深度、条数、超时和响应大小；过滤密钥和直接个人标识字段。
 - 票据前缀：`[api-yuandian]`
 - Secret环境变量名：`YUANDIAN_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`209bcddd432ce325bb04568aa8404881ec8e42ec6995648166a0a3182ceea80e`
 
 | 操作 | 说明 | 参数 |
@@ -3668,6 +3683,7 @@
 - 执行策略：后端固定使用 Authorization Token；每张票据执行一个只读请求并过滤直接联系方式与个人身份字段。
 - 票据前缀：`[api-company]`
 - Secret环境变量名：`TIANYANCHA_API_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`cfae6391c6824cc14c5d90bbc3c90c2ec5bfe97910735691ff687db980909544`
 
 | 操作 | 说明 | 参数 |
@@ -3749,6 +3765,7 @@
 - 执行策略：每张票据执行一个只读请求；禁止修改自选股、模拟交易、撤单、账户资金和其他写操作。
 - 票据前缀：`[api-mx]`
 - Secret环境变量名：`MX_APIKEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`ccd53455ebe7f9945eae858c350bf635362edf29ccbc98a89dae3f93c0ea2843`
 
 | 操作 | 说明 | 参数 |
@@ -3858,6 +3875,7 @@
 - 执行策略：无 Key 时使用 Jina Reader 官方匿名基础额度；配置 JINA_API_KEY 时仅在后端 Authorization Bearer 头注入以提高额度。每张票据最多读取一个 URL。
 - 票据前缀：`[api-web]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`44e58ffbc0199c0920a3f86db7093bd389aef67fb7a2d1a95f14dd669d18f4b6`
 
 | 操作 | 说明 | 参数 |
@@ -3923,6 +3941,7 @@
 - 执行策略：EXA_API_KEY 仅在后端 x-api-key 头注入；每张票据只执行一次调用；搜索最多10条，Contents最多5个公开 HTTPS URL，不启用摘要或联系人富集。
 - 票据前缀：`[api-web]`
 - Secret环境变量名：`EXA_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`9ae67e37ccc9cb17e849551300f7c87b705415ff90d759e972cc9c5d3d4164ce`
 
 | 操作 | 说明 | 参数 |
@@ -4056,6 +4075,7 @@
 - 执行策略：TAVILY_API_KEY 仅在后端 Authorization Bearer 头注入；每张票据执行一次请求；Search 默认 basic 且关闭自动参数和生成式答案；Extract 最多5个 URL；Map 最多50个链接；Crawl 最多20页且深度最多2。
 - 票据前缀：`[api-context]`
 - Secret环境变量名：`TAVILY_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`c8e9b195cf48b60dd7657f55a575745b00cee16dda1b6fa52c76e10deb6365a0`
 
 | 操作 | 说明 | 参数 |
@@ -4361,6 +4381,7 @@
 - 执行策略：FIRECRAWL_API_KEY 仅在后端 Authorization Bearer 头注入；每张票据执行一次请求；Search最多10条；Scrape仅允许Markdown和Links并启用零数据保留；Map最多100个链接且默认不含子域名。
 - 票据前缀：`[api-context]`
 - Secret环境变量名：`FIRECRAWL_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`a44c4d567f550e422b27f53ae4531d69e2096d249e590d953835c16fedc56375`
 
 | 操作 | 说明 | 参数 |
@@ -4540,6 +4561,7 @@
 - 执行策略：BROWSERLESS_TOKEN 仅在后端固定查询参数中注入且不进入日志或 Artifact；每张票据只调用一个固定 REST 端点；目标 URL 必须通过公开 HTTPS 与 SSRF 防护；二进制结果只作为 Artifact 文件保存。
 - 票据前缀：`[api-browserless]`
 - Secret环境变量名：`BROWSERLESS_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`930432038bc74e69f64242ed145e7dafc372bfb114b6a2fed2c625a01ab1f7d1`
 
 | 操作 | 说明 | 参数 |
@@ -4830,6 +4852,7 @@
 - 执行策略：TICKFLOW_API_KEY 仅在后端 x-api-key 请求头注入；每张票据最多执行一次同步只读请求，并限制标的数量、K 线数量、超时和响应体积。
 - 票据前缀：`[api-tickflow]`
 - Secret环境变量名：`TICKFLOW_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`36b2bb448fe84eb74a83051deafaa1514f290d6d89c13588d3e6d3ba4c72c671`
 
 | 操作 | 说明 | 参数 |
@@ -5044,6 +5067,7 @@
 - 执行策略：SERPAPI_API_KEY 仅在后端 api_key 查询参数注入且不会写入日志或 Artifact；每张票据执行一次同步搜索，固定 JSON 输出并限制分页、地区、语言和响应体积。
 - 票据前缀：`[api-serpapi]`
 - Secret环境变量名：`SERPAPI_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`058e437fae61170070a799442456adabaace2c0daa7521e6f9813c27e71ea27f`
 
 | 操作 | 说明 | 参数 |
@@ -5237,6 +5261,7 @@
 - 执行策略：TUSHARE_API_TOKEN 仅在后端 HTTPS POST JSON 中注入，不写入日志、Issue 或 Artifact；每张票据最多一次正常请求和一次瞬态故障重试，并限制参数、超时、响应体积和分页。
 - 票据前缀：`[api-tushare]`
 - Secret环境变量名：`TUSHARE_API_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`17b75ee3179f49be521afbdd4bb310f963983cc17161a6a806a5119f81a460eb`
 
 | 操作 | 说明 | 参数 |
@@ -6301,6 +6326,7 @@
 - 执行策略：每张票据只允许一次登录、一次白名单查询和一次登出；所有生产票据使用仓库级全局串行并发组，禁止并发连接。每个上海自然日最多预占 50000 次上游查询，第 50000 次后立即激活当天本地黑名单；配额台账异常时失败关闭，禁止访问 BaoStock。
 - 票据前缀：`[api-baostock]`
 - Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`396936b20d6f23f465158560441182ffcc47c2ab361877581e706dc8a439eb72`
 
 | 操作 | 说明 | 参数 |
@@ -6882,6 +6908,7 @@
 - 执行策略：EODHD_API_TOKEN 仅在后端查询参数中注入且不会进入日志、Issue 或 Artifact；每张票据最多一次正常请求和一次瞬态故障重试，并限制超时、响应体积、结果行数和筛选器结构。
 - 票据前缀：`[api-eodhd]`
 - Secret环境变量名：`EODHD_API_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`124c5e16ef567d8df1bbbfd7b261ac7b6a23f70cc73799ab2c27c73d3fc5ed58`
 
 | 操作 | 说明 | 参数 |
@@ -7714,6 +7741,7 @@
 - 执行策略：API Key 仅以 X-API-Key 后端请求头注入；每张票据只执行一个白名单操作，限制节点数、变量数、关系表达式、超时和响应体积。
 - 票据前缀：`[api-dc]`
 - Secret环境变量名：`GOOGLE_DATA_COMMONS_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`be48fabd30ef0c7cda43239e538ac2ea929f49d7fc323508c8301a8d93b7a2a7`
 
 | 操作 | 说明 | 参数 |
@@ -7878,6 +7906,7 @@
 - 执行策略：QWEATHER_API_KEY 仅在后端 X-QW-Api-Key 请求头注入，不写入日志、Issue 或 Artifact；禁止任意 URL、Host、路径、请求头和客户端密钥。
 - 票据前缀：`[api-qweather]`
 - Secret环境变量名：`QWEATHER_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`17d05469d868d3c16103aec70b326c2a000291a5a845a9908f56e07a9743d352`
 
 | 操作 | 说明 | 参数 |
@@ -8759,6 +8788,417 @@
 }
 ```
 
+## Xweather 全球专业天气数据 (`xweather`)
+
+- 状态：`启用`
+- 说明：通过 Xweather 官方 Weather API 读取全球地点、实时观测、插值条件、15 日预报、官方预警、空气质量、日月和历史观测汇总。
+- 目录策略：固定开放 10 项核心只读能力；所有端点、路径、参数、时间范围、返回条数和响应体积受白名单与硬上限约束。
+- 执行策略：Client ID 由 GitHub Repository Variable 注入，Client Secret 仅由 Repository Secret 注入；不接受客户端凭据、任意 URL、任意查询、路线批量、写操作或 Webhook。
+- 票据前缀：`[api-xweather]`
+- Secret环境变量名：`XWEATHER_CLIENT_SECRET`（仅名称）
+- Repository Variable名：`XWEATHER_CLIENT_ID`（仅名称）
+- 提供方SHA-256：`c94519d010f5fd3dc128c75c27872a7b296c3e0685fbb099b31cfc5b6c065f90`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Xweather 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `places-closest` | 按城市、邮编、站点或经纬度查询最近地理位置。 | `p, limit, fields` |
+
+`places-closest` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "p": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "p"
+  ]
+}
+```
+
+| `observations-current` | 读取指定位置最近的全球气象站实时观测。 | `location, filter, fields` |
+
+`observations-current` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "filter": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `conditions` | 读取全球位置当前、历史、未来逐小时条件或分钟级降水条件。 | `location, from, to, at_time, filter, limit, fields` |
+
+`conditions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "at_time": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "filter": {
+      "type": "string",
+      "enum": [
+        "1hr",
+        "minutelyprecip"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 72
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `forecasts` | 读取全球位置最长 15 日的日、昼夜或小时天气预报。 | `location, filter, limit, fields` |
+
+`forecasts` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "filter": {
+      "type": "string",
+      "enum": [
+        "day",
+        "daynight",
+        "mdnt2mdnt",
+        "1hr",
+        "3hr",
+        "6hr"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `alerts` | 读取指定位置当前有效的官方天气预警。 | `location, limit, fields` |
+
+`alerts` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `air-quality` | 读取全球位置当前空气质量、AQI、AQHI 和污染物信息。 | `location, filter, fields` |
+
+`air-quality` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "filter": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `sunmoon` | 读取全球位置日出日落、曙暮光和月升月落数据。 | `location, from, to, limit` |
+
+`sunmoon` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `moon-phases` | 读取全球位置主要月相发生时间。 | `location, from, to, limit` |
+
+`moon-phases` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 31
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+| `observations-summary` | 读取指定位置最多 30 日的历史观测日汇总。 | `location, from, to, plimit, fields` |
+
+`observations-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^/?#\\\\&=%]{1,120}$"
+    },
+    "from": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "to": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+    },
+    "fields": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    },
+    "plimit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
+    }
+  },
+  "required": [
+    "location"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "max_rows": 5000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "arbitrary_query_parameters_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "webhooks_allowed": false,
+  "route_queries_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_host": "data.api.xweather.com",
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 1,
+  "plan_or_multiplier_dependent_endpoints": true
+}
+```
+
 ## 东方财富妙想 MCP (`miaoxiang-mcp`)
 
 - 状态：`启用`
@@ -8767,6 +9207,7 @@
 - 执行策略：每张票据只执行一个固定只读工具调用；后端通过 em_api_key 请求头注入 EM_API_KEY；禁止自选股修改、模拟交易、下单、账户操作和其他写操作。
 - 票据前缀：`[api-mx-mcp]`
 - Secret环境变量名：`EM_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`7a4fbf351f300bd5f746b94e48e374b24911a38b38211157a6c14ea72cf6a1de`
 
 | 操作 | 说明 | 参数 |
@@ -9064,6 +9505,7 @@
 - 执行策略：仅允许固定 HTTPS GET 路径与白名单查询参数；每张票据最多一次上游请求，不重试付费或限额查询；API Key 仅写入 X-API-Key 请求头，不进入 Issue、日志、目录或 Artifact。
 - 票据前缀：`[api-east-asia-econ]`
 - Secret环境变量名：`EAST_ASIA_ECON_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`0c433a9dd653a1039c389b5eed82ad054487980f2d11516e32dbee1a3191f0d7`
 
 | 操作 | 说明 | 参数 |
@@ -9234,6 +9676,7 @@
 - 执行策略：ALPHA_VANTAGE_API_KEY 仅由后端注入固定 HTTPS GET 查询；每张票据最多一次上游请求且全 Provider 串行，避免消耗免费密钥每日 25 次额度；响应、超时和体积受限，错误和额度提示结构化返回。
 - 票据前缀：`[api-alpha-vantage]`
 - Secret环境变量名：`ALPHA_VANTAGE_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`15e466cbf2cd445f58ae15b1d0d47561ef682ed72198b7637e54bf193b6b77bc`
 
 | 操作 | 说明 | 参数 |
@@ -11170,6 +11613,2279 @@
 }
 ```
 
+## Overture Maps 全球开放地图数据 (`overture-maps`)
+
+- 状态：`启用`
+- 说明：通过 Overture 官方 STAC 目录和匿名对象存储，以受限边界框读取全球地址、建筑、行政区、地点、交通与基础底图要素。
+- 目录策略：开放固定发布目录、要素类型、计数、城市级边界框提取和 GERS 查询；不开放全量全球下载、任意对象存储路径或任意 URL。
+- 执行策略：只调用 Overture 官方 Python 客户端固定只读函数；边界框面积、要素类型、发布格式、返回条数和响应体积均受硬限制。
+- 票据前缀：`[api-overture]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`acec22ea8fb41dd662e964c99293ee8ae1fd72fed70b8332069a485e44787459`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Overture Maps 安全能力目录，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-feature-types` | 读取固定开放的 Overture 主题与要素类型清单，不访问上游. | `无` |
+
+`list-feature-types` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-releases` | 读取 Overture STAC 目录中的当前可用发布版本. | `无` |
+
+`list-releases` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `latest-release` | 读取 Overture STAC 目录标记的最新发布版本. | `无` |
+
+`latest-release` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `count-features` | 按城市级经纬度边界框统计指定 Overture 要素类型数量. | `feature_type, bbox, release` |
+
+`count-features` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "feature_type": {
+      "type": "string",
+      "enum": [
+        "address",
+        "bathymetry",
+        "building",
+        "building_part",
+        "division",
+        "division_area",
+        "division_boundary",
+        "place",
+        "segment",
+        "connector",
+        "infrastructure",
+        "land",
+        "land_cover",
+        "land_use",
+        "water"
+      ]
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "release": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[0-9]+$"
+    }
+  },
+  "required": [
+    "feature_type",
+    "bbox"
+  ]
+}
+```
+
+| `query-features` | 按城市级边界框提取指定类型的有限条 GeoJSON 要素. | `feature_type, bbox, release, limit` |
+
+`query-features` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "feature_type": {
+      "type": "string",
+      "enum": [
+        "address",
+        "bathymetry",
+        "building",
+        "building_part",
+        "division",
+        "division_area",
+        "division_boundary",
+        "place",
+        "segment",
+        "connector",
+        "infrastructure",
+        "land",
+        "land_cover",
+        "land_use",
+        "water"
+      ]
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "release": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[0-9]+$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    }
+  },
+  "required": [
+    "feature_type",
+    "bbox"
+  ]
+}
+```
+
+| `lookup-gers` | 按固定 UUID 格式查询 Overture Global Entity Reference System 注册表. | `gers_id` |
+
+`lookup-gers` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "gers_id": {
+      "type": "string",
+      "format": "uuid"
+    }
+  },
+  "required": [
+    "gers_id"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_hosts": [
+    "stac.overturemaps.org",
+    "overturemaps-us-west-2.s3.us-west-2.amazonaws.com"
+  ],
+  "bbox_area_square_degrees_max": 4.0,
+  "features_per_ticket_max": 1000,
+  "anonymous_object_storage_only": true,
+  "whole_world_download_allowed": false,
+  "arbitrary_s3_paths_allowed": false,
+  "arbitrary_feature_types_allowed": false
+}
+```
+
+## OECD Data Explorer SDMX (`oecd`)
+
+- 状态：`启用`
+- 说明：通过 OECD 官方免费 SDMX REST API 读取经济、社会、贸易、产业、就业、教育、能源与公共治理统计。
+- 目录策略：开放固定的数据流、结构、代码表和数据查询操作；所有路径组件、维度键、格式、时间范围和响应体积均受白名单约束。
+- 执行策略：仅允许对 sdmx.oecd.org/public/rest/v1 发起一次 HTTPS GET；不跟随重定向，不接受任意 URL、请求头或写操作。
+- 票据前缀：`[api-oecd]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`83c66dfcf37eb0574142e6053818daa536289f693541997a211ff20dd2f935bb`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 OECD SDMX 安全能力目录，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-dataflows` | 读取 OECD 当前公开数据流目录. | `format` |
+
+`list-dataflows` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  }
+}
+```
+
+| `get-dataflow` | 读取指定 OECD SDMX 数据流定义. | `agency, flow, version, format` |
+
+`get-dataflow` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "flow"
+  ]
+}
+```
+
+| `get-datastructure` | 读取指定 OECD SDMX 数据结构定义. | `agency, structure_id, version, format` |
+
+`get-datastructure` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "structure_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "structure_id"
+  ]
+}
+```
+
+| `get-codelist` | 读取指定 OECD SDMX 代码表. | `agency, codelist_id, version, format` |
+
+`get-codelist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "codelist_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "codelist_id"
+  ]
+}
+```
+
+| `get-data` | 按固定数据流、维度键和时间范围读取 OECD 统计数据. | `agency, flow, version, key, start_period, end_period, dimension_at_observation, format` |
+
+`get-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9+._@-]+$"
+    },
+    "start_period": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 32,
+      "pattern": "^[0-9]{4}(?:-[A-Za-z0-9]{1,8})?$"
+    },
+    "end_period": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 32,
+      "pattern": "^[0-9]{4}(?:-[A-Za-z0-9]{1,8})?$"
+    },
+    "dimension_at_observation": {
+      "type": "string",
+      "enum": [
+        "AllDimensions",
+        "TimeDimension",
+        "MeasureDimension"
+      ]
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "flow",
+    "key"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_host": "sdmx.oecd.org",
+  "fixed_api_prefix": "/public/rest/v1",
+  "rate_limit_policy": "single-request-per-ticket",
+  "arbitrary_sdmx_resource_types_allowed": false,
+  "bulk_download_endpoints_allowed": false
+}
+```
+
+## AlphaFeed 中国与全球证券行情 (`alphafeed`)
+
+- 状态：`启用`
+- 说明：通过 AlphaFeed 官方 Python SDK 读取 A股、ETF、美股和港股行情、K线、分时、盘口、标的信息与复权因子。
+- 目录策略：固定开放官方 SDK 的 9 类只读数据操作；一个票据只执行一个固定 SDK 方法，批量标的数量和 K 线条数受硬限制。
+- 执行策略：API Key 仅由 GitHub Actions 后端注入；不接受客户端密钥、任意方法、任意主机、交易、下单、WebSocket 或写操作。
+- 票据前缀：`[api-alphafeed]`
+- Secret环境变量名：`ALPHAFEED_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`f74609460418fd7363f97d939eefa8b1c711801f9c9ecf61fcb77fcf465ba289`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 AlphaFeed 安全能力目录，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `quotes` | 按证券代码或固定标的池读取 A股、美股、港股和 ETF 实时行情. | `symbols, universe` |
+
+`quotes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    },
+    "universe": {
+      "type": "string",
+      "enum": [
+        "CN_Stock",
+        "US_Stock",
+        "HK_Stock",
+        "CN_ETF"
+      ]
+    }
+  }
+}
+```
+
+| `klines` | 读取单只证券的分钟、日、周或月 K 线. | `symbol, period, count, adjust` |
+
+`klines` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "60m",
+        "1d",
+        "1w",
+        "1mo"
+      ]
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "adjust": {
+      "type": "string",
+      "enum": [
+        "forward",
+        "backward",
+        "forward_additive",
+        "backward_additive",
+        "none"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `klines-batch` | 批量读取最多 20 只证券的有限 K 线. | `symbols, period, count, adjust` |
+
+`klines-batch` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m",
+        "15m",
+        "30m",
+        "60m",
+        "1d",
+        "1w",
+        "1mo"
+      ]
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    },
+    "adjust": {
+      "type": "string",
+      "enum": [
+        "forward",
+        "backward",
+        "forward_additive",
+        "backward_additive",
+        "none"
+      ]
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `intraday` | 读取单只证券当日 1 分钟或 5 分钟分时. | `symbol, period` |
+
+`intraday` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m"
+      ]
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `intraday-batch` | 批量读取最多 20 只证券的当日分时. | `symbols, period` |
+
+`intraday-batch` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    },
+    "period": {
+      "type": "string",
+      "enum": [
+        "1m",
+        "5m"
+      ]
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `depth` | 读取单只 A 股证券五档盘口. | `symbol` |
+
+`depth` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `instrument` | 读取单只证券基础信息. | `symbol` |
+
+`instrument` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+    }
+  },
+  "required": [
+    "symbol"
+  ]
+}
+```
+
+| `instruments-batch` | 批量读取最多 100 只证券基础信息. | `symbols` |
+
+`instruments-batch` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+| `adjustment-factors` | 批量读取最多 100 只证券复权因子. | `symbols` |
+
+`adjustment-factors` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "symbols": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+      }
+    }
+  },
+  "required": [
+    "symbols"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_host": "api.alphafeed.org",
+  "sdk_version": "0.1.4",
+  "sdk_calls_per_ticket_max": 1,
+  "symbols_per_batch_max": 100,
+  "kline_batch_symbols_max": 20,
+  "kline_rows_per_symbol_max": 1000,
+  "arbitrary_sdk_methods_allowed": false,
+  "client_supplied_api_key_allowed": false,
+  "websocket_allowed": false,
+  "trading_or_order_execution_allowed": false
+}
+```
+
+## WHO GHO OData 全球卫生数据 (`who-gho-odata`)
+
+- 状态：`启用`
+- 说明：通过世界卫生组织 Global Health Observatory 公开 OData 接口读取全球卫生指标、维度、国家、地区和历史观测值。
+- 目录策略：开放8项固定免密只读操作；指标代码、维度、国家、地区、年份、性别和分页均受Schema约束，不接受任意OData表达式。
+- 执行策略：每张票据最多一次固定HTTPS GET；不跟随重定向，不接受任意URL、主机、路径、请求头、$filter、$select、$expand、函数或写操作。
+- 票据前缀：`[intel-who-gho]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`484b5f3f91587357dd6391cf06859362f9f8a100a09270ce55fd505e82225fed`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 WHO GHO OData 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `list-dimensions` | 读取 WHO GHO 可用维度目录。 | `top, skip` |
+
+`list-dimensions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `list-dimension-values` | 读取固定公共维度的代码和值。 | `dimension, top, skip` |
+
+`list-dimension-values` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dimension": {
+      "type": "string",
+      "enum": [
+        "COUNTRY",
+        "REGION",
+        "SEX",
+        "AGEGROUP",
+        "GHO",
+        "PUBLISHSTATE",
+        "WORLDBANKINCOMEGROUP"
+      ]
+    },
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  },
+  "required": [
+    "dimension"
+  ]
+}
+```
+
+| `list-indicators` | 分页读取 WHO GHO 指标代码和名称目录。 | `top, skip` |
+
+`list-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `search-indicators` | 按受控文本条件搜索 WHO GHO 指标名称。 | `query, match, top, skip` |
+
+`search-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 120,
+      "pattern": "^[A-Za-z0-9 .,/()%-]+$"
+    },
+    "match": {
+      "type": "string",
+      "enum": [
+        "contains",
+        "exact"
+      ],
+      "default": "contains"
+    },
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `get-indicator-data` | 按指标、国家或地区、年份和性别读取 WHO GHO 观测值；只构造固定 OData 条件。 | `indicator_code, country, region, year_from, year_to, sex, top, skip` |
+
+`get-indicator-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "indicator_code": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 128,
+      "pattern": "^[A-Z0-9][A-Z0-9_]{1,127}$"
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "region": {
+      "type": "string",
+      "enum": [
+        "AFR",
+        "AMR",
+        "SEAR",
+        "EUR",
+        "EMR",
+        "WPR",
+        "GLOBAL"
+      ]
+    },
+    "year_from": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "year_to": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "sex": {
+      "type": "string",
+      "enum": [
+        "BTSX",
+        "MLE",
+        "FMLE"
+      ]
+    },
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  },
+  "required": [
+    "indicator_code"
+  ]
+}
+```
+
+| `get-countries` | 读取 WHO GHO 国家代码和值目录。 | `top, skip` |
+
+`get-countries` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  }
+}
+```
+
+| `get-regions` | 读取 WHO GHO 地区代码和值目录。 | `top, skip` |
+
+`get-regions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "top": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_host": "ghoapi.azureedge.net",
+  "fixed_api_prefix": "/api",
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "arbitrary_odata_filters_allowed": false,
+  "arbitrary_odata_select_allowed": false,
+  "arbitrary_odata_expand_allowed": false,
+  "arbitrary_odata_functions_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": false,
+  "automatic_pagination_allowed": false,
+  "whole_database_download_allowed": false,
+  "legacy_endpoint_migration_watch_required": true
+}
+```
+
+## Mediastack 全球新闻情报 (`mediastack`)
+
+- 状态：`启用`
+- 说明：通过 Mediastack 官方 REST API读取全球新闻文章与新闻来源目录；固定只读、单请求、受限分页，不自动抓取文章正文。
+- 目录策略：固定开放5项能力：1项本地目录、最新新闻、关键词新闻检索、历史新闻检索和来源目录；每张票据最多一次请求，limit不超过100，不自动翻页。
+- 执行策略：API Key仅由GitHub Repository Secret注入为access_key查询参数；不接受客户端凭据、任意URL、任意路径、任意请求头、写操作、Webhook、后台轮询或文章正文抓取。
+- 票据前缀：`[intel-mediastack]`
+- Secret环境变量名：`MEDIASTACK_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`8b5110b8cf56941059252e4aa874b6f9d8e1771c1a520a2c663a92d5b27e8c32`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Mediastack 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `latest-news` | 读取最新或延迟新闻，可按国家、语言、分类和来源过滤。 | `countries, languages, categories, sources, sort, limit, offset` |
+
+`latest-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "general",
+          "business",
+          "entertainment",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "published_desc",
+        "published_asc",
+        "popularity"
+      ],
+      "default": "published_desc"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 7
+}
+```
+
+| `search-news` | 按关键词检索新闻，可组合国家、语言、分类、来源、排序和受限分页。 | `keywords, countries, languages, categories, sources, sort, limit, offset` |
+
+`search-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keywords": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "general",
+          "business",
+          "entertainment",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "published_desc",
+        "published_asc",
+        "popularity"
+      ],
+      "default": "published_desc"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 8,
+  "required": [
+    "keywords"
+  ]
+}
+```
+
+| `historical-news` | 按单日或日期区间检索历史新闻；历史权限取决于 Mediastack 套餐。 | `date, keywords, countries, languages, categories, sources, sort, limit, offset` |
+
+`historical-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(,\\d{4}-\\d{2}-\\d{2})?$"
+    },
+    "keywords": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "general",
+          "business",
+          "entertainment",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "published_desc",
+        "published_asc",
+        "popularity"
+      ],
+      "default": "published_desc"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 9,
+  "required": [
+    "date"
+  ]
+}
+```
+
+| `list-sources` | 读取 Mediastack 支持的新闻来源目录，可按关键词、国家、语言和分类过滤。 | `search, countries, languages, categories, limit, offset` |
+
+`list-sources` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "countries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 13,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z]{2}$"
+      }
+    },
+    "categories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "general",
+          "business",
+          "entertainment",
+          "health",
+          "science",
+          "sports",
+          "technology"
+        ]
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 6
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 1,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 10000000,
+  "max_rows": 100,
+  "max_offset": 10000,
+  "max_date_range_days": 366,
+  "free_plan_requests_per_month": 100,
+  "free_plan_delayed_news": true,
+  "historical_news_plan_dependent": true,
+  "commercial_use_plan_dependent": true,
+  "fixed_api_host": "api.mediastack.com",
+  "fixed_paths": [
+    "/v1/news",
+    "/v1/sources"
+  ],
+  "arbitrary_urls_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "automatic_pagination_allowed": false,
+  "background_monitoring_allowed": false,
+  "article_body_fetching_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## Statistics of the World 全球统计 (`statistics-of-the-world`)
+
+- 状态：`启用`
+- 说明：聚合 IMF、World Bank、WHO、FRED、ECB、UN 等来源的国家、指标、历史、排名和高频统计数据。
+- 目录策略：仅开放官方文档明确列出的固定只读 JSON 端点；聚合数据必须保留上游来源、年份、单位和许可元数据，不得替代原始官方源作为唯一证据。
+- 执行策略：每张票最多一次 HTTPS GET；可匿名调用，若配置 SOTW_API_KEY 则仅通过后端 X-API-Key 请求头发送；禁止任意 URL、路径、请求头、批量全库下载、自然语言聊天和写操作。
+- 票据前缀：`[intel-sotw]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`e4fdbd93284bf812c7ef289c616a13e57404ef72f80f7006637db67bde654c4d`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-countries` | 列出国家及地区元数据。 | `无` |
+
+`list-countries` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-country` | 读取一个 ISO Alpha-3 国家及其最新指标。 | `country` |
+
+`get-country` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "country"
+  ],
+  "properties": {
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  }
+}
+```
+
+| `list-indicators` | 列出公开指标目录及分类。 | `无` |
+
+`list-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-indicator` | 读取一个指标的元数据及国家横截面。 | `indicator` |
+
+`get-indicator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "indicator"
+  ],
+  "properties": {
+    "indicator": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+    }
+  }
+}
+```
+
+| `get-history` | 读取一个指标与一个国家的历史时间序列。 | `indicator, country` |
+
+`get-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "indicator",
+    "country"
+  ],
+  "properties": {
+    "indicator": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  }
+}
+```
+
+| `get-rankings` | 按指标读取国家排名，结果数量受限。 | `indicator, limit` |
+
+`get-rankings` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "indicator"
+  ],
+  "properties": {
+    "indicator": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    }
+  }
+}
+```
+
+| `search-indicators` | 按受限关键词搜索指标。 | `query` |
+
+`search-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9 ()%+.,/_-]+$"
+    }
+  }
+}
+```
+
+| `compare-countries` | 并列比较 2 至 10 个 ISO Alpha-3 国家。 | `countries` |
+
+`compare-countries` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "countries"
+  ],
+  "properties": {
+    "countries": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$"
+      }
+    }
+  }
+}
+```
+
+| `list-series` | 列出高频统计序列及许可元数据，不下载全量观测。 | `无` |
+
+`list-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-series` | 读取一个高频序列，可限定国家、起始日期和仅最新值。 | `series, geo, from, latest` |
+
+`get-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "series"
+  ],
+  "properties": {
+    "series": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+    },
+    "geo": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "from": {
+      "type": "string",
+      "format": "date"
+    },
+    "latest": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 10000000,
+  "max_rows": 500,
+  "max_compare_countries": 10,
+  "free_key_requests_per_day_documented": 1000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "automatic_pagination_allowed": false,
+  "bulk_download_allowed": false,
+  "natural_language_chat_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_host": "statisticsoftheworld.com",
+  "fixed_api_prefixes": [
+    "/api/v1",
+    "/api/v2"
+  ]
+}
+```
+
+## AISstream 全球船舶实时AIS (`aisstream`)
+
+- 状态：`启用`
+- 说明：通过 AISstream.io 的固定 WSS 端点，在严格时间、区域、消息数和响应大小边界内读取实时船舶AIS消息。
+- 目录策略：开放4项固定只读操作；API Key仅由GitHub Actions后端注入，客户端不得提交或覆盖。
+- 执行策略：每张票据最多建立1条WSS连接，持续不超过30秒，最多4个有限区域、20个MMSI、8种消息类型和200条消息；禁止全球无限流、后台常驻和转发。
+- 票据前缀：`[intel-aisstream]`
+- Secret环境变量名：`AISSTREAM_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`e15b0c24f1a4fba31b3fa4d53c06cf3a2239e44e2c47808c39224b4cc89388bb`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地AISstream安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `collect-messages` | 按有限地理区域、可选MMSI和消息类型，在短时间窗口内收集实时AIS消息。 | `bounding_boxes, mmsi, message_types, duration_seconds, max_messages` |
+
+`collect-messages` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bounding_boxes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          ]
+        }
+      }
+    },
+    "mmsi": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{9}$"
+      }
+    },
+    "message_types": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "AddressedBinaryMessage",
+          "AddressedSafetyMessage",
+          "AidsToNavigationReport",
+          "AssignedModeCommand",
+          "BaseStationReport",
+          "BinaryAcknowledge",
+          "BinaryBroadcastMessage",
+          "ChannelManagement",
+          "CoordinatedUTCInquiry",
+          "DataLinkManagementMessage",
+          "DataLinkManagementMessageData",
+          "ExtendedClassBPositionReport",
+          "GnssBroadcastBinaryMessage",
+          "GroupAssignmentCommand",
+          "Interrogation",
+          "LongRangeAisBroadcastMessage",
+          "MultiSlotBinaryMessage",
+          "PositionReport",
+          "SafetyBroadcastMessage",
+          "ShipStaticData",
+          "SingleSlotBinaryMessage",
+          "StandardClassBPositionReport",
+          "StandardSearchAndRescueAircraftReport",
+          "StaticDataReport",
+          "UnknownMessage"
+        ]
+      }
+    },
+    "duration_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 10
+    },
+    "max_messages": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    }
+  },
+  "required": [
+    "bounding_boxes"
+  ]
+}
+```
+
+| `collect-vessel-positions` | 按有限地理区域和可选MMSI收集Class A/B位置类消息。 | `bounding_boxes, mmsi, duration_seconds, max_messages` |
+
+`collect-vessel-positions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bounding_boxes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          ]
+        }
+      }
+    },
+    "mmsi": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{9}$"
+      }
+    },
+    "duration_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 10
+    },
+    "max_messages": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    }
+  },
+  "required": [
+    "bounding_boxes"
+  ]
+}
+```
+
+| `collect-vessel-static` | 按有限地理区域和可选MMSI收集船舶静态资料类消息。 | `bounding_boxes, mmsi, duration_seconds, max_messages` |
+
+`collect-vessel-static` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bounding_boxes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          ]
+        }
+      }
+    },
+    "mmsi": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{9}$"
+      }
+    },
+    "duration_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 10
+    },
+    "max_messages": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    }
+  },
+  "required": [
+    "bounding_boxes"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "connections_per_ticket_max": 1,
+  "stream_duration_seconds_max": 30,
+  "timeout_seconds_max": 45,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_host": "stream.aisstream.io",
+  "fixed_websocket_path": "/v0/stream",
+  "bounding_boxes_max": 4,
+  "bounding_box_area_square_degrees_max": 400,
+  "combined_bounding_box_area_square_degrees_max": 800,
+  "mmsi_filter_count_max": 20,
+  "message_type_filter_count_max": 8,
+  "messages_per_ticket_max": 200,
+  "worldwide_subscription_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "background_streaming_allowed": false,
+  "stream_relay_allowed": false,
+  "write_operations_allowed": false,
+  "trading_or_order_execution_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": true
+}
+```
+
+## 互联网档案馆 Internet Archive (`internet-archive`)
+
+- 状态：`启用`
+- 说明：通过Internet Archive公开接口搜索数字馆藏、读取项目元数据和文件目录，并查询Wayback网页存档可用性与有限捕获记录。
+- 目录策略：开放6项固定免密只读操作；不开放上传、修改、删除、借阅、登录、任意文件下载或网页回放抓取。
+- 执行策略：每张票据最多一次固定HTTPS GET；搜索、字段、分页、排序、标识符、URL、时间范围和返回行数均受Schema约束，不跟随重定向。
+- 票据前缀：`[intel-internet-archive]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`3dbf98875d81988ebb952fbd73f9b8506685ad121b3e226ab05d397ccee2b8df`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地互联网档案馆安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `search-items` | 通过Advanced Search API按受控查询、字段、分页和排序搜索馆藏元数据。 | `query, rows, page, fields, sort` |
+
+`search-items` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 1
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "downloads desc",
+        "downloads asc",
+        "date desc",
+        "date asc",
+        "addeddate desc",
+        "addeddate asc",
+        "titleSorter asc",
+        "titleSorter desc"
+      ],
+      "default": "downloads desc"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `get-item-metadata` | 按固定identifier读取项目元数据。 | `identifier` |
+
+`get-item-metadata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+    }
+  },
+  "required": [
+    "identifier"
+  ]
+}
+```
+
+| `list-item-files` | 按固定identifier读取项目文件目录及校验元数据，不下载文件内容。 | `identifier` |
+
+`list-item-files` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+    }
+  },
+  "required": [
+    "identifier"
+  ]
+}
+```
+
+| `wayback-availability` | 查询指定HTTP(S) URL在Wayback Machine中是否有可用快照。 | `url, timestamp` |
+
+`wayback-availability` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 1000,
+      "pattern": "^https?://[^\\s]+$"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4,14}$"
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+| `wayback-captures` | 通过固定CDX端点读取指定URL的有限去重成功捕获记录。 | `url, from_timestamp, to_timestamp, limit` |
+
+`wayback-captures` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 1000,
+      "pattern": "^https?://[^\\s]+$"
+    },
+    "from_timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4,14}$"
+    },
+    "to_timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4,14}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_hosts": [
+    "archive.org",
+    "web.archive.org"
+  ],
+  "fixed_paths": [
+    "/advancedsearch.php",
+    "/metadata/{identifier}",
+    "/wayback/available",
+    "/cdx/search/cdx"
+  ],
+  "search_rows_max": 200,
+  "search_page_max": 1000,
+  "metadata_files_returned_max": 500,
+  "wayback_capture_rows_max": 200,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "file_downloads_allowed": false,
+  "archived_page_body_fetching_allowed": false,
+  "bulk_collection_download_allowed": false,
+  "uploads_allowed": false,
+  "write_operations_allowed": false,
+  "authentication_required": false,
+  "secret_values_exposed": false,
+  "automatic_pagination_allowed": false
+}
+```
+
 ## Wolfram|Alpha 计算知识 API (`wolfram-alpha`)
 
 - 状态：`启用`
@@ -11178,6 +13894,7 @@
 - 执行策略：WOLFRAM_ALPHA_APP_ID 仅在后端 appid 查询参数注入；每张票据执行一次只读查询，固定输出类型并限制输入、超时和响应体积。
 - 票据前缀：`[api-wolfram]`
 - Secret环境变量名：`WOLFRAM_ALPHA_APP_ID`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`d510d42245f91826f4ff38f567b17c9bf7f6a60972b51c7202ac00e04e3a796a`
 
 | 操作 | 说明 | 参数 |
@@ -11343,6 +14060,7 @@
 - 执行策略：LLAMA_CLOUD_API_KEY 仅在后端 Bearer 请求头注入；新建解析任务后在单张票据内有限轮询，并过滤预签名下载 URL、Authorization 和密钥。
 - 票据前缀：`[api-llamaparse]`
 - Secret环境变量名：`LLAMA_CLOUD_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
 - 提供方SHA-256：`5104c79c0f79e9b401c203957b4c122b2b26f1462e220816ccb475b96c52fc0e`
 
 | 操作 | 说明 | 参数 |

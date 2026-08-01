@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            306,
+            373,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -68,6 +68,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "earth-engine": 6,
             "data-commons": 5,
             "qweather": 18,
+            "xweather": 10,
             "yuandian-law": 40,
             "jina-reader": 2,
             "exa": 3,
@@ -81,6 +82,14 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "eodhd": 25,
             "east-asia-econ": 6,
             "alpha-vantage": 66,
+            "overture-maps": 7,
+            "oecd": 6,
+            "alphafeed": 10,
+            "who-gho-odata": 8,
+            "mediastack": 5,
+            "statistics-of-the-world": 11,
+            "aisstream": 4,
+            "internet-archive": 6,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -239,6 +248,21 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(qw_provider["limits"]["redirects_allowed"])
         self.assertFalse(qw_provider["limits"]["write_operations_allowed"])
 
+        xweather = json.loads(
+            (ROOT / "xweather/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        xw_provider = xweather["providers"][0]
+        self.assertEqual(
+            xw_provider["required_secret_environment_variable"],
+            "XWEATHER_CLIENT_SECRET",
+        )
+        self.assertEqual(xw_provider["required_repository_variable"], "XWEATHER_CLIENT_ID")
+        self.assertEqual(xw_provider["limits"]["fixed_api_host"], "data.api.xweather.com")
+        self.assertFalse(xw_provider["limits"]["arbitrary_urls_allowed"])
+        self.assertFalse(xw_provider["limits"]["arbitrary_query_parameters_allowed"])
+        self.assertFalse(xw_provider["limits"]["client_supplied_credentials_allowed"])
+        self.assertFalse(xw_provider["limits"]["write_operations_allowed"])
+
         miaoxiang_mcp = json.loads(
             (ROOT / "miaoxiang-mcp/provider-catalog.json").read_text(
                 encoding="utf-8"
@@ -335,6 +359,33 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(alpha_limits["write_operations_allowed"])
         self.assertFalse(alpha_limits["trading_or_order_execution_allowed"])
 
+        overture = json.loads(
+            (ROOT / "overture-maps/provider-catalog.json").read_text(
+                encoding="utf-8"
+            )
+        )["providers"][0]
+        self.assertEqual(overture["required_secret_environment_variable"], "")
+        self.assertFalse(overture["limits"]["whole_world_download_allowed"])
+        self.assertFalse(overture["limits"]["arbitrary_s3_paths_allowed"])
+
+        oecd = json.loads(
+            (ROOT / "oecd/provider-catalog.json").read_text(encoding="utf-8")
+        )["providers"][0]
+        self.assertEqual(oecd["required_secret_environment_variable"], "")
+        self.assertEqual(oecd["limits"]["fixed_api_host"], "sdmx.oecd.org")
+        self.assertFalse(oecd["limits"]["arbitrary_sdmx_resource_types_allowed"])
+
+        alphafeed = json.loads(
+            (ROOT / "alphafeed/provider-catalog.json").read_text(encoding="utf-8")
+        )["providers"][0]
+        self.assertEqual(
+            alphafeed["required_secret_environment_variable"],
+            "ALPHAFEED_API_KEY",
+        )
+        self.assertFalse(alphafeed["limits"]["arbitrary_sdk_methods_allowed"])
+        self.assertFalse(alphafeed["limits"]["client_supplied_api_key_allowed"])
+        self.assertFalse(alphafeed["limits"]["trading_or_order_execution_allowed"])
+
         baostock = json.loads(
             (ROOT / "baostock/provider-catalog.json").read_text(encoding="utf-8")
         )
@@ -382,6 +433,22 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(llama_limits["presigned_urls_exposed"])
         self.assertLessEqual(llama_limits["max_pages"], 200)
         self.assertLessEqual(llama_limits["poll_timeout_seconds_max"], 600)
+
+
+    def test_who_gho_odata_has_no_unbounded_query_escape_hatch(self) -> None:
+        provider = json.loads(
+            (ROOT / "who-gho/provider-catalog.json").read_text(encoding="utf-8")
+        )["providers"][0]
+        limits = provider["limits"]
+        self.assertEqual(provider["required_secret_environment_variable"], "")
+        self.assertEqual(limits["fixed_api_host"], "ghoapi.azureedge.net")
+        self.assertFalse(limits["arbitrary_urls_allowed"])
+        self.assertFalse(limits["arbitrary_odata_filters_allowed"])
+        self.assertFalse(limits["arbitrary_odata_select_allowed"])
+        self.assertFalse(limits["automatic_pagination_allowed"])
+        self.assertFalse(limits["whole_database_download_allowed"])
+        self.assertFalse(limits["write_operations_allowed"])
+        self.assertTrue(limits["legacy_endpoint_migration_watch_required"])
 
 
 if __name__ == "__main__":

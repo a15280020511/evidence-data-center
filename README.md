@@ -2,6 +2,8 @@
 
 本仓库是正式独立的数据证据中心；拆仓来源和固定提交仅记录在迁移证据文件中，不参与日常运行。
 
+正式对外名称：`情报中心`（Intelligence Center）。技术目录 `api-center/` 作为兼容路径继续保留，不代表对外名称。
+
 ## 职责
 
 外部结构化数据、地图、天气、金融、经济、新闻、人口、遥感、版本冻结与数据溯源。
@@ -25,3 +27,8 @@
 ## V3 data quality controls
 
 Connector status is classified as PRODUCTION / DEGRADED / BLOCKED / RETIRED. Formal outputs require immutable snapshot metadata and a source-comparison report; correlated sources may not be naively averaged.
+
+
+### WHO GHO OData
+
+情报中心新增免密、只读的 WHO Global Health Observatory OData Provider，固定开放 8 项受控操作并保留官方接口迁移监测。

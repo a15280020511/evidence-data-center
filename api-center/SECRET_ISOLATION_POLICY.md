@@ -25,6 +25,8 @@ BAIDU_MAP_API_KEY
 NEWSAPI_API_KEY
 TUSHARE_API_TOKEN
 ALPHA_VANTAGE_API_KEY
+ALPHAFEED_API_KEY
+XWEATHER_CLIENT_SECRET
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
 ```
@@ -36,3 +38,20 @@ Wolfram|Alpha 的 AppID 仅允许作为 `appid` 查询参数注入三个固定�
 天地图提供方已删除；`TIANDITU_API_KEY` 不再被任何工作流或代码读取。仓库设置中残留的旧 Secret 需由仓库所有者在 GitHub Settings 中手动删除。
 
 Alpha Vantage Key 仅允许作为 `apikey` 查询参数注入 `https://www.alphavantage.co/query`；客户端不得覆盖 `function` 白名单或传入自己的密钥。
+
+AlphaFeed Key 仅允许由 `api-center/alphafeed/` 的固定工作流注入官方 `alphafeed==0.1.4` SDK；客户端不得提交或覆盖 Key，不开放任意 SDK 方法、WebSocket、交易或下单。Overture Maps、OECD 和 World Bank 均为无密钥只读数据源。
+
+Xweather 的公开 Client ID 作为 GitHub Repository Variable `XWEATHER_CLIENT_ID` 注入，唯一敏感凭据为 Repository Secret `XWEATHER_CLIENT_SECRET`。两者只发送至 `https://data.api.xweather.com` 的固定白名单 GET 端点，不写入仓库、Issue、日志或 Artifact。
+
+
+## AISstream
+
+```text
+Repository Secret: AISSTREAM_API_KEY
+```
+
+该Key只允许在专用GitHub Actions后端写入AISstream订阅消息并发送至`wss://stream.aisstream.io/v0/stream`。客户端不得提交或覆盖Key；Key不得进入Issue、目录、日志、诊断或Artifact。
+
+## Internet Archive
+
+Internet Archive Provider不使用Secret，只访问`archive.org`与`web.archive.org`的固定公开只读端点。

@@ -21,9 +21,18 @@ BAOSTOCK_CATALOG = HERE / "baostock/provider-catalog.json"
 EODHD_CATALOG = HERE / "eodhd/provider-catalog.json"
 DATA_COMMONS_CATALOG = HERE / "data-commons/provider-catalog.json"
 QWEATHER_CATALOG = HERE / "qweather/provider-catalog.json"
+XWEATHER_CATALOG = HERE / "xweather/provider-catalog.json"
 MIAOXIANG_MCP_CATALOG = HERE / "miaoxiang-mcp/provider-catalog.json"
 EAST_ASIA_ECON_CATALOG = HERE / "east-asia-econ/provider-catalog.json"
 ALPHA_VANTAGE_CATALOG = HERE / "alpha-vantage/provider-catalog.json"
+OVERTURE_MAPS_CATALOG = HERE / "overture-maps/provider-catalog.json"
+OECD_CATALOG = HERE / "oecd/provider-catalog.json"
+ALPHAFEED_CATALOG = HERE / "alphafeed/provider-catalog.json"
+WHO_GHO_CATALOG = HERE / "who-gho/provider-catalog.json"
+MEDIASTACK_CATALOG = HERE / "mediastack/provider-catalog.json"
+STATISTICS_OF_THE_WORLD_CATALOG = HERE / "statistics-of-the-world/provider-catalog.json"
+AISSTREAM_CATALOG = HERE / "aisstream/provider-catalog.json"
+INTERNET_ARCHIVE_CATALOG = HERE / "internet-archive/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -33,9 +42,18 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "eodhd": 25,
     "data-commons": 5,
     "qweather": 18,
+    "xweather": 10,
     "miaoxiang-mcp": 13,
     "east-asia-econ": 6,
     "alpha-vantage": 66,
+    "overture-maps": 7,
+    "oecd": 6,
+    "alphafeed": 10,
+    "who-gho-odata": 8,
+    "mediastack": 5,
+    "statistics-of-the-world": 11,
+    "aisstream": 4,
+    "internet-archive": 6,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -47,9 +65,18 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     EODHD_CATALOG,
     DATA_COMMONS_CATALOG,
     QWEATHER_CATALOG,
+    XWEATHER_CATALOG,
     MIAOXIANG_MCP_CATALOG,
     EAST_ASIA_ECON_CATALOG,
     ALPHA_VANTAGE_CATALOG,
+    OVERTURE_MAPS_CATALOG,
+    OECD_CATALOG,
+    ALPHAFEED_CATALOG,
+    WHO_GHO_CATALOG,
+    MEDIASTACK_CATALOG,
+    STATISTICS_OF_THE_WORLD_CATALOG,
+    AISSTREAM_CATALOG,
+    INTERNET_ARCHIVE_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -77,9 +104,18 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "eodhd/provider-catalog.json",
         "data-commons/provider-catalog.json",
         "qweather/provider-catalog.json",
+        "xweather/provider-catalog.json",
         "miaoxiang-mcp/provider-catalog.json",
         "east-asia-econ/provider-catalog.json",
         "alpha-vantage/provider-catalog.json",
+        "overture-maps/provider-catalog.json",
+        "oecd/provider-catalog.json",
+        "alphafeed/provider-catalog.json",
+        "who-gho/provider-catalog.json",
+        "mediastack/provider-catalog.json",
+        "statistics-of-the-world/provider-catalog.json",
+        "aisstream/provider-catalog.json",
+        "internet-archive/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:

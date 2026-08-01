@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the deterministic maximum-safe API-center capability catalog.
+"""Generate the deterministic maximum-safe Intelligence Center capability catalog.
 
 The catalog embeds every repository-declared read-only request/response contract
 and every managed-provider operation schema. Credential names may be shown;
@@ -141,6 +141,9 @@ def _build_managed_providers() -> tuple[dict[str, Any], list[dict[str, Any]]]:
                 ),
                 "optional_secret_environment_variable_name": str(
                     raw_provider.get("optional_secret_environment_variable") or ""
+                ),
+                "required_repository_variable": str(
+                    raw_provider.get("required_repository_variable") or ""
                 ),
                 "secret_value_exposed": False,
                 "provider_sha256": canonical_sha(raw_provider),
@@ -296,6 +299,9 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
     operation_count = sum(row["operation_count"] for row in managed_rows)
     catalog = {
         "schema_version": "api-catalog-v3",
+        "center_display_name_zh": "情报中心",
+        "center_display_name_en": "Intelligence Center",
+        "technical_compatibility_path": "api-center/",
         "exposure_mode": "maximum-safe-readonly",
         "generation": "deterministic-from-repository-state",
         "source_manifest_file": "connector-manifest.json",
@@ -359,7 +365,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
 
 def render_markdown(catalog: Mapping[str, Any]) -> str:
     lines = [
-        "# API 中心能力目录",
+        "# 情报中心能力目录",
         "",
         f"- 开放模式：`{catalog['exposure_mode']}`",
         f"- 普通连接器：`{catalog['enabled_connector_count']}/{catalog['connector_count']}` 已启用",
@@ -429,6 +435,8 @@ def render_markdown(catalog: Mapping[str, Any]) -> str:
             f"- 票据前缀：`{provider['ticket_prefix']}`",
             "- Secret环境变量名："
             f"`{provider['required_secret_environment_variable_name'] or '无'}`（仅名称）",
+            "- Repository Variable名："
+            f"`{provider.get('required_repository_variable') or '无'}`（仅名称）",
             f"- 提供方SHA-256：`{provider['provider_sha256']}`",
             "",
             "| 操作 | 说明 | 参数 |",

@@ -1,5 +1,8 @@
 {
   "schema_version": "api-catalog-v3",
+  "center_display_name_zh": "情报中心",
+  "center_display_name_en": "Intelligence Center",
+  "technical_compatibility_path": "api-center/",
   "exposure_mode": "maximum-safe-readonly",
   "generation": "deterministic-from-repository-state",
   "source_manifest_file": "connector-manifest.json",
@@ -21,18 +24,27 @@
     "eodhd/provider-catalog.json",
     "data-commons/provider-catalog.json",
     "qweather/provider-catalog.json",
+    "xweather/provider-catalog.json",
     "miaoxiang-mcp/provider-catalog.json",
     "east-asia-econ/provider-catalog.json",
     "alpha-vantage/provider-catalog.json",
+    "overture-maps/provider-catalog.json",
+    "oecd/provider-catalog.json",
+    "alphafeed/provider-catalog.json",
+    "who-gho/provider-catalog.json",
+    "mediastack/provider-catalog.json",
+    "statistics-of-the-world/provider-catalog.json",
+    "aisstream/provider-catalog.json",
+    "internet-archive/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "471abb485ec1811cc96be1df522ddaabfe2a623537f1ae6c7d0237ab421f31b2",
+  "managed_provider_catalog_sha256": "ed76aeb434ea75a4b159d0b07b74023081e1d4755221bf0358e039340f02fd0a",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 25,
-  "enabled_managed_provider_count": 25,
-  "managed_operation_count": 306,
-  "exposed_parameter_count": 1275,
+  "managed_provider_count": 34,
+  "enabled_managed_provider_count": 34,
+  "managed_operation_count": 373,
+  "exposed_parameter_count": 1449,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -51,9 +63,18 @@
     "eodhd/provider-catalog.json",
     "data-commons/provider-catalog.json",
     "qweather/provider-catalog.json",
+    "xweather/provider-catalog.json",
     "miaoxiang-mcp/provider-catalog.json",
     "east-asia-econ/provider-catalog.json",
     "alpha-vantage/provider-catalog.json",
+    "overture-maps/provider-catalog.json",
+    "oecd/provider-catalog.json",
+    "alphafeed/provider-catalog.json",
+    "who-gho/provider-catalog.json",
+    "mediastack/provider-catalog.json",
+    "statistics-of-the-world/provider-catalog.json",
+    "aisstream/provider-catalog.json",
+    "internet-archive/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -394,6 +415,7 @@
       },
       "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "92ce9c51980065a31186c2bc2273959f6e43c6441df5f29dea8affef1b6659c3",
       "catalog_file": "google-cloud/provider-catalog.json"
@@ -567,6 +589,7 @@
       },
       "required_secret_environment_variable_name": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "90546500a5762ec00c17ea64e49cf60bada2bfe850551587abd8f0e161c73938",
       "catalog_file": "google-cloud/provider-catalog.json"
@@ -1148,6 +1171,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "51c98e310e75aa22eb2cf474ed39a82cef707470af3d0d88a487271cb7ddc4d1",
       "catalog_file": "akshare/provider-catalog.json"
@@ -1255,6 +1279,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "f763ed3c3a2aa7e979a6de86ffa20527b6f93b9d9e8613d21df21e0a4cffe481",
       "catalog_file": "akshare/provider-catalog.json"
@@ -1845,6 +1870,7 @@
       },
       "required_secret_environment_variable_name": "WIND_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "b630c7bf2699e4ff10856cc68063f54bbb5d64e14de27273f38dded0aa6ff819",
       "catalog_file": "aifin-market/provider-catalog.json"
@@ -3442,6 +3468,7 @@
       },
       "required_secret_environment_variable_name": "YUANDIAN_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "209bcddd432ce325bb04568aa8404881ec8e42ec6995648166a0a3182ceea80e",
       "catalog_file": "yuandian/provider-catalog.json",
@@ -4221,6 +4248,7 @@
       },
       "required_secret_environment_variable_name": "TIANYANCHA_API_TOKEN",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "cfae6391c6824cc14c5d90bbc3c90c2ec5bfe97910735691ff687db980909544",
       "catalog_file": "company-intelligence/provider-catalog.json"
@@ -4345,6 +4373,7 @@
       },
       "required_secret_environment_variable_name": "MX_APIKEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "ccd53455ebe7f9945eae858c350bf635362edf29ccbc98a89dae3f93c0ea2843",
       "catalog_file": "company-intelligence/provider-catalog.json"
@@ -4422,6 +4451,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "JINA_API_KEY",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "44e58ffbc0199c0920a3f86db7093bd389aef67fb7a2d1a95f14dd669d18f4b6",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -4581,6 +4611,7 @@
       },
       "required_secret_environment_variable_name": "EXA_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "9ae67e37ccc9cb17e849551300f7c87b705415ff90d759e972cc9c5d3d4164ce",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -4950,6 +4981,7 @@
       },
       "required_secret_environment_variable_name": "TAVILY_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "c8e9b195cf48b60dd7657f55a575745b00cee16dda1b6fa52c76e10deb6365a0",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -5171,6 +5203,7 @@
       },
       "required_secret_environment_variable_name": "FIRECRAWL_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "a44c4d567f550e422b27f53ae4531d69e2096d249e590d953835c16fedc56375",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -5563,6 +5596,7 @@
       },
       "required_secret_environment_variable_name": "BROWSERLESS_TOKEN",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "930432038bc74e69f64242ed145e7dafc372bfb114b6a2fed2c625a01ab1f7d1",
       "catalog_file": "web-retrieval/provider-catalog.json"
@@ -5823,6 +5857,7 @@
       },
       "required_secret_environment_variable_name": "TICKFLOW_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "36b2bb448fe84eb74a83051deafaa1514f290d6d89c13588d3e6d3ba4c72c671",
       "catalog_file": "market-search/provider-catalog.json"
@@ -6064,6 +6099,7 @@
       },
       "required_secret_environment_variable_name": "SERPAPI_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "058e437fae61170070a799442456adabaace2c0daa7521e6f9813c27e71ea27f",
       "catalog_file": "market-search/provider-catalog.json"
@@ -7373,6 +7409,7 @@
       },
       "required_secret_environment_variable_name": "TUSHARE_API_TOKEN",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "17b75ee3179f49be521afbdd4bb310f963983cc17161a6a806a5119f81a460eb",
       "catalog_file": "tushare/provider-catalog.json"
@@ -8100,6 +8137,7 @@
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "396936b20d6f23f465158560441182ffcc47c2ab361877581e706dc8a439eb72",
       "catalog_file": "baostock/provider-catalog.json"
@@ -9158,6 +9196,7 @@
       },
       "required_secret_environment_variable_name": "EODHD_API_TOKEN",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "124c5e16ef567d8df1bbbfd7b261ac7b6a23f70cc73799ab2c27c73d3fc5ed58",
       "catalog_file": "eodhd/provider-catalog.json"
@@ -9351,6 +9390,7 @@
       },
       "required_secret_environment_variable_name": "GOOGLE_DATA_COMMONS_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "be48fabd30ef0c7cda43239e538ac2ea929f49d7fc323508c8301a8d93b7a2a7",
       "catalog_file": "data-commons/provider-catalog.json"
@@ -10415,9 +10455,516 @@
       },
       "required_secret_environment_variable_name": "QWEATHER_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "17d05469d868d3c16103aec70b326c2a000291a5a845a9908f56e07a9743d352",
       "catalog_file": "qweather/provider-catalog.json"
+    },
+    {
+      "provider_id": "xweather",
+      "display_name": "Xweather 全球专业天气数据",
+      "description": "通过 Xweather 官方 Weather API 读取全球地点、实时观测、插值条件、15 日预报、官方预警、空气质量、日月和历史观测汇总。",
+      "enabled": true,
+      "ticket_prefix": "[api-xweather]",
+      "catalog_policy": "固定开放 10 项核心只读能力；所有端点、路径、参数、时间范围、返回条数和响应体积受白名单与硬上限约束。",
+      "execution_policy": "Client ID 由 GitHub Repository Variable 注入，Client Secret 仅由 Repository Secret 注入；不接受客户端凭据、任意 URL、任意查询、路线批量、写操作或 Webhook。",
+      "operation_count": 10,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Xweather 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "places-closest",
+          "description": "按城市、邮编、站点或经纬度查询最近地理位置。",
+          "parameter_names": [
+            "p",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "p": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "p"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "observations-current",
+          "description": "读取指定位置最近的全球气象站实时观测。",
+          "parameter_names": [
+            "location",
+            "filter",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "conditions",
+          "description": "读取全球位置当前、历史、未来逐小时条件或分钟级降水条件。",
+          "parameter_names": [
+            "location",
+            "from",
+            "to",
+            "at_time",
+            "filter",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "at_time": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "filter": {
+                "type": "string",
+                "enum": [
+                  "1hr",
+                  "minutelyprecip"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 72
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "forecasts",
+          "description": "读取全球位置最长 15 日的日、昼夜或小时天气预报。",
+          "parameter_names": [
+            "location",
+            "filter",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "daynight",
+                  "mdnt2mdnt",
+                  "1hr",
+                  "3hr",
+                  "6hr"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "alerts",
+          "description": "读取指定位置当前有效的官方天气预警。",
+          "parameter_names": [
+            "location",
+            "limit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "air-quality",
+          "description": "读取全球位置当前空气质量、AQI、AQHI 和污染物信息。",
+          "parameter_names": [
+            "location",
+            "filter",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "filter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9._,-]{1,64}$"
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "sunmoon",
+          "description": "读取全球位置日出日落、曙暮光和月升月落数据。",
+          "parameter_names": [
+            "location",
+            "from",
+            "to",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "moon-phases",
+          "description": "读取全球位置主要月相发生时间。",
+          "parameter_names": [
+            "location",
+            "from",
+            "to",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        },
+        {
+          "operation_id": "observations-summary",
+          "description": "读取指定位置最多 30 日的历史观测日汇总。",
+          "parameter_names": [
+            "location",
+            "from",
+            "to",
+            "plimit",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\&=%]{1,120}$"
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
+              },
+              "fields": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              },
+              "plimit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30
+              }
+            },
+            "required": [
+              "location"
+            ]
+          },
+          "result_contract": {
+            "provider": "xweather",
+            "official_origin": "https://data.api.xweather.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "client-id-variable-plus-client-secret-backend-only"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "max_rows": 5000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "arbitrary_query_parameters_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "webhooks_allowed": false,
+        "route_queries_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "data.api.xweather.com",
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 1,
+        "plan_or_multiplier_dependent_endpoints": true
+      },
+      "required_secret_environment_variable_name": "XWEATHER_CLIENT_SECRET",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "XWEATHER_CLIENT_ID",
+      "secret_value_exposed": false,
+      "provider_sha256": "c94519d010f5fd3dc128c75c27872a7b296c3e0685fbb099b31cfc5b6c065f90",
+      "catalog_file": "xweather/provider-catalog.json"
     },
     {
       "provider_id": "miaoxiang-mcp",
@@ -10786,6 +11333,7 @@
       },
       "required_secret_environment_variable_name": "EM_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "7a4fbf351f300bd5f746b94e48e374b24911a38b38211157a6c14ea72cf6a1de",
       "catalog_file": "miaoxiang-mcp/provider-catalog.json"
@@ -10998,6 +11546,7 @@
       },
       "required_secret_environment_variable_name": "EAST_ASIA_ECON_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "0c433a9dd653a1039c389b5eed82ad054487980f2d11516e32dbee1a3191f0d7",
       "catalog_file": "east-asia-econ/provider-catalog.json"
@@ -13531,9 +14080,2754 @@
       },
       "required_secret_environment_variable_name": "ALPHA_VANTAGE_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "15e466cbf2cd445f58ae15b1d0d47561ef682ed72198b7637e54bf193b6b77bc",
       "catalog_file": "alpha-vantage/provider-catalog.json"
+    },
+    {
+      "provider_id": "overture-maps",
+      "display_name": "Overture Maps 全球开放地图数据",
+      "description": "通过 Overture 官方 STAC 目录和匿名对象存储，以受限边界框读取全球地址、建筑、行政区、地点、交通与基础底图要素。",
+      "enabled": true,
+      "ticket_prefix": "[api-overture]",
+      "catalog_policy": "开放固定发布目录、要素类型、计数、城市级边界框提取和 GERS 查询；不开放全量全球下载、任意对象存储路径或任意 URL。",
+      "execution_policy": "只调用 Overture 官方 Python 客户端固定只读函数；边界框面积、要素类型、发布格式、返回条数和响应体积均受硬限制。",
+      "operation_count": 7,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Overture Maps 安全能力目录，不访问上游.",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "overture-maps",
+            "official_origin": "https://stac.overturemaps.org",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-feature-types",
+          "description": "读取固定开放的 Overture 主题与要素类型清单，不访问上游.",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "overture-maps",
+            "official_origin": "local-allowlist",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-releases",
+          "description": "读取 Overture STAC 目录中的当前可用发布版本.",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "overture-maps",
+            "official_origin": "https://stac.overturemaps.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "anonymous"
+          }
+        },
+        {
+          "operation_id": "latest-release",
+          "description": "读取 Overture STAC 目录标记的最新发布版本.",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "overture-maps",
+            "official_origin": "https://stac.overturemaps.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "anonymous"
+          }
+        },
+        {
+          "operation_id": "count-features",
+          "description": "按城市级经纬度边界框统计指定 Overture 要素类型数量.",
+          "parameter_names": [
+            "feature_type",
+            "bbox",
+            "release"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "feature_type": {
+                "type": "string",
+                "enum": [
+                  "address",
+                  "bathymetry",
+                  "building",
+                  "building_part",
+                  "division",
+                  "division_area",
+                  "division_boundary",
+                  "place",
+                  "segment",
+                  "connector",
+                  "infrastructure",
+                  "land",
+                  "land_cover",
+                  "land_use",
+                  "water"
+                ]
+              },
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                }
+              },
+              "release": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[0-9]+$"
+              }
+            },
+            "required": [
+              "feature_type",
+              "bbox"
+            ]
+          },
+          "result_contract": {
+            "provider": "overture-maps",
+            "official_origin": "anonymous Overture S3 + STAC",
+            "http_method": "READ",
+            "read_only": true,
+            "credential_mode": "anonymous"
+          }
+        },
+        {
+          "operation_id": "query-features",
+          "description": "按城市级边界框提取指定类型的有限条 GeoJSON 要素.",
+          "parameter_names": [
+            "feature_type",
+            "bbox",
+            "release",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "feature_type": {
+                "type": "string",
+                "enum": [
+                  "address",
+                  "bathymetry",
+                  "building",
+                  "building_part",
+                  "division",
+                  "division_area",
+                  "division_boundary",
+                  "place",
+                  "segment",
+                  "connector",
+                  "infrastructure",
+                  "land",
+                  "land_cover",
+                  "land_use",
+                  "water"
+                ]
+              },
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                }
+              },
+              "release": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}\\.[0-9]+$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "feature_type",
+              "bbox"
+            ]
+          },
+          "result_contract": {
+            "provider": "overture-maps",
+            "official_origin": "anonymous Overture S3 + STAC",
+            "http_method": "READ",
+            "read_only": true,
+            "credential_mode": "anonymous",
+            "artifact": "features.geojson"
+          }
+        },
+        {
+          "operation_id": "lookup-gers",
+          "description": "按固定 UUID 格式查询 Overture Global Entity Reference System 注册表.",
+          "parameter_names": [
+            "gers_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "gers_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "gers_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "overture-maps",
+            "official_origin": "anonymous Overture S3 + STAC",
+            "http_method": "READ",
+            "read_only": true,
+            "credential_mode": "anonymous"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_hosts": [
+          "stac.overturemaps.org",
+          "overturemaps-us-west-2.s3.us-west-2.amazonaws.com"
+        ],
+        "bbox_area_square_degrees_max": 4.0,
+        "features_per_ticket_max": 1000,
+        "anonymous_object_storage_only": true,
+        "whole_world_download_allowed": false,
+        "arbitrary_s3_paths_allowed": false,
+        "arbitrary_feature_types_allowed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "acec22ea8fb41dd662e964c99293ee8ae1fd72fed70b8332069a485e44787459",
+      "catalog_file": "overture-maps/provider-catalog.json"
+    },
+    {
+      "provider_id": "oecd",
+      "display_name": "OECD Data Explorer SDMX",
+      "description": "通过 OECD 官方免费 SDMX REST API 读取经济、社会、贸易、产业、就业、教育、能源与公共治理统计。",
+      "enabled": true,
+      "ticket_prefix": "[api-oecd]",
+      "catalog_policy": "开放固定的数据流、结构、代码表和数据查询操作；所有路径组件、维度键、格式、时间范围和响应体积均受白名单约束。",
+      "execution_policy": "仅允许对 sdmx.oecd.org/public/rest/v1 发起一次 HTTPS GET；不跟随重定向，不接受任意 URL、请求头或写操作。",
+      "operation_count": 6,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 OECD SDMX 安全能力目录，不访问上游.",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-dataflows",
+          "description": "读取 OECD 当前公开数据流目录.",
+          "parameter_names": [
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-dataflow",
+          "description": "读取指定 OECD SDMX 数据流定义.",
+          "parameter_names": [
+            "agency",
+            "flow",
+            "version",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "flow"
+            ]
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-datastructure",
+          "description": "读取指定 OECD SDMX 数据结构定义.",
+          "parameter_names": [
+            "agency",
+            "structure_id",
+            "version",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "structure_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "structure_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-codelist",
+          "description": "读取指定 OECD SDMX 代码表.",
+          "parameter_names": [
+            "agency",
+            "codelist_id",
+            "version",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "codelist_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "codelist_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-data",
+          "description": "按固定数据流、维度键和时间范围读取 OECD 统计数据.",
+          "parameter_names": [
+            "agency",
+            "flow",
+            "version",
+            "key",
+            "start_period",
+            "end_period",
+            "dimension_at_observation",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9+._@-]+$"
+              },
+              "start_period": {
+                "type": "string",
+                "minLength": 4,
+                "maxLength": 32,
+                "pattern": "^[0-9]{4}(?:-[A-Za-z0-9]{1,8})?$"
+              },
+              "end_period": {
+                "type": "string",
+                "minLength": 4,
+                "maxLength": 32,
+                "pattern": "^[0-9]{4}(?:-[A-Za-z0-9]{1,8})?$"
+              },
+              "dimension_at_observation": {
+                "type": "string",
+                "enum": [
+                  "AllDimensions",
+                  "TimeDimension",
+                  "MeasureDimension"
+                ]
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "flow",
+              "key"
+            ]
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "sdmx.oecd.org",
+        "fixed_api_prefix": "/public/rest/v1",
+        "rate_limit_policy": "single-request-per-ticket",
+        "arbitrary_sdmx_resource_types_allowed": false,
+        "bulk_download_endpoints_allowed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "83c66dfcf37eb0574142e6053818daa536289f693541997a211ff20dd2f935bb",
+      "catalog_file": "oecd/provider-catalog.json"
+    },
+    {
+      "provider_id": "alphafeed",
+      "display_name": "AlphaFeed 中国与全球证券行情",
+      "description": "通过 AlphaFeed 官方 Python SDK 读取 A股、ETF、美股和港股行情、K线、分时、盘口、标的信息与复权因子。",
+      "enabled": true,
+      "ticket_prefix": "[api-alphafeed]",
+      "catalog_policy": "固定开放官方 SDK 的 9 类只读数据操作；一个票据只执行一个固定 SDK 方法，批量标的数量和 K 线条数受硬限制。",
+      "execution_policy": "API Key 仅由 GitHub Actions 后端注入；不接受客户端密钥、任意方法、任意主机、交易、下单、WebSocket 或写操作。",
+      "operation_count": 10,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 AlphaFeed 安全能力目录，不访问上游.",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "quotes",
+          "description": "按证券代码或固定标的池读取 A股、美股、港股和 ETF 实时行情.",
+          "parameter_names": [
+            "symbols",
+            "universe"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              },
+              "universe": {
+                "type": "string",
+                "enum": [
+                  "CN_Stock",
+                  "US_Stock",
+                  "HK_Stock",
+                  "CN_ETF"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "klines",
+          "description": "读取单只证券的分钟、日、周或月 K 线.",
+          "parameter_names": [
+            "symbol",
+            "period",
+            "count",
+            "adjust"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "60m",
+                  "1d",
+                  "1w",
+                  "1mo"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "adjust": {
+                "type": "string",
+                "enum": [
+                  "forward",
+                  "backward",
+                  "forward_additive",
+                  "backward_additive",
+                  "none"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "klines-batch",
+          "description": "批量读取最多 20 只证券的有限 K 线.",
+          "parameter_names": [
+            "symbols",
+            "period",
+            "count",
+            "adjust"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "15m",
+                  "30m",
+                  "60m",
+                  "1d",
+                  "1w",
+                  "1mo"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 500
+              },
+              "adjust": {
+                "type": "string",
+                "enum": [
+                  "forward",
+                  "backward",
+                  "forward_additive",
+                  "backward_additive",
+                  "none"
+                ]
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "intraday",
+          "description": "读取单只证券当日 1 分钟或 5 分钟分时.",
+          "parameter_names": [
+            "symbol",
+            "period"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "intraday-batch",
+          "description": "批量读取最多 20 只证券的当日分时.",
+          "parameter_names": [
+            "symbols",
+            "period"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m"
+                ]
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "depth",
+          "description": "读取单只 A 股证券五档盘口.",
+          "parameter_names": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "instrument",
+          "description": "读取单只证券基础信息.",
+          "parameter_names": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "instruments-batch",
+          "description": "批量读取最多 100 只证券基础信息.",
+          "parameter_names": [
+            "symbols"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        },
+        {
+          "operation_id": "adjustment-factors",
+          "description": "批量读取最多 100 只证券复权因子.",
+          "parameter_names": [
+            "symbols"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z0-9][A-Z0-9.-]{0,31}\\.(?:SH|SZ|BJ|US|HK)$"
+                }
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "result_contract": {
+            "provider": "alphafeed",
+            "official_origin": "https://api.alphafeed.org",
+            "http_method": "SDK-READ",
+            "read_only": true,
+            "credential_mode": "api-key-backend-only"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "api.alphafeed.org",
+        "sdk_version": "0.1.4",
+        "sdk_calls_per_ticket_max": 1,
+        "symbols_per_batch_max": 100,
+        "kline_batch_symbols_max": 20,
+        "kline_rows_per_symbol_max": 1000,
+        "arbitrary_sdk_methods_allowed": false,
+        "client_supplied_api_key_allowed": false,
+        "websocket_allowed": false,
+        "trading_or_order_execution_allowed": false
+      },
+      "required_secret_environment_variable_name": "ALPHAFEED_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "f74609460418fd7363f97d939eefa8b1c711801f9c9ecf61fcb77fcf465ba289",
+      "catalog_file": "alphafeed/provider-catalog.json"
+    },
+    {
+      "provider_id": "who-gho-odata",
+      "display_name": "WHO GHO OData 全球卫生数据",
+      "description": "通过世界卫生组织 Global Health Observatory 公开 OData 接口读取全球卫生指标、维度、国家、地区和历史观测值。",
+      "enabled": true,
+      "ticket_prefix": "[intel-who-gho]",
+      "catalog_policy": "开放8项固定免密只读操作；指标代码、维度、国家、地区、年份、性别和分页均受Schema约束，不接受任意OData表达式。",
+      "execution_policy": "每张票据最多一次固定HTTPS GET；不跟随重定向，不接受任意URL、主机、路径、请求头、$filter、$select、$expand、函数或写操作。",
+      "operation_count": 8,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 WHO GHO OData 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "who-gho-odata",
+            "official_origin": "https://ghoapi.azureedge.net/api",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-dimensions",
+          "description": "读取 WHO GHO 可用维度目录。",
+          "parameter_names": [
+            "top",
+            "skip"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "top": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 100
+              },
+              "skip": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000,
+                "default": 0
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "who-gho-odata",
+            "official_origin": "https://ghoapi.azureedge.net/api",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-dimension-values",
+          "description": "读取固定公共维度的代码和值。",
+          "parameter_names": [
+            "dimension",
+            "top",
+            "skip"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dimension": {
+                "type": "string",
+                "enum": [
+                  "COUNTRY",
+                  "REGION",
+                  "SEX",
+                  "AGEGROUP",
+                  "GHO",
+                  "PUBLISHSTATE",
+                  "WORLDBANKINCOMEGROUP"
+                ]
+              },
+              "top": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 100
+              },
+              "skip": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000,
+                "default": 0
+              }
+            },
+            "required": [
+              "dimension"
+            ]
+          },
+          "result_contract": {
+            "provider": "who-gho-odata",
+            "official_origin": "https://ghoapi.azureedge.net/api",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-indicators",
+          "description": "分页读取 WHO GHO 指标代码和名称目录。",
+          "parameter_names": [
+            "top",
+            "skip"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "top": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 100
+              },
+              "skip": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000,
+                "default": 0
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "who-gho-odata",
+            "official_origin": "https://ghoapi.azureedge.net/api",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "search-indicators",
+          "description": "按受控文本条件搜索 WHO GHO 指标名称。",
+          "parameter_names": [
+            "query",
+            "match",
+            "top",
+            "skip"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 120,
+                "pattern": "^[A-Za-z0-9 .,/()%-]+$"
+              },
+              "match": {
+                "type": "string",
+                "enum": [
+                  "contains",
+                  "exact"
+                ],
+                "default": "contains"
+              },
+              "top": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              },
+              "skip": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000,
+                "default": 0
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "who-gho-odata",
+            "official_origin": "https://ghoapi.azureedge.net/api",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-indicator-data",
+          "description": "按指标、国家或地区、年份和性别读取 WHO GHO 观测值；只构造固定 OData 条件。",
+          "parameter_names": [
+            "indicator_code",
+            "country",
+            "region",
+            "year_from",
+            "year_to",
+            "sex",
+            "top",
+            "skip"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "indicator_code": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 128,
+                "pattern": "^[A-Z0-9][A-Z0-9_]{1,127}$"
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "region": {
+                "type": "string",
+                "enum": [
+                  "AFR",
+                  "AMR",
+                  "SEAR",
+                  "EUR",
+                  "EMR",
+                  "WPR",
+                  "GLOBAL"
+                ]
+              },
+              "year_from": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "year_to": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "sex": {
+                "type": "string",
+                "enum": [
+                  "BTSX",
+                  "MLE",
+                  "FMLE"
+                ]
+              },
+              "top": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 100
+              },
+              "skip": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000,
+                "default": 0
+              }
+            },
+            "required": [
+              "indicator_code"
+            ]
+          },
+          "result_contract": {
+            "provider": "who-gho-odata",
+            "official_origin": "https://ghoapi.azureedge.net/api",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-countries",
+          "description": "读取 WHO GHO 国家代码和值目录。",
+          "parameter_names": [
+            "top",
+            "skip"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "top": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 100
+              },
+              "skip": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000,
+                "default": 0
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "who-gho-odata",
+            "official_origin": "https://ghoapi.azureedge.net/api",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-regions",
+          "description": "读取 WHO GHO 地区代码和值目录。",
+          "parameter_names": [
+            "top",
+            "skip"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "top": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 100
+              },
+              "skip": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000,
+                "default": 0
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "who-gho-odata",
+            "official_origin": "https://ghoapi.azureedge.net/api",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "fixed_api_host": "ghoapi.azureedge.net",
+        "fixed_api_prefix": "/api",
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "arbitrary_odata_filters_allowed": false,
+        "arbitrary_odata_select_allowed": false,
+        "arbitrary_odata_expand_allowed": false,
+        "arbitrary_odata_functions_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "authentication_required": false,
+        "automatic_pagination_allowed": false,
+        "whole_database_download_allowed": false,
+        "legacy_endpoint_migration_watch_required": true
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "484b5f3f91587357dd6391cf06859362f9f8a100a09270ce55fd505e82225fed",
+      "catalog_file": "who-gho/provider-catalog.json"
+    },
+    {
+      "provider_id": "mediastack",
+      "display_name": "Mediastack 全球新闻情报",
+      "description": "通过 Mediastack 官方 REST API读取全球新闻文章与新闻来源目录；固定只读、单请求、受限分页，不自动抓取文章正文。",
+      "enabled": true,
+      "ticket_prefix": "[intel-mediastack]",
+      "catalog_policy": "固定开放5项能力：1项本地目录、最新新闻、关键词新闻检索、历史新闻检索和来源目录；每张票据最多一次请求，limit不超过100，不自动翻页。",
+      "execution_policy": "API Key仅由GitHub Repository Secret注入为access_key查询参数；不接受客户端凭据、任意URL、任意路径、任意请求头、写操作、Webhook、后台轮询或文章正文抓取。",
+      "operation_count": 5,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Mediastack 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "automatic_pagination": false,
+            "article_body_fetching": false
+          }
+        },
+        {
+          "operation_id": "latest-news",
+          "description": "读取最新或延迟新闻，可按国家、语言、分类和来源过滤。",
+          "parameter_names": [
+            "countries",
+            "languages",
+            "categories",
+            "sources",
+            "sort",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "countries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 13,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "business",
+                    "entertainment",
+                    "health",
+                    "science",
+                    "sports",
+                    "technology"
+                  ]
+                }
+              },
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "published_desc",
+                  "published_asc",
+                  "popularity"
+                ],
+                "default": "published_desc"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            },
+            "maxProperties": 7
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "access-key-query-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true
+          }
+        },
+        {
+          "operation_id": "search-news",
+          "description": "按关键词检索新闻，可组合国家、语言、分类、来源、排序和受限分页。",
+          "parameter_names": [
+            "keywords",
+            "countries",
+            "languages",
+            "categories",
+            "sources",
+            "sort",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "keywords": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "countries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 13,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "business",
+                    "entertainment",
+                    "health",
+                    "science",
+                    "sports",
+                    "technology"
+                  ]
+                }
+              },
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "published_desc",
+                  "published_asc",
+                  "popularity"
+                ],
+                "default": "published_desc"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            },
+            "maxProperties": 8,
+            "required": [
+              "keywords"
+            ]
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "access-key-query-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true
+          }
+        },
+        {
+          "operation_id": "historical-news",
+          "description": "按单日或日期区间检索历史新闻；历史权限取决于 Mediastack 套餐。",
+          "parameter_names": [
+            "date",
+            "keywords",
+            "countries",
+            "languages",
+            "categories",
+            "sources",
+            "sort",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "date": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(,\\d{4}-\\d{2}-\\d{2})?$"
+              },
+              "keywords": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "countries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 13,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "business",
+                    "entertainment",
+                    "health",
+                    "science",
+                    "sports",
+                    "technology"
+                  ]
+                }
+              },
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^-?[A-Za-z0-9._-]{1,100}$"
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "published_desc",
+                  "published_asc",
+                  "popularity"
+                ],
+                "default": "published_desc"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            },
+            "maxProperties": 9,
+            "required": [
+              "date"
+            ]
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "access-key-query-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true,
+            "plan_requirement": "paid-plan-may-be-required"
+          }
+        },
+        {
+          "operation_id": "list-sources",
+          "description": "读取 Mediastack 支持的新闻来源目录，可按关键词、国家、语言和分类过滤。",
+          "parameter_names": [
+            "search",
+            "countries",
+            "languages",
+            "categories",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "search": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "countries": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "languages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 13,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z]{2}$"
+                }
+              },
+              "categories": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "general",
+                    "business",
+                    "entertainment",
+                    "health",
+                    "science",
+                    "sports",
+                    "technology"
+                  ]
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            },
+            "maxProperties": 6
+          },
+          "result_contract": {
+            "provider": "mediastack",
+            "official_origin": "https://api.mediastack.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "access-key-query-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 10000000,
+        "max_rows": 100,
+        "max_offset": 10000,
+        "max_date_range_days": 366,
+        "free_plan_requests_per_month": 100,
+        "free_plan_delayed_news": true,
+        "historical_news_plan_dependent": true,
+        "commercial_use_plan_dependent": true,
+        "fixed_api_host": "api.mediastack.com",
+        "fixed_paths": [
+          "/v1/news",
+          "/v1/sources"
+        ],
+        "arbitrary_urls_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "redirects_allowed": false,
+        "automatic_pagination_allowed": false,
+        "background_monitoring_allowed": false,
+        "article_body_fetching_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "MEDIASTACK_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "8b5110b8cf56941059252e4aa874b6f9d8e1771c1a520a2c663a92d5b27e8c32",
+      "catalog_file": "mediastack/provider-catalog.json"
+    },
+    {
+      "provider_id": "statistics-of-the-world",
+      "display_name": "Statistics of the World 全球统计",
+      "description": "聚合 IMF、World Bank、WHO、FRED、ECB、UN 等来源的国家、指标、历史、排名和高频统计数据。",
+      "enabled": true,
+      "ticket_prefix": "[intel-sotw]",
+      "catalog_policy": "仅开放官方文档明确列出的固定只读 JSON 端点；聚合数据必须保留上游来源、年份、单位和许可元数据，不得替代原始官方源作为唯一证据。",
+      "execution_policy": "每张票最多一次 HTTPS GET；可匿名调用，若配置 SOTW_API_KEY 则仅通过后端 X-API-Key 请求头发送；禁止任意 URL、路径、请求头、批量全库下载、自然语言聊天和写操作。",
+      "operation_count": 11,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-countries",
+          "description": "列出国家及地区元数据。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-country",
+          "description": "读取一个 ISO Alpha-3 国家及其最新指标。",
+          "parameter_names": [
+            "country"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "country"
+            ],
+            "properties": {
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "list-indicators",
+          "description": "列出公开指标目录及分类。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-indicator",
+          "description": "读取一个指标的元数据及国家横截面。",
+          "parameter_names": [
+            "indicator"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "indicator"
+            ],
+            "properties": {
+              "indicator": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-history",
+          "description": "读取一个指标与一个国家的历史时间序列。",
+          "parameter_names": [
+            "indicator",
+            "country"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "indicator",
+              "country"
+            ],
+            "properties": {
+              "indicator": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-rankings",
+          "description": "按指标读取国家排名，结果数量受限。",
+          "parameter_names": [
+            "indicator",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "indicator"
+            ],
+            "properties": {
+              "indicator": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 500
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "search-indicators",
+          "description": "按受限关键词搜索指标。",
+          "parameter_names": [
+            "query"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9 ()%+.,/_-]+$"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "compare-countries",
+          "description": "并列比较 2 至 10 个 ISO Alpha-3 国家。",
+          "parameter_names": [
+            "countries"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "countries"
+            ],
+            "properties": {
+              "countries": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "list-series",
+          "description": "列出高频统计序列及许可元数据，不下载全量观测。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-series",
+          "description": "读取一个高频序列，可限定国家、起始日期和仅最新值。",
+          "parameter_names": [
+            "series",
+            "geo",
+            "from",
+            "latest"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "series"
+            ],
+            "properties": {
+              "series": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+              },
+              "geo": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "latest": {
+                "type": "boolean"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 10000000,
+        "max_rows": 500,
+        "max_compare_countries": 10,
+        "free_key_requests_per_day_documented": 1000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "automatic_pagination_allowed": false,
+        "bulk_download_allowed": false,
+        "natural_language_chat_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "statisticsoftheworld.com",
+        "fixed_api_prefixes": [
+          "/api/v1",
+          "/api/v2"
+        ]
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "SOTW_API_KEY",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "e4fdbd93284bf812c7ef289c616a13e57404ef72f80f7006637db67bde654c4d",
+      "catalog_file": "statistics-of-the-world/provider-catalog.json"
+    },
+    {
+      "provider_id": "aisstream",
+      "display_name": "AISstream 全球船舶实时AIS",
+      "description": "通过 AISstream.io 的固定 WSS 端点，在严格时间、区域、消息数和响应大小边界内读取实时船舶AIS消息。",
+      "enabled": true,
+      "ticket_prefix": "[intel-aisstream]",
+      "catalog_policy": "开放4项固定只读操作；API Key仅由GitHub Actions后端注入，客户端不得提交或覆盖。",
+      "execution_policy": "每张票据最多建立1条WSS连接，持续不超过30秒，最多4个有限区域、20个MMSI、8种消息类型和200条消息；禁止全球无限流、后台常驻和转发。",
+      "operation_count": 4,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地AISstream安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "aisstream",
+            "official_origin": "wss://stream.aisstream.io/v0/stream",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "backend_secret"
+          }
+        },
+        {
+          "operation_id": "collect-messages",
+          "description": "按有限地理区域、可选MMSI和消息类型，在短时间窗口内收集实时AIS消息。",
+          "parameter_names": [
+            "bounding_boxes",
+            "mmsi",
+            "message_types",
+            "duration_seconds",
+            "max_messages"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bounding_boxes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    ]
+                  }
+                }
+              },
+              "mmsi": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$"
+                }
+              },
+              "message_types": {
+                "type": "array",
+                "maxItems": 8,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "AddressedBinaryMessage",
+                    "AddressedSafetyMessage",
+                    "AidsToNavigationReport",
+                    "AssignedModeCommand",
+                    "BaseStationReport",
+                    "BinaryAcknowledge",
+                    "BinaryBroadcastMessage",
+                    "ChannelManagement",
+                    "CoordinatedUTCInquiry",
+                    "DataLinkManagementMessage",
+                    "DataLinkManagementMessageData",
+                    "ExtendedClassBPositionReport",
+                    "GnssBroadcastBinaryMessage",
+                    "GroupAssignmentCommand",
+                    "Interrogation",
+                    "LongRangeAisBroadcastMessage",
+                    "MultiSlotBinaryMessage",
+                    "PositionReport",
+                    "SafetyBroadcastMessage",
+                    "ShipStaticData",
+                    "SingleSlotBinaryMessage",
+                    "StandardClassBPositionReport",
+                    "StandardSearchAndRescueAircraftReport",
+                    "StaticDataReport",
+                    "UnknownMessage"
+                  ]
+                }
+              },
+              "duration_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30,
+                "default": 10
+              },
+              "max_messages": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              }
+            },
+            "required": [
+              "bounding_boxes"
+            ]
+          },
+          "result_contract": {
+            "provider": "aisstream",
+            "official_origin": "wss://stream.aisstream.io/v0/stream",
+            "transport": "WSS",
+            "read_only": true,
+            "credential_mode": "backend_secret"
+          }
+        },
+        {
+          "operation_id": "collect-vessel-positions",
+          "description": "按有限地理区域和可选MMSI收集Class A/B位置类消息。",
+          "parameter_names": [
+            "bounding_boxes",
+            "mmsi",
+            "duration_seconds",
+            "max_messages"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bounding_boxes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    ]
+                  }
+                }
+              },
+              "mmsi": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$"
+                }
+              },
+              "duration_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30,
+                "default": 10
+              },
+              "max_messages": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              }
+            },
+            "required": [
+              "bounding_boxes"
+            ]
+          },
+          "result_contract": {
+            "provider": "aisstream",
+            "official_origin": "wss://stream.aisstream.io/v0/stream",
+            "transport": "WSS",
+            "read_only": true,
+            "credential_mode": "backend_secret"
+          }
+        },
+        {
+          "operation_id": "collect-vessel-static",
+          "description": "按有限地理区域和可选MMSI收集船舶静态资料类消息。",
+          "parameter_names": [
+            "bounding_boxes",
+            "mmsi",
+            "duration_seconds",
+            "max_messages"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bounding_boxes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    ]
+                  }
+                }
+              },
+              "mmsi": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$"
+                }
+              },
+              "duration_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30,
+                "default": 10
+              },
+              "max_messages": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              }
+            },
+            "required": [
+              "bounding_boxes"
+            ]
+          },
+          "result_contract": {
+            "provider": "aisstream",
+            "official_origin": "wss://stream.aisstream.io/v0/stream",
+            "transport": "WSS",
+            "read_only": true,
+            "credential_mode": "backend_secret"
+          }
+        }
+      ],
+      "limits": {
+        "connections_per_ticket_max": 1,
+        "stream_duration_seconds_max": 30,
+        "timeout_seconds_max": 45,
+        "max_response_bytes": 20000000,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "fixed_api_host": "stream.aisstream.io",
+        "fixed_websocket_path": "/v0/stream",
+        "bounding_boxes_max": 4,
+        "bounding_box_area_square_degrees_max": 400,
+        "combined_bounding_box_area_square_degrees_max": 800,
+        "mmsi_filter_count_max": 20,
+        "message_type_filter_count_max": 8,
+        "messages_per_ticket_max": 200,
+        "worldwide_subscription_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "background_streaming_allowed": false,
+        "stream_relay_allowed": false,
+        "write_operations_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "secret_values_exposed": false,
+        "authentication_required": true
+      },
+      "required_secret_environment_variable_name": "AISSTREAM_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "e15b0c24f1a4fba31b3fa4d53c06cf3a2239e44e2c47808c39224b4cc89388bb",
+      "catalog_file": "aisstream/provider-catalog.json"
+    },
+    {
+      "provider_id": "internet-archive",
+      "display_name": "互联网档案馆 Internet Archive",
+      "description": "通过Internet Archive公开接口搜索数字馆藏、读取项目元数据和文件目录，并查询Wayback网页存档可用性与有限捕获记录。",
+      "enabled": true,
+      "ticket_prefix": "[intel-internet-archive]",
+      "catalog_policy": "开放6项固定免密只读操作；不开放上传、修改、删除、借阅、登录、任意文件下载或网页回放抓取。",
+      "execution_policy": "每张票据最多一次固定HTTPS GET；搜索、字段、分页、排序、标识符、URL、时间范围和返回行数均受Schema约束，不跟随重定向。",
+      "operation_count": 6,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地互联网档案馆安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "search-items",
+          "description": "通过Advanced Search API按受控查询、字段、分页和排序搜索馆藏元数据。",
+          "parameter_names": [
+            "query",
+            "rows",
+            "page",
+            "fields",
+            "sort"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "rows": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 1
+              },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "downloads desc",
+                  "downloads asc",
+                  "date desc",
+                  "date asc",
+                  "addeddate desc",
+                  "addeddate asc",
+                  "titleSorter asc",
+                  "titleSorter desc"
+                ],
+                "default": "downloads desc"
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-item-metadata",
+          "description": "按固定identifier读取项目元数据。",
+          "parameter_names": [
+            "identifier"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "identifier": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+              }
+            },
+            "required": [
+              "identifier"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-item-files",
+          "description": "按固定identifier读取项目文件目录及校验元数据，不下载文件内容。",
+          "parameter_names": [
+            "identifier"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "identifier": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+              }
+            },
+            "required": [
+              "identifier"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "wayback-availability",
+          "description": "查询指定HTTP(S) URL在Wayback Machine中是否有可用快照。",
+          "parameter_names": [
+            "url",
+            "timestamp"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 1000,
+                "pattern": "^https?://[^\\s]+$"
+              },
+              "timestamp": {
+                "type": "string",
+                "pattern": "^[0-9]{4,14}$"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "wayback-captures",
+          "description": "通过固定CDX端点读取指定URL的有限去重成功捕获记录。",
+          "parameter_names": [
+            "url",
+            "from_timestamp",
+            "to_timestamp",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 1000,
+                "pattern": "^https?://[^\\s]+$"
+              },
+              "from_timestamp": {
+                "type": "string",
+                "pattern": "^[0-9]{4,14}$"
+              },
+              "to_timestamp": {
+                "type": "string",
+                "pattern": "^[0-9]{4,14}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://web.archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "fixed_api_hosts": [
+          "archive.org",
+          "web.archive.org"
+        ],
+        "fixed_paths": [
+          "/advancedsearch.php",
+          "/metadata/{identifier}",
+          "/wayback/available",
+          "/cdx/search/cdx"
+        ],
+        "search_rows_max": 200,
+        "search_page_max": 1000,
+        "metadata_files_returned_max": 500,
+        "wayback_capture_rows_max": 200,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "file_downloads_allowed": false,
+        "archived_page_body_fetching_allowed": false,
+        "bulk_collection_download_allowed": false,
+        "uploads_allowed": false,
+        "write_operations_allowed": false,
+        "authentication_required": false,
+        "secret_values_exposed": false,
+        "automatic_pagination_allowed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "3dbf98875d81988ebb952fbd73f9b8506685ad121b3e226ab05d397ccee2b8df",
+      "catalog_file": "internet-archive/provider-catalog.json"
     },
     {
       "provider_id": "wolfram-alpha",
@@ -13739,6 +17033,7 @@
       },
       "required_secret_environment_variable_name": "WOLFRAM_ALPHA_APP_ID",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "d510d42245f91826f4ff38f567b17c9bf7f6a60972b51c7202ac00e04e3a796a",
       "catalog_file": "knowledge-tools/provider-catalog.json"
@@ -13949,6 +17244,7 @@
       },
       "required_secret_environment_variable_name": "LLAMA_CLOUD_API_KEY",
       "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "5104c79c0f79e9b401c203957b4c122b2b26f1462e220816ccb475b96c52fc0e",
       "catalog_file": "knowledge-tools/provider-catalog.json"
@@ -22288,5 +25584,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "9366530a5c6c777a16dcd801a097dac121829c772f11d8c3d5384c6f610e8d6a"
+  "catalog_sha256": "d46e3ad3808867a0af1fb0e286d133e831746e5af2cd50d8f2df3d5fcd99c508"
 }

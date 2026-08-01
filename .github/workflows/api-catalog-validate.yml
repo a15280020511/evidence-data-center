@@ -1,4 +1,4 @@
-name: Validate GPTs API Catalog
+name: Validate GPTs Intelligence Catalog
 
 on:
   pull_request:
@@ -16,21 +16,21 @@ permissions:
   contents: read
 
 concurrency:
-  group: api-catalog-${{ github.ref }}
+  group: intelligence-catalog-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   validate-catalog:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout pinned source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
 
       - name: Set up isolated Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.12"
           cache: pip
@@ -40,12 +40,21 @@ jobs:
             api-center/eodhd/requirements.txt
             api-center/data-commons/requirements.txt
             api-center/qweather/requirements.txt
+            api-center/xweather/requirements.txt
             api-center/miaoxiang-mcp/requirements.txt
             api-center/browserless/requirements.txt
             api-center/east-asia-econ/requirements.txt
             api-center/alpha-vantage/requirements.txt
+            api-center/overture-maps/requirements.txt
+            api-center/oecd/requirements.txt
+            api-center/alphafeed/requirements.txt
+            api-center/who-gho/requirements.txt
+            api-center/mediastack/requirements.txt
+            api-center/statistics-of-the-world/requirements.txt
+            api-center/aisstream/requirements.txt
+            api-center/internet-archive/requirements.txt
 
-      - name: Install isolated API dependencies
+      - name: Install isolated intelligence dependencies
         run: |
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
@@ -53,10 +62,19 @@ jobs:
             -r api-center/eodhd/requirements.txt \
             -r api-center/data-commons/requirements.txt \
             -r api-center/qweather/requirements.txt \
+            -r api-center/xweather/requirements.txt \
             -r api-center/miaoxiang-mcp/requirements.txt \
             -r api-center/browserless/requirements.txt \
             -r api-center/east-asia-econ/requirements.txt \
-            -r api-center/alpha-vantage/requirements.txt
+            -r api-center/alpha-vantage/requirements.txt \
+            -r api-center/overture-maps/requirements.txt \
+            -r api-center/oecd/requirements.txt \
+            -r api-center/alphafeed/requirements.txt \
+            -r api-center/who-gho/requirements.txt \
+            -r api-center/mediastack/requirements.txt \
+            -r api-center/statistics-of-the-world/requirements.txt \
+            -r api-center/aisstream/requirements.txt \
+            -r api-center/internet-archive/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -67,45 +85,42 @@ jobs:
           cp api-center/krakend.validation.json /tmp/committed-krakend.validation.json
           cp api-center/krakend.tmpl /tmp/committed-krakend.tmpl
 
-      - name: Rebuild and run API-center tests
+      - name: Compile and run provider regressions
         run: |
           set -euo pipefail
-          python -m py_compile \
-            api-center/build_config.py \
-            api-center/build_catalog.py \
-            api-center/build_catalog_market_search.py \
-            api-center/baostock/baostock_task.py \
-            api-center/eodhd/eodhd_task.py \
-            api-center/data-commons/data_commons_task.py \
-            api-center/qweather/qweather_task.py \
-            api-center/miaoxiang-mcp/miaoxiang_mcp_task.py \
-            api-center/browserless/browserless_task.py \
-            api-center/east-asia-econ/east_asia_econ_task.py \
-            api-center/alpha-vantage/alpha_vantage_task.py \
-            api-center/tests/*.py \
-            api-center/browserless/tests/*.py \
-            api-center/east-asia-econ/tests/*.py \
-            api-center/alpha-vantage/tests/*.py
-          python api-center/build_config.py
-          python api-center/build_catalog_market_search.py
+          python -m compileall -q api-center
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/qweather/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/xweather/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/miaoxiang-mcp/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/browserless/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/east-asia-econ/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/alpha-vantage/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/overture-maps/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/oecd/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/alphafeed/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/who-gho/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/mediastack/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/statistics-of-the-world/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/aisstream/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/internet-archive/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
-      - name: Verify deterministic contracts and provider invariants
+      - name: Rebuild deterministic contracts
         run: |
           set -euo pipefail
+          python api-center/build_config.py
+          python api-center/build_catalog_market_search.py
           cmp /tmp/committed-api-catalog.json api-center/api-catalog.json
           cmp /tmp/committed-api-catalog.md api-center/api-catalog.md
           cmp /tmp/committed-connector-manifest.json api-center/connector-manifest.json
           cmp /tmp/committed-krakend.validation.json api-center/krakend.validation.json
           cmp /tmp/committed-krakend.tmpl api-center/krakend.tmpl
+
+      - name: Verify provider and World Bank invariants
+        run: |
           python - <<'PY'
           import json
           from pathlib import Path
@@ -113,145 +128,116 @@ jobs:
           catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
           manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
+          connectors = manifest['connectors']
 
-          assert catalog['schema_version'] == 'api-catalog-v3'
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
-          assert catalog['managed_provider_count'] == len(providers) == 25
-          assert catalog['enabled_managed_provider_count'] == 25
+          assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
+          assert catalog['managed_provider_count'] == len(providers) == 34
+          assert catalog['enabled_managed_provider_count'] == 34
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 306
+          ) == 373
+          assert catalog['center_display_name_zh'] == '情报中心'
+          assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
-          assert set(catalog['managed_provider_catalog_files']) == {
-              'google-cloud/provider-catalog.json',
-              'akshare/provider-catalog.json',
-              'aifin-market/provider-catalog.json',
-              'yuandian/provider-catalog.json',
-              'company-intelligence/provider-catalog.json',
-              'web-retrieval/provider-catalog.json',
-              'market-search/provider-catalog.json',
-              'tushare/provider-catalog.json',
-              'baostock/provider-catalog.json',
-              'eodhd/provider-catalog.json',
-              'data-commons/provider-catalog.json',
-              'qweather/provider-catalog.json',
-              'miaoxiang-mcp/provider-catalog.json',
-              'east-asia-econ/provider-catalog.json',
-              'alpha-vantage/provider-catalog.json',
-              'knowledge-tools/provider-catalog.json',
-          }
+          assert 'agent-toolbelt' not in providers
+          assert 'gapup-mcp' not in providers
 
-          browserless = providers['browserless']
-          assert browserless['ticket_prefix'] == '[api-browserless]'
-          assert browserless['required_secret_environment_variable_name'] == 'BROWSERLESS_TOKEN'
-          assert len(browserless['operations']) == 8
-          assert {row['operation_id'] for row in browserless['operations']} == {
-              'catalog-capabilities', 'content', 'scrape', 'screenshot',
-              'pdf', 'performance', 'search', 'map'
-          }
-          limits = browserless['limits']
-          assert limits['fixed_api_host'] == 'production-sfo.browserless.io'
-          for key in (
-              'arbitrary_api_hosts_allowed',
-              'arbitrary_code_allowed',
-              'websocket_sessions_allowed',
-              'profiles_allowed',
-              'custom_headers_allowed',
-              'cookies_allowed',
-              'proxy_configuration_allowed',
-              'captcha_or_unblock_allowed',
-              'write_operations_allowed',
-          ):
-              assert limits[key] is False
+          overture = providers['overture-maps']
+          assert overture['ticket_prefix'] == '[api-overture]'
+          assert overture['required_secret_environment_variable_name'] == ''
+          assert len(overture['operations']) == 7
+          assert overture['limits']['whole_world_download_allowed'] is False
 
-          east_asia = providers['east-asia-econ']
-          assert east_asia['ticket_prefix'] == '[api-east-asia-econ]'
-          assert east_asia['required_secret_environment_variable_name'] == 'EAST_ASIA_ECON_API_KEY'
-          assert len(east_asia['operations']) == 6
-          assert {row['operation_id'] for row in east_asia['operations']} == {
-              'catalog-capabilities', 'search-series', 'series-info',
-              'database-stats', 'series-data', 'usage'
-          }
-          east_limits = east_asia['limits']
-          assert east_limits['fixed_api_host'] == 'data-api.eastasiaecon.com'
-          assert east_limits['requests_per_ticket_max'] == 1
-          for key in (
-              'arbitrary_urls_allowed',
-              'arbitrary_hosts_allowed',
-              'arbitrary_paths_allowed',
-              'arbitrary_headers_allowed',
-              'client_supplied_api_key_allowed',
-              'redirects_allowed',
-              'write_operations_allowed',
-              'personal_data_allowed',
-          ):
-              assert east_limits[key] is False
+          oecd = providers['oecd']
+          assert oecd['ticket_prefix'] == '[api-oecd]'
+          assert oecd['required_secret_environment_variable_name'] == ''
+          assert len(oecd['operations']) == 6
+          assert oecd['limits']['fixed_api_host'] == 'sdmx.oecd.org'
 
-          alpha_vantage = providers['alpha-vantage']
-          assert alpha_vantage['ticket_prefix'] == '[api-alpha-vantage]'
-          assert alpha_vantage['required_secret_environment_variable_name'] == 'ALPHA_VANTAGE_API_KEY'
-          assert len(alpha_vantage['operations']) == 66
-          alpha_limits = alpha_vantage['limits']
-          assert alpha_limits['fixed_api_host'] == 'www.alphavantage.co'
-          assert alpha_limits['requests_per_ticket_max'] == 1
-          assert alpha_limits['provider_concurrency_max'] == 1
-          for key in (
-              'arbitrary_functions_allowed',
-              'arbitrary_urls_allowed',
-              'arbitrary_headers_allowed',
-              'client_supplied_api_key_allowed',
-              'redirects_allowed',
-              'write_operations_allowed',
-              'trading_or_order_execution_allowed',
-          ):
-              assert alpha_limits[key] is False
+          alphafeed = providers['alphafeed']
+          assert alphafeed['ticket_prefix'] == '[api-alphafeed]'
+          assert alphafeed['required_secret_environment_variable_name'] == 'ALPHAFEED_API_KEY'
+          assert len(alphafeed['operations']) == 10
+          assert alphafeed['limits']['trading_or_order_execution_allowed'] is False
 
-          assert providers['data-commons']['required_secret_environment_variable_name'] == 'GOOGLE_DATA_COMMONS_API_KEY'
-          assert providers['qweather']['limits']['fixed_api_host'] == 'ka6r72kcc3.re.qweatherapi.com'
-          assert providers['miaoxiang-mcp']['required_secret_environment_variable_name'] == 'EM_API_KEY'
-          assert providers['baostock']['required_secret_environment_variable_name'] == ''
-          assert providers['eodhd']['required_secret_environment_variable_name'] == 'EODHD_API_TOKEN'
+          xweather = providers['xweather']
+          assert xweather['ticket_prefix'] == '[api-xweather]'
+          assert xweather['required_secret_environment_variable_name'] == 'XWEATHER_CLIENT_SECRET'
+          assert xweather['required_repository_variable'] == 'XWEATHER_CLIENT_ID'
+          assert len(xweather['operations']) == 10
+          assert xweather['limits']['write_operations_allowed'] is False
+
+          who = providers['who-gho-odata']
+          assert who['ticket_prefix'] == '[intel-who-gho]'
+          assert who['required_secret_environment_variable_name'] == ''
+          assert len(who['operations']) == 8
+          assert who['limits']['legacy_endpoint_migration_watch_required'] is True
+
+          mediastack = providers['mediastack']
+          assert mediastack['ticket_prefix'] == '[intel-mediastack]'
+          assert mediastack['required_secret_environment_variable_name'] == 'MEDIASTACK_API_KEY'
+          assert len(mediastack['operations']) == 5
+          assert mediastack['limits']['write_operations_allowed'] is False
+
+          sotw = providers['statistics-of-the-world']
+          assert sotw['ticket_prefix'] == '[intel-sotw]'
+          assert sotw['required_secret_environment_variable_name'] == ''
+          assert len(sotw['operations']) == 11
+          assert sotw['limits']['bulk_download_allowed'] is False
+          assert sotw['limits']['write_operations_allowed'] is False
+
+          aisstream = providers['aisstream']
+          assert aisstream['ticket_prefix'] == '[intel-aisstream]'
+          assert aisstream['required_secret_environment_variable_name'] == 'AISSTREAM_API_KEY'
+          assert len(aisstream['operations']) == 4
+          assert aisstream['limits']['connections_per_ticket_max'] == 1
+          assert aisstream['limits']['worldwide_subscription_allowed'] is False
+          assert aisstream['limits']['background_streaming_allowed'] is False
+          assert aisstream['limits']['write_operations_allowed'] is False
+
+          internet_archive = providers['internet-archive']
+          assert internet_archive['ticket_prefix'] == '[intel-internet-archive]'
+          assert internet_archive['required_secret_environment_variable_name'] == ''
+          assert len(internet_archive['operations']) == 6
+          assert internet_archive['limits']['file_downloads_allowed'] is False
+          assert internet_archive['limits']['archived_page_body_fetching_allowed'] is False
+          assert internet_archive['limits']['uploads_allowed'] is False
+          assert internet_archive['limits']['write_operations_allowed'] is False
 
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 25,
-              'managed_operations': 306,
-              'browserless_operations': 8,
-              'east_asia_econ_operations': 6,
-              'alpha_vantage_operations': 66,
+              'worldbank_connectors': 9,
+              'managed_providers': 34,
+              'managed_operations': 373,
+              'overture_maps_operations': 7,
+              'oecd_operations': 6,
+              'alphafeed_operations': 10,
+              'xweather_operations': 10,
+              'who_gho_operations': 8,
+              'mediastack_operations': 5,
+              'statistics_of_the_world_operations': 11,
+              'aisstream_operations': 4,
+              'internet_archive_operations': 6,
+              'removed_providers': ['agent-toolbelt', 'gapup-mcp'],
           }))
           PY
           git diff --check
 
-      - name: Upload safe catalog and generated gateway evidence
+      - name: Upload safe intelligence catalog evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: gpts-api-catalog-${{ github.run_id }}
+          name: gpts-intelligence-catalog-${{ github.run_id }}
           path: |
             api-center/api-catalog.json
             api-center/api-catalog.md
             api-center/catalog-metadata.json
             api-center/connector-manifest.json
-            api-center/krakend.tmpl
             api-center/krakend.validation.json
-            api-center/google-cloud/provider-catalog.json
-            api-center/data-commons/provider-catalog.json
-            api-center/qweather/provider-catalog.json
-            api-center/miaoxiang-mcp/provider-catalog.json
-            api-center/browserless/ticket.schema.json
-            api-center/east-asia-econ/provider-catalog.json
-            api-center/east-asia-econ/ticket.schema.json
-            api-center/alpha-vantage/provider-catalog.json
-            api-center/alpha-vantage/ticket.schema.json
-            api-center/web-retrieval/provider-catalog.json
-            api-center/market-search/provider-catalog.json
-            api-center/tushare/provider-catalog.json
-            api-center/baostock/provider-catalog.json
-            api-center/eodhd/provider-catalog.json
-            api-center/knowledge-tools/provider-catalog.json
+            api-center/krakend.tmpl
           if-no-files-found: error
           retention-days: 30

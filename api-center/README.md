@@ -1,10 +1,10 @@
-# 独立外部 API 接入中心
+# 独立情报中心
 
-API 接入中心是三个业务中心中的受控取数层。它与专家研判中心、计算推演中心不共享依赖、任务状态、运行目录或业务逻辑，也不能直接调用它们。自定义 GPTs 是唯一使用中心和唯一跨中心中继；普通网页 GPT + GitHub 插件是维修中心。
+情报中心是三个业务中心中的受控取数层。它与专家研判中心、计算推演中心不共享依赖、任务状态、运行目录或业务逻辑，也不能直接调用它们。自定义 GPTs 是唯一使用中心和唯一跨中心中继；普通网页 GPT + GitHub 插件是维修中心。
 
 ## 最大安全只读策略
 
-API 中心执行 `maximum-safe-readonly`：在固定官方后端、固定只读能力、参数白名单、请求与响应上限、Secret 隔离和证据回执不变的前提下，最大化暴露已接入上游的高价值公共数据能力。
+情报中心执行 `maximum-safe-readonly`：在固定官方后端、固定只读能力、参数白名单、请求与响应上限、Secret 隔离和证据回执不变的前提下，最大化暴露已接入上游的高价值公共数据能力。
 
 统一能力规模不在本文硬编码，以以下确定性生成文件为准：
 
@@ -43,6 +43,8 @@ NEWSAPI_API_KEY
 TUSHARE_API_TOKEN
 EODHD_API_TOKEN
 ALPHA_VANTAGE_API_KEY
+ALPHAFEED_API_KEY
+XWEATHER_CLIENT_SECRET
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
 MX_APIKEY
@@ -127,7 +129,7 @@ TUSHARE_API_TOKEN
 EODHD_API_TOKEN
 ```
 
-开放 25 项只读操作，覆盖全球交易所和证券目录、历史与实时行情、基本面、公司行动、技术指标、新闻情绪、股票筛选、企业日历、宏观事件以及交易时段和节假日。上游套餐决定实际数据范围与额度；API 中心不开放 WebSocket、交易、下单、账户操作、任意 URL 或任意请求头。
+开放 25 项只读操作，覆盖全球交易所和证券目录、历史与实时行情、基本面、公司行动、技术指标、新闻情绪、股票筛选、企业日历、宏观事件以及交易时段和节假日。上游套餐决定实际数据范围与额度；情报中心不开放 WebSocket、交易、下单、账户操作、任意 URL 或任意请求头。
 
 ## Alpha Vantage 全球金融与宏观数据
 
@@ -139,6 +141,54 @@ ALPHA_VANTAGE_API_KEY
 ```
 
 固定开放 66 项只读操作，覆盖全球股票、指数、期权、基本面、公司行动、新闻情绪、外汇、数字资产、商品、美国宏观经济和技术指标。每张票据最多一次上游请求，Provider 全局串行，不自动重试，以保护官方免费密钥每日 25 次的标准额度。部分函数、实时或延迟市场数据以及完整历史范围需要 Alpha Vantage 付费权限；权限或额度不足会返回结构化诊断，不会伪造空数据。
+
+## World Bank 世界银行开放数据
+
+World Bank 已通过 9 个普通只读连接器接入，无需 API Key，覆盖指标目录、指标元数据、国家/地区、收入等级、贷款类型、主题、数据源、指标观测值和 JSON-stat 输出。本次不重复建设第二套 Provider，只强化统一目录和回归验收。
+
+## Overture Maps 全球开放地图数据
+
+`api-center/overture-maps/` 使用 Overture 官方 STAC 目录、匿名对象存储和固定 Python 客户端：
+
+```text
+[api-overture]
+```
+
+无需 Repository Secret。固定开放 7 项只读操作，覆盖发布版本、要素类型、城市级边界框计数与有限 GeoJSON 提取、GERS 查询。禁止全量全球下载、任意对象存储路径、任意 URL 和写操作。
+
+## OECD Data Explorer SDMX
+
+`api-center/oecd/` 固定访问 OECD 官方免费 SDMX REST API：
+
+```text
+[api-oecd]
+https://sdmx.oecd.org/public/rest/v1
+```
+
+无需 Repository Secret。固定开放 6 项只读操作，覆盖数据流、数据结构、代码表和按维度键/时间范围取数；每张票据最多一次上游请求。
+
+## AlphaFeed 中国与全球证券行情
+
+`api-center/alphafeed/` 使用官方 Python SDK，正式票据前缀和独立 Secret 为：
+
+```text
+[api-alphafeed]
+ALPHAFEED_API_KEY
+```
+
+固定开放 10 项只读操作，覆盖 A股、ETF、美股、港股实时行情、K线、分时、盘口、标的信息和复权因子。禁止任意 SDK 方法、WebSocket、交易、下单和写操作。
+
+## Xweather 全球专业天气数据
+
+`api-center/xweather/` 固定访问 Xweather Weather API：
+
+```text
+[api-xweather]
+Repository Variable: XWEATHER_CLIENT_ID
+Repository Secret:   XWEATHER_CLIENT_SECRET
+```
+
+固定开放 10 项核心只读能力，覆盖地点解析、实时观测、插值天气条件、最长 15 日预报、官方天气预警、空气质量、日月、月相和历史观测日汇总。部分端点受账户套餐、区域和调用倍率约束；禁止任意 URL、路线批量、Webhook 和写操作。
 
 ## Wolfram|Alpha 计算知识
 
@@ -200,7 +250,7 @@ LlamaParse 仅接受固定白名单公共文档来源，当前包括 GitHub 原�
 
 ## 安全边界
 
-API 中心拒绝：
+情报中心拒绝：
 
 - 明文密钥或客户端覆盖后端凭据；
 - 未启用连接器或未登记的托管操作；
@@ -216,10 +266,10 @@ API 中心拒绝：
 
 ## 与其他中心的关系
 
-API 中心不能直接调用计算推演中心或专家研判中心。允许的业务协作是：
+情报中心不能直接调用计算推演中心或专家研判中心。允许的业务协作是：
 
 ```text
-API 中心产生 Snapshot
+情报中心产生 Snapshot
 → GPTs 读取正文、Manifest 和 SHA
 → GPTs 按任务需要选择计算或专家中心
 → GPTs 创建新的正式票据
@@ -284,3 +334,58 @@ BROWSERLESS_TOKEN
 固定开放 8 项操作：本地能力目录、JavaScript 渲染 HTML、CSS 选择器结构化抓取、截图、PDF、Lighthouse 性能审计、受限 Web 搜索和站点地图。Search 与 Map 可能要求 Browserless Cloud 套餐。
 
 安全边界禁止 BrowserQL、BaaS/WebSocket、Function、Download、Export、Unblock、任意 JavaScript、Profile、Cookie、Authorization、自定义请求头、代理配置、CAPTCHA 求解和登录态页面。目标只允许公开 HTTPS URL；二进制截图和 PDF 只进入 Artifact。
+
+## WHO GHO OData 全球卫生数据
+
+`api-center/who-gho/` 通过 WHO Global Health Observatory 的公开 OData 兼容端点读取全球卫生指标：
+
+```text
+[intel-who-gho]
+https://ghoapi.azureedge.net/api
+无需 Repository Secret
+```
+
+固定开放 8 项只读操作，覆盖维度、维度值、指标目录、指标搜索、国家、地区和按国家/地区、年份、性别筛选的指标观测值。禁止客户端提交任意 OData 表达式、任意 URL、自动翻页和整库下载。WHO 已公告旧 GHO OData 将迁移至 World Health Data Hub 新实现，因此该 Provider 保留迁移监测标记，不把当前兼容端点视为永久合同。
+
+## Mediastack 全球新闻情报
+
+- Provider：`mediastack`
+- 票据前缀：`[intel-mediastack]`
+- 独立 Secret：`MEDIASTACK_API_KEY`
+- 固定开放：最新新闻、关键词检索、历史新闻和来源目录，共5项能力。
+- 免费层：官方当前标示每月100次请求，使用延迟新闻；历史数据和商业使用取决于套餐。
+- 强制单请求、最多100条、禁止自动翻页、后台监控和文章正文抓取。
+
+## Statistics of the World 全球统计
+
+- Provider：`statistics-of-the-world`
+- 工单前缀：`[intel-sotw]`
+- 可选 Repository Secret：`SOTW_API_KEY`
+- 11 个固定只读操作，覆盖国家、指标、历史、排名、搜索、国家比较和高频序列。
+- 禁止全量 bulk、自然语言 chat、任意路径、自动分页和写操作。
+- 定位为次级聚合证据源，重要结论应回查 IMF、World Bank、WHO、FRED、ECB 或 UN 原始来源。
+
+
+## AISstream 全球船舶实时AIS
+
+```text
+Provider: aisstream
+Ticket prefix: [intel-aisstream]
+Repository Secret: AISSTREAM_API_KEY
+Operations: 4
+Fixed endpoint: wss://stream.aisstream.io/v0/stream
+```
+
+只允许短时、有限区域、有限消息数的只读AIS采集。禁止全球无限订阅、后台常驻、流转发、任意WSS端点、客户端密钥、写操作和交易执行。
+
+## 互联网档案馆 Internet Archive
+
+```text
+Provider: internet-archive
+Ticket prefix: [intel-internet-archive]
+Secret: none
+Operations: 6
+Fixed hosts: archive.org, web.archive.org
+```
+
+支持受控馆藏搜索、项目元数据、文件目录、Wayback可用性和有限CDX捕获记录。禁止上传、删除、登录、借阅、文件内容下载、网页正文回放抓取和批量镜像。

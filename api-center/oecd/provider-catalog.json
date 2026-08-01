@@ -1,0 +1,296 @@
+{
+  "schema_version": "oecd-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "oecd",
+      "display_name": "OECD Data Explorer SDMX",
+      "description": "通过 OECD 官方免费 SDMX REST API 读取经济、社会、贸易、产业、就业、教育、能源与公共治理统计。",
+      "enabled": true,
+      "ticket_prefix": "[api-oecd]",
+      "required_secret_environment_variable": "",
+      "catalog_policy": "开放固定的数据流、结构、代码表和数据查询操作；所有路径组件、维度键、格式、时间范围和响应体积均受白名单约束。",
+      "execution_policy": "仅允许对 sdmx.oecd.org/public/rest/v1 发起一次 HTTPS GET；不跟随重定向，不接受任意 URL、请求头或写操作。",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "sdmx.oecd.org",
+        "fixed_api_prefix": "/public/rest/v1",
+        "rate_limit_policy": "single-request-per-ticket",
+        "arbitrary_sdmx_resource_types_allowed": false,
+        "bulk_download_endpoints_allowed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 OECD SDMX 安全能力目录，不访问上游.",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-dataflows",
+          "description": "读取 OECD 当前公开数据流目录.",
+          "parameters": [
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-dataflow",
+          "description": "读取指定 OECD SDMX 数据流定义.",
+          "parameters": [
+            "agency",
+            "flow",
+            "version",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "flow"
+            ]
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-datastructure",
+          "description": "读取指定 OECD SDMX 数据结构定义.",
+          "parameters": [
+            "agency",
+            "structure_id",
+            "version",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "structure_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "structure_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-codelist",
+          "description": "读取指定 OECD SDMX 代码表.",
+          "parameters": [
+            "agency",
+            "codelist_id",
+            "version",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "codelist_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "codelist_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-data",
+          "description": "按固定数据流、维度键和时间范围读取 OECD 统计数据.",
+          "parameters": [
+            "agency",
+            "flow",
+            "version",
+            "key",
+            "start_period",
+            "end_period",
+            "dimension_at_observation",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,127}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9+._@-]+$"
+              },
+              "start_period": {
+                "type": "string",
+                "minLength": 4,
+                "maxLength": 32,
+                "pattern": "^[0-9]{4}(?:-[A-Za-z0-9]{1,8})?$"
+              },
+              "end_period": {
+                "type": "string",
+                "minLength": 4,
+                "maxLength": 32,
+                "pattern": "^[0-9]{4}(?:-[A-Za-z0-9]{1,8})?$"
+              },
+              "dimension_at_observation": {
+                "type": "string",
+                "enum": [
+                  "AllDimensions",
+                  "TimeDimension",
+                  "MeasureDimension"
+                ]
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "flow",
+              "key"
+            ]
+          },
+          "result_contract": {
+            "provider": "oecd",
+            "official_origin": "https://sdmx.oecd.org/public/rest",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ]
+    }
+  ]
+}
