@@ -231,20 +231,6 @@ LlamaParse 仅接受固定白名单公共文档来源，当前包括 GitHub 原�
 
 解析操作使用官方 Parse v2 创建一次受限作业，再在同一票据中有限轮询；支持 `fast`、`cost_effective`、`agentic`、`agentic_plus` 四个固定 tier，最多 200 页，轮询最长 600 秒。输出会移除 Authorization、密钥以及 `presigned_url`、`download_url`、`signed_url` 等临时下载地址。
 
-## Gapup MCP 公共商业情报
-
-`api-center/gapup-mcp/` 固定访问Gapup官方MCP：
-
-```text
-[intel-gapup]
-POST https://mcp.gapup.io/mcp
-Repository Secret: GAPUP_API_KEY
-```
-
-官方 `tools/list` 实测返回271项工具。情报中心固化开放209项操作（1项本地目录、208项上游只读工具），覆盖公共商业、竞争、市场、贸易、公司、宏观、科研、专利、房地产、天气气候、内容数据与ESG情报。63项CRM写入、Webhook、异步批处理、个人KYC/HR、主动攻击面、钱包与x402支付、医疗个案、敏感合同和自动编排能力被明确阻断。
-
-每张票据只执行一次固定 `tools/call`；强制同步模式；遇到HTTP 402只返回失败，不自动支付；仅允许公开、非个人、非机密数据和公开HTTPS URL。
-
 ## 正式数据任务
 
 普通连接器创建标题以 `[api]` 开头的 Issue；托管提供方使用各自固定前缀。GitHub Actions 将执行：
@@ -348,23 +334,6 @@ BROWSERLESS_TOKEN
 固定开放 8 项操作：本地能力目录、JavaScript 渲染 HTML、CSS 选择器结构化抓取、截图、PDF、Lighthouse 性能审计、受限 Web 搜索和站点地图。Search 与 Map 可能要求 Browserless Cloud 套餐。
 
 安全边界禁止 BrowserQL、BaaS/WebSocket、Function、Download、Export、Unblock、任意 JavaScript、Profile、Cookie、Authorization、自定义请求头、代理配置、CAPTCHA 求解和登录态页面。目标只允许公开 HTTPS URL；二进制截图和 PDF 只进入 Artifact。
-
-## Agent Toolbelt
-
-```text
-Ticket prefix: [api-agent-toolbelt]
-Repository Secret: AGENT_TOOLBELT_KEY
-GAPUP_API_KEY
-Fixed origin: https://www.agenttoolbelt.live
-```
-
-Agent Toolbelt exposes 29 bounded operations in the API catalog: one local
-capability catalog, eight US-stock research operations, and twenty utility
-operations. The integration forbids arbitrary tool names, Watchlist CRUD,
-background monitoring, trading, orders, redirects, client-supplied
-credentials, and non-public/private-network URL targets. Upstream calls may
-consume quota or incur provider charges.
-
 
 ## WHO GHO OData 全球卫生数据
 

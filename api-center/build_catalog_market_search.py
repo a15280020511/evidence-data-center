@@ -28,7 +28,6 @@ ALPHA_VANTAGE_CATALOG = HERE / "alpha-vantage/provider-catalog.json"
 OVERTURE_MAPS_CATALOG = HERE / "overture-maps/provider-catalog.json"
 OECD_CATALOG = HERE / "oecd/provider-catalog.json"
 ALPHAFEED_CATALOG = HERE / "alphafeed/provider-catalog.json"
-GAPUP_MCP_CATALOG = HERE / "gapup-mcp/provider-catalog.json"
 WHO_GHO_CATALOG = HERE / "who-gho/provider-catalog.json"
 MEDIASTACK_CATALOG = HERE / "mediastack/provider-catalog.json"
 STATISTICS_OF_THE_WORLD_CATALOG = HERE / "statistics-of-the-world/provider-catalog.json"
@@ -48,7 +47,6 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "overture-maps": 7,
     "oecd": 6,
     "alphafeed": 10,
-    "gapup-mcp": 209,
     "who-gho-odata": 8,
     "mediastack": 5,
     "statistics-of-the-world": 11,
@@ -70,7 +68,6 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     OVERTURE_MAPS_CATALOG,
     OECD_CATALOG,
     ALPHAFEED_CATALOG,
-    GAPUP_MCP_CATALOG,
     WHO_GHO_CATALOG,
     MEDIASTACK_CATALOG,
     STATISTICS_OF_THE_WORLD_CATALOG,
@@ -108,7 +105,6 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "overture-maps/provider-catalog.json",
         "oecd/provider-catalog.json",
         "alphafeed/provider-catalog.json",
-        "gapup-mcp/provider-catalog.json",
         "who-gho/provider-catalog.json",
         "mediastack/provider-catalog.json",
         "statistics-of-the-world/provider-catalog.json",

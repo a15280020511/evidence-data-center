@@ -43,8 +43,6 @@ EXPECTED_OPERATION_COUNTS = {
     "overture-maps": 7,
     "oecd": 6,
     "alphafeed": 10,
-    "agent-toolbelt": 21,
-    "gapup-mcp": 209,
     "who-gho-odata": 8,
     "mediastack": 5,
     "statistics-of-the-world": 11,
@@ -72,10 +70,10 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 34)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 34)
-        self.assertEqual(catalog["managed_operation_count"], 593)
-        self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
+        self.assertEqual(catalog["managed_provider_count"], 32)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 32)
+        self.assertEqual(catalog["managed_operation_count"], 363)
+        self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
@@ -116,8 +114,6 @@ class ApiCatalogTests(unittest.TestCase):
             "east-asia-econ": "EAST_ASIA_ECON_API_KEY",
             "alpha-vantage": "ALPHA_VANTAGE_API_KEY",
             "alphafeed": "ALPHAFEED_API_KEY",
-            "agent-toolbelt": "AGENT_TOOLBELT_KEY",
-            "gapup-mcp": "GAPUP_API_KEY",
             "mediastack": "MEDIASTACK_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
@@ -233,45 +229,6 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(alphafeed["limits"]["arbitrary_sdk_methods_allowed"])
         self.assertFalse(alphafeed["limits"]["trading_or_order_execution_allowed"])
 
-
-        agent_toolbelt = providers["agent-toolbelt"]
-        self.assertEqual(
-            agent_toolbelt["ticket_prefix"],
-            "[api-agent-toolbelt]",
-        )
-        self.assertEqual(
-            agent_toolbelt["required_secret_environment_variable_name"],
-            "AGENT_TOOLBELT_KEY",
-        )
-        self.assertEqual(len(agent_toolbelt["operations"]), 21)
-        self.assertFalse(
-            {row["operation_id"] for row in agent_toolbelt["operations"]}
-            & {"stock-thesis", "earnings-analysis", "insider-signal", "valuation-snapshot", "bear-vs-bull", "compare-stocks", "moat-analysis", "watchlist-scan"}
-        )
-        self.assertEqual(
-            agent_toolbelt["limits"]["fixed_api_host"],
-            "www.agenttoolbelt.live",
-        )
-        self.assertFalse(
-            agent_toolbelt["limits"]["arbitrary_tool_names_allowed"]
-        )
-        self.assertFalse(agent_toolbelt["limits"]["watchlist_crud_allowed"])
-        self.assertFalse(agent_toolbelt["limits"]["write_operations_allowed"])
-        self.assertFalse(
-            agent_toolbelt["limits"]["trading_or_order_execution_allowed"]
-        )
-
-        gapup = providers["gapup-mcp"]
-        gapup_ids = {row["operation_id"] for row in gapup["operations"]}
-        self.assertEqual(gapup["ticket_prefix"], "[intel-gapup]")
-        self.assertEqual(gapup["required_secret_environment_variable_name"], "GAPUP_API_KEY")
-        self.assertEqual(len(gapup_ids), 209)
-        self.assertEqual(gapup["limits"]["fixed_mcp_tool_count"], 208)
-        self.assertFalse(gapup["limits"]["automatic_x402_payment_allowed"])
-        self.assertFalse(gapup["limits"]["async_jobs_allowed"])
-        self.assertFalse(gapup["limits"]["write_operations_allowed"])
-        self.assertNotIn("crm_connector", gapup_ids)
-        self.assertNotIn("webhooks_manage", gapup_ids)
 
         who = providers["who-gho-odata"]
         self.assertEqual(who["ticket_prefix"], "[intel-who-gho]")

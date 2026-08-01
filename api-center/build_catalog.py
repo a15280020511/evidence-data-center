@@ -21,7 +21,6 @@ MANAGED_PROVIDER_CATALOG_PATHS = (
     HERE / "yuandian/provider-catalog.json",
     HERE / "company-intelligence/provider-catalog.json",
     HERE / "web-retrieval/provider-catalog.json",
-    HERE / "agent-toolbelt/provider-catalog.json",
 )
 
 
