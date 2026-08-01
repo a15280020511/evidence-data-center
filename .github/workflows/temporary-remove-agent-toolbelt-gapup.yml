@@ -1,0 +1,200 @@
+name: Temporary Remove Agent Toolbelt And Gapup
+
+on:
+  push:
+    branches:
+      - feat/add-overture-oecd-alphafeed
+    paths:
+      - .github/workflows/temporary-remove-agent-toolbelt-gapup.yml
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-remove-agent-toolbelt-gapup
+  cancel-in-progress: false
+
+jobs:
+  remove-providers:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/add-overture-oecd-alphafeed
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Remove providers and all registrations
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import re
+          import shutil
+          from pathlib import Path
+
+          root = Path.cwd()
+
+          for directory in (
+              root / "api-center/agent-toolbelt",
+              root / "api-center/gapup-mcp",
+          ):
+              if directory.exists():
+                  shutil.rmtree(directory)
+
+          for workflow in (
+              root / ".github/workflows/agent-toolbelt-api-ticket.yml",
+              root / ".github/workflows/agent-toolbelt-provider-validate.yml",
+              root / ".github/workflows/gapup-mcp-api-ticket.yml",
+              root / ".github/workflows/gapup-mcp-provider-validate.yml",
+          ):
+              workflow.unlink(missing_ok=True)
+
+          def load(relative: str) -> str:
+              return (root / relative).read_text(encoding="utf-8")
+
+          def save(relative: str, text: str) -> None:
+              (root / relative).write_text(text, encoding="utf-8")
+
+          def remove_exact_lines(text: str, lines: tuple[str, ...]) -> str:
+              for line in lines:
+                  text = text.replace(line, "")
+              return text
+
+          text = load("api-center/build_catalog.py")
+          text = text.replace('    HERE / "agent-toolbelt/provider-catalog.json",\n', "")
+          save("api-center/build_catalog.py", text)
+
+          text = load("api-center/build_catalog_market_search.py")
+          text = remove_exact_lines(
+              text,
+              (
+                  'GAPUP_MCP_CATALOG = HERE / "gapup-mcp/provider-catalog.json"\n',
+                  '    "gapup-mcp": 209,\n',
+                  '    GAPUP_MCP_CATALOG,\n',
+                  '        "gapup-mcp/provider-catalog.json",\n',
+              ),
+          )
+          save("api-center/build_catalog_market_search.py", text)
+
+          text = load("api-center/tests/test_api_catalog.py")
+          text = remove_exact_lines(
+              text,
+              (
+                  '    "agent-toolbelt": 21,\n',
+                  '    "gapup-mcp": 209,\n',
+                  '            "agent-toolbelt": "AGENT_TOOLBELT_KEY",\n',
+                  '            "gapup-mcp": "GAPUP_API_KEY",\n',
+              ),
+          )
+          text = text.replace(
+              'self.assertEqual(catalog["managed_provider_count"], 34)',
+              'self.assertEqual(catalog["managed_provider_count"], 32)',
+          )
+          text = text.replace(
+              'self.assertEqual(catalog["enabled_managed_provider_count"], 34)',
+              'self.assertEqual(catalog["enabled_managed_provider_count"], 32)',
+          )
+          text = text.replace(
+              'self.assertEqual(catalog["managed_operation_count"], 593)',
+              'self.assertEqual(catalog["managed_operation_count"], 363)',
+          )
+          text = text.replace(
+              'self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)',
+              'self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)',
+          )
+          text, removed = re.subn(
+              r'\n        agent_toolbelt = providers\["agent-toolbelt"\].*?\n        who = providers\["who-gho-odata"\]',
+              '\n        who = providers["who-gho-odata"]',
+              text,
+              flags=re.DOTALL,
+          )
+          if removed != 1:
+              raise RuntimeError(f"expected one Agent Toolbelt/Gapup assertion block, removed {removed}")
+          save("api-center/tests/test_api_catalog.py", text)
+
+          text = load("api-center/tests/test_capability_maximization.py")
+          text = remove_exact_lines(
+              text,
+              (
+                  '            "agent-toolbelt": 21,\n',
+                  '            "gapup-mcp": 209,\n',
+              ),
+          )
+          text = text.replace(
+              '            593,\n',
+              '            363,\n',
+              1,
+          )
+          save("api-center/tests/test_capability_maximization.py", text)
+
+          def remove_markdown_section(text: str, heading_pattern: str) -> str:
+              pattern = rf'(?ms)^## {heading_pattern}\n.*?(?=^## |\Z)'
+              updated, count = re.subn(pattern, "", text)
+              if count != 1:
+                  raise RuntimeError(
+                      f"expected one markdown section for {heading_pattern}, removed {count}"
+                  )
+              return updated
+
+          text = load("api-center/README.md")
+          text = remove_markdown_section(text, r"Gapup MCP 公共商业情报")
+          text = remove_markdown_section(text, r"Agent Toolbelt")
+          save("api-center/README.md", text)
+
+          text = load("api-center/SECRET_ISOLATION_POLICY.md")
+          text = remove_markdown_section(text, r"Agent Toolbelt")
+          text = remove_markdown_section(text, r"Gapup MCP")
+          save("api-center/SECRET_ISOLATION_POLICY.md", text)
+          PY
+
+      - name: Rebuild deterministic catalog
+        run: |
+          python api-center/build_catalog_market_search.py
+
+      - name: Verify removal and focused regressions
+        run: |
+          python api-center/tests/test_api_catalog.py
+          python api-center/tests/test_capability_maximization.py
+          python -m compileall -q api-center
+          if git grep -n -i -E 'agent[ -]?toolbelt|agent_toolbelt|AGENT_TOOLBELT_KEY|gapup|GAPUP_API_KEY' -- . ':!README.md' ':!api-center/api-catalog.json' ':!api-center/api-catalog.md'; then
+            echo "Unexpected provider reference remains"
+            exit 1
+          fi
+          if grep -Eqi 'agent[ -]?toolbelt|agent_toolbelt|AGENT_TOOLBELT_KEY|gapup|GAPUP_API_KEY' api-center/api-catalog.json api-center/api-catalog.md; then
+            echo "Removed provider remains in generated catalog"
+            exit 1
+          fi
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          ids = {row['provider_id'] for row in catalog['managed_providers']}
+          assert 'agent-toolbelt' not in ids
+          assert 'gapup-mcp' not in ids
+          assert catalog['managed_provider_count'] == 32, catalog['managed_provider_count']
+          assert catalog['managed_operation_count'] == 363, catalog['managed_operation_count']
+          print(json.dumps({
+              'managed_provider_count': catalog['managed_provider_count'],
+              'managed_operation_count': catalog['managed_operation_count'],
+              'exposed_parameter_count': catalog['exposed_parameter_count'],
+              'removed': ['agent-toolbelt', 'gapup-mcp'],
+          }))
+          PY
+
+      - name: Commit complete deletion
+        run: |
+          rm -f .github/workflows/temporary-remove-agent-toolbelt-gapup.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git commit -m "chore: remove Agent Toolbelt and Gapup MCP"
+          git push origin HEAD:feat/add-overture-oecd-alphafeed
