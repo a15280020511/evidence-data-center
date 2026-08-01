@@ -1,0 +1,456 @@
+name: Remove Agent Toolbelt Stock Tools
+
+on:
+  pull_request:
+    types: [synchronize]
+    branches: [main]
+    paths:
+      - ".github/workflows/remove-agent-toolbelt-stock-tools.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  remove-stock-tools:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Remove stock research operations and rebuild contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from __future__ import annotations
+          import json
+          import re
+          from pathlib import Path
+
+          root = Path("api-center")
+          agt = root / "agent-toolbelt"
+          stock_ops = {
+              "stock-thesis",
+              "earnings-analysis",
+              "insider-signal",
+              "valuation-snapshot",
+              "bear-vs-bull",
+              "compare-stocks",
+              "moat-analysis",
+              "watchlist-scan",
+          }
+
+          catalog_path = agt / "provider-catalog.json"
+          catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+          provider = catalog["providers"][0]
+          before = {row["operation_id"] for row in provider["operations"]}
+          assert stock_ops <= before, sorted(stock_ops - before)
+          provider["operations"] = [
+              row for row in provider["operations"]
+              if row["operation_id"] not in stock_ops
+          ]
+          after = {row["operation_id"] for row in provider["operations"]}
+          assert len(provider["operations"]) == 21
+          assert not (stock_ops & after)
+          provider["display_name"] = "Agent Toolbelt 通用代理工具"
+          provider["description"] = (
+              "通过 Agent Toolbelt 官方 API 调用20项通用代理工具；"
+              "不开放其仅限美股的8项股票研究工具，也不开放任何写操作。"
+          )
+          provider["catalog_policy"] = (
+              "固定开放21项能力：1项本地目录和20项官方通用工具；"
+              "每个票据最多一次受限请求，参数、正文、数组、文本、图片、URL、"
+              "超时和响应体积均受硬上限约束。"
+          )
+          provider["execution_policy"] = (
+              "API Key仅由GitHub Repository Secret注入；不接受客户端凭据、任意工具名、"
+              "任意路径、股票研究、Watchlist CRUD、交易、下单、Webhook或后台监控。"
+              "URL型工具仅接受公开HTTPS地址并拒绝本机、私网和保留地址字面量。"
+          )
+          provider["limits"]["fixed_upstream_tool_count"] = 20
+          provider["limits"]["stock_research_tools_allowed"] = False
+          provider["limits"]["us_equity_research_allowed"] = False
+          catalog_path.write_text(
+              json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          schema_path = agt / "ticket.schema.json"
+          schema = json.loads(schema_path.read_text(encoding="utf-8"))
+          enum = schema["properties"]["operation"]["enum"]
+          schema["properties"]["operation"]["enum"] = [
+              op for op in enum if op not in stock_ops
+          ]
+          assert len(schema["properties"]["operation"]["enum"]) == 21
+          assert not stock_ops.intersection(schema["properties"]["operation"]["enum"])
+          schema_path.write_text(
+              json.dumps(schema, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+
+          readme = """# Agent Toolbelt 通用代理工具
+
+正式票据前缀：
+
+```text
+[api-agent-toolbelt]
+```
+
+正式凭据：
+
+```text
+GitHub Repository Secret: AGENT_TOOLBELT_KEY
+```
+
+Provider固定访问：
+
+```text
+https://www.agenttoolbelt.live
+```
+
+固定开放 **21项能力**：
+
+- 1项本地能力目录；
+- 20项通用工具：Schema生成、文本提取、Token计算、CSV转JSON、Markdown转换、公开网页元数据、正则生成、Cron生成、美国地址标准化、色板、文档比较、合同条款提取、提示词优化、会议行动项、图片元数据清理、品牌包、模拟API响应、依赖漏洞审计、网页摘要和上下文打包。
+
+明确删除并禁止以下8项仅限美股的研究工具：
+
+```text
+stock-thesis
+earnings-analysis
+insider-signal
+valuation-snapshot
+bear-vs-bull
+compare-stocks
+moat-analysis
+watchlist-scan
+```
+
+这些操作不再出现在Provider目录、票据Schema或统一API目录中；提交对应票据会在本地校验阶段被拒绝，不会消耗Agent Toolbelt额度。
+
+安全边界：
+
+- 每个票据最多一次上游请求；
+- 仅允许固定 `/api/tools/<allowlisted-tool>` 路径；
+- 不开放任何股票研究、Watchlist创建/更新/删除/提醒或其他写接口；
+- 不开放交易、下单、Webhook、任意工具名、任意主机或客户端凭据；
+- URL工具只接受公开HTTPS地址，拒绝本机、私网、保留地址字面量和带账号密码的URL；
+- 票据只允许公开、非个人数据；合同、会议记录和其他文本不得包含个人信息或机密材料；
+- 合同分析不构成法律意见；
+- 上游调用会消耗免费额度或产生费用，API中心不会自动循环或后台监控。
+
+Agent Toolbelt官方API使用Bearer Key。未配置 `AGENT_TOOLBELT_KEY` 时，本地能力目录仍可读取，但真实上游调用会返回结构化缺失凭据错误。
+"""
+          (agt / "README.md").write_text(readme, encoding="utf-8")
+
+          tests = '''from __future__ import annotations
+
+import importlib.util
+import json
+import os
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+ROOT = Path(__file__).resolve().parents[1]
+SPEC = importlib.util.spec_from_file_location(
+    "agent_toolbelt_task", ROOT / "agent_toolbelt_task.py"
+)
+assert SPEC and SPEC.loader
+task = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(task)
+
+STOCK_OPERATIONS = {
+    "stock-thesis",
+    "earnings-analysis",
+    "insider-signal",
+    "valuation-snapshot",
+    "bear-vs-bull",
+    "compare-stocks",
+    "moat-analysis",
+    "watchlist-scan",
+}
+
+
+class FakeRaw:
+    def __init__(self, payload: bytes) -> None:
+        self.payload = payload
+
+    def read(self, size: int, decode_content: bool = True) -> bytes:
+        return self.payload[:size]
+
+
+class FakeResponse:
+    def __init__(self, payload: dict, status_code: int = 200) -> None:
+        raw = json.dumps(payload).encode("utf-8")
+        self.raw = FakeRaw(raw)
+        self.status_code = status_code
+        self.headers = {"Content-Type": "application/json"}
+        self.is_redirect = False
+
+
+class AgentToolbeltTests(unittest.TestCase):
+    def ticket(self, operation="catalog-capabilities", parameters=None):
+        return {
+            "task_id": "agent-toolbelt-test-001",
+            "provider": "agent-toolbelt",
+            "operation": operation,
+            "objective": "test bounded Agent Toolbelt provider",
+            "parameters": parameters or {},
+            "data_policy": {
+                "classification": "public",
+                "contains_personal_data": False,
+            },
+            "acceptance": {
+                "timeout_seconds": 30,
+                "max_response_bytes": 1_000_000,
+            },
+        }
+
+    def test_catalog_and_schema_exclude_stock_research(self):
+        catalog = json.loads(
+            (ROOT / "provider-catalog.json").read_text(encoding="utf-8")
+        )
+        provider = catalog["providers"][0]
+        self.assertEqual(provider["provider_id"], "agent-toolbelt")
+        self.assertEqual(
+            provider["required_secret_environment_variable"],
+            "AGENT_TOOLBELT_KEY",
+        )
+        self.assertEqual(len(provider["operations"]), 21)
+        operation_ids = {row["operation_id"] for row in provider["operations"]}
+        self.assertFalse(STOCK_OPERATIONS & operation_ids)
+        self.assertIn("context-window-packer", operation_ids)
+        self.assertIn("token-counter", operation_ids)
+        self.assertNotIn("create-watchlist", operation_ids)
+        self.assertEqual(provider["limits"]["fixed_upstream_tool_count"], 20)
+        self.assertFalse(provider["limits"]["stock_research_tools_allowed"])
+        self.assertFalse(provider["limits"]["us_equity_research_allowed"])
+        self.assertEqual(
+            provider["limits"]["fixed_api_host"],
+            "www.agenttoolbelt.live",
+        )
+        self.assertFalse(provider["limits"]["arbitrary_tool_names_allowed"])
+        self.assertFalse(provider["limits"]["watchlist_crud_allowed"])
+        self.assertFalse(provider["limits"]["write_operations_allowed"])
+        self.assertFalse(provider["limits"]["trading_or_order_execution_allowed"])
+        task.validate_ticket(
+            self.ticket(),
+            schema_path=task.SCHEMA_PATH,
+            catalog_path=task.CATALOG_PATH,
+        )
+
+    def test_request_builder_keeps_fixed_origin_and_no_credentials(self):
+        url, encoded, metadata = task.build_request(
+            "token-counter",
+            {"text": "公开证据包", "models": ["gpt-4o"]},
+        )
+        self.assertEqual(
+            url,
+            "https://www.agenttoolbelt.live/api/tools/token-counter",
+        )
+        self.assertEqual(
+            json.loads(encoded),
+            {"text": "公开证据包", "models": ["gpt-4o"]},
+        )
+        self.assertNotIn("Authorization", metadata)
+        self.assertEqual(metadata["request_origin"], "www.agenttoolbelt.live")
+        self.assertEqual(metadata["http_method"], "POST")
+
+    def test_credentials_are_backend_only_and_prefixed(self):
+        with patch.dict(
+            os.environ,
+            {"AGENT_TOOLBELT_KEY": "atb_test_key_12345"},
+            clear=False,
+        ):
+            self.assertEqual(task.api_key(), "atb_test_key_12345")
+        with patch.dict(
+            os.environ,
+            {"AGENT_TOOLBELT_KEY": "wrong-key"},
+            clear=False,
+        ):
+            with self.assertRaises(task.AgentToolbeltError):
+                task.api_key()
+
+    def test_url_guard_rejects_private_and_allows_public_https(self):
+        for value in (
+            "http://example.com",
+            "https://localhost/test",
+            "https://127.0.0.1/test",
+            "https://10.0.0.1/test",
+            "https://169.254.169.254/latest/meta-data",
+            "https://user:pass@example.com/",
+        ):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    task.validate_public_https_url(value)
+        task.validate_public_https_url("https://example.com/path?q=1")
+
+    def test_ticket_schema_rejects_all_stock_operations(self):
+        for operation in sorted(STOCK_OPERATIONS):
+            with self.subTest(operation=operation):
+                with self.assertRaises(ValueError):
+                    task.validate_ticket(
+                        self.ticket(operation, {"ticker": "AAPL"}),
+                        schema_path=task.SCHEMA_PATH,
+                        catalog_path=task.CATALOG_PATH,
+                    )
+        with self.assertRaises(ValueError):
+            task.validate_ticket(
+                self.ticket("create-watchlist", {}),
+                schema_path=task.SCHEMA_PATH,
+                catalog_path=task.CATALOG_PATH,
+            )
+
+    def test_local_catalog_execution_needs_no_credentials(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ticket_path = Path(tmp) / "ticket.json"
+            out = Path(tmp) / "out"
+            ticket_path.write_text(json.dumps(self.ticket()), encoding="utf-8")
+            self.assertEqual(task.execute(ticket_path, out), 0)
+            diagnostics = json.loads(
+                (out / "diagnostics.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(diagnostics["status"], "API_AGENT_TOOLBELT_COMPLETED")
+            self.assertFalse(diagnostics["metadata"]["upstream_called"])
+
+    def test_mocked_general_tool_call_succeeds_and_never_persists_key(self):
+        payload = {
+            "success": True,
+            "tool": "token-counter",
+            "result": {"characterCount": 5, "results": {"gpt-4o": {"tokens": 3}}},
+        }
+        with tempfile.TemporaryDirectory() as tmp, patch.dict(
+            os.environ,
+            {"AGENT_TOOLBELT_KEY": "atb_test_key_12345"},
+            clear=False,
+        ), patch.object(task.requests, "post", return_value=FakeResponse(payload)):
+            ticket_path = Path(tmp) / "ticket.json"
+            out = Path(tmp) / "out"
+            ticket_path.write_text(
+                json.dumps(
+                    self.ticket(
+                        "token-counter",
+                        {"text": "公开文本", "models": ["gpt-4o"]},
+                    )
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(task.execute(ticket_path, out), 0)
+            diagnostics = json.loads(
+                (out / "diagnostics.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(diagnostics["status"], "API_AGENT_TOOLBELT_COMPLETED")
+            self.assertTrue(diagnostics["metadata"]["upstream_called"])
+            for path in out.iterdir():
+                if path.is_file():
+                    self.assertNotIn(b"atb_test_key_12345", path.read_bytes())
+
+
+if __name__ == "__main__":
+    unittest.main()
+'''
+          (agt / "tests" / "test_agent_toolbelt_task.py").write_text(
+              tests, encoding="utf-8"
+          )
+
+          replacements = {
+              root / "tests" / "test_api_catalog.py": [
+                  ('"agent-toolbelt": 29', '"agent-toolbelt": 21'),
+                  ('catalog["managed_operation_count"], 368', 'catalog["managed_operation_count"], 360'),
+                  ('len(agent_toolbelt["operations"]), 29', 'len(agent_toolbelt["operations"]), 21'),
+              ],
+              root / "tests" / "test_capability_maximization.py": [
+                  ('            368,', '            360,'),
+                  ('"agent-toolbelt": 29', '"agent-toolbelt": 21'),
+              ],
+              Path(".github/workflows/agent-toolbelt-provider-validate.yml"): [
+                  ("assert len(operation_ids) == 29", "assert len(operation_ids) == 21"),
+                  ("assert 'stock-thesis' in operation_ids", "assert 'stock-thesis' not in operation_ids"),
+                  ("assert 'watchlist-scan' in operation_ids", "assert 'watchlist-scan' not in operation_ids"),
+              ],
+              Path(".github/workflows/api-catalog-validate.yml"): [
+                  ("== 368", "== 360"),
+                  ("len(agent_toolbelt['operations']) == 29", "len(agent_toolbelt['operations']) == 21"),
+                  ("'managed_operations': 368", "'managed_operations': 360"),
+                  ("'agent_toolbelt_operations': 29", "'agent_toolbelt_operations': 21"),
+              ],
+          }
+          for path, pairs in replacements.items():
+              text = path.read_text(encoding="utf-8")
+              for old, new in pairs:
+                  if old not in text:
+                      raise AssertionError(f"missing replacement in {path}: {old}")
+                  text = text.replace(old, new)
+              path.write_text(text, encoding="utf-8")
+
+          # Add explicit global catalog assertions that all stock operations are absent.
+          api_test = root / "tests" / "test_api_catalog.py"
+          text = api_test.read_text(encoding="utf-8")
+          needle = '        self.assertEqual(len(agent_toolbelt["operations"]), 21)\n'
+          addition = (
+              needle
+              + '        self.assertFalse(\n'
+              + '            {row["operation_id"] for row in agent_toolbelt["operations"]}\n'
+              + '            & {"stock-thesis", "earnings-analysis", "insider-signal", "valuation-snapshot", "bear-vs-bull", "compare-stocks", "moat-analysis", "watchlist-scan"}\n'
+              + '        )\n'
+          )
+          if needle not in text:
+              raise AssertionError("agent-toolbelt global assertion anchor missing")
+          api_test.write_text(text.replace(needle, addition, 1), encoding="utf-8")
+
+          # Keep human-facing policy documents accurate without touching unrelated counts.
+          for path in (root / "README.md", root / "SECRET_ISOLATION_POLICY.md"):
+              text = path.read_text(encoding="utf-8")
+              lines = []
+              for line in text.splitlines():
+                  if "Agent Toolbelt" in line or "agent-toolbelt" in line:
+                      line = line.replace("AI 股票研究与代理工具", "通用代理工具")
+                      line = line.replace("29 项", "21 项")
+                      line = line.replace("29项", "21项")
+                      line = line.replace("28 项固定上游工具", "20 项固定上游通用工具")
+                      line = line.replace("28项固定上游工具", "20项固定上游通用工具")
+                      line = line.replace("8 项美股研究和 20 项通用工具", "20 项通用工具")
+                      line = line.replace("8项美股研究和20项通用工具", "20项通用工具")
+                  lines.append(line)
+              path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+          # The temporary workflow removes itself in the same atomic commit.
+          Path(".github/workflows/remove-agent-toolbelt-stock-tools.yml").unlink()
+          PY
+
+          python api-center/build_config.py
+          python api-center/build_catalog_market_search.py
+
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/agent-toolbelt/requirements.txt
+          python -m py_compile \
+            api-center/build_catalog.py \
+            api-center/build_catalog_market_search.py \
+            api-center/managed_provider_runtime.py \
+            api-center/agent-toolbelt/agent_toolbelt_task.py \
+            api-center/agent-toolbelt/tests/*.py \
+            api-center/tests/*.py
+          python -m unittest discover -s api-center/agent-toolbelt/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
+          git diff --check
+
+      - name: Commit removal
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "a15280020511"
+          git config user.email "270211234+a15280020511@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: remove unsupported Agent Toolbelt stock tools"
+          git push origin HEAD:${{ github.head_ref }}
