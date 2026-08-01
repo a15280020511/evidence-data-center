@@ -62,7 +62,19 @@ jobs:
           PY
 
       - name: Generate provider
-        run: python .github/scripts/integrate_who_gho.py
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/scripts/integrate_who_gho.py')
+          text = path.read_text(encoding='utf-8')
+          old = "replace_once(workflow, \"              'managed_providers': 30,\", \"              'managed_providers': 32,\")"
+          new = "replace_once(workflow, \"              'managed_providers': 31,\", \"              'managed_providers': 32,\")"
+          if old not in text:
+              raise SystemExit('WHO integrator catalog-count patch anchor missing')
+          path.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+          python .github/scripts/integrate_who_gho.py
 
       - name: Install and validate
         run: |
