@@ -25,7 +25,7 @@
     "east-asia-econ/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "7a29d74c0624862e4cf1d1675ad7daa7ba76119baac7d19da4ef4de859d4c77e",
+  "managed_provider_catalog_sha256": "35571d4a0ef941d4394def97f2c1778fefc10acddd3966b84f818f358ad27ed5",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 24,
@@ -10840,7 +10840,7 @@
                   "jp",
                   "kr",
                   "tw",
-                  "regional"
+                  "region"
                 ]
               },
               "freq": {
@@ -10997,7 +10997,7 @@
       "required_secret_environment_variable_name": "EAST_ASIA_ECON_API_KEY",
       "optional_secret_environment_variable_name": "",
       "secret_value_exposed": false,
-      "provider_sha256": "3e2fc4221e23c819841a6dcce9a50168a86f060074182666a3b99f62dbfe954d",
+      "provider_sha256": "0c433a9dd653a1039c389b5eed82ad054487980f2d11516e32dbee1a3191f0d7",
       "catalog_file": "east-asia-econ/provider-catalog.json"
     },
     {
@@ -19753,5 +19753,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "4faef136fb4a1d521fc13f26f272f6805d3f918a487c97fd7a8e1e25cc936b8e"
+  "catalog_sha256": "98a5b346c94b93cb59db5b4a647354a07694f5d9915aef75136fd8b127e4f906"
 }
