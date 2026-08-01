@@ -56,6 +56,7 @@ jobs:
             api-center/marketstack/requirements.txt
             api-center/nasa/requirements.txt
             api-center/metno-geosatellite/requirements.txt
+            api-center/copernicus/requirements.txt
 
       - name: Install isolated intelligence dependencies
         run: |
@@ -80,7 +81,8 @@ jobs:
             -r api-center/internet-archive/requirements.txt \
             -r api-center/marketstack/requirements.txt \
             -r api-center/nasa/requirements.txt \
-            -r api-center/metno-geosatellite/requirements.txt
+            -r api-center/metno-geosatellite/requirements.txt \
+            -r api-center/copernicus/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -115,6 +117,7 @@ jobs:
           python -m unittest discover -s api-center/marketstack/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/nasa/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/metno-geosatellite/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/copernicus/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Rebuild deterministic contracts
@@ -141,11 +144,11 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 37
-          assert catalog['enabled_managed_provider_count'] == 37
+          assert catalog['managed_provider_count'] == len(providers) == 38
+          assert catalog['enabled_managed_provider_count'] == 38
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 413
+          ) == 420
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
@@ -233,6 +236,19 @@ jobs:
           assert metno['limits']['bulk_download_allowed'] is False
           assert metno['limits']['write_operations_allowed'] is False
 
+          copernicus = providers['copernicus-cdse']
+          assert copernicus['ticket_prefix'] == '[intel-copernicus]'
+          assert copernicus['required_secret_environment_variable_name'] == 'COPERNICUS_CLIENT_SECRET'
+          assert copernicus['required_repository_variable'] == 'COPERNICUS_CLIENT_ID'
+          assert len(copernicus['operations']) == 7
+          assert copernicus['limits']['requests_per_ticket_max'] == 2
+          assert copernicus['limits']['fixed_stac_host'] == 'stac.dataspace.copernicus.eu'
+          assert copernicus['limits']['fixed_processing_host'] == 'sh.dataspace.copernicus.eu'
+          assert copernicus['limits']['bulk_download_allowed'] is False
+          assert copernicus['limits']['arbitrary_evalscripts_allowed'] is False
+          assert copernicus['limits']['oauth_token_persistence_allowed'] is False
+          assert copernicus['limits']['write_operations_allowed'] is False
+
           aisstream = providers['aisstream']
           assert aisstream['ticket_prefix'] == '[intel-aisstream]'
           assert aisstream['required_secret_environment_variable_name'] == 'AISSTREAM_API_KEY'
@@ -255,8 +271,8 @@ jobs:
               'status': 'PASS',
               'connectors': 68,
               'worldbank_connectors': 9,
-              'managed_providers': 37,
-              'managed_operations': 413,
+              'managed_providers': 38,
+              'managed_operations': 420,
               'overture_maps_operations': 7,
               'oecd_operations': 6,
               'alphafeed_operations': 10,
@@ -269,6 +285,7 @@ jobs:
               'marketstack_operations': 11,
               'nasa_operations': 25,
               'metno_geosatellite_operations': 4,
+              'copernicus_operations': 7,
               'removed_providers': ['agent-toolbelt', 'gapup-mcp'],
           }))
           PY
