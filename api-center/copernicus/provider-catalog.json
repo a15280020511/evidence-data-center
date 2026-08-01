@@ -213,7 +213,54 @@
             "height"
           ],
           "parameter_schema": {
-            "$ref": "#/$defs/renderParameters"
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "end_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "cloud_cover_max": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "mosaicking_order": {
+                "type": "string",
+                "enum": [
+                  "leastCC",
+                  "mostRecent",
+                  "leastRecent"
+                ]
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              }
+            },
+            "required": [
+              "bbox",
+              "start_time",
+              "end_time"
+            ]
           },
           "result_contract": {
             "host": "sh.dataspace.copernicus.eu",
@@ -237,7 +284,54 @@
             "height"
           ],
           "parameter_schema": {
-            "$ref": "#/$defs/renderParameters"
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "end_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "cloud_cover_max": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "mosaicking_order": {
+                "type": "string",
+                "enum": [
+                  "leastCC",
+                  "mostRecent",
+                  "leastRecent"
+                ]
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              }
+            },
+            "required": [
+              "bbox",
+              "start_time",
+              "end_time"
+            ]
           },
           "result_contract": {
             "host": "sh.dataspace.copernicus.eu",
@@ -261,7 +355,54 @@
             "height"
           ],
           "parameter_schema": {
-            "$ref": "#/$defs/renderParameters"
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number"
+                }
+              },
+              "start_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "end_time": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+              },
+              "cloud_cover_max": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              "mosaicking_order": {
+                "type": "string",
+                "enum": [
+                  "leastCC",
+                  "mostRecent",
+                  "leastRecent"
+                ]
+              },
+              "width": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              },
+              "height": {
+                "type": "integer",
+                "minimum": 64,
+                "maximum": 2048
+              }
+            },
+            "required": [
+              "bbox",
+              "start_time",
+              "end_time"
+            ]
           },
           "result_contract": {
             "host": "sh.dataspace.copernicus.eu",
@@ -272,59 +413,7 @@
             "credential_mode": "oauth-client-id-variable-plus-client-secret-backend-only"
           }
         }
-      ],
-      "$defs": {
-        "renderParameters": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "bbox": {
-              "type": "array",
-              "minItems": 4,
-              "maxItems": 4,
-              "items": {
-                "type": "number"
-              }
-            },
-            "start_time": {
-              "type": "string",
-              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-            },
-            "end_time": {
-              "type": "string",
-              "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
-            },
-            "cloud_cover_max": {
-              "type": "number",
-              "minimum": 0,
-              "maximum": 100
-            },
-            "mosaicking_order": {
-              "type": "string",
-              "enum": [
-                "leastCC",
-                "mostRecent",
-                "leastRecent"
-              ]
-            },
-            "width": {
-              "type": "integer",
-              "minimum": 64,
-              "maximum": 2048
-            },
-            "height": {
-              "type": "integer",
-              "minimum": 64,
-              "maximum": 2048
-            }
-          },
-          "required": [
-            "bbox",
-            "start_time",
-            "end_time"
-          ]
-        }
-      }
+      ]
     }
   ]
 }

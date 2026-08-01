@@ -166,6 +166,18 @@ NASA_API_KEY
 
 固定开放 25 项操作，覆盖 APOD、近地小行星 NeoWs、DONKI 空间天气、EPIC 地球影像元数据、NASA 图像与视频资料库，以及 Earthdata GIBS 的 WMTS/WMS 能力、图层元数据和单瓦片影像。旧 Earth API 和 Mars Rover Photos API 已归档，不予接入；地球影像由官方替代的 GIBS 提供。每张票据只发送一次请求、不自动重试或翻页，GIBS 每票据最多一张瓦片，禁止整图层下载、任意 URL、后台轮询和写入。
 
+## 哥白尼数据空间 Copernicus CDSE
+
+`api-center/copernicus/` 接入 Copernicus Data Space Ecosystem：
+
+```text
+[intel-copernicus]
+Repository Variable: COPERNICUS_CLIENT_ID
+Repository Secret: COPERNICUS_CLIENT_SECRET
+```
+
+公开 STAC 集合目录、区域/时间/云量产品搜索和单产品元数据无需凭据；Sentinel-2 L2A 真彩色、近红外假彩色和 NDVI PNG 渲染使用 OAuth2 Client Credentials。每张票据最多一次公开目录请求，或一次令牌请求加一次处理请求；范围、时间、像素、结果条数和响应体积均有硬上限。不开放任意 evalscript、原始整景批量下载、自动翻页、后台任务、令牌持久化或写操作。
+
 ## 挪威气象研究所 Geosatellite
 
 `api-center/metno-geosatellite/` 固定访问 MET Norway 官方 Geosatellite 1.4：

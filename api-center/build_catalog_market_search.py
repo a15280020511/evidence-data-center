@@ -36,6 +36,7 @@ INTERNET_ARCHIVE_CATALOG = HERE / "internet-archive/provider-catalog.json"
 MARKETSTACK_CATALOG = HERE / "marketstack/provider-catalog.json"
 NASA_CATALOG = HERE / "nasa/provider-catalog.json"
 METNO_GEOSATELLITE_CATALOG = HERE / "metno-geosatellite/provider-catalog.json"
+COPERNICUS_CATALOG = HERE / "copernicus/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -60,6 +61,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "marketstack": 11,
     "nasa": 25,
     "metno-geosatellite": 4,
+    "copernicus-cdse": 7,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -86,6 +88,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     MARKETSTACK_CATALOG,
     NASA_CATALOG,
     METNO_GEOSATELLITE_CATALOG,
+    COPERNICUS_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -128,6 +131,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "marketstack/provider-catalog.json",
         "nasa/provider-catalog.json",
         "metno-geosatellite/provider-catalog.json",
+        "copernicus/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:
