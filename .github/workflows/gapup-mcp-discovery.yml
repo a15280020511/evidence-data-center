@@ -169,13 +169,17 @@ jobs:
           git diff --check
           ! git grep -nE 'gpk_[A-Za-z0-9_-]{12,}' -- ':!api-center/gapup-mcp/tests/**' ':!.github/scripts/integrate_gapup_mcp.py'
 
-      - name: Remove one-shot integration files
+      - name: Stage workflow templates and remove non-workflow one-shot files
         run: |
+          set -euo pipefail
+          mkdir -p api-center/gapup-mcp/.workflow-templates
+          cp .github/workflows/api-catalog-validate.yml api-center/gapup-mcp/.workflow-templates/api-catalog-validate.yml
+          cp .github/workflows/gapup-mcp-api-ticket.yml api-center/gapup-mcp/.workflow-templates/gapup-mcp-api-ticket.yml
+          cp .github/workflows/gapup-mcp-provider-validate.yml api-center/gapup-mcp/.workflow-templates/gapup-mcp-provider-validate.yml
+          git restore --source=HEAD -- .github/workflows/api-catalog-validate.yml
+          rm -f .github/workflows/gapup-mcp-api-ticket.yml .github/workflows/gapup-mcp-provider-validate.yml
           rm -rf gapup-discovery
-          rm -f \
-            .github/scripts/integrate_gapup_mcp.py \
-            .github/workflows/gapup-mcp-discovery.yml \
-            .github/gapup-mcp-discovery-trigger.txt
+          rm -f .github/scripts/integrate_gapup_mcp.py .github/gapup-mcp-discovery-trigger.txt
 
       - name: Commit integrated intelligence provider
         run: |
