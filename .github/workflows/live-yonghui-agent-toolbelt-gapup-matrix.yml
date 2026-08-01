@@ -1,0 +1,538 @@
+name: Live Yonghui Agent Toolbelt and Gapup Matrix
+
+on:
+  push:
+    branches:
+      - feat/add-overture-oecd-alphafeed
+    paths:
+      - .github/workflows/live-yonghui-agent-toolbelt-gapup-matrix.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-yonghui-agent-toolbelt-gapup-matrix
+  cancel-in-progress: false
+
+jobs:
+  live-matrix:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      AGENT_TOOLBELT_KEY: ${{ secrets.AGENT_TOOLBELT_KEY }}
+      GAPUP_API_KEY: ${{ secrets.GAPUP_API_KEY }}
+    steps:
+      - name: Checkout test branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned provider dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/agent-toolbelt/requirements.txt \
+            -r api-center/gapup-mcp/requirements.txt
+          python -m pip check
+
+      - name: Execute Yonghui capability matrix
+        shell: bash
+        run: |
+          set +x
+          mkdir -p yonghui-provider-matrix
+          python - <<'PY'
+          from __future__ import annotations
+
+          import base64
+          import importlib.util
+          import json
+          import os
+          import re
+          import sys
+          import time
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from typing import Any
+
+          import jsonschema
+          import requests
+
+          ROOT = Path.cwd()
+          OUT = ROOT / "yonghui-provider-matrix"
+          OUT.mkdir(parents=True, exist_ok=True)
+
+          COMPANY = "Yonghui Superstores Co., Ltd. (永辉超市)"
+          TICKER = "601933.SH"
+          COMPANY_CONTEXT = (
+              "Yonghui Superstores Co., Ltd. (永辉超市, Shanghai Stock Exchange 601933.SH) "
+              "is a publicly listed Chinese supermarket and omnichannel retail operator. "
+              "This test uses only public, non-personal, non-confidential information and asks "
+              "for bounded read-only analysis; it does not request trading or investment execution."
+          )
+          OFFICIAL_URL = "https://www.yonghui.com.cn/"
+          TINY_PNG = (
+              "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII="
+          )
+
+          def load_module(name: str, path: Path):
+              spec = importlib.util.spec_from_file_location(name, path)
+              if spec is None or spec.loader is None:
+                  raise RuntimeError(f"cannot load {path}")
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              return module
+
+          agent_task = load_module(
+              "agent_toolbelt_task",
+              ROOT / "api-center/agent-toolbelt/agent_toolbelt_task.py",
+          )
+          gapup_task = load_module(
+              "gapup_mcp_task",
+              ROOT / "api-center/gapup-mcp/gapup_mcp_task.py",
+          )
+
+          def catalog_operations(path: Path) -> list[dict[str, Any]]:
+              data = json.loads(path.read_text(encoding="utf-8"))
+              return list(data["providers"][0]["operations"])
+
+          def choose_enum(field: str, values: list[Any]) -> Any:
+              lower = field.lower()
+              preferences: list[str] = []
+              if any(k in lower for k in ("country", "country_code")):
+                  preferences = ["CN", "CHN", "China", "china"]
+              elif "currency" in lower:
+                  preferences = ["CNY", "RMB", "USD"]
+              elif any(k in lower for k in ("exchange", "market")):
+                  preferences = ["SSE", "SH", "China", "CN", "A-share", "global"]
+              elif any(k in lower for k in ("language", "locale")):
+                  preferences = ["zh-CN", "zh", "Chinese", "en"]
+              elif any(k in lower for k in ("interval", "period", "frequency")):
+                  preferences = ["1d", "daily", "day", "monthly"]
+              elif "format" in lower:
+                  preferences = ["json", "json_schema", "markdown", "text", "html"]
+              elif "mode" in lower:
+                  preferences = ["both", "summary", "full", "standard"]
+              elif "side" in lower:
+                  preferences = ["neutral", "both"]
+              for wanted in preferences:
+                  for value in values:
+                      if str(value).lower() == wanted.lower():
+                          return value
+              return values[0]
+
+          def clamp_text(value: str, schema: dict[str, Any]) -> str:
+              minimum = int(schema.get("minLength", 0) or 0)
+              maximum = int(schema.get("maxLength", max(len(value), 1)) or max(len(value), 1))
+              if len(value) < minimum:
+                  value = value + (" " + COMPANY_CONTEXT) * ((minimum - len(value)) // max(len(COMPANY_CONTEXT), 1) + 1)
+              return value[:maximum]
+
+          def semantic_string(field: str, operation: str, schema: dict[str, Any]) -> str:
+              key = field.lower().replace("-", "_")
+              if schema.get("format") == "date":
+                  return "2025-12-31"
+              if schema.get("format") == "date-time":
+                  return "2025-12-31T00:00:00Z"
+              if schema.get("format") in {"uri", "url"} or "url" in key or "website" in key:
+                  return OFFICIAL_URL
+              if "ticker" in key or "symbol" in key:
+                  return TICKER
+              if key in {"company", "company_name", "organization", "organisation", "brand", "brand_name", "account", "account_name", "target_company"}:
+                  return COMPANY
+              if "country_code" in key:
+                  return "CN"
+              if key == "country" or key.endswith("_country"):
+                  return "China"
+              if "currency" in key:
+                  return "CNY"
+              if "exchange" in key:
+                  return "SSE"
+              if "industry" in key or "sector" in key:
+                  return "Supermarket retail and omnichannel grocery"
+              if "address" in key:
+                  return "福建省福州市鼓楼区五四路永辉超市公开测试地址"
+              if "cron" in key:
+                  return "0 9 * * 1-5"
+              if "timezone" in key:
+                  return "Asia/Shanghai"
+              if "csv" in key:
+                  return "date,revenue_cny,store_count\n2024-12-31,67500000000,775\n2025-12-31,70000000000,760"
+              if "markdown" in key:
+                  return "# 永辉超市公开研究\n\n- 股票代码：601933.SH\n- 行业：商超零售\n- 用途：只读能力测试"
+              if "html" in key:
+                  return "<h1>永辉超市公开研究</h1><p>股票代码 601933.SH，商超零售，只读测试。</p>"
+              if "contract" in key or "agreement" in key:
+                  return (
+                      "公开、虚构的供应商协议样本：甲方永辉超市，乙方公开测试供应商。"
+                      "付款期30天，任何一方可提前30天书面通知终止；不包含个人信息或机密信息。"
+                  )
+              if any(k in key for k in ("transcript", "meeting", "minutes")):
+                  return (
+                      "公开测试会议记录：分析永辉超市601933.SH的门店效率、供应链成本和线上业务。"
+                      "行动项：分析师周五前完成公开财务数据核对；运营组下周提交门店效率指标。"
+                  )
+              if "document" in key or key in {"left", "right", "before", "after", "old", "new"}:
+                  suffix = "版本A强调门店扩张。" if key in {"left", "before", "old"} else "版本B强调门店效率和供应链优化。"
+                  return COMPANY_CONTEXT + suffix
+              if "prompt" in key:
+                  return "基于公开信息分析永辉超市601933.SH的经营质量、竞争格局和主要风险，明确证据与不确定性。"
+              if "regex" in key or "pattern" in key:
+                  return "匹配中国A股代码，例如601933.SH或000001.SZ"
+              if any(k in key for k in ("image", "base64")):
+                  return TINY_PNG
+              if "filename" in key or "file_name" in key:
+                  return "yonghui-public-test.png"
+              if any(k in key for k in ("package_json", "manifest", "dependencies", "lockfile")):
+                  return '{"dependencies":{"requests":"2.32.4","jsonschema":"4.25.0"}}'
+              if "schema" in key:
+                  return '{"type":"object","properties":{"ticker":{"type":"string"}},"required":["ticker"]}'
+              if "color" in key:
+                  return "#D71920"
+              if "query" in key or "search" in key:
+                  return "永辉超市 601933.SH 公开财务 竞争格局 供应链 风险"
+              if any(k in key for k in ("description", "objective", "context", "content", "text", "input", "topic", "subject", "question", "brief", "notes", "message")):
+                  return COMPANY_CONTEXT
+              if "start" in key and "date" in key:
+                  return "2024-01-01"
+              if "end" in key and "date" in key:
+                  return "2025-12-31"
+              if "date" in key:
+                  return "2025-12-31"
+              return f"{COMPANY} {TICKER} public read-only test for {operation}"
+
+          def build_value(schema: dict[str, Any], field: str, operation: str) -> Any:
+              if "const" in schema:
+                  return schema["const"]
+              if "default" in schema:
+                  return schema["default"]
+              if "examples" in schema and schema["examples"]:
+                  return schema["examples"][0]
+              if "enum" in schema and schema["enum"]:
+                  return choose_enum(field, list(schema["enum"]))
+              for branch_key in ("oneOf", "anyOf"):
+                  if branch_key in schema:
+                      branches = [b for b in schema[branch_key] if b.get("type") != "null"]
+                      if branches:
+                          merged = dict(schema)
+                          merged.pop(branch_key, None)
+                          merged.update(branches[0])
+                          return build_value(merged, field, operation)
+              kind = schema.get("type")
+              if isinstance(kind, list):
+                  kind = next((item for item in kind if item != "null"), "string")
+              if kind == "object" or "properties" in schema:
+                  props = dict(schema.get("properties") or {})
+                  required = list(schema.get("required") or [])
+                  return {name: build_value(props[name], name, operation) for name in required if name in props}
+              if kind == "array":
+                  count = max(1, int(schema.get("minItems", 1) or 1))
+                  item_schema = dict(schema.get("items") or {"type": "string"})
+                  values = [build_value(item_schema, field, operation) for _ in range(count)]
+                  if schema.get("uniqueItems") and len(values) > 1:
+                      values = values[:1]
+                  return values
+              if kind == "boolean":
+                  return False
+              if kind == "integer":
+                  minimum = schema.get("minimum", schema.get("exclusiveMinimum", 0))
+                  value = int(minimum or 0)
+                  if "exclusiveMinimum" in schema:
+                      value += 1
+                  return min(value if value != 0 else 1, int(schema.get("maximum", value if value != 0 else 1)))
+              if kind == "number":
+                  minimum = schema.get("minimum", schema.get("exclusiveMinimum", 0.0))
+                  value = float(minimum or 0.0)
+                  if "exclusiveMinimum" in schema:
+                      value += 1.0
+                  maximum = schema.get("maximum")
+                  if maximum is not None:
+                      value = min(value if value != 0 else 1.0, float(maximum))
+                  return value if value != 0 else 1.0
+              value = semantic_string(field, operation, schema)
+              value = clamp_text(value, schema)
+              pattern = schema.get("pattern")
+              if pattern:
+                  try:
+                      if not re.fullmatch(pattern, value):
+                          candidates = [TICKER, "CN", "CNY", "SSE", "Yonghui", "public-test", "1d", "zh-CN"]
+                          match = next((item for item in candidates if re.fullmatch(pattern, item)), None)
+                          if match is not None:
+                              value = match
+                  except re.error:
+                      pass
+              return value
+
+          def build_parameters(row: dict[str, Any]) -> dict[str, Any]:
+              schema = dict(row.get("parameter_schema") or {"type": "object", "properties": {}})
+              props = dict(schema.get("properties") or {})
+              required = list(schema.get("required") or [])
+              params = {name: build_value(props[name], name, row["operation_id"]) for name in required if name in props}
+
+              # Add useful optional fields only when they materially improve the Yonghui test.
+              useful_optional = {
+                  "ticker", "symbol", "company", "company_name", "brand", "country", "country_code",
+                  "exchange", "market", "currency", "url", "website", "language", "locale", "format",
+                  "mode", "focus", "max_content_length", "timeout", "strict", "deduplicate", "models",
+                  "extractors", "delimiter", "headers", "output_format", "start_date", "end_date",
+              }
+              for name, prop in props.items():
+                  if name in params:
+                      continue
+                  normalized = name.lower().replace("-", "_")
+                  if normalized in useful_optional:
+                      try:
+                          params[name] = build_value(prop, name, row["operation_id"])
+                      except Exception:
+                          pass
+              jsonschema.validate(params, schema)
+              return params
+
+          agent_operations = catalog_operations(ROOT / "api-center/agent-toolbelt/provider-catalog.json")
+          gapup_operations = catalog_operations(ROOT / "api-center/gapup-mcp/provider-catalog.json")
+
+          agent_key = str(os.getenv("AGENT_TOOLBELT_KEY") or "").strip()
+          gapup_key = str(os.getenv("GAPUP_API_KEY") or "").strip()
+
+          agent_results: list[dict[str, Any]] = []
+          for row in agent_operations:
+              operation = row["operation_id"]
+              if row.get("execution", {}).get("local") is True:
+                  agent_results.append({"operation": operation, "structural": "PASS", "live": "LOCAL_PASS"})
+                  continue
+              result: dict[str, Any] = {"operation": operation}
+              try:
+                  params = build_parameters(row)
+                  agent_task.validate_payload_shape(params)
+                  if operation in agent_task.URL_OPERATIONS:
+                      agent_task.validate_public_https_url(str(params["url"]))
+                  result["structural"] = "PASS"
+                  result["parameter_names"] = sorted(params)
+              except Exception as exc:
+                  result.update({"structural": "FAIL", "live": "NOT_RUN", "error_type": type(exc).__name__, "error": str(exc)[:500]})
+                  agent_results.append(result)
+                  continue
+              if not agent_key or not agent_key.startswith("atb_"):
+                  result.update({"live": "SKIPPED_CREDENTIAL", "error": "AGENT_TOOLBELT_KEY missing or prefix invalid"})
+                  agent_results.append(result)
+                  continue
+              try:
+                  payload, metadata = agent_task.query_agent_toolbelt(operation, params, timeout=120, max_bytes=10_000_000)
+                  result.update({
+                      "live": "PASS",
+                      "http_status": metadata.get("http_status"),
+                      "response_bytes": metadata.get("response_bytes"),
+                      "upstream_llm_may_be_used": metadata.get("upstream_llm_may_be_used"),
+                      "payload_type": type(payload).__name__,
+                  })
+              except Exception as exc:
+                  result.update({
+                      "live": "FAIL",
+                      "error_type": type(exc).__name__,
+                      "error_code": getattr(exc, "code", "AGENT_TOOLBELT_ERROR"),
+                      "error": str(exc)[:500].replace(agent_key, "[REDACTED]"),
+                  })
+              agent_results.append(result)
+              time.sleep(6.2)
+
+          former_stock_tools = [
+              "stock-thesis", "earnings-analysis", "insider-signal", "valuation-snapshot",
+              "bear-vs-bull", "compare-stocks", "moat-analysis", "watchlist-scan",
+          ]
+          current_agent_ids = {row["operation_id"] for row in agent_operations}
+          stock_boundary = {
+              "status": "PASS" if not (set(former_stock_tools) & current_agent_ids) else "FAIL",
+              "former_us_only_tools_absent": sorted(set(former_stock_tools) - current_agent_ids),
+              "unexpected_present": sorted(set(former_stock_tools) & current_agent_ids),
+          }
+
+          gapup_structural: list[dict[str, Any]] = []
+          gapup_param_cache: dict[str, dict[str, Any]] = {}
+          for row in gapup_operations:
+              operation = row["operation_id"]
+              if row.get("execution", {}).get("local") is True:
+                  gapup_structural.append({"operation": operation, "status": "LOCAL_PASS"})
+                  continue
+              try:
+                  params = build_parameters(row)
+                  gapup_task.validate_public_parameters(params)
+                  gapup_param_cache[operation] = params
+                  gapup_structural.append({"operation": operation, "status": "PASS", "parameter_names": sorted(params)})
+              except Exception as exc:
+                  gapup_structural.append({"operation": operation, "status": "FAIL", "error_type": type(exc).__name__, "error": str(exc)[:500]})
+
+          tools_list_probe: dict[str, Any]
+          try:
+              response = requests.post(
+                  gapup_task.MCP_URL,
+                  json={"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}},
+                  headers={"Accept": "application/json, text/event-stream", "Content-Type": "application/json", "User-Agent": "yonghui-gapup-matrix/1"},
+                  timeout=60,
+                  allow_redirects=False,
+              )
+              parsed = gapup_task.parse_mcp_payload(response.content, response.headers.get("Content-Type", ""))
+              tools = ((parsed.get("result") or {}).get("tools") or []) if isinstance(parsed, dict) else []
+              tools_list_probe = {
+                  "status": "PASS" if response.status_code == 200 and isinstance(tools, list) else "FAIL",
+                  "http_status": response.status_code,
+                  "official_tool_count": len(tools) if isinstance(tools, list) else None,
+                  "redirected": response.is_redirect,
+              }
+          except Exception as exc:
+              tools_list_probe = {"status": "FAIL", "error_type": type(exc).__name__, "error": str(exc)[:500]}
+
+          gapup_live_targets = [
+              "industry_classifier_naics_sic",
+              "china_market_data",
+              "historical_price_series",
+              "earnings_reviewer",
+              "financial_model_3statement",
+              "monte_carlo_portfolio",
+              "competitive_deep_dive",
+              "competitor_intel",
+              "competitor_moves",
+              "market_research_brief",
+              "market_sizing",
+              "sentiment_news_pulse",
+              "web_search_multilang",
+              "corporate_registry_lookup",
+              "china_ecommerce_intel",
+              "esg_audit_multi",
+              "supply_chain_fx_exposure_dashboard",
+              "weather_climate_intel",
+              "patent_landscape",
+              "strategic_options_analyzer",
+          ]
+          available_gapup_ids = {row["operation_id"] for row in gapup_operations}
+          gapup_live_results: list[dict[str, Any]] = []
+          stop_reason: str | None = None
+          for operation in gapup_live_targets:
+              if operation not in available_gapup_ids:
+                  gapup_live_results.append({"operation": operation, "live": "NOT_IN_CATALOG"})
+                  continue
+              if stop_reason:
+                  gapup_live_results.append({"operation": operation, "live": "SKIPPED_PROVIDER_LIMIT", "reason": stop_reason})
+                  continue
+              params = gapup_param_cache.get(operation)
+              if params is None:
+                  gapup_live_results.append({"operation": operation, "live": "SKIPPED_STRUCTURAL_FAILURE"})
+                  continue
+              if not gapup_key or not gapup_key.startswith("gpk_"):
+                  gapup_live_results.append({"operation": operation, "live": "SKIPPED_CREDENTIAL", "error": "GAPUP_API_KEY missing or prefix invalid"})
+                  stop_reason = "credential_missing_or_invalid"
+                  continue
+              try:
+                  payload, metadata = gapup_task.query_gapup(operation, params, timeout=120, max_bytes=10_000_000)
+                  gapup_live_results.append({
+                      "operation": operation,
+                      "live": "PASS",
+                      "http_status": metadata.get("http_status"),
+                      "response_bytes": metadata.get("response_bytes"),
+                      "payload_type": type(payload).__name__,
+                      "async_forced_false": metadata.get("async_forced_false"),
+                  })
+              except Exception as exc:
+                  code = getattr(exc, "code", "GAPUP_MCP_ERROR")
+                  gapup_live_results.append({
+                      "operation": operation,
+                      "live": "FAIL",
+                      "error_type": type(exc).__name__,
+                      "error_code": code,
+                      "error": str(exc)[:700].replace(gapup_key, "[REDACTED]"),
+                  })
+                  if code in {
+                      "GAPUP_API_KEY_MISSING", "GAPUP_API_KEY_INVALID", "GAPUP_MCP_CREDENTIAL_DENIED",
+                      "GAPUP_MCP_PAYMENT_REQUIRED", "GAPUP_MCP_RATE_LIMITED",
+                  }:
+                      stop_reason = code
+              time.sleep(1.0)
+
+          def counts(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+              output: dict[str, int] = {}
+              for row in rows:
+                  value = str(row.get(key, "UNKNOWN"))
+                  output[value] = output.get(value, 0) + 1
+              return dict(sorted(output.items()))
+
+          agent_summary = {
+              "provider": "agent-toolbelt",
+              "catalog_operation_count": len(agent_operations),
+              "upstream_operation_count": len(agent_operations) - 1,
+              "credential_present": bool(agent_key),
+              "credential_prefix_valid": agent_key.startswith("atb_") if agent_key else False,
+              "structural_counts": counts(agent_results, "structural"),
+              "live_counts": counts(agent_results, "live"),
+              "stock_boundary": stock_boundary,
+              "results": agent_results,
+          }
+          gapup_summary = {
+              "provider": "gapup-mcp",
+              "catalog_operation_count": len(gapup_operations),
+              "upstream_operation_count": len(gapup_operations) - 1,
+              "credential_present": bool(gapup_key),
+              "credential_prefix_valid": gapup_key.startswith("gpk_") if gapup_key else False,
+              "tools_list_probe": tools_list_probe,
+              "structural_counts": counts(gapup_structural, "status"),
+              "structural_results": gapup_structural,
+              "live_target_count": len(gapup_live_targets),
+              "live_counts": counts(gapup_live_results, "live"),
+              "live_results": gapup_live_results,
+              "stop_reason": stop_reason,
+          }
+          overall = {
+              "schema_version": "yonghui-agent-toolbelt-gapup-matrix-v1",
+              "tested_at": datetime.now(timezone.utc).isoformat(),
+              "subject": {"company": COMPANY, "ticker": TICKER, "market": "SSE A-share"},
+              "test_policy": {
+                  "agent_toolbelt": "all current 21 operations: one local catalog plus 20 live upstream calls",
+                  "gapup": "all 209 operations structurally validated; 20 Yonghui-relevant business capability families live-called",
+                  "automatic_payment": False,
+                  "personal_or_confidential_data": False,
+                  "secret_values_exposed": False,
+              },
+              "agent_toolbelt": {
+                  "catalog_operation_count": agent_summary["catalog_operation_count"],
+                  "structural_counts": agent_summary["structural_counts"],
+                  "live_counts": agent_summary["live_counts"],
+                  "stock_boundary": stock_boundary["status"],
+              },
+              "gapup": {
+                  "catalog_operation_count": gapup_summary["catalog_operation_count"],
+                  "tools_list_probe": tools_list_probe,
+                  "structural_counts": gapup_summary["structural_counts"],
+                  "live_counts": gapup_summary["live_counts"],
+                  "stop_reason": stop_reason,
+              },
+          }
+
+          (OUT / "agent-toolbelt-results.json").write_text(json.dumps(agent_summary, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+          (OUT / "gapup-results.json").write_text(json.dumps(gapup_summary, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+          (OUT / "summary.json").write_text(json.dumps(overall, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+          print(json.dumps(overall, ensure_ascii=False))
+          PY
+
+      - name: Verify credentials are absent from evidence
+        if: always()
+        shell: bash
+        run: |
+          set +x
+          test -f yonghui-provider-matrix/summary.json
+          for secret in "${AGENT_TOOLBELT_KEY:-}" "${GAPUP_API_KEY:-}"; do
+            if [ -n "$secret" ] && grep -R -Fq -- "$secret" yonghui-provider-matrix; then
+              echo "credential leak detected"
+              exit 1
+            fi
+          done
+
+      - name: Upload Yonghui matrix evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: yonghui-agent-toolbelt-gapup-matrix-${{ github.run_id }}
+          path: yonghui-provider-matrix/
+          if-no-files-found: error
+          retention-days: 7
