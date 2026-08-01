@@ -1,4 +1,4 @@
-name: Validate GPTs API Catalog
+name: Validate GPTs Intelligence Catalog
 
 on:
   pull_request:
@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: api-catalog-${{ github.ref }}
+  group: intelligence-catalog-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -49,8 +49,9 @@ jobs:
             api-center/oecd/requirements.txt
             api-center/alphafeed/requirements.txt
             api-center/agent-toolbelt/requirements.txt
+            api-center/gapup-mcp/requirements.txt
 
-      - name: Install isolated API dependencies
+      - name: Install isolated intelligence dependencies
         run: |
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
@@ -66,7 +67,8 @@ jobs:
             -r api-center/overture-maps/requirements.txt \
             -r api-center/oecd/requirements.txt \
             -r api-center/alphafeed/requirements.txt \
-            -r api-center/agent-toolbelt/requirements.txt
+            -r api-center/agent-toolbelt/requirements.txt \
+            -r api-center/gapup-mcp/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -98,6 +100,7 @@ jobs:
             api-center/oecd/oecd_task.py \
             api-center/alphafeed/alphafeed_task.py \
             api-center/agent-toolbelt/agent_toolbelt_task.py \
+            api-center/gapup-mcp/gapup_mcp_task.py \
             api-center/tests/*.py \
             api-center/browserless/tests/*.py \
             api-center/east-asia-econ/tests/*.py \
@@ -106,7 +109,8 @@ jobs:
             api-center/oecd/tests/*.py \
             api-center/alphafeed/tests/*.py \
             api-center/xweather/tests/*.py \
-            api-center/agent-toolbelt/tests/*.py
+            api-center/agent-toolbelt/tests/*.py \
+            api-center/gapup-mcp/tests/*.py
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
@@ -120,6 +124,7 @@ jobs:
           python -m unittest discover -s api-center/oecd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/alphafeed/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/agent-toolbelt/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/gapup-mcp/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Rebuild deterministic contracts
@@ -151,11 +156,13 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 30
-          assert catalog['enabled_managed_provider_count'] == 30
+          assert catalog['managed_provider_count'] == len(providers) == 31
+          assert catalog['enabled_managed_provider_count'] == 31
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 360
+          ) == 569
+          assert catalog['center_display_name_zh'] == '情报中心'
+          assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
@@ -208,27 +215,43 @@ jobs:
           assert agent_toolbelt['limits']['write_operations_allowed'] is False
           assert agent_toolbelt['limits']['trading_or_order_execution_allowed'] is False
 
+          gapup = providers['gapup-mcp']
+          gapup_ids = {row['operation_id'] for row in gapup['operations']}
+          assert gapup['ticket_prefix'] == '[intel-gapup]'
+          assert gapup['required_secret_environment_variable_name'] == 'GAPUP_API_KEY'
+          assert len(gapup_ids) == 209
+          assert gapup['limits']['fixed_mcp_tool_count'] == 208
+          assert gapup['limits']['blocked_tool_count'] == 63
+          assert gapup['limits']['automatic_x402_payment_allowed'] is False
+          assert gapup['limits']['async_jobs_allowed'] is False
+          assert gapup['limits']['write_operations_allowed'] is False
+          assert 'crm_connector' not in gapup_ids
+          assert 'webhooks_manage' not in gapup_ids
+
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
               'worldbank_connectors': 9,
-              'managed_providers': 30,
-              'managed_operations': 360,
+              'managed_providers': 31,
+              'managed_operations': 569,
               'overture_maps_operations': 7,
               'oecd_operations': 6,
               'alphafeed_operations': 10,
               'xweather_operations': 10,
               'agent_toolbelt_operations': 21,
               'agent_toolbelt_stock_operations': 0,
+              'gapup_mcp_operations': 209,
+              'gapup_mcp_upstream_tools': 208,
+              'gapup_mcp_blocked_tools': 63,
           }))
           PY
           git diff --check
 
-      - name: Upload safe catalog and generated gateway evidence
+      - name: Upload safe intelligence catalog evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: gpts-api-catalog-${{ github.run_id }}
+          name: gpts-intelligence-catalog-${{ github.run_id }}
           path: |
             api-center/api-catalog.json
             api-center/api-catalog.md
@@ -246,5 +269,8 @@ jobs:
             api-center/xweather/ticket.schema.json
             api-center/agent-toolbelt/provider-catalog.json
             api-center/agent-toolbelt/ticket.schema.json
+            api-center/gapup-mcp/provider-catalog.json
+            api-center/gapup-mcp/ticket.schema.json
+            api-center/gapup-mcp/readonly-tools.snapshot.json
           if-no-files-found: error
           retention-days: 30
