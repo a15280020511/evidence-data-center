@@ -46,6 +46,8 @@ EXPECTED_OPERATION_COUNTS = {
     "who-gho-odata": 8,
     "mediastack": 5,
     "statistics-of-the-world": 11,
+    "aisstream": 4,
+    "internet-archive": 6,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -70,9 +72,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 32)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 32)
-        self.assertEqual(catalog["managed_operation_count"], 363)
+        self.assertEqual(catalog["managed_provider_count"], 34)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 34)
+        self.assertEqual(catalog["managed_operation_count"], 373)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -115,6 +117,7 @@ class ApiCatalogTests(unittest.TestCase):
             "alpha-vantage": "ALPHA_VANTAGE_API_KEY",
             "alphafeed": "ALPHAFEED_API_KEY",
             "mediastack": "MEDIASTACK_API_KEY",
+            "aisstream": "AISSTREAM_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -229,6 +232,31 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(alphafeed["limits"]["arbitrary_sdk_methods_allowed"])
         self.assertFalse(alphafeed["limits"]["trading_or_order_execution_allowed"])
 
+
+        aisstream = providers["aisstream"]
+        self.assertEqual(aisstream["ticket_prefix"], "[intel-aisstream]")
+        self.assertEqual(
+            aisstream["required_secret_environment_variable_name"],
+            "AISSTREAM_API_KEY",
+        )
+        self.assertEqual(len(aisstream["operations"]), 4)
+        self.assertFalse(aisstream["limits"]["worldwide_subscription_allowed"])
+        self.assertFalse(aisstream["limits"]["background_streaming_allowed"])
+        self.assertFalse(aisstream["limits"]["write_operations_allowed"])
+
+        internet_archive = providers["internet-archive"]
+        self.assertEqual(
+            internet_archive["ticket_prefix"],
+            "[intel-internet-archive]",
+        )
+        self.assertEqual(
+            internet_archive["required_secret_environment_variable_name"],
+            "",
+        )
+        self.assertEqual(len(internet_archive["operations"]), 6)
+        self.assertFalse(internet_archive["limits"]["file_downloads_allowed"])
+        self.assertFalse(internet_archive["limits"]["uploads_allowed"])
+        self.assertFalse(internet_archive["limits"]["write_operations_allowed"])
 
         who = providers["who-gho-odata"]
         self.assertEqual(who["ticket_prefix"], "[intel-who-gho]")

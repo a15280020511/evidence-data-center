@@ -34,15 +34,17 @@
     "who-gho/provider-catalog.json",
     "mediastack/provider-catalog.json",
     "statistics-of-the-world/provider-catalog.json",
+    "aisstream/provider-catalog.json",
+    "internet-archive/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "da49e18a5e89b3d5645ff1ee6c838a344d7956e6d88fe81c7275f295ca875c52",
+  "managed_provider_catalog_sha256": "ed76aeb434ea75a4b159d0b07b74023081e1d4755221bf0358e039340f02fd0a",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 32,
-  "enabled_managed_provider_count": 32,
-  "managed_operation_count": 363,
-  "exposed_parameter_count": 1423,
+  "managed_provider_count": 34,
+  "enabled_managed_provider_count": 34,
+  "managed_operation_count": 373,
+  "exposed_parameter_count": 1449,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -71,6 +73,8 @@
     "who-gho/provider-catalog.json",
     "mediastack/provider-catalog.json",
     "statistics-of-the-world/provider-catalog.json",
+    "aisstream/provider-catalog.json",
+    "internet-archive/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -16228,6 +16232,604 @@
       "catalog_file": "statistics-of-the-world/provider-catalog.json"
     },
     {
+      "provider_id": "aisstream",
+      "display_name": "AISstream 全球船舶实时AIS",
+      "description": "通过 AISstream.io 的固定 WSS 端点，在严格时间、区域、消息数和响应大小边界内读取实时船舶AIS消息。",
+      "enabled": true,
+      "ticket_prefix": "[intel-aisstream]",
+      "catalog_policy": "开放4项固定只读操作；API Key仅由GitHub Actions后端注入，客户端不得提交或覆盖。",
+      "execution_policy": "每张票据最多建立1条WSS连接，持续不超过30秒，最多4个有限区域、20个MMSI、8种消息类型和200条消息；禁止全球无限流、后台常驻和转发。",
+      "operation_count": 4,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地AISstream安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "aisstream",
+            "official_origin": "wss://stream.aisstream.io/v0/stream",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "backend_secret"
+          }
+        },
+        {
+          "operation_id": "collect-messages",
+          "description": "按有限地理区域、可选MMSI和消息类型，在短时间窗口内收集实时AIS消息。",
+          "parameter_names": [
+            "bounding_boxes",
+            "mmsi",
+            "message_types",
+            "duration_seconds",
+            "max_messages"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bounding_boxes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    ]
+                  }
+                }
+              },
+              "mmsi": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$"
+                }
+              },
+              "message_types": {
+                "type": "array",
+                "maxItems": 8,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "AddressedBinaryMessage",
+                    "AddressedSafetyMessage",
+                    "AidsToNavigationReport",
+                    "AssignedModeCommand",
+                    "BaseStationReport",
+                    "BinaryAcknowledge",
+                    "BinaryBroadcastMessage",
+                    "ChannelManagement",
+                    "CoordinatedUTCInquiry",
+                    "DataLinkManagementMessage",
+                    "DataLinkManagementMessageData",
+                    "ExtendedClassBPositionReport",
+                    "GnssBroadcastBinaryMessage",
+                    "GroupAssignmentCommand",
+                    "Interrogation",
+                    "LongRangeAisBroadcastMessage",
+                    "MultiSlotBinaryMessage",
+                    "PositionReport",
+                    "SafetyBroadcastMessage",
+                    "ShipStaticData",
+                    "SingleSlotBinaryMessage",
+                    "StandardClassBPositionReport",
+                    "StandardSearchAndRescueAircraftReport",
+                    "StaticDataReport",
+                    "UnknownMessage"
+                  ]
+                }
+              },
+              "duration_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30,
+                "default": 10
+              },
+              "max_messages": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              }
+            },
+            "required": [
+              "bounding_boxes"
+            ]
+          },
+          "result_contract": {
+            "provider": "aisstream",
+            "official_origin": "wss://stream.aisstream.io/v0/stream",
+            "transport": "WSS",
+            "read_only": true,
+            "credential_mode": "backend_secret"
+          }
+        },
+        {
+          "operation_id": "collect-vessel-positions",
+          "description": "按有限地理区域和可选MMSI收集Class A/B位置类消息。",
+          "parameter_names": [
+            "bounding_boxes",
+            "mmsi",
+            "duration_seconds",
+            "max_messages"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bounding_boxes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    ]
+                  }
+                }
+              },
+              "mmsi": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$"
+                }
+              },
+              "duration_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30,
+                "default": 10
+              },
+              "max_messages": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              }
+            },
+            "required": [
+              "bounding_boxes"
+            ]
+          },
+          "result_contract": {
+            "provider": "aisstream",
+            "official_origin": "wss://stream.aisstream.io/v0/stream",
+            "transport": "WSS",
+            "read_only": true,
+            "credential_mode": "backend_secret"
+          }
+        },
+        {
+          "operation_id": "collect-vessel-static",
+          "description": "按有限地理区域和可选MMSI收集船舶静态资料类消息。",
+          "parameter_names": [
+            "bounding_boxes",
+            "mmsi",
+            "duration_seconds",
+            "max_messages"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bounding_boxes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 4,
+                "items": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 2,
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "prefixItems": [
+                      {
+                        "type": "number",
+                        "minimum": -90,
+                        "maximum": 90
+                      },
+                      {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180
+                      }
+                    ]
+                  }
+                }
+              },
+              "mmsi": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9]{9}$"
+                }
+              },
+              "duration_seconds": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30,
+                "default": 10
+              },
+              "max_messages": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              }
+            },
+            "required": [
+              "bounding_boxes"
+            ]
+          },
+          "result_contract": {
+            "provider": "aisstream",
+            "official_origin": "wss://stream.aisstream.io/v0/stream",
+            "transport": "WSS",
+            "read_only": true,
+            "credential_mode": "backend_secret"
+          }
+        }
+      ],
+      "limits": {
+        "connections_per_ticket_max": 1,
+        "stream_duration_seconds_max": 30,
+        "timeout_seconds_max": 45,
+        "max_response_bytes": 20000000,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "fixed_api_host": "stream.aisstream.io",
+        "fixed_websocket_path": "/v0/stream",
+        "bounding_boxes_max": 4,
+        "bounding_box_area_square_degrees_max": 400,
+        "combined_bounding_box_area_square_degrees_max": 800,
+        "mmsi_filter_count_max": 20,
+        "message_type_filter_count_max": 8,
+        "messages_per_ticket_max": 200,
+        "worldwide_subscription_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "background_streaming_allowed": false,
+        "stream_relay_allowed": false,
+        "write_operations_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "secret_values_exposed": false,
+        "authentication_required": true
+      },
+      "required_secret_environment_variable_name": "AISSTREAM_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "e15b0c24f1a4fba31b3fa4d53c06cf3a2239e44e2c47808c39224b4cc89388bb",
+      "catalog_file": "aisstream/provider-catalog.json"
+    },
+    {
+      "provider_id": "internet-archive",
+      "display_name": "互联网档案馆 Internet Archive",
+      "description": "通过Internet Archive公开接口搜索数字馆藏、读取项目元数据和文件目录，并查询Wayback网页存档可用性与有限捕获记录。",
+      "enabled": true,
+      "ticket_prefix": "[intel-internet-archive]",
+      "catalog_policy": "开放6项固定免密只读操作；不开放上传、修改、删除、借阅、登录、任意文件下载或网页回放抓取。",
+      "execution_policy": "每张票据最多一次固定HTTPS GET；搜索、字段、分页、排序、标识符、URL、时间范围和返回行数均受Schema约束，不跟随重定向。",
+      "operation_count": 6,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地互联网档案馆安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "search-items",
+          "description": "通过Advanced Search API按受控查询、字段、分页和排序搜索馆藏元数据。",
+          "parameter_names": [
+            "query",
+            "rows",
+            "page",
+            "fields",
+            "sort"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "rows": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "default": 1
+              },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "downloads desc",
+                  "downloads asc",
+                  "date desc",
+                  "date asc",
+                  "addeddate desc",
+                  "addeddate asc",
+                  "titleSorter asc",
+                  "titleSorter desc"
+                ],
+                "default": "downloads desc"
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-item-metadata",
+          "description": "按固定identifier读取项目元数据。",
+          "parameter_names": [
+            "identifier"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "identifier": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+              }
+            },
+            "required": [
+              "identifier"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-item-files",
+          "description": "按固定identifier读取项目文件目录及校验元数据，不下载文件内容。",
+          "parameter_names": [
+            "identifier"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "identifier": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+              }
+            },
+            "required": [
+              "identifier"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "wayback-availability",
+          "description": "查询指定HTTP(S) URL在Wayback Machine中是否有可用快照。",
+          "parameter_names": [
+            "url",
+            "timestamp"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 1000,
+                "pattern": "^https?://[^\\s]+$"
+              },
+              "timestamp": {
+                "type": "string",
+                "pattern": "^[0-9]{4,14}$"
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "wayback-captures",
+          "description": "通过固定CDX端点读取指定URL的有限去重成功捕获记录。",
+          "parameter_names": [
+            "url",
+            "from_timestamp",
+            "to_timestamp",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 1000,
+                "pattern": "^https?://[^\\s]+$"
+              },
+              "from_timestamp": {
+                "type": "string",
+                "pattern": "^[0-9]{4,14}$"
+              },
+              "to_timestamp": {
+                "type": "string",
+                "pattern": "^[0-9]{4,14}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 50
+              }
+            },
+            "required": [
+              "url"
+            ]
+          },
+          "result_contract": {
+            "provider": "internet-archive",
+            "official_origin": "https://web.archive.org",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "fixed_api_hosts": [
+          "archive.org",
+          "web.archive.org"
+        ],
+        "fixed_paths": [
+          "/advancedsearch.php",
+          "/metadata/{identifier}",
+          "/wayback/available",
+          "/cdx/search/cdx"
+        ],
+        "search_rows_max": 200,
+        "search_page_max": 1000,
+        "metadata_files_returned_max": 500,
+        "wayback_capture_rows_max": 200,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "file_downloads_allowed": false,
+        "archived_page_body_fetching_allowed": false,
+        "bulk_collection_download_allowed": false,
+        "uploads_allowed": false,
+        "write_operations_allowed": false,
+        "authentication_required": false,
+        "secret_values_exposed": false,
+        "automatic_pagination_allowed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "3dbf98875d81988ebb952fbd73f9b8506685ad121b3e226ab05d397ccee2b8df",
+      "catalog_file": "internet-archive/provider-catalog.json"
+    },
+    {
       "provider_id": "wolfram-alpha",
       "display_name": "Wolfram|Alpha 计算知识 API",
       "description": "通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。",
@@ -24982,5 +25584,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "aef0c358f109e0f655fdebb56eb6c77358e2b00b8586470d01d7b26365a93d40"
+  "catalog_sha256": "d46e3ad3808867a0af1fb0e286d133e831746e5af2cd50d8f2df3d5fcd99c508"
 }

@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            363,
+            373,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -88,6 +88,8 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "who-gho-odata": 8,
             "mediastack": 5,
             "statistics-of-the-world": 11,
+            "aisstream": 4,
+            "internet-archive": 6,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }

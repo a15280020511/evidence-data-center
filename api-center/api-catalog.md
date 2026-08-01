@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`32/32` 已启用
-- 托管操作总数：`363`
-- 已公开参数总数：`1423`
-- 目录 SHA-256：`aef0c358f109e0f655fdebb56eb6c77358e2b00b8586470d01d7b26365a93d40`
+- 托管提供方：`34/34` 已启用
+- 托管操作总数：`373`
+- 已公开参数总数：`1449`
+- 目录 SHA-256：`d46e3ad3808867a0af1fb0e286d133e831746e5af2cd50d8f2df3d5fcd99c508`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -47,6 +47,8 @@
 | WHO GHO OData 全球卫生数据 | `who-gho-odata` | 启用 | `[intel-who-gho]` | `8` | 否 |
 | Mediastack 全球新闻情报 | `mediastack` | 启用 | `[intel-mediastack]` | `5` | 否 |
 | Statistics of the World 全球统计 | `statistics-of-the-world` | 启用 | `[intel-sotw]` | `11` | 否 |
+| AISstream 全球船舶实时AIS | `aisstream` | 启用 | `[intel-aisstream]` | `4` | 否 |
+| 互联网档案馆 Internet Archive | `internet-archive` | 启用 | `[intel-internet-archive]` | `6` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -13367,6 +13369,520 @@
     "/api/v1",
     "/api/v2"
   ]
+}
+```
+
+## AISstream 全球船舶实时AIS (`aisstream`)
+
+- 状态：`启用`
+- 说明：通过 AISstream.io 的固定 WSS 端点，在严格时间、区域、消息数和响应大小边界内读取实时船舶AIS消息。
+- 目录策略：开放4项固定只读操作；API Key仅由GitHub Actions后端注入，客户端不得提交或覆盖。
+- 执行策略：每张票据最多建立1条WSS连接，持续不超过30秒，最多4个有限区域、20个MMSI、8种消息类型和200条消息；禁止全球无限流、后台常驻和转发。
+- 票据前缀：`[intel-aisstream]`
+- Secret环境变量名：`AISSTREAM_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`e15b0c24f1a4fba31b3fa4d53c06cf3a2239e44e2c47808c39224b4cc89388bb`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地AISstream安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `collect-messages` | 按有限地理区域、可选MMSI和消息类型，在短时间窗口内收集实时AIS消息。 | `bounding_boxes, mmsi, message_types, duration_seconds, max_messages` |
+
+`collect-messages` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bounding_boxes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          ]
+        }
+      }
+    },
+    "mmsi": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{9}$"
+      }
+    },
+    "message_types": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "AddressedBinaryMessage",
+          "AddressedSafetyMessage",
+          "AidsToNavigationReport",
+          "AssignedModeCommand",
+          "BaseStationReport",
+          "BinaryAcknowledge",
+          "BinaryBroadcastMessage",
+          "ChannelManagement",
+          "CoordinatedUTCInquiry",
+          "DataLinkManagementMessage",
+          "DataLinkManagementMessageData",
+          "ExtendedClassBPositionReport",
+          "GnssBroadcastBinaryMessage",
+          "GroupAssignmentCommand",
+          "Interrogation",
+          "LongRangeAisBroadcastMessage",
+          "MultiSlotBinaryMessage",
+          "PositionReport",
+          "SafetyBroadcastMessage",
+          "ShipStaticData",
+          "SingleSlotBinaryMessage",
+          "StandardClassBPositionReport",
+          "StandardSearchAndRescueAircraftReport",
+          "StaticDataReport",
+          "UnknownMessage"
+        ]
+      }
+    },
+    "duration_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 10
+    },
+    "max_messages": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    }
+  },
+  "required": [
+    "bounding_boxes"
+  ]
+}
+```
+
+| `collect-vessel-positions` | 按有限地理区域和可选MMSI收集Class A/B位置类消息。 | `bounding_boxes, mmsi, duration_seconds, max_messages` |
+
+`collect-vessel-positions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bounding_boxes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          ]
+        }
+      }
+    },
+    "mmsi": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{9}$"
+      }
+    },
+    "duration_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 10
+    },
+    "max_messages": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    }
+  },
+  "required": [
+    "bounding_boxes"
+  ]
+}
+```
+
+| `collect-vessel-static` | 按有限地理区域和可选MMSI收集船舶静态资料类消息。 | `bounding_boxes, mmsi, duration_seconds, max_messages` |
+
+`collect-vessel-static` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bounding_boxes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "items": {
+        "type": "array",
+        "minItems": 2,
+        "maxItems": 2,
+        "items": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          ]
+        }
+      }
+    },
+    "mmsi": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{9}$"
+      }
+    },
+    "duration_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30,
+      "default": 10
+    },
+    "max_messages": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    }
+  },
+  "required": [
+    "bounding_boxes"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "connections_per_ticket_max": 1,
+  "stream_duration_seconds_max": 30,
+  "timeout_seconds_max": 45,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_host": "stream.aisstream.io",
+  "fixed_websocket_path": "/v0/stream",
+  "bounding_boxes_max": 4,
+  "bounding_box_area_square_degrees_max": 400,
+  "combined_bounding_box_area_square_degrees_max": 800,
+  "mmsi_filter_count_max": 20,
+  "message_type_filter_count_max": 8,
+  "messages_per_ticket_max": 200,
+  "worldwide_subscription_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "background_streaming_allowed": false,
+  "stream_relay_allowed": false,
+  "write_operations_allowed": false,
+  "trading_or_order_execution_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": true
+}
+```
+
+## 互联网档案馆 Internet Archive (`internet-archive`)
+
+- 状态：`启用`
+- 说明：通过Internet Archive公开接口搜索数字馆藏、读取项目元数据和文件目录，并查询Wayback网页存档可用性与有限捕获记录。
+- 目录策略：开放6项固定免密只读操作；不开放上传、修改、删除、借阅、登录、任意文件下载或网页回放抓取。
+- 执行策略：每张票据最多一次固定HTTPS GET；搜索、字段、分页、排序、标识符、URL、时间范围和返回行数均受Schema约束，不跟随重定向。
+- 票据前缀：`[intel-internet-archive]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`3dbf98875d81988ebb952fbd73f9b8506685ad121b3e226ab05d397ccee2b8df`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地互联网档案馆安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `search-items` | 通过Advanced Search API按受控查询、字段、分页和排序搜索馆藏元数据。 | `query, rows, page, fields, sort` |
+
+`search-items` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 1
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "downloads desc",
+        "downloads asc",
+        "date desc",
+        "date asc",
+        "addeddate desc",
+        "addeddate asc",
+        "titleSorter asc",
+        "titleSorter desc"
+      ],
+      "default": "downloads desc"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `get-item-metadata` | 按固定identifier读取项目元数据。 | `identifier` |
+
+`get-item-metadata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+    }
+  },
+  "required": [
+    "identifier"
+  ]
+}
+```
+
+| `list-item-files` | 按固定identifier读取项目文件目录及校验元数据，不下载文件内容。 | `identifier` |
+
+`list-item-files` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,254}$"
+    }
+  },
+  "required": [
+    "identifier"
+  ]
+}
+```
+
+| `wayback-availability` | 查询指定HTTP(S) URL在Wayback Machine中是否有可用快照。 | `url, timestamp` |
+
+`wayback-availability` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 1000,
+      "pattern": "^https?://[^\\s]+$"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4,14}$"
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+| `wayback-captures` | 通过固定CDX端点读取指定URL的有限去重成功捕获记录。 | `url, from_timestamp, to_timestamp, limit` |
+
+`wayback-captures` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 1000,
+      "pattern": "^https?://[^\\s]+$"
+    },
+    "from_timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4,14}$"
+    },
+    "to_timestamp": {
+      "type": "string",
+      "pattern": "^[0-9]{4,14}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    }
+  },
+  "required": [
+    "url"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_hosts": [
+    "archive.org",
+    "web.archive.org"
+  ],
+  "fixed_paths": [
+    "/advancedsearch.php",
+    "/metadata/{identifier}",
+    "/wayback/available",
+    "/cdx/search/cdx"
+  ],
+  "search_rows_max": 200,
+  "search_page_max": 1000,
+  "metadata_files_returned_max": 500,
+  "wayback_capture_rows_max": 200,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "file_downloads_allowed": false,
+  "archived_page_body_fetching_allowed": false,
+  "bulk_collection_download_allowed": false,
+  "uploads_allowed": false,
+  "write_operations_allowed": false,
+  "authentication_required": false,
+  "secret_values_exposed": false,
+  "automatic_pagination_allowed": false
 }
 ```
 

@@ -364,3 +364,28 @@ https://ghoapi.azureedge.net/api
 - 11 个固定只读操作，覆盖国家、指标、历史、排名、搜索、国家比较和高频序列。
 - 禁止全量 bulk、自然语言 chat、任意路径、自动分页和写操作。
 - 定位为次级聚合证据源，重要结论应回查 IMF、World Bank、WHO、FRED、ECB 或 UN 原始来源。
+
+
+## AISstream 全球船舶实时AIS
+
+```text
+Provider: aisstream
+Ticket prefix: [intel-aisstream]
+Repository Secret: AISSTREAM_API_KEY
+Operations: 4
+Fixed endpoint: wss://stream.aisstream.io/v0/stream
+```
+
+只允许短时、有限区域、有限消息数的只读AIS采集。禁止全球无限订阅、后台常驻、流转发、任意WSS端点、客户端密钥、写操作和交易执行。
+
+## 互联网档案馆 Internet Archive
+
+```text
+Provider: internet-archive
+Ticket prefix: [intel-internet-archive]
+Secret: none
+Operations: 6
+Fixed hosts: archive.org, web.archive.org
+```
+
+支持受控馆藏搜索、项目元数据、文件目录、Wayback可用性和有限CDX捕获记录。禁止上传、删除、登录、借阅、文件内容下载、网页正文回放抓取和批量镜像。
