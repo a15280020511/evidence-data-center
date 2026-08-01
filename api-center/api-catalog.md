@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`21/21` 已启用
-- 托管操作总数：`213`
-- 已公开参数总数：`1096`
-- 目录 SHA-256：`ebdd63ae730b110b63ca0da2624c1a305f324fd87082b966d5dbe179b611fa6d`
+- 托管提供方：`22/22` 已启用
+- 托管操作总数：`226`
+- 已公开参数总数：`1107`
+- 目录 SHA-256：`ba5f9e485f6f5158f87151c693664469cf79fdbe3ee0269a44f11f92b5cdd3c5`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -36,6 +36,7 @@
 | EODHD 全球金融市场数据 | `eodhd` | 启用 | `[api-eodhd]` | `25` | 否 |
 | Google Data Commons | `data-commons` | 启用 | `[api-dc]` | `5` | 否 |
 | 和风天气 QWeather | `qweather` | 启用 | `[api-qweather]` | `18` | 否 |
+| 东方财富妙想 MCP | `miaoxiang-mcp` | 启用 | `[api-mx-mcp]` | `13` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -8451,6 +8452,303 @@
   "client_supplied_api_key_allowed": false,
   "redirects_allowed": false,
   "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## 东方财富妙想 MCP (`miaoxiang-mcp`)
+
+- 状态：`启用`
+- 说明：通过东方财富官方 Streamable HTTP MCP Server 读取 A股、港股、美股、基金、债券、指数板块、宏观经济、公告研报和证券筛选数据。
+- 目录策略：仅开放 MCP 上游实际发现并经仓库固定登记的 11 个只读工具，以及本地目录和 tools/list；禁止任意 JSON-RPC 方法、任意工具名和动态端点。
+- 执行策略：每张票据只执行一个固定只读工具调用；后端通过 em_api_key 请求头注入 EM_API_KEY；禁止自选股修改、模拟交易、下单、账户操作和其他写操作。
+- 票据前缀：`[api-mx-mcp]`
+- Secret环境变量名：`EM_API_KEY`（仅名称）
+- 提供方SHA-256：`7a4fbf351f300bd5f746b94e48e374b24911a38b38211157a6c14ea72cf6a1de`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地妙想 MCP 安全能力目录，不访问上游且不需要密钥。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `mcp-tools-list` | 通过 MCP initialize 和 tools/list 读取上游当前工具目录，用于协议与能力验证。 | `无` |
+
+`mcp-tools-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `us-finance-data` | 基于东方财富数据库，支持自然语言查询美股金融数据，覆盖美股证券与公司基本资料、股本与股东结构、行情与技术指标、量化风险指标、财务三表与估值盈利预测，以及IPO/回购/分红等，单次请求最多支持500只股票，可发起多次请求。例如：苹果和特斯拉近10个交易日的涨跌幅、换手率 | `query` |
+
+`us-finance-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `hk-finance-data` | 基于东方财富数据库，支持自然语言查询港股金融数据，覆盖港股证券与公司基本资料、股本与股东结构、行情与技术指标、量化风险指标、财务三表与估值盈利预测，以及IPO/回购/分红等，单次请求最多支持500只股票，可发起多次请求。例如：智谱、minimax的所属行业、上市日期与发行价 | `query` |
+
+`hk-finance-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `comprehensive-finance-data` | 基于东方财富数据库，支持自然语言综合性查询金融数据，当无法确定品种或者是其他品种（例如企业发行人、非上市公司等）可以使用此工具，单次请求最多支持500只证券或实体，可发起多次请求。例如：华为技术有限公司的企业基本信息 | `query` |
+
+`comprehensive-finance-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `macro-data` | 基于东方财富数据库，查询宏观经济、行业经济与大宗商品高频/历史指标数据。适用全球及中国宏观指标、区域经济指标、行业景气与产业链数据、主要产品量价数据；不适用于具体证券行情、财务、公告和筛选。 | `query` |
+
+`macro-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `stocks-screener` | 按条件筛选多只证券，支持A股、港股、美股、基金和债券；不用于查询特定标的数据或新闻研报。 | `query` |
+
+`stocks-screener` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `finance-search-news` | 检索个股、行业、板块、指数和宏观策略相关的新闻、研报、评级观点、目标价、盈利预测、风险提示和行业趋势。 | `query` |
+
+`finance-search-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `finance-search-notice` | 搜索上市公司、基金、债券、港美股、交易所和监管机构的公告、披露文件、定期报告及重大事项。 | `query` |
+
+`finance-search-notice` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `ashare-finance-data` | 查询A股基本资料、行情与技术指标、财务与估值、股本股东、公司事件和量化风险指标。 | `query` |
+
+`ashare-finance-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `fund-finance-data` | 查询基金基本资料、发行信息、净值与绩效、排名、财务分红、份额持有人、资产配置和持仓明细。 | `query` |
+
+`fund-finance-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `bond-finance-data` | 查询债券基本信息、发行兑付、行情报价、估值分析、久期凸性、发行人财务、信用评级和可转债条款。 | `query` |
+
+`bond-finance-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `index-block-finance-data` | 查询指数、行业、概念和市场板块的行情、技术指标、财务估值及成分股聚合指标。 | `query` |
+
+`index-block-finance-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 3,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 5000000,
+  "max_rows": 5000,
+  "max_query_characters": 500,
+  "fixed_mcp_host": "mxapi.eastmoney.com",
+  "fixed_mcp_path": "/mxds/mcp",
+  "fixed_mcp_tool_count": 11,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_api_key_allowed": false,
+  "arbitrary_jsonrpc_methods_allowed": false,
+  "arbitrary_mcp_tool_names_allowed": false,
+  "resources_allowed": false,
+  "prompts_allowed": false,
+  "write_operations_allowed": false,
+  "watchlist_mutation_allowed": false,
+  "simulated_trading_allowed": false,
+  "trading_or_order_execution_allowed": false,
   "personal_data_allowed": false,
   "secret_values_exposed": false
 }

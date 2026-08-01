@@ -26,6 +26,7 @@ EXPECTED_OPERATION_COUNTS = {
     "yuandian-law": 40,
     "tianyancha": 3,
     "miaoxiang": 4,
+    "miaoxiang-mcp": 13,
     "jina-reader": 2,
     "exa": 3,
     "tavily": 5,
@@ -59,9 +60,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 21)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 21)
-        self.assertEqual(catalog["managed_operation_count"], 213)
+        self.assertEqual(catalog["managed_provider_count"], 22)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 22)
+        self.assertEqual(catalog["managed_operation_count"], 226)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -88,6 +89,7 @@ class ApiCatalogTests(unittest.TestCase):
             "yuandian-law": "YUANDIAN_API_KEY",
             "tianyancha": "TIANYANCHA_API_TOKEN",
             "miaoxiang": "MX_APIKEY",
+            "miaoxiang-mcp": "EM_API_KEY",
             "exa": "EXA_API_KEY",
             "tavily": "TAVILY_API_KEY",
             "firecrawl": "FIRECRAWL_API_KEY",
@@ -116,6 +118,14 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(providers["qweather"]["limits"]["fixed_api_host"], "ka6r72kcc3.re.qweatherapi.com")
         self.assertFalse(providers["qweather"]["limits"]["arbitrary_hosts_allowed"])
         self.assertFalse(providers["qweather"]["limits"]["redirects_allowed"])
+
+        self.assertEqual(providers["miaoxiang-mcp"]["ticket_prefix"], "[api-mx-mcp]")
+        self.assertEqual(providers["miaoxiang-mcp"]["required_secret_environment_variable_name"], "EM_API_KEY")
+        self.assertEqual(providers["miaoxiang-mcp"]["limits"]["fixed_mcp_tool_count"], 11)
+        self.assertFalse(providers["miaoxiang-mcp"]["limits"]["arbitrary_jsonrpc_methods_allowed"])
+        self.assertFalse(providers["miaoxiang-mcp"]["limits"]["arbitrary_mcp_tool_names_allowed"])
+        self.assertFalse(providers["miaoxiang-mcp"]["limits"]["write_operations_allowed"])
+        self.assertFalse(providers["miaoxiang-mcp"]["limits"]["trading_or_order_execution_allowed"])
 
         self.assertEqual(providers["baostock"]["ticket_prefix"], "[api-baostock]")
         self.assertEqual(providers["baostock"]["required_secret_environment_variable_name"], "")
@@ -196,6 +206,7 @@ class ApiCatalogTests(unittest.TestCase):
             "eodhd/provider-catalog.json",
             "data-commons/provider-catalog.json",
             "qweather/provider-catalog.json",
+            "miaoxiang-mcp/provider-catalog.json",
             "knowledge-tools/provider-catalog.json",
         ):
             self.assertIn(catalog_file, catalog["managed_provider_catalog_files"])

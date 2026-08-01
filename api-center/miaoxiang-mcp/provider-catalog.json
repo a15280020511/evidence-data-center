@@ -1,0 +1,249 @@
+{
+  "schema_version": "miaoxiang-mcp-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "official_install_document": "https://mxapi.eastmoney.com/mxds/doc/mcp-install.md",
+  "official_install_document_sha256": "077dc5ef1320f9250bcdd3943bc30e9a161dd70f3e400a04ad06d9e395729145",
+  "providers": [
+    {
+      "provider_id": "miaoxiang-mcp",
+      "display_name": "东方财富妙想 MCP",
+      "description": "通过东方财富官方 Streamable HTTP MCP Server 读取 A股、港股、美股、基金、债券、指数板块、宏观经济、公告研报和证券筛选数据。",
+      "enabled": true,
+      "ticket_prefix": "[api-mx-mcp]",
+      "required_secret_environment_variable": "EM_API_KEY",
+      "catalog_policy": "仅开放 MCP 上游实际发现并经仓库固定登记的 11 个只读工具，以及本地目录和 tools/list；禁止任意 JSON-RPC 方法、任意工具名和动态端点。",
+      "execution_policy": "每张票据只执行一个固定只读工具调用；后端通过 em_api_key 请求头注入 EM_API_KEY；禁止自选股修改、模拟交易、下单、账户操作和其他写操作。",
+      "official_origin": "https://mxapi.eastmoney.com",
+      "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp",
+      "mcp_server_name": "mx-ds-mcp",
+      "mcp_server_version": "1.0.0",
+      "mcp_transport": "StreamableHttp",
+      "mcp_protocol_version": "2025-11-25",
+      "authentication_header": "em_api_key",
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地妙想 MCP 安全能力目录，不访问上游且不需要密钥。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": true,
+            "jsonrpc_method": null,
+            "mcp_tool_name": null
+          },
+          "result_contract": {
+            "provider": "miaoxiang-mcp",
+            "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "mcp-tools-list",
+          "description": "通过 MCP initialize 和 tools/list 读取上游当前工具目录，用于协议与能力验证。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "jsonrpc_method": "tools/list",
+            "mcp_tool_name": null
+          },
+          "result_contract": {
+            "provider": "miaoxiang-mcp",
+            "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp",
+            "read_only": true,
+            "credential_mode": "em_api_key_backend_only"
+          }
+        },
+        {
+          "operation_id": "us-finance-data",
+          "description": "基于东方财富数据库，支持自然语言查询美股金融数据，覆盖美股证券与公司基本资料、股本与股东结构、行情与技术指标、量化风险指标、财务三表与估值盈利预测，以及IPO/回购/分红等，单次请求最多支持500只股票，可发起多次请求。例如：苹果和特斯拉近10个交易日的涨跌幅、换手率",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_us_finance_data",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_us_finance_data"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "hk-finance-data",
+          "description": "基于东方财富数据库，支持自然语言查询港股金融数据，覆盖港股证券与公司基本资料、股本与股东结构、行情与技术指标、量化风险指标、财务三表与估值盈利预测，以及IPO/回购/分红等，单次请求最多支持500只股票，可发起多次请求。例如：智谱、minimax的所属行业、上市日期与发行价",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_hk_finance_data",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_hk_finance_data"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "comprehensive-finance-data",
+          "description": "基于东方财富数据库，支持自然语言综合性查询金融数据，当无法确定品种或者是其他品种（例如企业发行人、非上市公司等）可以使用此工具，单次请求最多支持500只证券或实体，可发起多次请求。例如：华为技术有限公司的企业基本信息",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_comprehensive_finance_data",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_comprehensive_finance_data"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "macro-data",
+          "description": "基于东方财富数据库，查询宏观经济、行业经济与大宗商品高频/历史指标数据。适用全球及中国宏观指标、区域经济指标、行业景气与产业链数据、主要产品量价数据；不适用于具体证券行情、财务、公告和筛选。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_macro_data",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_macro_data"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "stocks-screener",
+          "description": "按条件筛选多只证券，支持A股、港股、美股、基金和债券；不用于查询特定标的数据或新闻研报。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_stocks_screener",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_stocks_screener"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "finance-search-news",
+          "description": "检索个股、行业、板块、指数和宏观策略相关的新闻、研报、评级观点、目标价、盈利预测、风险提示和行业趋势。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_finance_search_news",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_finance_search_news"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "finance-search-notice",
+          "description": "搜索上市公司、基金、债券、港美股、交易所和监管机构的公告、披露文件、定期报告及重大事项。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_finance_search_notice",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_finance_search_notice"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "ashare-finance-data",
+          "description": "查询A股基本资料、行情与技术指标、财务与估值、股本股东、公司事件和量化风险指标。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_ashare_finance_data",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_ashare_finance_data"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "fund-finance-data",
+          "description": "查询基金基本资料、发行信息、净值与绩效、排名、财务分红、份额持有人、资产配置和持仓明细。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_fund_finance_data",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_fund_finance_data"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "bond-finance-data",
+          "description": "查询债券基本信息、发行兑付、行情报价、估值分析、久期凸性、发行人财务、信用评级和可转债条款。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_bond_finance_data",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_bond_finance_data"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        },
+        {
+          "operation_id": "index-block-finance-data",
+          "description": "查询指数、行业、概念和市场板块的行情、技术指标、财务估值及成分股聚合指标。",
+          "parameters": ["query"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 500}},
+            "required": ["query"]
+          },
+          "mcp_tool_name": "mx_index_block_finance_data",
+          "execution": {"local": false, "jsonrpc_method": "tools/call", "mcp_tool_name": "mx_index_block_finance_data"},
+          "result_contract": {"provider": "miaoxiang-mcp", "official_endpoint": "https://mxapi.eastmoney.com/mxds/mcp", "read_only": true, "credential_mode": "em_api_key_backend_only"}
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 3,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 5000000,
+        "max_rows": 5000,
+        "max_query_characters": 500,
+        "fixed_mcp_host": "mxapi.eastmoney.com",
+        "fixed_mcp_path": "/mxds/mcp",
+        "fixed_mcp_tool_count": 11,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_api_key_allowed": false,
+        "arbitrary_jsonrpc_methods_allowed": false,
+        "arbitrary_mcp_tool_names_allowed": false,
+        "resources_allowed": false,
+        "prompts_allowed": false,
+        "write_operations_allowed": false,
+        "watchlist_mutation_allowed": false,
+        "simulated_trading_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      }
+    }
+  ]
+}
