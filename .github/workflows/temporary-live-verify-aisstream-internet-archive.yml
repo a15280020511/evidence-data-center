@@ -1,5 +1,6 @@
 name: Temporary Live Verify AISstream And Internet Archive
 
+# Triggered once for bounded upstream verification.
 on:
   pull_request:
     types: [synchronize]
