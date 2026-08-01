@@ -1,0 +1,1675 @@
+{
+  "schema_version": "agent-toolbelt-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "agent-toolbelt",
+      "display_name": "Agent Toolbelt AI 股票研究与代理工具",
+      "description": "通过 Agent Toolbelt 官方 API 调用 8 项美股研究工具和 20 项通用代理工具；仅开放固定工具白名单，不开放 Watchlist CRUD、任意路径或其他写操作。",
+      "enabled": true,
+      "ticket_prefix": "[api-agent-toolbelt]",
+      "required_secret_environment_variable": "AGENT_TOOLBELT_KEY",
+      "catalog_policy": "固定开放 29 项能力：1 项本地目录和 28 项官方工具；每个票据最多一次受限请求，参数、正文、数组、文本、图片、URL、超时和响应体积均受硬上限约束。",
+      "execution_policy": "API Key 仅由 GitHub Repository Secret 注入；不接受客户端凭据、任意工具名、任意路径、Watchlist CRUD、交易、下单、Webhook 或后台监控。URL 型工具仅接受公开 HTTPS 地址并拒绝本机、私网和保留地址字面量。",
+      "official_origin": "https://www.agenttoolbelt.live",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_request_bytes": 15000000,
+        "max_response_bytes": 20000000,
+        "fixed_api_host": "www.agenttoolbelt.live",
+        "fixed_upstream_tool_count": 28,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 1,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_tool_names_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "watchlist_crud_allowed": false,
+        "background_monitoring_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "public_https_url_inputs_allowed": true,
+        "private_network_url_inputs_allowed": false,
+        "personal_data_allowed": false,
+        "sensitive_contracts_allowed": false,
+        "investment_execution_allowed": false,
+        "secret_values_exposed": false,
+        "upstream_may_use_llm": true,
+        "upstream_calls_are_billable_or_quota_counted": true
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Agent Toolbelt 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "execution": {
+            "local": true,
+            "path_template": "",
+            "http_method": "LOCAL"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "schema-generator",
+          "description": "根据自然语言描述生成 JSON Schema、TypeScript 接口或 Zod 校验器。",
+          "parameters": [
+            "description",
+            "format",
+            "strict"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20000
+              },
+              "format": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "json_schema",
+                  "zod",
+                  "typescript"
+                ]
+              },
+              "strict": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "maxProperties": 3
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/schema-generator",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "text-extractor",
+          "description": "从文本中提取邮箱、URL、电话、日期、货币、地址、姓名或 JSON 代码块。",
+          "parameters": [
+            "text",
+            "extractors",
+            "deduplicate"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "extractors": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 8,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "enum": [
+                    "emails",
+                    "urls",
+                    "phone_numbers",
+                    "dates",
+                    "currencies",
+                    "addresses",
+                    "names",
+                    "json_blocks"
+                  ]
+                }
+              },
+              "deduplicate": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "text",
+              "extractors"
+            ],
+            "maxProperties": 3
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/text-extractor",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "token-counter",
+          "description": "按多个大模型计算 Token 数量并估算调用成本。",
+          "parameters": [
+            "text",
+            "models"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "models": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80,
+                  "pattern": "^[A-Za-z0-9._:/+-]{1,80}$"
+                }
+              }
+            },
+            "required": [
+              "text"
+            ],
+            "maxProperties": 2
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/token-counter",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "csv-to-json",
+          "description": "将 CSV 转换为带类型推断的 JSON。",
+          "parameters": [
+            "csv",
+            "delimiter",
+            "hasHeader",
+            "typeCast",
+            "limit",
+            "skipEmptyRows"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "csv": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "delimiter": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "auto",
+                  ",",
+                  ";",
+                  "\t",
+                  "|"
+                ]
+              },
+              "hasHeader": {
+                "type": "boolean"
+              },
+              "typeCast": {
+                "type": "boolean"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5000
+              },
+              "skipEmptyRows": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "csv"
+            ],
+            "maxProperties": 6
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/csv-to-json",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "markdown-converter",
+          "description": "在 HTML 与 Markdown 之间转换。",
+          "parameters": [
+            "content",
+            "from",
+            "to",
+            "options"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "content": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "html",
+                  "markdown"
+                ]
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "html",
+                  "markdown"
+                ]
+              },
+              "options": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "headingStyle": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000,
+                    "enum": [
+                      "atx",
+                      "setext"
+                    ]
+                  },
+                  "bulletListMarker": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000,
+                    "enum": [
+                      "-",
+                      "*",
+                      "+"
+                    ]
+                  },
+                  "codeBlockStyle": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000,
+                    "enum": [
+                      "fenced",
+                      "indented"
+                    ]
+                  }
+                },
+                "maxProperties": 3
+              }
+            },
+            "required": [
+              "content",
+              "from",
+              "to"
+            ],
+            "maxProperties": 4
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/markdown-converter",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "url-metadata",
+          "description": "读取公开 HTTPS 页面标题、描述、Open Graph、作者和发布日期等元数据。",
+          "parameters": [
+            "url",
+            "timeout"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 2048,
+                "pattern": "^https://[^ \\t\\r\\n]+$"
+              },
+              "timeout": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 15000
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "maxProperties": 2
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/url-metadata",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "regex-builder",
+          "description": "根据自然语言说明生成并测试正则表达式。",
+          "parameters": [
+            "description",
+            "testStrings",
+            "flags"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20000
+              },
+              "testStrings": {
+                "type": "array",
+                "maxItems": 50,
+                "items": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 5000
+                }
+              },
+              "flags": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 8,
+                "pattern": "^[dgimsuvy]*$"
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "maxProperties": 3
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/regex-builder",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "cron-builder",
+          "description": "将自然语言时间安排转换为 Cron 表达式。",
+          "parameters": [
+            "description",
+            "timezone"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 5000
+              },
+              "timezone": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9_+./:-]{1,100}$"
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "maxProperties": 2
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/cron-builder",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "address-normalizer",
+          "description": "将美国地址标准化为 USPS 风格并解析组成部分。",
+          "parameters": [
+            "address",
+            "includeComponents"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "address": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "includeComponents": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "address"
+            ],
+            "maxProperties": 2
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/address-normalizer",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "color-palette",
+          "description": "根据描述或颜色生成色板、可访问性评分和 CSS 变量。",
+          "parameters": [
+            "description",
+            "count",
+            "format",
+            "includeShades"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "description": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 5000
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 20
+              },
+              "format": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "hex",
+                  "rgb",
+                  "hsl",
+                  "all"
+                ]
+              },
+              "includeShades": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "description"
+            ],
+            "maxProperties": 4
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/color-palette",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "document-comparator",
+          "description": "对两个文档版本执行语义差异比较。",
+          "parameters": [
+            "original",
+            "revised",
+            "mode",
+            "context"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "original": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "revised": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "mode": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "summary",
+                  "detailed",
+                  "structured"
+                ]
+              },
+              "context": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20000
+              }
+            },
+            "required": [
+              "original",
+              "revised"
+            ],
+            "maxProperties": 4
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/document-comparator",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "contract-clause-extractor",
+          "description": "从公开合同文本中提取指定条款并标记风险；结果不构成法律意见。",
+          "parameters": [
+            "contract",
+            "clauses",
+            "flagRisks"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "contract": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "clauses": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 1000,
+                  "enum": [
+                    "parties",
+                    "dates",
+                    "payment_terms",
+                    "termination",
+                    "liability",
+                    "ip_ownership",
+                    "confidentiality",
+                    "governing_law",
+                    "penalties",
+                    "renewal",
+                    "warranties",
+                    "dispute_resolution"
+                  ]
+                }
+              },
+              "flagRisks": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "contract"
+            ],
+            "maxProperties": 3
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/contract-clause-extractor",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "prompt-optimizer",
+          "description": "分析、评分并改写大模型提示词。",
+          "parameters": [
+            "prompt",
+            "model",
+            "task",
+            "mode"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "prompt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 50000
+              },
+              "model": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "task": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 20000
+              },
+              "mode": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "improve",
+                  "analyze",
+                  "both"
+                ]
+              }
+            },
+            "required": [
+              "prompt"
+            ],
+            "maxProperties": 4
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/prompt-optimizer",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "meeting-action-items",
+          "description": "从公开会议记录中提取行动项、决定和摘要。",
+          "parameters": [
+            "notes",
+            "format",
+            "participants"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "notes": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "format": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "action_items_only",
+                  "full"
+                ]
+              },
+              "participants": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                }
+              }
+            },
+            "required": [
+              "notes"
+            ],
+            "maxProperties": 3
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/meeting-action-items",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "image-metadata-stripper",
+          "description": "移除 Base64 图片的 EXIF、GPS、ICC、IPTC 和 XMP 元数据。",
+          "parameters": [
+            "image",
+            "format",
+            "quality"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "image": {
+                "type": "string",
+                "minLength": 16,
+                "maxLength": 12000000,
+                "pattern": "^[A-Za-z0-9+/=_:\\-.,;]+$"
+              },
+              "format": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "jpeg",
+                  "png",
+                  "webp",
+                  "preserve"
+                ]
+              },
+              "quality": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "image"
+            ],
+            "maxProperties": 3
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/image-metadata-stripper",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "brand-kit",
+          "description": "生成品牌色板、字体、CSS 和 Tailwind 设计令牌。",
+          "parameters": [
+            "name",
+            "industry",
+            "vibe",
+            "targetAudience",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "industry": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "vibe": {
+                "type": "array",
+                "maxItems": 20,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                }
+              },
+              "targetAudience": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2000
+              },
+              "format": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "full",
+                  "tokens",
+                  "css",
+                  "tailwind"
+                ]
+              }
+            },
+            "required": [
+              "name"
+            ],
+            "maxProperties": 5
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/brand-kit",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "api-response-mocker",
+          "description": "根据 JSON Schema 生成受限数量的模拟 API 响应。",
+          "parameters": [
+            "schema",
+            "count",
+            "seed"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "schema": {
+                "type": "object",
+                "maxProperties": 200
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "seed": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2147483647
+              }
+            },
+            "required": [
+              "schema"
+            ],
+            "maxProperties": 3
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/api-response-mocker",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "dependency-auditor",
+          "description": "使用 OSV 数据库审计 npm 或 PyPI 依赖的已知漏洞。",
+          "parameters": [
+            "packages",
+            "manifest",
+            "manifestType",
+            "includeDevDependencies",
+            "minSeverity"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "packages": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 214,
+                      "pattern": "^[A-Za-z0-9@._/+-]{1,214}$"
+                    },
+                    "version": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "ecosystem": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1000,
+                      "enum": [
+                        "npm",
+                        "pypi"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "ecosystem"
+                  ],
+                  "maxProperties": 3
+                }
+              },
+              "manifest": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "manifestType": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "package.json",
+                  "requirements.txt",
+                  "auto"
+                ]
+              },
+              "includeDevDependencies": {
+                "type": "boolean"
+              },
+              "minSeverity": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "LOW",
+                  "MODERATE",
+                  "HIGH",
+                  "CRITICAL"
+                ]
+              }
+            },
+            "maxProperties": 5
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/dependency-auditor",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        },
+        {
+          "operation_id": "earnings-analysis",
+          "description": "分析美股盈利超预期/不及预期历史、收入趋势与下一次财报日期。",
+          "parameters": [
+            "ticker"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ticker": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12,
+                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+              }
+            },
+            "required": [
+              "ticker"
+            ],
+            "maxProperties": 1
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/earnings-analysis",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "insider-signal",
+          "description": "解释美国 Form 4 内部人交易并区分公开市场买卖与常规交易。",
+          "parameters": [
+            "ticker"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ticker": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12,
+                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+              }
+            },
+            "required": [
+              "ticker"
+            ],
+            "maxProperties": 1
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/insider-signal",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "valuation-snapshot",
+          "description": "综合估值倍数、现金流收益率、ROE 与利润率，生成估值结论。",
+          "parameters": [
+            "ticker"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ticker": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12,
+                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+              }
+            },
+            "required": [
+              "ticker"
+            ],
+            "maxProperties": 1
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/valuation-snapshot",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "bear-vs-bull",
+          "description": "生成结构化多空论证、净结论和关键争议问题。",
+          "parameters": [
+            "ticker"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ticker": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12,
+                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+              }
+            },
+            "required": [
+              "ticker"
+            ],
+            "maxProperties": 1
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/bear-vs-bull",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "moat-analysis",
+          "description": "生成巴菲特式竞争护城河评估。",
+          "parameters": [
+            "ticker"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ticker": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12,
+                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+              }
+            },
+            "required": [
+              "ticker"
+            ],
+            "maxProperties": 1
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/moat-analysis",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "stock-thesis",
+          "description": "基于实时财务数据生成结构化美股投资论点。",
+          "parameters": [
+            "ticker",
+            "timeHorizon"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "ticker": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 12,
+                "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+              },
+              "timeHorizon": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "1-2 years",
+                  "3-5 years",
+                  "5+ years"
+                ]
+              }
+            },
+            "required": [
+              "ticker"
+            ],
+            "maxProperties": 2
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/stock-thesis",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "compare-stocks",
+          "description": "对 2 至 3 只美股进行横向比较并给出优胜者与适配场景。",
+          "parameters": [
+            "tickers"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tickers": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 12,
+                  "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+                }
+              }
+            },
+            "required": [
+              "tickers"
+            ],
+            "maxProperties": 1
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/compare-stocks",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "watchlist-scan",
+          "description": "扫描并按价值、质量、成长或收益对 2 至 15 只美股排序。",
+          "parameters": [
+            "tickers",
+            "focus"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "tickers": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 15,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 12,
+                  "pattern": "^[A-Za-z0-9.^_-]{1,12}$"
+                }
+              },
+              "focus": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "value",
+                  "quality",
+                  "growth",
+                  "income"
+                ]
+              }
+            },
+            "required": [
+              "tickers"
+            ],
+            "maxProperties": 2
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/watchlist-scan",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "web-summarizer",
+          "description": "抓取公开 HTTPS 页面正文并返回摘要、关键点或清洗后的内容。",
+          "parameters": [
+            "url",
+            "mode",
+            "focus",
+            "maxContentLength",
+            "timeout"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {
+                "type": "string",
+                "minLength": 8,
+                "maxLength": 2048,
+                "pattern": "^https://[^ \\t\\r\\n]+$"
+              },
+              "mode": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "summary",
+                  "content",
+                  "both"
+                ]
+              },
+              "focus": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 5000
+              },
+              "maxContentLength": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 100000
+              },
+              "timeout": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 15000
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "maxProperties": 5
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/web-summarizer",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": true
+          }
+        },
+        {
+          "operation_id": "context-window-packer",
+          "description": "按 Token 预算和优先级将文本块装入模型上下文。",
+          "parameters": [
+            "chunks",
+            "tokenBudget",
+            "model",
+            "strategy",
+            "separator",
+            "systemPrompt",
+            "reserveForOutput"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "chunks": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 50000
+                    },
+                    "label": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 500
+                    },
+                    "priority": {
+                      "type": "number",
+                      "minimum": -1000,
+                      "maximum": 1000
+                    },
+                    "metadata": {
+                      "type": "object",
+                      "maxProperties": 50
+                    }
+                  },
+                  "required": [
+                    "text"
+                  ],
+                  "maxProperties": 4
+                }
+              },
+              "tokenBudget": {
+                "type": "integer",
+                "minimum": 128,
+                "maximum": 200000
+              },
+              "model": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "strategy": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000,
+                "enum": [
+                  "priority",
+                  "greedy",
+                  "balanced"
+                ]
+              },
+              "separator": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 1000
+              },
+              "systemPrompt": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 50000
+              },
+              "reserveForOutput": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              }
+            },
+            "required": [
+              "chunks",
+              "tokenBudget"
+            ],
+            "maxProperties": 7
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/tools/context-window-packer",
+            "http_method": "POST"
+          },
+          "result_contract": {
+            "provider": "agent-toolbelt",
+            "official_origin": "https://www.agenttoolbelt.live",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "bearer-api-key-backend-only",
+            "billable": true,
+            "pricing_is_provider_plan_dependent": true,
+            "upstream_llm_may_be_used": false
+          }
+        }
+      ]
+    }
+  ]
+}
