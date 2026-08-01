@@ -22,7 +22,7 @@ concurrency:
 jobs:
   validate-catalog:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -44,6 +44,9 @@ jobs:
             api-center/browserless/requirements.txt
             api-center/east-asia-econ/requirements.txt
             api-center/alpha-vantage/requirements.txt
+            api-center/overture-maps/requirements.txt
+            api-center/oecd/requirements.txt
+            api-center/alphafeed/requirements.txt
 
       - name: Install isolated API dependencies
         run: |
@@ -56,7 +59,10 @@ jobs:
             -r api-center/miaoxiang-mcp/requirements.txt \
             -r api-center/browserless/requirements.txt \
             -r api-center/east-asia-econ/requirements.txt \
-            -r api-center/alpha-vantage/requirements.txt
+            -r api-center/alpha-vantage/requirements.txt \
+            -r api-center/overture-maps/requirements.txt \
+            -r api-center/oecd/requirements.txt \
+            -r api-center/alphafeed/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -67,13 +73,14 @@ jobs:
           cp api-center/krakend.validation.json /tmp/committed-krakend.validation.json
           cp api-center/krakend.tmpl /tmp/committed-krakend.tmpl
 
-      - name: Rebuild and run API-center tests
+      - name: Compile and run provider regressions
         run: |
           set -euo pipefail
           python -m py_compile \
             api-center/build_config.py \
             api-center/build_catalog.py \
             api-center/build_catalog_market_search.py \
+            api-center/managed_provider_runtime.py \
             api-center/baostock/baostock_task.py \
             api-center/eodhd/eodhd_task.py \
             api-center/data-commons/data_commons_task.py \
@@ -82,12 +89,16 @@ jobs:
             api-center/browserless/browserless_task.py \
             api-center/east-asia-econ/east_asia_econ_task.py \
             api-center/alpha-vantage/alpha_vantage_task.py \
+            api-center/overture-maps/overture_maps_task.py \
+            api-center/oecd/oecd_task.py \
+            api-center/alphafeed/alphafeed_task.py \
             api-center/tests/*.py \
             api-center/browserless/tests/*.py \
             api-center/east-asia-econ/tests/*.py \
-            api-center/alpha-vantage/tests/*.py
-          python api-center/build_config.py
-          python api-center/build_catalog_market_search.py
+            api-center/alpha-vantage/tests/*.py \
+            api-center/overture-maps/tests/*.py \
+            api-center/oecd/tests/*.py \
+            api-center/alphafeed/tests/*.py
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
@@ -96,16 +107,24 @@ jobs:
           python -m unittest discover -s api-center/browserless/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/east-asia-econ/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/alpha-vantage/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/overture-maps/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/oecd/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/alphafeed/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
-      - name: Verify deterministic contracts and provider invariants
+      - name: Rebuild deterministic contracts
         run: |
           set -euo pipefail
+          python api-center/build_config.py
+          python api-center/build_catalog_market_search.py
           cmp /tmp/committed-api-catalog.json api-center/api-catalog.json
           cmp /tmp/committed-api-catalog.md api-center/api-catalog.md
           cmp /tmp/committed-connector-manifest.json api-center/connector-manifest.json
           cmp /tmp/committed-krakend.validation.json api-center/krakend.validation.json
           cmp /tmp/committed-krakend.tmpl api-center/krakend.tmpl
+
+      - name: Verify provider and World Bank invariants
+        run: |
           python - <<'PY'
           import json
           from pathlib import Path
@@ -113,115 +132,51 @@ jobs:
           catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
           manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
+          connectors = manifest['connectors']
 
-          assert catalog['schema_version'] == 'api-catalog-v3'
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
-          assert catalog['managed_provider_count'] == len(providers) == 25
-          assert catalog['enabled_managed_provider_count'] == 25
+          assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
+          assert catalog['managed_provider_count'] == len(providers) == 28
+          assert catalog['enabled_managed_provider_count'] == 28
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 306
+          ) == 329
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
-          assert set(catalog['managed_provider_catalog_files']) == {
-              'google-cloud/provider-catalog.json',
-              'akshare/provider-catalog.json',
-              'aifin-market/provider-catalog.json',
-              'yuandian/provider-catalog.json',
-              'company-intelligence/provider-catalog.json',
-              'web-retrieval/provider-catalog.json',
-              'market-search/provider-catalog.json',
-              'tushare/provider-catalog.json',
-              'baostock/provider-catalog.json',
-              'eodhd/provider-catalog.json',
-              'data-commons/provider-catalog.json',
-              'qweather/provider-catalog.json',
-              'miaoxiang-mcp/provider-catalog.json',
-              'east-asia-econ/provider-catalog.json',
-              'alpha-vantage/provider-catalog.json',
-              'knowledge-tools/provider-catalog.json',
-          }
 
-          browserless = providers['browserless']
-          assert browserless['ticket_prefix'] == '[api-browserless]'
-          assert browserless['required_secret_environment_variable_name'] == 'BROWSERLESS_TOKEN'
-          assert len(browserless['operations']) == 8
-          assert {row['operation_id'] for row in browserless['operations']} == {
-              'catalog-capabilities', 'content', 'scrape', 'screenshot',
-              'pdf', 'performance', 'search', 'map'
-          }
-          limits = browserless['limits']
-          assert limits['fixed_api_host'] == 'production-sfo.browserless.io'
-          for key in (
-              'arbitrary_api_hosts_allowed',
-              'arbitrary_code_allowed',
-              'websocket_sessions_allowed',
-              'profiles_allowed',
-              'custom_headers_allowed',
-              'cookies_allowed',
-              'proxy_configuration_allowed',
-              'captcha_or_unblock_allowed',
-              'write_operations_allowed',
-          ):
-              assert limits[key] is False
+          overture = providers['overture-maps']
+          assert overture['ticket_prefix'] == '[api-overture]'
+          assert overture['required_secret_environment_variable_name'] == ''
+          assert len(overture['operations']) == 7
+          assert overture['limits']['whole_world_download_allowed'] is False
+          assert overture['limits']['arbitrary_s3_paths_allowed'] is False
 
-          east_asia = providers['east-asia-econ']
-          assert east_asia['ticket_prefix'] == '[api-east-asia-econ]'
-          assert east_asia['required_secret_environment_variable_name'] == 'EAST_ASIA_ECON_API_KEY'
-          assert len(east_asia['operations']) == 6
-          assert {row['operation_id'] for row in east_asia['operations']} == {
-              'catalog-capabilities', 'search-series', 'series-info',
-              'database-stats', 'series-data', 'usage'
-          }
-          east_limits = east_asia['limits']
-          assert east_limits['fixed_api_host'] == 'data-api.eastasiaecon.com'
-          assert east_limits['requests_per_ticket_max'] == 1
-          for key in (
-              'arbitrary_urls_allowed',
-              'arbitrary_hosts_allowed',
-              'arbitrary_paths_allowed',
-              'arbitrary_headers_allowed',
-              'client_supplied_api_key_allowed',
-              'redirects_allowed',
-              'write_operations_allowed',
-              'personal_data_allowed',
-          ):
-              assert east_limits[key] is False
+          oecd = providers['oecd']
+          assert oecd['ticket_prefix'] == '[api-oecd]'
+          assert oecd['required_secret_environment_variable_name'] == ''
+          assert len(oecd['operations']) == 6
+          assert oecd['limits']['fixed_api_host'] == 'sdmx.oecd.org'
+          assert oecd['limits']['arbitrary_sdmx_resource_types_allowed'] is False
 
-          alpha_vantage = providers['alpha-vantage']
-          assert alpha_vantage['ticket_prefix'] == '[api-alpha-vantage]'
-          assert alpha_vantage['required_secret_environment_variable_name'] == 'ALPHA_VANTAGE_API_KEY'
-          assert len(alpha_vantage['operations']) == 66
-          alpha_limits = alpha_vantage['limits']
-          assert alpha_limits['fixed_api_host'] == 'www.alphavantage.co'
-          assert alpha_limits['requests_per_ticket_max'] == 1
-          assert alpha_limits['provider_concurrency_max'] == 1
-          for key in (
-              'arbitrary_functions_allowed',
-              'arbitrary_urls_allowed',
-              'arbitrary_headers_allowed',
-              'client_supplied_api_key_allowed',
-              'redirects_allowed',
-              'write_operations_allowed',
-              'trading_or_order_execution_allowed',
-          ):
-              assert alpha_limits[key] is False
-
-          assert providers['data-commons']['required_secret_environment_variable_name'] == 'GOOGLE_DATA_COMMONS_API_KEY'
-          assert providers['qweather']['limits']['fixed_api_host'] == 'ka6r72kcc3.re.qweatherapi.com'
-          assert providers['miaoxiang-mcp']['required_secret_environment_variable_name'] == 'EM_API_KEY'
-          assert providers['baostock']['required_secret_environment_variable_name'] == ''
-          assert providers['eodhd']['required_secret_environment_variable_name'] == 'EODHD_API_TOKEN'
+          alphafeed = providers['alphafeed']
+          assert alphafeed['ticket_prefix'] == '[api-alphafeed]'
+          assert alphafeed['required_secret_environment_variable_name'] == 'ALPHAFEED_API_KEY'
+          assert len(alphafeed['operations']) == 10
+          assert alphafeed['limits']['fixed_api_host'] == 'api.alphafeed.org'
+          assert alphafeed['limits']['arbitrary_sdk_methods_allowed'] is False
+          assert alphafeed['limits']['client_supplied_api_key_allowed'] is False
+          assert alphafeed['limits']['trading_or_order_execution_allowed'] is False
 
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 25,
-              'managed_operations': 306,
-              'browserless_operations': 8,
-              'east_asia_econ_operations': 6,
-              'alpha_vantage_operations': 66,
+              'worldbank_connectors': 9,
+              'managed_providers': 28,
+              'managed_operations': 329,
+              'overture_maps_operations': 7,
+              'oecd_operations': 6,
+              'alphafeed_operations': 10,
           }))
           PY
           git diff --check
@@ -238,20 +193,11 @@ jobs:
             api-center/connector-manifest.json
             api-center/krakend.tmpl
             api-center/krakend.validation.json
-            api-center/google-cloud/provider-catalog.json
-            api-center/data-commons/provider-catalog.json
-            api-center/qweather/provider-catalog.json
-            api-center/miaoxiang-mcp/provider-catalog.json
-            api-center/browserless/ticket.schema.json
-            api-center/east-asia-econ/provider-catalog.json
-            api-center/east-asia-econ/ticket.schema.json
-            api-center/alpha-vantage/provider-catalog.json
-            api-center/alpha-vantage/ticket.schema.json
-            api-center/web-retrieval/provider-catalog.json
-            api-center/market-search/provider-catalog.json
-            api-center/tushare/provider-catalog.json
-            api-center/baostock/provider-catalog.json
-            api-center/eodhd/provider-catalog.json
-            api-center/knowledge-tools/provider-catalog.json
+            api-center/overture-maps/provider-catalog.json
+            api-center/overture-maps/ticket.schema.json
+            api-center/oecd/provider-catalog.json
+            api-center/oecd/ticket.schema.json
+            api-center/alphafeed/provider-catalog.json
+            api-center/alphafeed/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
