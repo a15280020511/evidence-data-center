@@ -1,0 +1,210 @@
+name: Live Yonghui Agent Toolbelt Retry and Gapup Structural Repair
+
+on:
+  pull_request:
+    types: [synchronize, reopened]
+    branches: [main]
+    paths:
+      - .github/workflows/live-yonghui-agent-toolbelt-retry-gapup-structural.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-yonghui-agent-toolbelt-retry-gapup-structural
+  cancel-in-progress: false
+
+jobs:
+  retry-and-repair:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      AGENT_TOOLBELT_KEY: ${{ secrets.AGENT_TOOLBELT_KEY }}
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/agent-toolbelt/requirements.txt \
+            -r api-center/gapup-mcp/requirements.txt
+          python -m pip check
+
+      - name: Cool down provider rate window
+        run: sleep 70
+
+      - name: Retry failed Agent Toolbelt tools and revalidate Gapup schemas
+        shell: bash
+        run: |
+          set +x
+          mkdir -p yonghui-provider-retry
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          import textwrap
+          import time
+          from datetime import datetime, timezone
+          from pathlib import Path
+          from typing import Any
+
+          import jsonschema
+
+          root = Path.cwd()
+          out = root / "yonghui-provider-retry"
+          source = (root / ".github/workflows/live-yonghui-agent-toolbelt-gapup-matrix.yml").read_text(encoding="utf-8")
+          begin = "          python - <<'PY'\n"
+          end = "\n          PY\n"
+          start = source.index(begin) + len(begin)
+          stop = source.index(end, start)
+          matrix_script = textwrap.dedent(source[start:stop])
+          prefix = matrix_script.split("\nagent_operations = catalog_operations(", 1)[0]
+          ns: dict[str, Any] = {}
+          exec(prefix, ns)
+
+          agent_task = ns["agent_task"]
+          catalog_operations = ns["catalog_operations"]
+          build_parameters = ns["build_parameters"]
+          gapup_task = ns["gapup_task"]
+
+          agent_rows = {
+              row["operation_id"]: row
+              for row in catalog_operations(root / "api-center/agent-toolbelt/provider-catalog.json")
+          }
+          failed_tools = [
+              "address-normalizer",
+              "color-palette",
+              "document-comparator",
+              "contract-clause-extractor",
+              "meeting-action-items",
+              "image-metadata-stripper",
+          ]
+          key = str(os.getenv("AGENT_TOOLBELT_KEY") or "").strip()
+          retry_results: list[dict[str, Any]] = []
+          for operation in failed_tools:
+              row = agent_rows[operation]
+              params = build_parameters(row)
+              result: dict[str, Any] = {
+                  "operation": operation,
+                  "structural": "PASS",
+                  "parameter_names": sorted(params),
+              }
+              if not key or not key.startswith("atb_"):
+                  result.update({"live": "SKIPPED_CREDENTIAL", "error": "AGENT_TOOLBELT_KEY missing or prefix invalid"})
+                  retry_results.append(result)
+                  continue
+              attempts: list[dict[str, Any]] = []
+              passed = False
+              for outer_attempt in range(1, 3):
+                  try:
+                      payload, metadata = agent_task.query_agent_toolbelt(
+                          operation,
+                          params,
+                          timeout=120,
+                          max_bytes=10_000_000,
+                      )
+                      attempts.append({
+                          "attempt": outer_attempt,
+                          "status": "PASS",
+                          "http_status": metadata.get("http_status"),
+                          "response_bytes": metadata.get("response_bytes"),
+                          "payload_type": type(payload).__name__,
+                      })
+                      passed = True
+                      break
+                  except Exception as exc:
+                      attempts.append({
+                          "attempt": outer_attempt,
+                          "status": "FAIL",
+                          "error_code": getattr(exc, "code", "AGENT_TOOLBELT_ERROR"),
+                          "error": str(exc)[:500].replace(key, "[REDACTED]"),
+                      })
+                      if outer_attempt < 2:
+                          time.sleep(20)
+              result["live"] = "PASS" if passed else "FAIL"
+              result["attempts"] = attempts
+              retry_results.append(result)
+              time.sleep(12)
+
+          gapup_rows = catalog_operations(root / "api-center/gapup-mcp/provider-catalog.json")
+          overrides = {
+              "africa_trade_preference_arbitrage": {"hs_code": "090121"},
+              "change_failure_root_cause_classifier": {"pr_url": "https://github.com/a15280020511/evidence-data-center/pull/311"},
+              "ossf_scorecard_trend_analyzer": {"repositories": ["a15280020511/evidence-data-center"]},
+              "tariff_arbitrage_finder": {"currentHsCode": "090121"},
+              "vuln_exploitability_forecast": {"cveId": "CVE-2024-3094"},
+          }
+          gapup_results: list[dict[str, Any]] = []
+          for row in gapup_rows:
+              operation = row["operation_id"]
+              if row.get("execution", {}).get("local") is True:
+                  gapup_results.append({"operation": operation, "status": "LOCAL_PASS"})
+                  continue
+              try:
+                  params = build_parameters(row)
+                  params.update(overrides.get(operation, {}))
+                  jsonschema.validate(params, row["parameter_schema"])
+                  gapup_task.validate_public_parameters(params)
+                  gapup_results.append({"operation": operation, "status": "PASS"})
+              except Exception as exc:
+                  gapup_results.append({
+                      "operation": operation,
+                      "status": "FAIL",
+                      "error_type": type(exc).__name__,
+                      "error": str(exc)[:700],
+                  })
+
+          def counts(rows: list[dict[str, Any]], key_name: str) -> dict[str, int]:
+              result: dict[str, int] = {}
+              for row in rows:
+                  value = str(row.get(key_name, "UNKNOWN"))
+                  result[value] = result.get(value, 0) + 1
+              return dict(sorted(result.items()))
+
+          summary = {
+              "schema_version": "yonghui-agent-toolbelt-retry-gapup-structural-v1",
+              "tested_at": datetime.now(timezone.utc).isoformat(),
+              "subject": {"company": "Yonghui Superstores Co., Ltd. (永辉超市)", "ticker": "601933.SH"},
+              "agent_toolbelt_retry_counts": counts(retry_results, "live"),
+              "agent_toolbelt_retry_results": retry_results,
+              "gapup_structural_counts": counts(gapup_results, "status"),
+              "gapup_structural_failures": [row for row in gapup_results if row["status"] == "FAIL"],
+              "secret_values_exposed": False,
+          }
+          (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+          print(json.dumps({
+              "agent_toolbelt_retry_counts": summary["agent_toolbelt_retry_counts"],
+              "gapup_structural_counts": summary["gapup_structural_counts"],
+              "secret_values_exposed": False,
+          }, ensure_ascii=False))
+          PY
+
+      - name: Verify credentials are absent from evidence
+        if: always()
+        shell: bash
+        run: |
+          set +x
+          test -f yonghui-provider-retry/summary.json
+          if [ -n "${AGENT_TOOLBELT_KEY:-}" ] && grep -R -Fq -- "$AGENT_TOOLBELT_KEY" yonghui-provider-retry; then
+            echo "credential leak detected"
+            exit 1
+          fi
+
+      - name: Upload retry evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: yonghui-agent-toolbelt-retry-gapup-structural-${{ github.run_id }}
+          path: yonghui-provider-retry/
+          if-no-files-found: error
+          retention-days: 7
