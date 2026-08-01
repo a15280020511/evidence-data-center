@@ -59,6 +59,19 @@ class AISstreamProviderTests(unittest.TestCase):
             ["PositionReport", "StandardClassBPositionReport", "ExtendedClassBPositionReport"],
         )
 
+    def test_text_and_binary_json_frames_are_supported(self) -> None:
+        payload = '{"MessageType":"PositionReport"}'
+        self.assertEqual(module.decode_websocket_frame(payload), payload)
+        self.assertEqual(module.decode_websocket_frame(payload.encode("utf-8")), payload)
+        self.assertEqual(module.decode_websocket_frame(bytearray(payload, "utf-8")), payload)
+        self.assertEqual(module.decode_websocket_frame(memoryview(payload.encode("utf-8"))), payload)
+
+    def test_invalid_binary_and_unknown_frame_types_are_rejected(self) -> None:
+        with self.assertRaisesRegex(RuntimeError, "non-UTF-8 binary"):
+            module.decode_websocket_frame(b"\xff\xfe")
+        with self.assertRaisesRegex(RuntimeError, "unsupported websocket frame type"):
+            module.decode_websocket_frame({"MessageType": "PositionReport"})
+
 
 if __name__ == "__main__":
     unittest.main()
