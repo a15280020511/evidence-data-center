@@ -1,0 +1,122 @@
+name: Discover Gapup MCP Catalog
+
+on:
+  push:
+    branches: [feat/add-overture-oecd-alphafeed]
+    paths:
+      - ".github/workflows/gapup-mcp-discovery.yml"
+      - ".github/gapup-mcp-discovery-trigger.txt"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Read official tools/list without credentials
+        run: |
+          set -euo pipefail
+          mkdir -p gapup-discovery
+          python - <<'PY'
+          import json
+          import urllib.request
+          from pathlib import Path
+
+          url = "https://mcp.gapup.io/mcp"
+          payload = json.dumps({"jsonrpc":"2.0","method":"tools/list","id":1}).encode()
+          request = urllib.request.Request(
+              url,
+              data=payload,
+              method="POST",
+              headers={
+                  "Content-Type": "application/json",
+                  "Accept": "application/json, text/event-stream",
+                  "User-Agent": "evidence-data-center-gapup-discovery/1",
+              },
+          )
+          with urllib.request.urlopen(request, timeout=45) as response:
+              raw = response.read(20_000_001)
+              if len(raw) > 20_000_000:
+                  raise SystemExit("Gapup tools/list response exceeds 20 MB")
+              content_type = response.headers.get("Content-Type", "")
+              status = response.status
+
+          text = raw.decode("utf-8")
+          if "text/event-stream" in content_type.lower() or text.lstrip().startswith(("event:", "data:")):
+              events = []
+              data_lines = []
+              for line in text.splitlines() + [""]:
+                  if line.startswith("data:"):
+                      data_lines.append(line[5:].lstrip())
+                  elif not line.strip() and data_lines:
+                      data = "\n".join(data_lines)
+                      data_lines = []
+                      if data and data != "[DONE]":
+                          events.append(json.loads(data))
+              if not events:
+                  raise SystemExit("empty Gapup SSE response")
+              parsed = events[-1]
+          else:
+              parsed = json.loads(text)
+
+          tools = parsed.get("result", {}).get("tools")
+          if not isinstance(tools, list) or not tools:
+              raise SystemExit(f"invalid tools/list payload: {str(parsed)[:1000]}")
+          names = [str(row.get("name") or "") for row in tools]
+          if any(not name for name in names) or len(names) != len(set(names)):
+              raise SystemExit("empty or duplicate Gapup tool names")
+
+          snapshot = {
+              "schema_version": "gapup-mcp-discovery-v1",
+              "endpoint": url,
+              "http_status": status,
+              "content_type": content_type,
+              "tool_count": len(tools),
+              "tools": tools,
+              "secret_values_exposed": False,
+              "business_tool_calls": 0,
+          }
+          Path("gapup-discovery/tools-list.json").write_text(
+              json.dumps(snapshot, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          summary = {
+              "tool_count": len(tools),
+              "read_only_hint_true": sum(
+                  1 for row in tools if row.get("annotations", {}).get("readOnlyHint") is True
+              ),
+              "open_world_hint_true": sum(
+                  1 for row in tools if row.get("annotations", {}).get("openWorldHint") is True
+              ),
+              "names": sorted(names),
+          }
+          Path("gapup-discovery/summary.json").write_text(
+              json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps({
+              "status": "PASS",
+              "tool_count": len(tools),
+              "business_tool_calls": 0,
+              "secret_values_exposed": False,
+          }))
+          PY
+
+      - name: Upload safe discovery snapshot
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: gapup-mcp-discovery-${{ github.run_id }}
+          path: gapup-discovery
+          if-no-files-found: error
+          retention-days: 7
