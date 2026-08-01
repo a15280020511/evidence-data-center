@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            384,
+            409,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -91,6 +91,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "aisstream": 4,
             "internet-archive": 6,
             "marketstack": 11,
+            "nasa": 25,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -324,6 +325,24 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(
             marketstack_provider["limits"]["trading_or_order_execution_allowed"]
         )
+
+        nasa = json.loads(
+            (ROOT / "nasa/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        nasa_provider = nasa["providers"][0]
+        nasa_limits = nasa_provider["limits"]
+        self.assertEqual(
+            nasa_provider["required_secret_environment_variable"],
+            "NASA_API_KEY",
+        )
+        self.assertEqual(nasa_limits["requests_per_ticket_max"], 1)
+        self.assertEqual(nasa_limits["gibs_tiles_per_ticket_max"], 1)
+        self.assertFalse(nasa_limits["automatic_pagination_allowed"])
+        self.assertFalse(nasa_limits["bulk_download_allowed"])
+        self.assertFalse(nasa_limits["arbitrary_urls_allowed"])
+        self.assertFalse(nasa_limits["archived_earth_api_allowed"])
+        self.assertFalse(nasa_limits["archived_mars_rover_api_allowed"])
+        self.assertFalse(nasa_limits["write_operations_allowed"])
 
         east_asia = json.loads(
             (ROOT / "east-asia-econ/provider-catalog.json").read_text(

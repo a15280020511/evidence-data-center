@@ -49,6 +49,7 @@ EXPECTED_OPERATION_COUNTS = {
     "aisstream": 4,
     "internet-archive": 6,
     "marketstack": 11,
+    "nasa": 25,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -73,9 +74,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 35)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 35)
-        self.assertEqual(catalog["managed_operation_count"], 384)
+        self.assertEqual(catalog["managed_provider_count"], 36)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 36)
+        self.assertEqual(catalog["managed_operation_count"], 409)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -120,6 +121,7 @@ class ApiCatalogTests(unittest.TestCase):
             "mediastack": "MEDIASTACK_API_KEY",
             "aisstream": "AISSTREAM_API_KEY",
             "marketstack": "MARKETSTACK_ACCESS_KEY",
+            "nasa": "NASA_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }
@@ -249,6 +251,22 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertFalse(marketstack["limits"]["intraday_or_realtime_operations_allowed"])
         self.assertFalse(marketstack["limits"]["write_operations_allowed"])
         self.assertFalse(marketstack["limits"]["trading_or_order_execution_allowed"])
+
+        nasa = providers["nasa"]
+        self.assertEqual(nasa["ticket_prefix"], "[intel-nasa]")
+        self.assertEqual(
+            nasa["required_secret_environment_variable_name"],
+            "NASA_API_KEY",
+        )
+        self.assertEqual(len(nasa["operations"]), 25)
+        self.assertEqual(nasa["limits"]["requests_per_ticket_max"], 1)
+        self.assertEqual(nasa["limits"]["neo_feed_span_days_max"], 7)
+        self.assertEqual(nasa["limits"]["donki_date_span_days_max"], 31)
+        self.assertEqual(nasa["limits"]["gibs_tiles_per_ticket_max"], 1)
+        self.assertFalse(nasa["limits"]["bulk_download_allowed"])
+        self.assertFalse(nasa["limits"]["archived_earth_api_allowed"])
+        self.assertFalse(nasa["limits"]["archived_mars_rover_api_allowed"])
+        self.assertFalse(nasa["limits"]["write_operations_allowed"])
 
         aisstream = providers["aisstream"]
         self.assertEqual(aisstream["ticket_prefix"], "[intel-aisstream]")
