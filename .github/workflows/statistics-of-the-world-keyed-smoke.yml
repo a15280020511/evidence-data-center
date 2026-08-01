@@ -5,11 +5,6 @@ on:
     paths:
       - ".github/workflows/statistics-of-the-world-keyed-smoke.yml"
       - ".github/statistics-of-the-world-keyed-smoke.once"
-  push:
-    branches:
-      - feat/add-overture-oecd-alphafeed
-    paths:
-      - ".github/statistics-of-the-world-keyed-smoke.once"
 
 permissions:
   contents: read
@@ -51,9 +46,15 @@ jobs:
           sys.path.insert(0, str(provider_dir))
           import statistics_of_the_world_task as task
 
-          secret_present = bool(os.getenv('SOTW_API_KEY', '').strip())
+          raw_secret = os.getenv('SOTW_API_KEY', '')
+          secret_present = bool(raw_secret.strip())
           if not secret_present:
               raise RuntimeError('SOTW_API_KEY repository secret is missing')
+          normalized_secret = ''.join(raw_secret.split())
+          whitespace_normalization_applied = normalized_secret != raw_secret.strip()
+          if not normalized_secret:
+              raise RuntimeError('SOTW_API_KEY is empty after diagnostic normalization')
+          os.environ['SOTW_API_KEY'] = normalized_secret
 
           payload, metadata = task.query_sotw(
               'list-countries', {}, timeout=20, max_bytes=2_000_000, max_rows=500
@@ -66,6 +67,8 @@ jobs:
               'status': 'PASS',
               'real_upstream_request_attempted': True,
               'secret_present': secret_present,
+              'configured_secret_had_internal_whitespace': whitespace_normalization_applied,
+              'diagnostic_whitespace_normalization_applied': whitespace_normalization_applied,
               'api_key_configured': bool(metadata.get('api_key_configured')),
               'authentication_mode': 'x-api-key-backend-only',
               'http_status': metadata.get('http_status'),
