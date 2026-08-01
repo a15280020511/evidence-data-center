@@ -1,0 +1,61 @@
+name: One-shot integrate Browserless
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "tools/one_shot_integrate_browserless.py"
+      - ".github/workflows/one-shot-integrate-browserless.yml"
+      - "api-center/browserless/**"
+      - "api-center/web-retrieval/provider-catalog.json"
+      - "api-center/tests/test_api_catalog.py"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Materialize Browserless provider
+        run: python tools/one_shot_integrate_browserless.py
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input -r api-center/browserless/requirements.txt
+          python -m pip check
+
+      - name: Regenerate unified API catalog
+        run: python api-center/build_catalog_market_search.py
+
+      - name: Validate integration
+        run: |
+          python -m py_compile api-center/browserless/browserless_task.py
+          python -m unittest discover -s api-center/browserless/tests -p 'test_*.py' -v
+          python -m unittest api-center.tests.test_api_catalog -v
+
+      - name: Commit materialized integration
+        run: |
+          if git diff --quiet && git diff --cached --quiet; then
+            echo "Browserless integration already materialized."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center .github/workflows/browserless-api-ticket.yml .github/workflows/browserless-provider-validate.yml
+          git commit -m "feat: add Browserless to API center"
+          git push origin "HEAD:${{ github.head_ref }}"
