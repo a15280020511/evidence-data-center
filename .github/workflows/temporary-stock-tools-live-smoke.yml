@@ -1,0 +1,235 @@
+name: Temporary Stock Tools Live Smoke
+
+on:
+  push:
+    branches:
+      - feat/add-overture-oecd-alphafeed
+    paths:
+      - .github/workflows/temporary-stock-tools-live-smoke.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temporary-stock-tools-live-smoke
+  cancel-in-progress: false
+
+jobs:
+  live-stock-tools:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      ALPHAFEED_API_KEY: ${{ secrets.ALPHAFEED_API_KEY }}
+      GAPUP_API_KEY: ${{ secrets.GAPUP_API_KEY }}
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Install pinned provider dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/alphafeed/requirements.txt \
+            -r api-center/gapup-mcp/requirements.txt
+          python -m pip check
+
+      - name: Execute real AlphaFeed and Gapup stock smoke
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+
+          import importlib.util
+          import json
+          import os
+          import re
+          from pathlib import Path
+          from typing import Any
+
+          root = Path.cwd()
+          out = root / "stock-tools-live-artifacts"
+          out.mkdir(exist_ok=True)
+
+          def load_module(name: str, path: Path):
+              spec = importlib.util.spec_from_file_location(name, path)
+              if spec is None or spec.loader is None:
+                  raise RuntimeError(f"cannot load {path}")
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              return module
+
+          alphafeed = load_module(
+              "alphafeed_task_live",
+              root / "api-center/alphafeed/alphafeed_task.py",
+          )
+          gapup = load_module(
+              "gapup_task_live",
+              root / "api-center/gapup-mcp/gapup_mcp_task.py",
+          )
+
+          alpha_ticket = {
+              "task_id": "alphafeed-stock-live-20260802-0212",
+              "provider": "alphafeed",
+              "operation": "quotes",
+              "objective": "Verify current real A-share quote connectivity for Yonghui Superstores and Kweichow Moutai.",
+              "parameters": {"symbols": ["601933.SH", "600519.SH"]},
+              "data_policy": {
+                  "classification": "public",
+                  "contains_personal_data": False,
+              },
+              "acceptance": {
+                  "timeout_seconds": 45,
+                  "max_response_bytes": 2_000_000,
+              },
+          }
+          alpha_dir = out / "alphafeed"
+          alpha_path = out / "alphafeed-ticket.json"
+          alpha_path.write_text(json.dumps(alpha_ticket, ensure_ascii=False), encoding="utf-8")
+          alpha_rc = alphafeed.execute(alpha_path, alpha_dir)
+          alpha_diag = json.loads((alpha_dir / "diagnostics.json").read_text(encoding="utf-8"))
+          if alpha_rc != 0 or alpha_diag.get("status") != "API_ALPHAFEED_COMPLETED":
+              raise RuntimeError(f"AlphaFeed failed: {alpha_diag.get('failure')}")
+
+          catalog = json.loads(
+              (root / "api-center/gapup-mcp/provider-catalog.json").read_text(encoding="utf-8")
+          )
+          provider = catalog["providers"][0]
+          operation = next(
+              row for row in provider["operations"] if row["operation_id"] == "china_market_data"
+          )
+          schema = operation["parameter_schema"]
+
+          def string_value(name: str, schema: dict[str, Any]) -> str:
+              default = schema.get("default")
+              if isinstance(default, str):
+                  return default
+              enum = schema.get("enum")
+              if isinstance(enum, list) and enum:
+                  return str(enum[0])
+              lname = name.lower()
+              mappings = (
+                  (("ticker", "symbol", "stock_code", "security_code"), "601933.SH"),
+                  (("company", "issuer", "name"), "Yonghui Superstores"),
+                  (("country",), "China"),
+                  (("market", "exchange"), "SSE"),
+                  (("currency",), "CNY"),
+                  (("start_date", "from_date", "date_from"), "2026-07-01"),
+                  (("end_date", "to_date", "date_to"), "2026-07-31"),
+                  (("date",), "2026-07-31"),
+                  (("period", "interval", "frequency"), "1d"),
+                  (("query", "objective", "question", "prompt"), "Yonghui Superstores 601933.SH China market data"),
+                  (("sector", "industry"), "Retail Trade"),
+              )
+              for needles, value in mappings:
+                  if any(needle in lname for needle in needles):
+                      return value
+              pattern = str(schema.get("pattern") or "")
+              if "^[A-Z]{3}$" in pattern:
+                  return "CNY"
+              min_len = int(schema.get("minLength") or 1)
+              value = "public market data"
+              if len(value) < min_len:
+                  value = "x" * min_len
+              max_len = schema.get("maxLength")
+              if isinstance(max_len, int):
+                  value = value[:max_len]
+              return value
+
+          def sample(schema: dict[str, Any], name: str = "value") -> Any:
+              if "const" in schema:
+                  return schema["const"]
+              enum = schema.get("enum")
+              if isinstance(enum, list) and enum:
+                  return enum[0]
+              typ = schema.get("type")
+              if isinstance(typ, list):
+                  typ = next((item for item in typ if item != "null"), typ[0])
+              if typ == "object" or "properties" in schema:
+                  props = schema.get("properties") or {}
+                  required = schema.get("required") or []
+                  return {key: sample(props[key], key) for key in required if key in props}
+              if typ == "array":
+                  count = max(1, int(schema.get("minItems") or 1))
+                  count = min(count, int(schema.get("maxItems") or count))
+                  return [sample(schema.get("items") or {"type": "string"}, name) for _ in range(count)]
+              if typ == "integer":
+                  minimum = schema.get("minimum", 1)
+                  return int(minimum if minimum is not None else 1)
+              if typ == "number":
+                  minimum = schema.get("minimum", 1)
+                  return float(minimum if minimum is not None else 1)
+              if typ == "boolean":
+                  return False
+              return string_value(name, schema)
+
+          gapup_parameters = sample(schema, "parameters")
+          gapup_ticket = {
+              "task_id": "gapup-china-market-live-20260802-0212",
+              "provider": "gapup-mcp",
+              "operation": "china_market_data",
+              "objective": "Verify authenticated Gapup China market data capability using public Yonghui Superstores information.",
+              "parameters": gapup_parameters,
+              "data_policy": {
+                  "classification": "public",
+                  "contains_personal_data": False,
+                  "contains_confidential_data": False,
+              },
+              "payment_policy": {"automatic_x402_payment_authorized": False},
+              "acceptance": {
+                  "timeout_seconds": 90,
+                  "max_response_bytes": 5_000_000,
+              },
+          }
+          gapup_dir = out / "gapup"
+          gapup_path = out / "gapup-ticket.json"
+          gapup_path.write_text(json.dumps(gapup_ticket, ensure_ascii=False), encoding="utf-8")
+          gapup_rc = gapup.execute(gapup_path, gapup_dir)
+          gapup_diag = json.loads((gapup_dir / "diagnostics.json").read_text(encoding="utf-8"))
+          if gapup_rc != 0 or gapup_diag.get("status") != "INTEL_GAPUP_MCP_COMPLETED":
+              raise RuntimeError(f"Gapup failed: {gapup_diag.get('failure')}")
+
+          summary = {
+              "schema_version": "stock-tools-live-smoke-v1",
+              "alphafeed": {
+                  "status": alpha_diag.get("status"),
+                  "upstream_called": alpha_diag.get("metadata", {}).get("upstream_called"),
+                  "symbols": ["601933.SH", "600519.SH"],
+              },
+              "gapup": {
+                  "status": gapup_diag.get("status"),
+                  "upstream_called": gapup_diag.get("metadata", {}).get("upstream_called"),
+                  "operation": "china_market_data",
+                  "http_status": gapup_diag.get("metadata", {}).get("http_status"),
+                  "automatic_x402_payment_allowed": gapup_diag.get("metadata", {}).get("automatic_x402_payment_allowed"),
+              },
+          }
+          (out / "summary.json").write_text(
+              json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
+          )
+
+          secrets = [
+              str(os.getenv("ALPHAFEED_API_KEY") or ""),
+              str(os.getenv("GAPUP_API_KEY") or ""),
+          ]
+          for path in out.rglob("*"):
+              if not path.is_file():
+                  continue
+              payload = path.read_bytes()
+              for secret in secrets:
+                  if secret and secret.encode() in payload:
+                      raise RuntimeError(f"credential value entered artifact: {path}")
+          print(json.dumps(summary, ensure_ascii=False))
+          PY
+
+      - name: Upload secretless live evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: stock-tools-live-smoke-${{ github.run_id }}
+          path: stock-tools-live-artifacts/
+          if-no-files-found: error
+          retention-days: 30
