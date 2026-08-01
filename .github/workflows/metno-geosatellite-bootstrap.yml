@@ -1,26 +1,33 @@
 name: Bootstrap MET Norway Geosatellite Contracts
 
 on:
-  push:
-    branches: [feat/metno-geosatellite]
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [main]
+    paths:
+      - "api-center/metno-geosatellite/**"
+      - "api-center/build_catalog_market_search.py"
+      - ".github/workflows/metno-geosatellite-bootstrap.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: metno-geosatellite-bootstrap
+  group: metno-geosatellite-bootstrap-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   generate:
-    if: github.actor != 'github-actions[bot]'
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.actor != 'github-actions[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - name: Checkout feature branch
+      - name: Checkout pull request head
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: feat/metno-geosatellite
+          ref: ${{ github.head_ref }}
           persist-credentials: true
 
       - name: Set up Python
@@ -49,14 +56,12 @@ jobs:
           PY
           git diff --check
 
-      - name: Commit deterministic outputs
+      - name: Commit deterministic outputs and remove bootstrap
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm api-center/metno-geosatellite/bootstrap_patch.py
+          git rm .github/workflows/metno-geosatellite-bootstrap.yml
           git add api-center/README.md api-center/api-catalog.json api-center/api-catalog.md .github/workflows/api-catalog-validate.yml
-          if git diff --cached --quiet; then
-            echo "No generated changes"
-          else
-            git commit -m "chore: generate MET Norway Geosatellite contracts"
-            git push origin HEAD:feat/metno-geosatellite
-          fi
+          git commit -m "chore: generate MET Norway Geosatellite contracts"
+          git push origin HEAD:${{ github.head_ref }}
