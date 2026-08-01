@@ -1,9 +1,8 @@
 name: Temporary Stock Tools Live Smoke
 
 on:
-  push:
-    branches:
-      - feat/add-overture-oecd-alphafeed
+  pull_request:
+    types: [opened, synchronize, reopened]
     paths:
       - .github/workflows/temporary-stock-tools-live-smoke.yml
 
@@ -17,6 +16,7 @@ concurrency:
 
 jobs:
   live-stock-tools:
+    if: github.actor == github.repository_owner
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     env:
@@ -40,7 +40,9 @@ jobs:
             -r api-center/gapup-mcp/requirements.txt
           python -m pip check
 
-      - name: Execute real AlphaFeed and Gapup stock smoke
+      - name: Execute real AlphaFeed and Gapup stock calls
+        id: execute
+        continue-on-error: true
         run: |
           python - <<'PY'
           from __future__ import annotations
@@ -49,7 +51,6 @@ jobs:
           import json
           import os
           from pathlib import Path
-          from typing import Any
 
           root = Path.cwd()
           out = root / "stock-tools-live-artifacts"
@@ -73,140 +74,75 @@ jobs:
           )
 
           alpha_ticket = {
-              "task_id": "alphafeed-stock-live-20260802-0213",
+              "task_id": "alphafeed-stock-live-20260802-0218",
               "provider": "alphafeed",
               "operation": "quotes",
               "objective": "Verify current real A-share quote connectivity for Yonghui Superstores and Kweichow Moutai.",
               "parameters": {"symbols": ["601933.SH", "600519.SH"]},
               "data_policy": {
                   "classification": "public",
-                  "contains_personal_data": False,
+                  "contains_personal_data": False
               },
               "acceptance": {
                   "timeout_seconds": 45,
-                  "max_response_bytes": 2_000_000,
-              },
+                  "max_response_bytes": 2_000_000
+              }
           }
           alpha_dir = out / "alphafeed"
           alpha_path = out / "alphafeed-ticket.json"
           alpha_path.write_text(json.dumps(alpha_ticket, ensure_ascii=False), encoding="utf-8")
           alpha_rc = alphafeed.execute(alpha_path, alpha_dir)
           alpha_diag = json.loads((alpha_dir / "diagnostics.json").read_text(encoding="utf-8"))
-          if alpha_rc != 0 or alpha_diag.get("status") != "API_ALPHAFEED_COMPLETED":
-              raise RuntimeError(f"AlphaFeed failed: {alpha_diag.get('failure')}")
 
-          catalog = json.loads(
-              (root / "api-center/gapup-mcp/provider-catalog.json").read_text(encoding="utf-8")
-          )
-          provider = catalog["providers"][0]
-          operation = next(
-              row for row in provider["operations"] if row["operation_id"] == "china_market_data"
-          )
-          schema = operation["parameter_schema"]
-
-          def string_value(name: str, schema: dict[str, Any]) -> str:
-              default = schema.get("default")
-              if isinstance(default, str):
-                  return default
-              enum = schema.get("enum")
-              if isinstance(enum, list) and enum:
-                  return str(enum[0])
-              lname = name.lower()
-              mappings = (
-                  (("ticker", "symbol", "stock_code", "security_code"), "601933.SH"),
-                  (("company", "issuer", "name"), "Yonghui Superstores"),
-                  (("country",), "China"),
-                  (("market", "exchange"), "SSE"),
-                  (("currency",), "CNY"),
-                  (("start_date", "from_date", "date_from"), "2026-07-01"),
-                  (("end_date", "to_date", "date_to"), "2026-07-31"),
-                  (("date",), "2026-07-31"),
-                  (("period", "interval", "frequency"), "1d"),
-                  (("query", "objective", "question", "prompt"), "Yonghui Superstores 601933.SH China market data"),
-                  (("sector", "industry"), "Retail Trade"),
-              )
-              for needles, value in mappings:
-                  if any(needle in lname for needle in needles):
-                      return value
-              pattern = str(schema.get("pattern") or "")
-              if "^[A-Z]{3}$" in pattern:
-                  return "CNY"
-              min_len = int(schema.get("minLength") or 1)
-              value = "public market data"
-              if len(value) < min_len:
-                  value = "x" * min_len
-              max_len = schema.get("maxLength")
-              if isinstance(max_len, int):
-                  value = value[:max_len]
-              return value
-
-          def sample(schema: dict[str, Any], name: str = "value") -> Any:
-              if "const" in schema:
-                  return schema["const"]
-              enum = schema.get("enum")
-              if isinstance(enum, list) and enum:
-                  return enum[0]
-              typ = schema.get("type")
-              if isinstance(typ, list):
-                  typ = next((item for item in typ if item != "null"), typ[0])
-              if typ == "object" or "properties" in schema:
-                  props = schema.get("properties") or {}
-                  required = schema.get("required") or []
-                  return {key: sample(props[key], key) for key in required if key in props}
-              if typ == "array":
-                  count = max(1, int(schema.get("minItems") or 1))
-                  count = min(count, int(schema.get("maxItems") or count))
-                  return [sample(schema.get("items") or {"type": "string"}, name) for _ in range(count)]
-              if typ == "integer":
-                  minimum = schema.get("minimum", 1)
-                  return int(minimum if minimum is not None else 1)
-              if typ == "number":
-                  minimum = schema.get("minimum", 1)
-                  return float(minimum if minimum is not None else 1)
-              if typ == "boolean":
-                  return False
-              return string_value(name, schema)
-
-          gapup_parameters = sample(schema, "parameters")
           gapup_ticket = {
-              "task_id": "gapup-china-market-live-20260802-0213",
+              "task_id": "gapup-china-market-live-20260802-0218",
               "provider": "gapup-mcp",
               "operation": "china_market_data",
-              "objective": "Verify authenticated Gapup China market data capability using public Yonghui Superstores information.",
-              "parameters": gapup_parameters,
+              "objective": "Verify authenticated Gapup China market quote capability for Yonghui Superstores.",
+              "parameters": {
+                  "mode": "market_quote",
+                  "query": "601933"
+              },
               "data_policy": {
                   "classification": "public",
                   "contains_personal_data": False,
-                  "contains_confidential_data": False,
+                  "contains_confidential_data": False
               },
-              "payment_policy": {"automatic_x402_payment_authorized": False},
+              "payment_policy": {
+                  "automatic_x402_payment_authorized": False
+              },
               "acceptance": {
                   "timeout_seconds": 90,
-                  "max_response_bytes": 5_000_000,
-              },
+                  "max_response_bytes": 5_000_000
+              }
           }
           gapup_dir = out / "gapup"
           gapup_path = out / "gapup-ticket.json"
           gapup_path.write_text(json.dumps(gapup_ticket, ensure_ascii=False), encoding="utf-8")
           gapup_rc = gapup.execute(gapup_path, gapup_dir)
           gapup_diag = json.loads((gapup_dir / "diagnostics.json").read_text(encoding="utf-8"))
-          if gapup_rc != 0 or gapup_diag.get("status") != "INTEL_GAPUP_MCP_COMPLETED":
-              raise RuntimeError(f"Gapup failed: {gapup_diag.get('failure')}")
 
+          alpha_ok = alpha_rc == 0 and alpha_diag.get("status") == "API_ALPHAFEED_COMPLETED"
+          gapup_ok = gapup_rc == 0 and gapup_diag.get("status") == "INTEL_GAPUP_MCP_COMPLETED"
           summary = {
               "schema_version": "stock-tools-live-smoke-v1",
+              "overall": "PASS" if alpha_ok and gapup_ok else "FAIL",
               "alphafeed": {
                   "status": alpha_diag.get("status"),
                   "upstream_called": alpha_diag.get("metadata", {}).get("upstream_called"),
-                  "symbols": ["601933.SH", "600519.SH"],
+                  "failure": alpha_diag.get("failure"),
+                  "symbols": ["601933.SH", "600519.SH"]
               },
               "gapup": {
                   "status": gapup_diag.get("status"),
                   "upstream_called": gapup_diag.get("metadata", {}).get("upstream_called"),
-                  "operation": "china_market_data",
                   "http_status": gapup_diag.get("metadata", {}).get("http_status"),
-                  "automatic_x402_payment_allowed": gapup_diag.get("metadata", {}).get("automatic_x402_payment_allowed"),
-              },
+                  "failure": gapup_diag.get("failure"),
+                  "operation": "china_market_data",
+                  "mode": "market_quote",
+                  "query": "601933",
+                  "automatic_x402_payment_allowed": gapup_diag.get("metadata", {}).get("automatic_x402_payment_allowed")
+              }
           }
           (out / "summary.json").write_text(
               json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -214,7 +150,7 @@ jobs:
 
           secrets = [
               str(os.getenv("ALPHAFEED_API_KEY") or ""),
-              str(os.getenv("GAPUP_API_KEY") or ""),
+              str(os.getenv("GAPUP_API_KEY") or "")
           ]
           for path in out.rglob("*"):
               if not path.is_file():
@@ -223,7 +159,15 @@ jobs:
               for secret in secrets:
                   if secret and secret.encode() in payload:
                       raise RuntimeError(f"credential value entered artifact: {path}")
-          print(json.dumps(summary, ensure_ascii=False))
+
+          print(json.dumps({
+              "overall": summary["overall"],
+              "alphafeed_status": summary["alphafeed"]["status"],
+              "gapup_status": summary["gapup"]["status"],
+              "gapup_http_status": summary["gapup"]["http_status"]
+          }, ensure_ascii=False))
+          if not (alpha_ok and gapup_ok):
+              raise SystemExit(1)
           PY
 
       - name: Upload secretless live evidence
@@ -249,33 +193,34 @@ jobs:
           from pathlib import Path
 
           root = Path("stock-tools-live-artifacts")
-          def read_diag(provider):
-              path = root / provider / "diagnostics.json"
-              return json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
-
-          alpha = read_diag("alphafeed")
-          gapup = read_diag("gapup")
           summary_path = root / "summary.json"
-          passed = summary_path.exists()
-          artifact = os.getenv("ARTIFACT_URL") or "not available"
-          def failure(diag):
-              item = diag.get("failure") or {}
-              if not isinstance(item, dict):
+          summary = json.loads(summary_path.read_text(encoding="utf-8")) if summary_path.exists() else {}
+          alpha = summary.get("alphafeed") or {}
+          gapup = summary.get("gapup") or {}
+
+          def failure_code(item):
+              failure = item.get("failure") or {}
+              if not isinstance(failure, dict):
                   return "unknown"
-              return str(item.get("code") or item.get("type") or item.get("message") or "unknown")[:300]
+              return str(failure.get("code") or failure.get("type") or failure.get("message") or "unknown")[:300]
 
           lines = [
               "## AlphaFeed 与 Gapup MCP 实时复测",
               "",
               f"- Run: `{os.getenv('GITHUB_RUN_ID')}`",
-              f"- Artifact: {artifact}",
-              f"- Overall: `{'PASS' if passed else 'FAIL'}`",
+              f"- Artifact: {os.getenv('ARTIFACT_URL') or 'not available'}",
+              f"- Overall: `{summary.get('overall', 'FAIL')}`",
               "",
-              f"- AlphaFeed: `{alpha.get('status', 'NOT_RUN')}`; upstream_called=`{alpha.get('metadata', {}).get('upstream_called')}`; failure=`{failure(alpha) if alpha.get('failure') else 'none'}`",
-              f"- Gapup MCP china_market_data: `{gapup.get('status', 'NOT_RUN')}`; upstream_called=`{gapup.get('metadata', {}).get('upstream_called')}`; HTTP=`{gapup.get('metadata', {}).get('http_status')}`; failure=`{failure(gapup) if gapup.get('failure') else 'none'}`",
+              f"- AlphaFeed quotes: `{alpha.get('status', 'NOT_RUN')}`; upstream_called=`{alpha.get('upstream_called')}`; failure=`{failure_code(alpha) if alpha.get('failure') else 'none'}`",
+              f"- Gapup china_market_data/market_quote: `{gapup.get('status', 'NOT_RUN')}`; upstream_called=`{gapup.get('upstream_called')}`; HTTP=`{gapup.get('http_status')}`; failure=`{failure_code(gapup) if gapup.get('failure') else 'none'}`",
+              "- Symbols: AlphaFeed `601933.SH`, `600519.SH`; Gapup `601933`",
               "- Automatic x402 payment: prohibited",
-              "- Credential values in Artifact: prohibited and scanned",
+              "- Credential values in Artifact: prohibited and scanned"
           ]
           Path("stock-tools-comment.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
           PY
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/311/comments" -F body=@stock-tools-comment.md
+
+      - name: Enforce both providers
+        if: always() && steps.execute.outcome != 'success'
+        run: exit 1
