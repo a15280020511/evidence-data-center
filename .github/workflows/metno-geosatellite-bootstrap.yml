@@ -1,0 +1,62 @@
+name: Bootstrap MET Norway Geosatellite Contracts
+
+on:
+  push:
+    branches: [feat/metno-geosatellite]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: metno-geosatellite-bootstrap
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/metno-geosatellite
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Patch central contracts and rebuild catalog
+        run: python api-center/metno-geosatellite/bootstrap_patch.py
+
+      - name: Verify generated state
+        run: |
+          python -m py_compile api-center/metno-geosatellite/metno_geosatellite_task.py api-center/metno-geosatellite/bootstrap_patch.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          providers = {row['provider_id']: row for row in catalog['managed_providers']}
+          metno = providers['metno-geosatellite']
+          assert catalog['managed_provider_count'] == 37
+          assert catalog['managed_operation_count'] == 413
+          assert metno['operation_count'] == 4
+          assert metno['required_secret_environment_variable_name'] == ''
+          assert metno['limits']['fixed_api_host'] == 'api.met.no'
+          print(json.dumps({'status':'PASS','provider':'metno-geosatellite','operations':4}))
+          PY
+          git diff --check
+
+      - name: Commit deterministic outputs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center/README.md api-center/api-catalog.json api-center/api-catalog.md .github/workflows/api-catalog-validate.yml
+          if git diff --cached --quiet; then
+            echo "No generated changes"
+          else
+            git commit -m "chore: generate MET Norway Geosatellite contracts"
+            git push origin HEAD:feat/metno-geosatellite
+          fi
