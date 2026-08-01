@@ -43,6 +43,7 @@ jobs:
             api-center/miaoxiang-mcp/requirements.txt
             api-center/browserless/requirements.txt
             api-center/east-asia-econ/requirements.txt
+            api-center/alpha-vantage/requirements.txt
 
       - name: Install isolated API dependencies
         run: |
@@ -54,7 +55,8 @@ jobs:
             -r api-center/qweather/requirements.txt \
             -r api-center/miaoxiang-mcp/requirements.txt \
             -r api-center/browserless/requirements.txt \
-            -r api-center/east-asia-econ/requirements.txt
+            -r api-center/east-asia-econ/requirements.txt \
+            -r api-center/alpha-vantage/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -79,9 +81,11 @@ jobs:
             api-center/miaoxiang-mcp/miaoxiang_mcp_task.py \
             api-center/browserless/browserless_task.py \
             api-center/east-asia-econ/east_asia_econ_task.py \
+            api-center/alpha-vantage/alpha_vantage_task.py \
             api-center/tests/*.py \
             api-center/browserless/tests/*.py \
-            api-center/east-asia-econ/tests/*.py
+            api-center/east-asia-econ/tests/*.py \
+            api-center/alpha-vantage/tests/*.py
           python api-center/build_config.py
           python api-center/build_catalog_market_search.py
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
@@ -91,6 +95,7 @@ jobs:
           python -m unittest discover -s api-center/miaoxiang-mcp/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/browserless/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/east-asia-econ/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/alpha-vantage/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Verify deterministic contracts and provider invariants
@@ -111,11 +116,11 @@ jobs:
 
           assert catalog['schema_version'] == 'api-catalog-v3'
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
-          assert catalog['managed_provider_count'] == len(providers) == 24
-          assert catalog['enabled_managed_provider_count'] == 24
+          assert catalog['managed_provider_count'] == len(providers) == 25
+          assert catalog['enabled_managed_provider_count'] == 25
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 240
+          ) == 306
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
@@ -134,6 +139,7 @@ jobs:
               'qweather/provider-catalog.json',
               'miaoxiang-mcp/provider-catalog.json',
               'east-asia-econ/provider-catalog.json',
+              'alpha-vantage/provider-catalog.json',
               'knowledge-tools/provider-catalog.json',
           }
 
@@ -183,6 +189,25 @@ jobs:
           ):
               assert east_limits[key] is False
 
+          alpha_vantage = providers['alpha-vantage']
+          assert alpha_vantage['ticket_prefix'] == '[api-alpha-vantage]'
+          assert alpha_vantage['required_secret_environment_variable_name'] == 'ALPHA_VANTAGE_API_KEY'
+          assert len(alpha_vantage['operations']) == 66
+          alpha_limits = alpha_vantage['limits']
+          assert alpha_limits['fixed_api_host'] == 'www.alphavantage.co'
+          assert alpha_limits['requests_per_ticket_max'] == 1
+          assert alpha_limits['provider_concurrency_max'] == 1
+          for key in (
+              'arbitrary_functions_allowed',
+              'arbitrary_urls_allowed',
+              'arbitrary_headers_allowed',
+              'client_supplied_api_key_allowed',
+              'redirects_allowed',
+              'write_operations_allowed',
+              'trading_or_order_execution_allowed',
+          ):
+              assert alpha_limits[key] is False
+
           assert providers['data-commons']['required_secret_environment_variable_name'] == 'GOOGLE_DATA_COMMONS_API_KEY'
           assert providers['qweather']['limits']['fixed_api_host'] == 'ka6r72kcc3.re.qweatherapi.com'
           assert providers['miaoxiang-mcp']['required_secret_environment_variable_name'] == 'EM_API_KEY'
@@ -192,10 +217,11 @@ jobs:
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 24,
-              'managed_operations': 240,
+              'managed_providers': 25,
+              'managed_operations': 306,
               'browserless_operations': 8,
               'east_asia_econ_operations': 6,
+              'alpha_vantage_operations': 66,
           }))
           PY
           git diff --check
@@ -219,6 +245,8 @@ jobs:
             api-center/browserless/ticket.schema.json
             api-center/east-asia-econ/provider-catalog.json
             api-center/east-asia-econ/ticket.schema.json
+            api-center/alpha-vantage/provider-catalog.json
+            api-center/alpha-vantage/ticket.schema.json
             api-center/web-retrieval/provider-catalog.json
             api-center/market-search/provider-catalog.json
             api-center/tushare/provider-catalog.json
