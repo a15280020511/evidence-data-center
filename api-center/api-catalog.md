@@ -5,7 +5,7 @@
 - 托管提供方：`24/24` 已启用
 - 托管操作总数：`240`
 - 已公开参数总数：`1137`
-- 目录 SHA-256：`4faef136fb4a1d521fc13f26f272f6805d3f918a487c97fd7a8e1e25cc936b8e`
+- 目录 SHA-256：`98a5b346c94b93cb59db5b4a647354a07694f5d9915aef75136fd8b127e4f906`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -9063,7 +9063,7 @@
 - 执行策略：仅允许固定 HTTPS GET 路径与白名单查询参数；每张票据最多一次上游请求，不重试付费或限额查询；API Key 仅写入 X-API-Key 请求头，不进入 Issue、日志、目录或 Artifact。
 - 票据前缀：`[api-east-asia-econ]`
 - Secret环境变量名：`EAST_ASIA_ECON_API_KEY`（仅名称）
-- 提供方SHA-256：`3e2fc4221e23c819841a6dcce9a50168a86f060074182666a3b99f62dbfe954d`
+- 提供方SHA-256：`0c433a9dd653a1039c389b5eed82ad054487980f2d11516e32dbee1a3191f0d7`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -9100,7 +9100,7 @@
         "jp",
         "kr",
         "tw",
-        "regional"
+        "region"
       ]
     },
     "freq": {

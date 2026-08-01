@@ -48,6 +48,11 @@ class EastAsiaEconTaskTests(unittest.TestCase):
             {row["operation_id"] for row in provider["operations"]},
             {"catalog-capabilities", "search-series", "series-info", "database-stats", "series-data", "usage"},
         )
+        search = next(row for row in provider["operations"] if row["operation_id"] == "search-series")
+        self.assertEqual(
+            search["parameter_schema"]["properties"]["country"]["enum"],
+            ["cn", "jp", "kr", "tw", "region"],
+        )
         self.assertEqual(provider["limits"]["fixed_api_host"], "data-api.eastasiaecon.com")
         self.assertFalse(provider["limits"]["arbitrary_urls_allowed"])
         self.assertFalse(provider["limits"]["arbitrary_headers_allowed"])
