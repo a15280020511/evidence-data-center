@@ -71,3 +71,11 @@ MEDIASTACK_API_KEY
 ```
 
 仅由 Mediastack 票据工作流注入为后端 `access_key` 查询参数；不得出现在 Issue、目录、日志、Artifact、请求元数据或客户端参数中。
+
+### Statistics of the World
+
+```text
+SOTW_API_KEY
+```
+
+该 Secret 为可选项，仅允许在 GitHub Actions 后端通过 `X-API-Key` 请求头注入。不得出现在 Issue、PR、目录、日志、测试夹具、Artifact、请求元数据或错误详情中。未配置时仅使用官方匿名免费层。聊天或工单中曾粘贴的 Key 必须先轮换再写入 Repository Secret。

@@ -47,6 +47,7 @@ EXPECTED_OPERATION_COUNTS = {
     "gapup-mcp": 209,
     "who-gho-odata": 8,
     "mediastack": 5,
+    "statistics-of-the-world": 11,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -71,9 +72,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 33)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 33)
-        self.assertEqual(catalog["managed_operation_count"], 582)
+        self.assertEqual(catalog["managed_provider_count"], 34)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 34)
+        self.assertEqual(catalog["managed_operation_count"], 593)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 850)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])

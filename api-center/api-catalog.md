@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`33/33` 已启用
-- 托管操作总数：`582`
-- 已公开参数总数：`2373`
-- 目录 SHA-256：`443c069cf9315496d80873316a41af865950dfe84fca2bc9caefa5a0e7357bd0`
+- 托管提供方：`34/34` 已启用
+- 托管操作总数：`593`
+- 已公开参数总数：`2385`
+- 目录 SHA-256：`3d9d5f856bfc41fb65b3770587fa8a6773d9db7f19ff67c35ccfe3429c5709f7`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -48,6 +48,7 @@
 | Gapup MCP 公共商业情报 | `gapup-mcp` | 启用 | `[intel-gapup]` | `209` | 否 |
 | WHO GHO OData 全球卫生数据 | `who-gho-odata` | 启用 | `[intel-who-gho]` | `8` | 否 |
 | Mediastack 全球新闻情报 | `mediastack` | 启用 | `[intel-mediastack]` | `5` | 否 |
+| Statistics of the World 全球统计 | `statistics-of-the-world` | 启用 | `[intel-sotw]` | `11` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -32247,6 +32248,267 @@ SLA: ≤15s budget total. Cache: 24h TTL. | `url, lang, chapters_max, output_for
   "article_body_fetching_allowed": false,
   "write_operations_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## Statistics of the World 全球统计 (`statistics-of-the-world`)
+
+- 状态：`启用`
+- 说明：聚合 IMF、World Bank、WHO、FRED、ECB、UN 等来源的国家、指标、历史、排名和高频统计数据。
+- 目录策略：仅开放官方文档明确列出的固定只读 JSON 端点；聚合数据必须保留上游来源、年份、单位和许可元数据，不得替代原始官方源作为唯一证据。
+- 执行策略：每张票最多一次 HTTPS GET；可匿名调用，若配置 SOTW_API_KEY 则仅通过后端 X-API-Key 请求头发送；禁止任意 URL、路径、请求头、批量全库下载、自然语言聊天和写操作。
+- 票据前缀：`[intel-sotw]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`e4fdbd93284bf812c7ef289c616a13e57404ef72f80f7006637db67bde654c4d`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-countries` | 列出国家及地区元数据。 | `无` |
+
+`list-countries` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-country` | 读取一个 ISO Alpha-3 国家及其最新指标。 | `country` |
+
+`get-country` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "country"
+  ],
+  "properties": {
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  }
+}
+```
+
+| `list-indicators` | 列出公开指标目录及分类。 | `无` |
+
+`list-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-indicator` | 读取一个指标的元数据及国家横截面。 | `indicator` |
+
+`get-indicator` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "indicator"
+  ],
+  "properties": {
+    "indicator": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+    }
+  }
+}
+```
+
+| `get-history` | 读取一个指标与一个国家的历史时间序列。 | `indicator, country` |
+
+`get-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "indicator",
+    "country"
+  ],
+  "properties": {
+    "indicator": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  }
+}
+```
+
+| `get-rankings` | 按指标读取国家排名，结果数量受限。 | `indicator, limit` |
+
+`get-rankings` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "indicator"
+  ],
+  "properties": {
+    "indicator": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    }
+  }
+}
+```
+
+| `search-indicators` | 按受限关键词搜索指标。 | `query` |
+
+`search-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9 ()%+.,/_-]+$"
+    }
+  }
+}
+```
+
+| `compare-countries` | 并列比较 2 至 10 个 ISO Alpha-3 国家。 | `countries` |
+
+`compare-countries` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "countries"
+  ],
+  "properties": {
+    "countries": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z]{3}$"
+      }
+    }
+  }
+}
+```
+
+| `list-series` | 列出高频统计序列及许可元数据，不下载全量观测。 | `无` |
+
+`list-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-series` | 读取一个高频序列，可限定国家、起始日期和仅最新值。 | `series, geo, from, latest` |
+
+`get-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "series"
+  ],
+  "properties": {
+    "series": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+    },
+    "geo": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "from": {
+      "type": "string",
+      "format": "date"
+    },
+    "latest": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 10000000,
+  "max_rows": 500,
+  "max_compare_countries": 10,
+  "free_key_requests_per_day_documented": 1000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "automatic_pagination_allowed": false,
+  "bulk_download_allowed": false,
+  "natural_language_chat_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_api_host": "statisticsoftheworld.com",
+  "fixed_api_prefixes": [
+    "/api/v1",
+    "/api/v2"
+  ]
 }
 ```
 

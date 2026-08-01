@@ -386,3 +386,12 @@ https://ghoapi.azureedge.net/api
 - 固定开放：最新新闻、关键词检索、历史新闻和来源目录，共5项能力。
 - 免费层：官方当前标示每月100次请求，使用延迟新闻；历史数据和商业使用取决于套餐。
 - 强制单请求、最多100条、禁止自动翻页、后台监控和文章正文抓取。
+
+## Statistics of the World 全球统计
+
+- Provider：`statistics-of-the-world`
+- 工单前缀：`[intel-sotw]`
+- 可选 Repository Secret：`SOTW_API_KEY`
+- 11 个固定只读操作，覆盖国家、指标、历史、排名、搜索、国家比较和高频序列。
+- 禁止全量 bulk、自然语言 chat、任意路径、自动分页和写操作。
+- 定位为次级聚合证据源，重要结论应回查 IMF、World Bank、WHO、FRED、ECB 或 UN 原始来源。

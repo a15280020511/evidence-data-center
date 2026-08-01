@@ -35,15 +35,16 @@
     "gapup-mcp/provider-catalog.json",
     "who-gho/provider-catalog.json",
     "mediastack/provider-catalog.json",
+    "statistics-of-the-world/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "f2ae79ba760905a069715f2f63c2607a9e17a03bd7e389803150927e955b6a2d",
+  "managed_provider_catalog_sha256": "5991db0e02d7779a10eb0d18387691fd6beed9059ea08f2f5e509299732152f3",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 33,
-  "enabled_managed_provider_count": 33,
-  "managed_operation_count": 582,
-  "exposed_parameter_count": 2373,
+  "managed_provider_count": 34,
+  "enabled_managed_provider_count": 34,
+  "managed_operation_count": 593,
+  "exposed_parameter_count": 2385,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -72,6 +73,7 @@
     "gapup-mcp/provider-catalog.json",
     "who-gho/provider-catalog.json",
     "mediastack/provider-catalog.json",
+    "statistics-of-the-world/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -39977,6 +39979,330 @@
       "catalog_file": "mediastack/provider-catalog.json"
     },
     {
+      "provider_id": "statistics-of-the-world",
+      "display_name": "Statistics of the World 全球统计",
+      "description": "聚合 IMF、World Bank、WHO、FRED、ECB、UN 等来源的国家、指标、历史、排名和高频统计数据。",
+      "enabled": true,
+      "ticket_prefix": "[intel-sotw]",
+      "catalog_policy": "仅开放官方文档明确列出的固定只读 JSON 端点；聚合数据必须保留上游来源、年份、单位和许可元数据，不得替代原始官方源作为唯一证据。",
+      "execution_policy": "每张票最多一次 HTTPS GET；可匿名调用，若配置 SOTW_API_KEY 则仅通过后端 X-API-Key 请求头发送；禁止任意 URL、路径、请求头、批量全库下载、自然语言聊天和写操作。",
+      "operation_count": 11,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-countries",
+          "description": "列出国家及地区元数据。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-country",
+          "description": "读取一个 ISO Alpha-3 国家及其最新指标。",
+          "parameter_names": [
+            "country"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "country"
+            ],
+            "properties": {
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "list-indicators",
+          "description": "列出公开指标目录及分类。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-indicator",
+          "description": "读取一个指标的元数据及国家横截面。",
+          "parameter_names": [
+            "indicator"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "indicator"
+            ],
+            "properties": {
+              "indicator": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-history",
+          "description": "读取一个指标与一个国家的历史时间序列。",
+          "parameter_names": [
+            "indicator",
+            "country"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "indicator",
+              "country"
+            ],
+            "properties": {
+              "indicator": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-rankings",
+          "description": "按指标读取国家排名，结果数量受限。",
+          "parameter_names": [
+            "indicator",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "indicator"
+            ],
+            "properties": {
+              "indicator": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 500
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "search-indicators",
+          "description": "按受限关键词搜索指标。",
+          "parameter_names": [
+            "query"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9 ()%+.,/_-]+$"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "compare-countries",
+          "description": "并列比较 2 至 10 个 ISO Alpha-3 国家。",
+          "parameter_names": [
+            "countries"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "countries"
+            ],
+            "properties": {
+              "countries": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Z]{3}$"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "list-series",
+          "description": "列出高频统计序列及许可元数据，不下载全量观测。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        },
+        {
+          "operation_id": "get-series",
+          "description": "读取一个高频序列，可限定国家、起始日期和仅最新值。",
+          "parameter_names": [
+            "series",
+            "geo",
+            "from",
+            "latest"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "series"
+            ],
+            "properties": {
+              "series": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{1,127}$"
+              },
+              "geo": {
+                "type": "string",
+                "pattern": "^[A-Z]{3}$"
+              },
+              "from": {
+                "type": "string",
+                "format": "date"
+              },
+              "latest": {
+                "type": "boolean"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "statistics-of-the-world",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-header"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 10000000,
+        "max_rows": 500,
+        "max_compare_countries": 10,
+        "free_key_requests_per_day_documented": 1000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "automatic_pagination_allowed": false,
+        "bulk_download_allowed": false,
+        "natural_language_chat_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "fixed_api_host": "statisticsoftheworld.com",
+        "fixed_api_prefixes": [
+          "/api/v1",
+          "/api/v2"
+        ]
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "SOTW_API_KEY",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "e4fdbd93284bf812c7ef289c616a13e57404ef72f80f7006637db67bde654c4d",
+      "catalog_file": "statistics-of-the-world/provider-catalog.json"
+    },
+    {
       "provider_id": "wolfram-alpha",
       "display_name": "Wolfram|Alpha 计算知识 API",
       "description": "通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。",
@@ -48731,5 +49057,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "443c069cf9315496d80873316a41af865950dfe84fca2bc9caefa5a0e7357bd0"
+  "catalog_sha256": "3d9d5f856bfc41fb65b3770587fa8a6773d9db7f19ff67c35ccfe3429c5709f7"
 }
