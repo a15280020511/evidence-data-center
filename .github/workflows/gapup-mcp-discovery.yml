@@ -106,6 +106,17 @@ jobs:
         run: |
           set -euo pipefail
           python .github/scripts/integrate_gapup_mcp.py
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("api-center/gapup-mcp/tests/test_gapup_mcp_task.py")
+          text = path.read_text(encoding="utf-8")
+          old = '"company_description": "public supermarket retailer"'
+          new = '"company_description": "Publicly listed supermarket and omnichannel retail operator serving consumers through physical stores, supply-chain services, and digital commerce."'
+          if old not in text:
+              raise SystemExit("Gapup test fixture replacement anchor missing")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
 
       - name: Install validation dependencies
         run: |
