@@ -70,14 +70,14 @@ jobs:
           test ! -e maintenance/register_qweather_provider.py
           git diff --check
 
-      - name: Commit integration
+      - name: Commit non-workflow integration
         id: commit
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git reset -- .github/workflows/bootstrap-qweather-provider.yml
+          git reset -- .github/workflows/api-catalog-validate.yml
           git diff --cached --check
           git commit -m 'feat(api-center): register QWeather managed provider'
           git push origin HEAD:${TARGET_BRANCH}
@@ -87,7 +87,7 @@ jobs:
         if: success()
         run: |
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
-            -f body="QWEATHER_CORE_COMPLETED branch=${TARGET_BRANCH} commit=${{ steps.commit.outputs.sha }} operations=18 host=ka6r72kcc3.re.qweatherapi.com secret=QWEATHER_API_KEY auth=X-QW-Api-Key tests=passed catalog_generated=true model_calls=0"
+            -f body="QWEATHER_CORE_COMPLETED branch=${TARGET_BRANCH} commit=${{ steps.commit.outputs.sha }} operations=18 host=ka6r72kcc3.re.qweatherapi.com secret=QWEATHER_API_KEY auth=X-QW-Api-Key tests=passed catalog_generated=true global_workflow=pending_connector_write model_calls=0"
 
       - name: Publish failure receipt
         if: failure()
