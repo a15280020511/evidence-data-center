@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            240,
+            306,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -80,6 +80,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "baostock": 20,
             "eodhd": 25,
             "east-asia-econ": 6,
+            "alpha-vantage": 66,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -212,7 +213,10 @@ class CapabilityMaximizationTests(unittest.TestCase):
             (ROOT / "data-commons/provider-catalog.json").read_text(encoding="utf-8")
         )
         dc_provider = data_commons["providers"][0]
-        self.assertEqual(dc_provider["required_secret_environment_variable"], "GOOGLE_DATA_COMMONS_API_KEY")
+        self.assertEqual(
+            dc_provider["required_secret_environment_variable"],
+            "GOOGLE_DATA_COMMONS_API_KEY",
+        )
         self.assertFalse(dc_provider["limits"]["arbitrary_urls_allowed"])
         self.assertFalse(dc_provider["limits"]["arbitrary_endpoints_allowed"])
         self.assertFalse(dc_provider["limits"]["sparql_allowed"])
@@ -222,58 +226,129 @@ class CapabilityMaximizationTests(unittest.TestCase):
             (ROOT / "qweather/provider-catalog.json").read_text(encoding="utf-8")
         )
         qw_provider = qweather["providers"][0]
-        self.assertEqual(qw_provider["required_secret_environment_variable"], "QWEATHER_API_KEY")
-        self.assertEqual(qw_provider["limits"]["fixed_api_host"], "ka6r72kcc3.re.qweatherapi.com")
+        self.assertEqual(
+            qw_provider["required_secret_environment_variable"],
+            "QWEATHER_API_KEY",
+        )
+        self.assertEqual(
+            qw_provider["limits"]["fixed_api_host"],
+            "ka6r72kcc3.re.qweatherapi.com",
+        )
         self.assertFalse(qw_provider["limits"]["arbitrary_urls_allowed"])
         self.assertFalse(qw_provider["limits"]["arbitrary_hosts_allowed"])
         self.assertFalse(qw_provider["limits"]["redirects_allowed"])
         self.assertFalse(qw_provider["limits"]["write_operations_allowed"])
 
         miaoxiang_mcp = json.loads(
-            (ROOT / "miaoxiang-mcp/provider-catalog.json").read_text(encoding="utf-8")
+            (ROOT / "miaoxiang-mcp/provider-catalog.json").read_text(
+                encoding="utf-8"
+            )
         )
         mcp_provider = miaoxiang_mcp["providers"][0]
-        self.assertEqual(mcp_provider["required_secret_environment_variable"], "EM_API_KEY")
-        self.assertEqual(mcp_provider["official_endpoint"], "https://mxapi.eastmoney.com/mxds/mcp")
+        self.assertEqual(
+            mcp_provider["required_secret_environment_variable"],
+            "EM_API_KEY",
+        )
+        self.assertEqual(
+            mcp_provider["official_endpoint"],
+            "https://mxapi.eastmoney.com/mxds/mcp",
+        )
         self.assertEqual(mcp_provider["mcp_protocol_version"], "2025-11-25")
         self.assertEqual(mcp_provider["limits"]["fixed_mcp_tool_count"], 11)
-        self.assertFalse(mcp_provider["limits"]["arbitrary_jsonrpc_methods_allowed"])
-        self.assertFalse(mcp_provider["limits"]["arbitrary_mcp_tool_names_allowed"])
+        self.assertFalse(
+            mcp_provider["limits"]["arbitrary_jsonrpc_methods_allowed"]
+        )
+        self.assertFalse(
+            mcp_provider["limits"]["arbitrary_mcp_tool_names_allowed"]
+        )
         self.assertFalse(mcp_provider["limits"]["resources_allowed"])
         self.assertFalse(mcp_provider["limits"]["prompts_allowed"])
         self.assertFalse(mcp_provider["limits"]["write_operations_allowed"])
-        self.assertFalse(mcp_provider["limits"]["trading_or_order_execution_allowed"])
+        self.assertFalse(
+            mcp_provider["limits"]["trading_or_order_execution_allowed"]
+        )
 
         eodhd = json.loads(
             (ROOT / "eodhd/provider-catalog.json").read_text(encoding="utf-8")
         )
         eodhd_provider = eodhd["providers"][0]
-        self.assertEqual(eodhd_provider["required_secret_environment_variable"], "EODHD_API_TOKEN")
+        self.assertEqual(
+            eodhd_provider["required_secret_environment_variable"],
+            "EODHD_API_TOKEN",
+        )
         self.assertFalse(eodhd_provider["limits"]["arbitrary_urls_allowed"])
         self.assertFalse(eodhd_provider["limits"]["arbitrary_headers_allowed"])
         self.assertFalse(eodhd_provider["limits"]["write_operations_allowed"])
-        self.assertFalse(eodhd_provider["limits"]["trading_or_order_execution_allowed"])
+        self.assertFalse(
+            eodhd_provider["limits"]["trading_or_order_execution_allowed"]
+        )
 
         east_asia = json.loads(
-            (ROOT / "east-asia-econ/provider-catalog.json").read_text(encoding="utf-8")
+            (ROOT / "east-asia-econ/provider-catalog.json").read_text(
+                encoding="utf-8"
+            )
         )
         east_asia_provider = east_asia["providers"][0]
-        self.assertEqual(east_asia_provider["required_secret_environment_variable"], "EAST_ASIA_ECON_API_KEY")
-        self.assertEqual(east_asia_provider["limits"]["fixed_api_host"], "data-api.eastasiaecon.com")
-        self.assertEqual(east_asia_provider["limits"]["requests_per_ticket_max"], 1)
-        self.assertFalse(east_asia_provider["limits"]["arbitrary_urls_allowed"])
-        self.assertFalse(east_asia_provider["limits"]["arbitrary_headers_allowed"])
-        self.assertFalse(east_asia_provider["limits"]["write_operations_allowed"])
+        self.assertEqual(
+            east_asia_provider["required_secret_environment_variable"],
+            "EAST_ASIA_ECON_API_KEY",
+        )
+        self.assertEqual(
+            east_asia_provider["limits"]["fixed_api_host"],
+            "data-api.eastasiaecon.com",
+        )
+        self.assertEqual(
+            east_asia_provider["limits"]["requests_per_ticket_max"],
+            1,
+        )
+        self.assertFalse(
+            east_asia_provider["limits"]["arbitrary_urls_allowed"]
+        )
+        self.assertFalse(
+            east_asia_provider["limits"]["arbitrary_headers_allowed"]
+        )
+        self.assertFalse(
+            east_asia_provider["limits"]["write_operations_allowed"]
+        )
+
+        alpha_vantage = json.loads(
+            (ROOT / "alpha-vantage/provider-catalog.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        alpha_provider = alpha_vantage["providers"][0]
+        alpha_limits = alpha_provider["limits"]
+        self.assertEqual(
+            alpha_provider["required_secret_environment_variable"],
+            "ALPHA_VANTAGE_API_KEY",
+        )
+        self.assertEqual(
+            alpha_limits["fixed_api_host"],
+            "www.alphavantage.co",
+        )
+        self.assertEqual(alpha_limits["requests_per_ticket_max"], 1)
+        self.assertEqual(alpha_limits["provider_concurrency_max"], 1)
+        self.assertFalse(alpha_limits["arbitrary_functions_allowed"])
+        self.assertFalse(alpha_limits["arbitrary_urls_allowed"])
+        self.assertFalse(alpha_limits["arbitrary_headers_allowed"])
+        self.assertFalse(alpha_limits["client_supplied_api_key_allowed"])
+        self.assertFalse(alpha_limits["write_operations_allowed"])
+        self.assertFalse(alpha_limits["trading_or_order_execution_allowed"])
 
         baostock = json.loads(
             (ROOT / "baostock/provider-catalog.json").read_text(encoding="utf-8")
         )
         baostock_provider = baostock["providers"][0]
-        self.assertEqual(baostock_provider["required_secret_environment_variable"], "")
+        self.assertEqual(
+            baostock_provider["required_secret_environment_variable"],
+            "",
+        )
         self.assertFalse(baostock_provider["limits"]["arbitrary_functions_allowed"])
         self.assertFalse(baostock_provider["limits"]["arbitrary_hosts_allowed"])
         self.assertFalse(baostock_provider["limits"]["write_operations_allowed"])
-        self.assertFalse(baostock_provider["limits"]["trading_or_order_execution_allowed"])
+        self.assertFalse(
+            baostock_provider["limits"]["trading_or_order_execution_allowed"]
+        )
 
         knowledge = json.loads(
             (ROOT / "knowledge-tools/provider-catalog.json").read_text(
