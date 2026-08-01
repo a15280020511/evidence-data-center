@@ -1,0 +1,16 @@
+{
+  "schema_version": "baostock-quota-policy-v1",
+  "provider": "baostock",
+  "timezone": "Asia/Shanghai",
+  "daily_request_limit": 50000,
+  "max_parallel_connections": 1,
+  "concurrency_group": "api-baostock-global-single-connection",
+  "reservation_policy": "Reserve exactly one daily request before each non-local BaoStock operation. A reservation remains consumed even if the upstream call later fails or the workflow is cancelled.",
+  "blacklist_policy": "The 50000th reservation is allowed and activates the local blacklist for the remainder of that Asia/Shanghai day. Any later request is rejected before login or query. State resets automatically on the next Asia/Shanghai date.",
+  "ledger_issue_number": 297,
+  "ledger_comment_id": 5149552115,
+  "ledger_fail_closed": true,
+  "catalog_operations_consume_quota": false,
+  "credentials_required": false,
+  "secret_values_exposed": false
+}
