@@ -54,7 +54,7 @@
             "additionalProperties": false,
             "properties": {
               "q": {"type": "string", "minLength": 1, "maxLength": 200},
-              "country": {"type": "string", "enum": ["cn", "jp", "kr", "tw", "regional"]},
+              "country": {"type": "string", "enum": ["cn", "jp", "kr", "tw", "region"]},
               "freq": {"type": "string", "enum": ["m", "q", "a"]},
               "limit": {"type": "integer", "minimum": 1, "maximum": 100}
             },
