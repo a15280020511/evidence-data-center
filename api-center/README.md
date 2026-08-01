@@ -41,6 +41,7 @@ NEWSAPI_API_KEY
 
 ```text
 TUSHARE_API_TOKEN
+EODHD_API_TOKEN
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
 ```
@@ -113,6 +114,17 @@ TUSHARE_API_TOKEN
 - 沪深港通持股明细。
 
 执行器只允许目录中登记的 `api_name`，Token 仅在 HTTPS POST JSON 中注入。每张票据最多一次正常请求和一次瞬态故障重试。实际可用接口、频率和历史范围由 Tushare 账户积分及权限决定；权限不足会返回结构化 `TUSHARE_PERMISSION_DENIED`，不会伪造空数据。
+
+## EODHD 全球金融市场数据
+
+`api-center/eodhd/` 使用固定官方 HTTPS GET 接口，票据前缀和独立 Secret 为：
+
+```text
+[api-eodhd]
+EODHD_API_TOKEN
+```
+
+开放 25 项只读操作，覆盖全球交易所和证券目录、历史与实时行情、基本面、公司行动、技术指标、新闻情绪、股票筛选、企业日历、宏观事件以及交易时段和节假日。上游套餐决定实际数据范围与额度；API 中心不开放 WebSocket、交易、下单、账户操作、任意 URL 或任意请求头。
 
 ## Wolfram|Alpha 计算知识
 

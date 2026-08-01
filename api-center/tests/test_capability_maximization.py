@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            165,
+            190,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -74,6 +74,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "serpapi": 4,
             "tushare": 20,
             "baostock": 20,
+            "eodhd": 25,
             "wolfram-alpha": 4,
             "llamaparse": 3,
         }
@@ -188,6 +189,16 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(tushare_limits["write_operations_allowed"])
         self.assertFalse(tushare_limits["trading_or_order_execution_allowed"])
         self.assertFalse(tushare_limits["secret_values_exposed"])
+
+        eodhd = json.loads(
+            (ROOT / "eodhd/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        eodhd_provider = eodhd["providers"][0]
+        self.assertEqual(eodhd_provider["required_secret_environment_variable"], "EODHD_API_TOKEN")
+        self.assertFalse(eodhd_provider["limits"]["arbitrary_urls_allowed"])
+        self.assertFalse(eodhd_provider["limits"]["arbitrary_headers_allowed"])
+        self.assertFalse(eodhd_provider["limits"]["write_operations_allowed"])
+        self.assertFalse(eodhd_provider["limits"]["trading_or_order_execution_allowed"])
 
         baostock = json.loads(
             (ROOT / "baostock/provider-catalog.json").read_text(encoding="utf-8")

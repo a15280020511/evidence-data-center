@@ -1,0 +1,1361 @@
+{
+  "schema_version": "eodhd-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "eodhd",
+      "display_name": "EODHD 全球金融市场数据",
+      "description": "通过 EODHD 官方 HTTPS REST API 读取全球交易所、证券目录、历史和实时行情、基本面、公司行动、技术指标、新闻情绪、筛选器、企业日历、宏观事件及交易时段。",
+      "enabled": true,
+      "ticket_prefix": "[api-eodhd]",
+      "required_secret_environment_variable": "EODHD_API_TOKEN",
+      "catalog_policy": "仅开放显式登记的固定 GET 路径和参数 Schema；禁止任意 URL、任意路径、任意请求头、用户自定义 api_token、WebSocket、交易、下单、账户修改和数据写入。",
+      "execution_policy": "EODHD_API_TOKEN 仅在后端查询参数中注入且不会进入日志、Issue 或 Artifact；每张票据最多一次正常请求和一次瞬态故障重试，并限制超时、响应体积、结果行数和筛选器结构。",
+      "limits": {
+        "requests_per_ticket_max": 2,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 20000000,
+        "max_rows": 50000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_token_allowed": false,
+        "websocket_allowed": false,
+        "write_operations_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 EODHD 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": true,
+            "path_template": "",
+            "path_parameters": [],
+            "query_parameter_map": {},
+            "force_query": {}
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "exchanges-list",
+          "description": "读取 EODHD 支持的全球交易所、虚拟市场和基础元数据。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/exchanges-list/",
+            "path_parameters": [],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "exchange-symbols",
+          "description": "读取指定交易所当前或退市证券目录。",
+          "parameters": [
+            "exchange",
+            "delisted",
+            "type"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "exchange": {
+                "type": "string",
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$"
+              },
+              "delisted": {
+                "type": "boolean"
+              },
+              "type": {
+                "type": "string",
+                "maxLength": 32,
+                "enum": [
+                  "common_stock",
+                  "preferred_stock",
+                  "stock",
+                  "etf",
+                  "fund"
+                ]
+              }
+            },
+            "required": [
+              "exchange"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/exchange-symbol-list/{exchange}",
+            "path_parameters": [
+              "exchange"
+            ],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "symbol-search",
+          "description": "按代码或名称搜索全球证券、基金、指数、外汇、债券和数字资产。",
+          "parameters": [
+            "query",
+            "exchange",
+            "limit",
+            "bonds_only"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\]{1,120}$"
+              },
+              "exchange": {
+                "type": "string",
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "bonds_only": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/search/{query}",
+            "path_parameters": [
+              "query"
+            ],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "eod-history",
+          "description": "读取单一证券的日、周或月末历史 OHLCV 与复权价格。",
+          "parameters": [
+            "symbol",
+            "from_date",
+            "to_date",
+            "period",
+            "order"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "period": {
+                "type": "string",
+                "maxLength": 1,
+                "enum": [
+                  "d",
+                  "w",
+                  "m"
+                ]
+              },
+              "order": {
+                "type": "string",
+                "maxLength": 1,
+                "enum": [
+                  "a",
+                  "d"
+                ]
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/eod/{symbol}",
+            "path_parameters": [
+              "symbol"
+            ],
+            "query_parameter_map": {
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "intraday-history",
+          "description": "读取单一证券的分钟或小时级历史行情。",
+          "parameters": [
+            "symbol",
+            "interval",
+            "from_timestamp",
+            "to_timestamp"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "interval": {
+                "type": "string",
+                "maxLength": 2,
+                "enum": [
+                  "1m",
+                  "5m",
+                  "1h"
+                ]
+              },
+              "from_timestamp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4102444800
+              },
+              "to_timestamp": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 4102444800
+              }
+            },
+            "required": [
+              "symbol",
+              "interval"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/intraday/{symbol}",
+            "path_parameters": [
+              "symbol"
+            ],
+            "query_parameter_map": {
+              "from_timestamp": "from",
+              "to_timestamp": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "real-time-quote",
+          "description": "读取单一证券的实时或延迟报价快照；数据权限由 EODHD 套餐决定。",
+          "parameters": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/real-time/{symbol}",
+            "path_parameters": [
+              "symbol"
+            ],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "fundamentals",
+          "description": "读取股票、ETF、基金或指数的结构化基本面数据。",
+          "parameters": [
+            "symbol",
+            "filter"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "filter": {
+                "type": "string",
+                "maxLength": 300,
+                "pattern": "^[A-Za-z0-9._,-]+$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/v1.1/fundamentals/{symbol}",
+            "path_parameters": [
+              "symbol"
+            ],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "dividends-history",
+          "description": "读取单一证券的历史分红记录。",
+          "parameters": [
+            "symbol",
+            "from_date",
+            "to_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/div/{symbol}",
+            "path_parameters": [
+              "symbol"
+            ],
+            "query_parameter_map": {
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "splits-history",
+          "description": "读取单一证券的历史拆股和合股记录。",
+          "parameters": [
+            "symbol",
+            "from_date",
+            "to_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/splits/{symbol}",
+            "path_parameters": [
+              "symbol"
+            ],
+            "query_parameter_map": {
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "bulk-eod",
+          "description": "按交易所和日期读取整市场 EOD、拆股或分红批量数据。",
+          "parameters": [
+            "exchange",
+            "date",
+            "type",
+            "symbols"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "exchange": {
+                "type": "string",
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$"
+              },
+              "date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "type": {
+                "type": "string",
+                "maxLength": 16,
+                "enum": [
+                  "eod",
+                  "splits",
+                  "dividends"
+                ]
+              },
+              "symbols": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[A-Za-z0-9._,:-]+$"
+              }
+            },
+            "required": [
+              "exchange"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/eod-bulk-last-day/{exchange}",
+            "path_parameters": [
+              "exchange"
+            ],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "historical-market-cap",
+          "description": "读取美国股票或数字资产的历史市值序列。",
+          "parameters": [
+            "symbol",
+            "from_date",
+            "to_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "symbol"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/historical-market-cap/{symbol}",
+            "path_parameters": [
+              "symbol"
+            ],
+            "query_parameter_map": {
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "technical-indicator",
+          "description": "在固定证券和日期范围上计算 EODHD 技术指标。",
+          "parameters": [
+            "symbol",
+            "function",
+            "period",
+            "from_date",
+            "to_date",
+            "order",
+            "splitadjusted"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "function": {
+                "type": "string",
+                "maxLength": 24,
+                "enum": [
+                  "sma",
+                  "ema",
+                  "wma",
+                  "volatility",
+                  "rsi",
+                  "stddev",
+                  "stoch",
+                  "stochrsi",
+                  "slope",
+                  "dmi",
+                  "adx",
+                  "macd",
+                  "atr",
+                  "cci",
+                  "sar",
+                  "beta",
+                  "bbands"
+                ]
+              },
+              "period": {
+                "type": "integer",
+                "minimum": 2,
+                "maximum": 1000
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "order": {
+                "type": "string",
+                "maxLength": 1,
+                "enum": [
+                  "a",
+                  "d"
+                ]
+              },
+              "splitadjusted": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "symbol",
+              "function"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/technical/{symbol}",
+            "path_parameters": [
+              "symbol"
+            ],
+            "query_parameter_map": {
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "financial-news",
+          "description": "读取按证券或主题过滤的金融新闻。",
+          "parameters": [
+            "symbols",
+            "tag",
+            "from_date",
+            "to_date",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[A-Za-z0-9._,:-]+$"
+              },
+              "tag": {
+                "type": "string",
+                "maxLength": 120,
+                "pattern": "^[^/?#\\\\]{1,120}$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/news",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "symbols": "s",
+              "tag": "t",
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "sentiments",
+          "description": "读取一个或多个证券的每日新闻情绪分数。",
+          "parameters": [
+            "symbols",
+            "from_date",
+            "to_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[A-Za-z0-9._,:-]+$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "symbols"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/sentiments",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "symbols": "s",
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "screener",
+          "description": "使用受控字段和比较运算筛选全球股票。",
+          "parameters": [
+            "filters_json",
+            "sort",
+            "signals",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "filters_json": {
+                "type": "string",
+                "maxLength": 4000
+              },
+              "sort": {
+                "type": "string",
+                "maxLength": 80,
+                "pattern": "^[A-Za-z0-9_]+\\.(asc|desc)$"
+              },
+              "signals": {
+                "type": "string",
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9_,.-]+$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/screener",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "filters_json": "filters"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "calendar-earnings",
+          "description": "读取历史和未来财报发布日期。",
+          "parameters": [
+            "symbols",
+            "from_date",
+            "to_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[A-Za-z0-9._,:-]+$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/calendar/earnings",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "symbols": "symbols",
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "calendar-trends",
+          "description": "读取证券盈利预期趋势。",
+          "parameters": [
+            "symbols",
+            "from_date",
+            "to_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[A-Za-z0-9._,:-]+$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/calendar/trends",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "symbols": "symbols",
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "calendar-ipos",
+          "description": "读取历史和未来 IPO 日历。",
+          "parameters": [
+            "symbols",
+            "from_date",
+            "to_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[A-Za-z0-9._,:-]+$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/calendar/ipos",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "symbols": "symbols",
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "calendar-splits",
+          "description": "读取历史和未来拆股日历。",
+          "parameters": [
+            "symbols",
+            "from_date",
+            "to_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbols": {
+                "type": "string",
+                "maxLength": 1000,
+                "pattern": "^[A-Za-z0-9._,:-]+$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/calendar/splits",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "symbols": "symbols",
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "calendar-dividends",
+          "description": "读取历史和未来分红日历并支持分页。",
+          "parameters": [
+            "symbol",
+            "from_date",
+            "to_date",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
+              },
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/calendar/dividends",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "symbol": "filter[symbol]",
+              "from_date": "filter[date_from]",
+              "to_date": "filter[date_to]"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "macro-indicator",
+          "description": "读取指定国家和宏观指标的历史序列。",
+          "parameters": [
+            "country",
+            "indicator"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "country": {
+                "type": "string",
+                "maxLength": 80,
+                "pattern": "^[A-Za-z][A-Za-z ._-]{1,79}$"
+              },
+              "indicator": {
+                "type": "string",
+                "maxLength": 80,
+                "pattern": "^[A-Za-z0-9_ -]{1,80}$"
+              }
+            },
+            "required": [
+              "country",
+              "indicator"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/macro-indicator/{country}",
+            "path_parameters": [
+              "country"
+            ],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "economic-events",
+          "description": "读取受控日期、国家和事件范围内的宏观经济事件。",
+          "parameters": [
+            "from_date",
+            "to_date",
+            "country",
+            "comparison",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "from_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to_date": {
+                "type": "string",
+                "maxLength": 10,
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "country": {
+                "type": "string",
+                "maxLength": 80,
+                "pattern": "^[A-Za-z][A-Za-z ,._-]{1,79}$"
+              },
+              "comparison": {
+                "type": "string",
+                "maxLength": 16,
+                "enum": [
+                  "mom",
+                  "qoq",
+                  "yoy"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000
+              }
+            }
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/economic-events",
+            "path_parameters": [],
+            "query_parameter_map": {
+              "from_date": "from",
+              "to_date": "to"
+            },
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "exchange-details-list",
+          "description": "读取 EODHD v2 交易所详情目录。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/v2/exchange-details",
+            "path_parameters": [],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        },
+        {
+          "operation_id": "exchange-details",
+          "description": "读取指定交易所时区、交易时段、节假日和提前收市信息。",
+          "parameters": [
+            "exchange"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "exchange": {
+                "type": "string",
+                "maxLength": 32,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]{0,31}$"
+              }
+            },
+            "required": [
+              "exchange"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/v2/exchange-details/{exchange}",
+            "path_parameters": [
+              "exchange"
+            ],
+            "query_parameter_map": {},
+            "force_query": {
+              "fmt": "json"
+            }
+          },
+          "result_contract": {
+            "provider": "eodhd",
+            "official_origin": "https://eodhd.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "api_token_query_backend_only"
+          }
+        }
+      ]
+    }
+  ]
+}

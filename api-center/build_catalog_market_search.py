@@ -18,12 +18,14 @@ BASE_SPEC.loader.exec_module(base)
 MARKET_SEARCH_CATALOG = HERE / "market-search/provider-catalog.json"
 TUSHARE_CATALOG = HERE / "tushare/provider-catalog.json"
 BAOSTOCK_CATALOG = HERE / "baostock/provider-catalog.json"
+EODHD_CATALOG = HERE / "eodhd/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
     "serpapi": 4,
     "tushare": 20,
     "baostock": 20,
+    "eodhd": 25,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -32,6 +34,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     MARKET_SEARCH_CATALOG,
     TUSHARE_CATALOG,
     BAOSTOCK_CATALOG,
+    EODHD_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -56,6 +59,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "market-search/provider-catalog.json",
         "tushare/provider-catalog.json",
         "baostock/provider-catalog.json",
+        "eodhd/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:
