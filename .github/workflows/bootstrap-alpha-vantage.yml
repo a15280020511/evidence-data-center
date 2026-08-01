@@ -43,7 +43,7 @@ jobs:
           content = zlib.decompress(base64.b64decode(encoded))
           expected = '74e04e0b4abcac7aa30842c9a94217775284a09e3cb8b39e7baa94470b535bbe'
           assert hashlib.sha256(content).hexdigest() == expected
-          Path('/tmp/integrate_alpha_vantage.py').write_bytes(content)
+          Path('tools/integrate_alpha_vantage.py').write_bytes(content)
           PY
 
       - name: Install catalog dependencies
@@ -52,7 +52,7 @@ jobs:
           python -m pip check
 
       - name: Generate provider, tests, workflows, and unified catalog
-        run: python /tmp/integrate_alpha_vantage.py
+        run: python tools/integrate_alpha_vantage.py
 
       - name: Commit generated integration
         run: |
