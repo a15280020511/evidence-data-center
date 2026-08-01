@@ -135,7 +135,7 @@ credentials, and non-public/private-network URL targets. Upstream calls may
 consume quota or incur provider charges.
 '''
 if "## Agent Toolbelt" not in text:
-    text = text.rstrip() + section + "\n"
+    text = text.rstrip() + section
 write(path, text)
 
 path = "api-center/SECRET_ISOLATION_POLICY.md"
@@ -154,7 +154,7 @@ catalog, printed in comments, or persisted in artifacts. Failure messages are
 redacted before diagnostics are written.
 '''
 if "## Agent Toolbelt" not in text:
-    text = text.rstrip() + section + "\n"
+    text = text.rstrip() + section
 write(path, text)
 
 subprocess.run(
