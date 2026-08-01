@@ -1,9 +1,8 @@
 name: Temporary Remove Agent Toolbelt And Gapup
 
 on:
-  push:
-    branches:
-      - feat/add-overture-oecd-alphafeed
+  pull_request:
+    types: [synchronize]
     paths:
       - .github/workflows/temporary-remove-agent-toolbelt-gapup.yml
 
