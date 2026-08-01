@@ -50,6 +50,7 @@ jobs:
             api-center/alphafeed/requirements.txt
             api-center/agent-toolbelt/requirements.txt
             api-center/gapup-mcp/requirements.txt
+            api-center/who-gho/requirements.txt
 
       - name: Install isolated intelligence dependencies
         run: |
@@ -68,7 +69,8 @@ jobs:
             -r api-center/oecd/requirements.txt \
             -r api-center/alphafeed/requirements.txt \
             -r api-center/agent-toolbelt/requirements.txt \
-            -r api-center/gapup-mcp/requirements.txt
+            -r api-center/gapup-mcp/requirements.txt \
+            -r api-center/who-gho/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -101,6 +103,7 @@ jobs:
             api-center/alphafeed/alphafeed_task.py \
             api-center/agent-toolbelt/agent_toolbelt_task.py \
             api-center/gapup-mcp/gapup_mcp_task.py \
+            api-center/who-gho/who_gho_task.py \
             api-center/tests/*.py \
             api-center/browserless/tests/*.py \
             api-center/east-asia-econ/tests/*.py \
@@ -110,7 +113,8 @@ jobs:
             api-center/alphafeed/tests/*.py \
             api-center/xweather/tests/*.py \
             api-center/agent-toolbelt/tests/*.py \
-            api-center/gapup-mcp/tests/*.py
+            api-center/gapup-mcp/tests/*.py \
+            api-center/who-gho/tests/*.py
           python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
@@ -125,6 +129,7 @@ jobs:
           python -m unittest discover -s api-center/alphafeed/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/agent-toolbelt/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/gapup-mcp/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/who-gho/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Rebuild deterministic contracts
@@ -156,11 +161,11 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 31
-          assert catalog['enabled_managed_provider_count'] == 31
+          assert catalog['managed_provider_count'] == len(providers) == 32
+          assert catalog['enabled_managed_provider_count'] == 32
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 569
+          ) == 577
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
@@ -228,12 +233,22 @@ jobs:
           assert 'crm_connector' not in gapup_ids
           assert 'webhooks_manage' not in gapup_ids
 
+          who = providers['who-gho-odata']
+          assert who['ticket_prefix'] == '[intel-who-gho]'
+          assert who['required_secret_environment_variable_name'] == ''
+          assert len(who['operations']) == 8
+          assert who['limits']['fixed_api_host'] == 'ghoapi.azureedge.net'
+          assert who['limits']['arbitrary_odata_filters_allowed'] is False
+          assert who['limits']['automatic_pagination_allowed'] is False
+          assert who['limits']['write_operations_allowed'] is False
+          assert who['limits']['legacy_endpoint_migration_watch_required'] is True
+
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
               'worldbank_connectors': 9,
-              'managed_providers': 31,
-              'managed_operations': 569,
+              'managed_providers': 32,
+              'managed_operations': 577,
               'overture_maps_operations': 7,
               'oecd_operations': 6,
               'alphafeed_operations': 10,
@@ -242,6 +257,7 @@ jobs:
               'agent_toolbelt_stock_operations': 0,
               'gapup_mcp_operations': 209,
               'gapup_mcp_upstream_tools': 208,
+              'who_gho_operations': 8,
               'gapup_mcp_blocked_tools': 63,
           }))
           PY
@@ -272,5 +288,7 @@ jobs:
             api-center/gapup-mcp/provider-catalog.json
             api-center/gapup-mcp/ticket.schema.json
             api-center/gapup-mcp/readonly-tools.snapshot.json
+            api-center/who-gho/provider-catalog.json
+            api-center/who-gho/ticket.schema.json
           if-no-files-found: error
           retention-days: 30
