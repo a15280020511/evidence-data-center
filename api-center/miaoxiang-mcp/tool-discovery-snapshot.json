@@ -1,0 +1,43 @@
+{
+  "schema_version": "miaoxiang-mcp-tool-discovery-v1",
+  "observed_at": "2026-08-01T02:10:00+00:00",
+  "source_run_id": 30679450313,
+  "source_artifact_id": 8811680437,
+  "endpoint": "https://mxapi.eastmoney.com/mxds/mcp",
+  "http_status": 200,
+  "content_type": "application/json",
+  "protocol_version": "2025-11-25",
+  "server_info": {
+    "name": "mx-ds-mcp",
+    "version": "1.0.0"
+  },
+  "session_id_required": false,
+  "credential_header": "em_api_key",
+  "credential_value_exposed": false,
+  "tool_count": 11,
+  "tool_names": [
+    "mx_us_finance_data",
+    "mx_hk_finance_data",
+    "mx_comprehensive_finance_data",
+    "mx_macro_data",
+    "mx_stocks_screener",
+    "mx_finance_search_news",
+    "mx_finance_search_notice",
+    "mx_ashare_finance_data",
+    "mx_fund_finance_data",
+    "mx_bond_finance_data",
+    "mx_index_block_finance_data"
+  ],
+  "input_contract": {
+    "type": "object",
+    "properties": {
+      "query": {
+        "type": "string",
+        "description": "问句"
+      }
+    },
+    "required": ["query"],
+    "additionalProperties": false
+  },
+  "model_calls": 0
+}
