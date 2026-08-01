@@ -30,7 +30,7 @@
     "alphafeed/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "342fe6dad241e5608823703ec8d36adf80623767855a2c1c8364b7c5101de9c1",
+  "managed_provider_catalog_sha256": "0da7145a1c90294aae08a09b11102307b7f413f778ebc0c6b47aa76d1d3849c8",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 29,
@@ -10874,7 +10874,7 @@
             "location",
             "from",
             "to",
-            "limit",
+            "plimit",
             "fields"
           ],
           "parameter_schema": {
@@ -10899,16 +10899,16 @@
                 "maxLength": 32,
                 "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
               },
-              "limit": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 31
-              },
               "fields": {
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 500,
                 "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+              },
+              "plimit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 30
               }
             },
             "required": [
@@ -10950,7 +10950,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "XWEATHER_CLIENT_ID",
       "secret_value_exposed": false,
-      "provider_sha256": "08ac2b25c04d317e7a9d28f15e38a8067801ca541fe02518ec050c23d292dc6d",
+      "provider_sha256": "c94519d010f5fd3dc128c75c27872a7b296c3e0685fbb099b31cfc5b6c065f90",
       "catalog_file": "xweather/provider-catalog.json"
     },
     {
@@ -23801,5 +23801,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "800fefa0a702bf8322b9b5225f6db43e87d76fae568fba3de5d88e443d0aeed4"
+  "catalog_sha256": "0705b563082394273daed695e47e69505ac39fd55433d2c700b1fc418fb93b6e"
 }

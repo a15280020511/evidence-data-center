@@ -201,9 +201,9 @@ for name, operation, parameters in (
     ("xweather-fuzhou-observation", "observations-current", {"location": "fuzhou,fujian,china"}),
     ("xweather-fuzhou-current", "conditions", {"location": "26.0745,119.2965", "filter": "1hr", "limit": 1}),
     ("xweather-fuzhou-forecast", "forecasts", {"location": "fuzhou,fujian,china", "filter": "day", "limit": 15}),
-    ("xweather-fuzhou-recent-history", "observations-summary", {"location": "fuzhou,fujian,china", "from": "2026-07-25", "to": "2026-07-31", "limit": 7}),
-    ("xweather-fuzhou-2011-08-02", "observations-summary", {"location": "fuzhou,fujian,china", "from": "2011-08-02", "to": "2011-08-02", "limit": 1}),
-    ("xweather-fuzhou-2011-08-01", "observations-summary", {"location": "fuzhou,fujian,china", "from": "2011-08-01", "to": "2011-08-01", "limit": 1}),
+    ("xweather-fuzhou-recent-history", "observations-summary", {"location": "fuzhou,fujian,china", "from": "2026-07-25", "to": "2026-07-31", "plimit": 7}),
+    ("xweather-fuzhou-2011-08-02", "observations-summary", {"location": "fuzhou,fujian,china", "from": "2011-08-02", "to": "2011-08-02", "plimit": 1}),
+    ("xweather-fuzhou-2011-08-01", "observations-summary", {"location": "fuzhou,fujian,china", "from": "2011-08-01", "to": "2011-08-01", "plimit": 1}),
     ("xweather-fuzhou-2004-condition", "conditions", {"location": "26.0745,119.2965", "at_time": "2004-01-15T12:00:00", "filter": "1hr", "limit": 1}),
     ("xweather-fuzhou-2003-condition", "conditions", {"location": "26.0745,119.2965", "at_time": "2003-12-31T12:00:00", "filter": "1hr", "limit": 1}),
 ):

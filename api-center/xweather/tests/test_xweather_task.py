@@ -76,6 +76,25 @@ class XweatherTests(unittest.TestCase):
         ):
             self.assertEqual(task.credentials(), ("test-client-id", "test-client-secret"))
 
+    def test_history_summary_uses_plimit_for_daily_periods(self):
+        url, query, _ = task.build_request(
+            "observations-summary",
+            {
+                "location": "fuzhou,fujian,china",
+                "from": "2026-07-25",
+                "to": "2026-07-31",
+                "plimit": 7,
+            },
+        )
+        self.assertEqual(
+            url,
+            "https://data.api.xweather.com/observations/summary/fuzhou,fujian,china",
+        )
+        self.assertEqual(
+            query,
+            {"from": "2026-07-25", "to": "2026-07-31", "plimit": "7"},
+        )
+
     def test_schema_rejects_path_escape(self):
         bad = self.ticket("forecasts", {"location": "https://example.com", "limit": 1})
         with self.assertRaises(ValueError):

@@ -5,7 +5,7 @@
 - 托管提供方：`29/29` 已启用
 - 托管操作总数：`339`
 - 已公开参数总数：`1358`
-- 目录 SHA-256：`800fefa0a702bf8322b9b5225f6db43e87d76fae568fba3de5d88e443d0aeed4`
+- 目录 SHA-256：`0705b563082394273daed695e47e69505ac39fd55433d2c700b1fc418fb93b6e`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -8792,7 +8792,7 @@
 - 票据前缀：`[api-xweather]`
 - Secret环境变量名：`XWEATHER_CLIENT_SECRET`（仅名称）
 - Repository Variable名：`XWEATHER_CLIENT_ID`（仅名称）
-- 提供方SHA-256：`08ac2b25c04d317e7a9d28f15e38a8067801ca541fe02518ec050c23d292dc6d`
+- 提供方SHA-256：`c94519d010f5fd3dc128c75c27872a7b296c3e0685fbb099b31cfc5b6c065f90`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -9122,7 +9122,7 @@
 }
 ```
 
-| `observations-summary` | 读取指定位置最多 30 日的历史观测日汇总。 | `location, from, to, limit, fields` |
+| `observations-summary` | 读取指定位置最多 30 日的历史观测日汇总。 | `location, from, to, plimit, fields` |
 
 `observations-summary` 参数Schema：
 
@@ -9149,16 +9149,16 @@
       "maxLength": 32,
       "pattern": "^[A-Za-z0-9:+._-]{1,32}$"
     },
-    "limit": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 31
-    },
     "fields": {
       "type": "string",
       "minLength": 1,
       "maxLength": 500,
       "pattern": "^[A-Za-z0-9._,-]{1,500}$"
+    },
+    "plimit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 30
     }
   },
   "required": [
