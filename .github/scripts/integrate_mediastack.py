@@ -1,0 +1,194 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+
+def replace_once(path: str, old: str, new: str) -> None:
+    target = Path(path)
+    text = target.read_text(encoding="utf-8")
+    if new in text:
+        return
+    if old not in text:
+        raise SystemExit(f"patch anchor missing in {path}: {old!r}")
+    target.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+
+def append_once(path: str, marker: str, text: str) -> None:
+    target = Path(path)
+    current = target.read_text(encoding="utf-8")
+    if marker in current:
+        return
+    target.write_text(current.rstrip() + "\n\n" + text.strip() + "\n", encoding="utf-8")
+
+
+builder = "api-center/build_catalog_market_search.py"
+replace_once(
+    builder,
+    'WHO_GHO_CATALOG = HERE / "who-gho/provider-catalog.json"\nKNOWLEDGE_TOOLS_CATALOG',
+    'WHO_GHO_CATALOG = HERE / "who-gho/provider-catalog.json"\nMEDIASTACK_CATALOG = HERE / "mediastack/provider-catalog.json"\nKNOWLEDGE_TOOLS_CATALOG',
+)
+replace_once(
+    builder,
+    '    "who-gho-odata": 8,\n    "wolfram-alpha": 4,',
+    '    "who-gho-odata": 8,\n    "mediastack": 5,\n    "wolfram-alpha": 4,',
+)
+replace_once(
+    builder,
+    "    WHO_GHO_CATALOG,\n    KNOWLEDGE_TOOLS_CATALOG,",
+    "    WHO_GHO_CATALOG,\n    MEDIASTACK_CATALOG,\n    KNOWLEDGE_TOOLS_CATALOG,",
+)
+replace_once(
+    builder,
+    '        "who-gho/provider-catalog.json",\n        "knowledge-tools/provider-catalog.json",',
+    '        "who-gho/provider-catalog.json",\n        "mediastack/provider-catalog.json",\n        "knowledge-tools/provider-catalog.json",',
+)
+
+tests = "api-center/tests/test_api_catalog.py"
+replace_once(
+    tests,
+    '    "who-gho-odata": 8,\n    "wolfram-alpha": 4,',
+    '    "who-gho-odata": 8,\n    "mediastack": 5,\n    "wolfram-alpha": 4,',
+)
+replace_once(
+    tests,
+    '        self.assertEqual(catalog["managed_provider_count"], 32)',
+    '        self.assertEqual(catalog["managed_provider_count"], 33)',
+)
+replace_once(
+    tests,
+    '        self.assertEqual(catalog["enabled_managed_provider_count"], 32)',
+    '        self.assertEqual(catalog["enabled_managed_provider_count"], 33)',
+)
+replace_once(
+    tests,
+    '        self.assertEqual(catalog["managed_operation_count"], 577)',
+    '        self.assertEqual(catalog["managed_operation_count"], 582)',
+)
+replace_once(
+    tests,
+    '            "gapup-mcp": "GAPUP_API_KEY",\n            "wolfram-alpha":',
+    '            "gapup-mcp": "GAPUP_API_KEY",\n            "mediastack": "MEDIASTACK_API_KEY",\n            "wolfram-alpha":',
+)
+replace_once(
+    tests,
+    '        self.assertEqual(\n            providers["tushare"]["ticket_prefix"],',
+    '''        mediastack = providers["mediastack"]
+        self.assertEqual(mediastack["ticket_prefix"], "[intel-mediastack]")
+        self.assertEqual(
+            mediastack["required_secret_environment_variable_name"],
+            "MEDIASTACK_API_KEY",
+        )
+        self.assertEqual(len(mediastack["operations"]), 5)
+        self.assertEqual(mediastack["limits"]["fixed_api_host"], "api.mediastack.com")
+        self.assertEqual(mediastack["limits"]["free_plan_requests_per_month"], 100)
+        self.assertFalse(mediastack["limits"]["automatic_pagination_allowed"])
+        self.assertFalse(mediastack["limits"]["article_body_fetching_allowed"])
+        self.assertFalse(mediastack["limits"]["write_operations_allowed"])
+
+        self.assertEqual(
+            providers["tushare"]["ticket_prefix"],''',
+)
+
+workflow = ".github/workflows/api-catalog-validate.yml"
+replace_once(
+    workflow,
+    "            api-center/who-gho/requirements.txt\n",
+    "            api-center/who-gho/requirements.txt\n            api-center/mediastack/requirements.txt\n",
+)
+replace_once(
+    workflow,
+    "            -r api-center/who-gho/requirements.txt\n",
+    "            -r api-center/who-gho/requirements.txt \\\n            -r api-center/mediastack/requirements.txt\n",
+)
+replace_once(
+    workflow,
+    "            api-center/who-gho/who_gho_task.py \\\n            api-center/tests/*.py",
+    "            api-center/who-gho/who_gho_task.py \\\n            api-center/mediastack/mediastack_task.py \\\n            api-center/tests/*.py",
+)
+replace_once(
+    workflow,
+    "            api-center/who-gho/tests/*.py\n",
+    "            api-center/who-gho/tests/*.py \\\n            api-center/mediastack/tests/*.py\n",
+)
+replace_once(
+    workflow,
+    "          python -m unittest discover -s api-center/who-gho/tests -p 'test_*.py' -v\n          python -m unittest discover -s api-center/tests",
+    "          python -m unittest discover -s api-center/who-gho/tests -p 'test_*.py' -v\n          python -m unittest discover -s api-center/mediastack/tests -p 'test_*.py' -v\n          python -m unittest discover -s api-center/tests",
+)
+replace_once(
+    workflow,
+    "          assert catalog['managed_provider_count'] == len(providers) == 32",
+    "          assert catalog['managed_provider_count'] == len(providers) == 33",
+)
+replace_once(
+    workflow,
+    "          assert catalog['enabled_managed_provider_count'] == 32",
+    "          assert catalog['enabled_managed_provider_count'] == 33",
+)
+replace_once(
+    workflow,
+    "          ) == 577",
+    "          ) == 582",
+)
+replace_once(
+    workflow,
+    "          print(json.dumps({\n              'status': 'PASS',",
+    '''          mediastack = providers['mediastack']
+          assert mediastack['ticket_prefix'] == '[intel-mediastack]'
+          assert mediastack['required_secret_environment_variable_name'] == 'MEDIASTACK_API_KEY'
+          assert len(mediastack['operations']) == 5
+          assert mediastack['limits']['fixed_api_host'] == 'api.mediastack.com'
+          assert mediastack['limits']['free_plan_requests_per_month'] == 100
+          assert mediastack['limits']['automatic_pagination_allowed'] is False
+          assert mediastack['limits']['article_body_fetching_allowed'] is False
+          assert mediastack['limits']['write_operations_allowed'] is False
+
+          print(json.dumps({
+              'status': 'PASS',''',
+)
+replace_once(
+    workflow,
+    "              'managed_providers': 32,\n              'managed_operations': 577,",
+    "              'managed_providers': 33,\n              'managed_operations': 582,",
+)
+replace_once(
+    workflow,
+    "              'who_gho_operations': 8,\n              'gapup_mcp_blocked_tools': 63,",
+    "              'who_gho_operations': 8,\n              'mediastack_operations': 5,\n              'gapup_mcp_blocked_tools': 63,",
+)
+replace_once(
+    workflow,
+    "            api-center/who-gho/ticket.schema.json\n",
+    "            api-center/who-gho/ticket.schema.json\n            api-center/mediastack/provider-catalog.json\n            api-center/mediastack/ticket.schema.json\n",
+)
+
+append_once(
+    "api-center/README.md",
+    "## Mediastack 全球新闻情报",
+    '''## Mediastack 全球新闻情报
+
+- Provider：`mediastack`
+- 票据前缀：`[intel-mediastack]`
+- 独立 Secret：`MEDIASTACK_API_KEY`
+- 固定开放：最新新闻、关键词检索、历史新闻和来源目录，共5项能力。
+- 免费层：官方当前标示每月100次请求，使用延迟新闻；历史数据和商业使用取决于套餐。
+- 强制单请求、最多100条、禁止自动翻页、后台监控和文章正文抓取。''',
+)
+append_once(
+    "api-center/SECRET_ISOLATION_POLICY.md",
+    "### Mediastack",
+    '''### Mediastack
+
+```text
+MEDIASTACK_API_KEY
+```
+
+仅由 Mediastack 票据工作流注入为后端 `access_key` 查询参数；不得出现在 Issue、目录、日志、Artifact、请求元数据或客户端参数中。''',
+)
+append_once(
+    "api-center/CAPABILITY_MAXIMIZATION.md",
+    "### Mediastack 全球新闻",
+    '''### Mediastack 全球新闻
+
+固定开放最新新闻、关键词检索、历史新闻和来源目录；保持单请求、受限分页、独立密钥、无正文抓取、无后台监控。''',
+)
