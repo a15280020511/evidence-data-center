@@ -166,6 +166,17 @@ NASA_API_KEY
 
 固定开放 25 项操作，覆盖 APOD、近地小行星 NeoWs、DONKI 空间天气、EPIC 地球影像元数据、NASA 图像与视频资料库，以及 Earthdata GIBS 的 WMTS/WMS 能力、图层元数据和单瓦片影像。旧 Earth API 和 Mars Rover Photos API 已归档，不予接入；地球影像由官方替代的 GIBS 提供。每张票据只发送一次请求、不自动重试或翻页，GIBS 每票据最多一张瓦片，禁止整图层下载、任意 URL、后台轮询和写入。
 
+## 挪威气象研究所 Geosatellite
+
+`api-center/metno-geosatellite/` 固定访问 MET Norway 官方 Geosatellite 1.4：
+
+```text
+[intel-metno-geosatellite]
+无需 Repository Secret
+```
+
+固定开放 4 项只读能力：本地能力目录、指定区域/光谱/可选 UTC 时刻的静态 PNG、欧洲 MP4/WebM 卫星动画，以及按区域过滤的静态影像可用清单。请求使用可识别 `User-Agent`，每张票据最多一次 GET，不自动重试或翻页；不开放已于 2026-03-01 移除的 `small` 图、不允许无过滤拉取完整可用清单、任意 URL、后台轮询或写入。数据按 CC BY 4.0 使用并保留 MET Norway 署名。
+
 ## World Bank 世界银行开放数据
 
 World Bank 已通过 9 个普通只读连接器接入，无需 API Key，覆盖指标目录、指标元数据、国家/地区、收入等级、贷款类型、主题、数据源、指标观测值和 JSON-stat 输出。本次不重复建设第二套 Provider，只强化统一目录和回归验收。

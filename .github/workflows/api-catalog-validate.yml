@@ -55,6 +55,7 @@ jobs:
             api-center/internet-archive/requirements.txt
             api-center/marketstack/requirements.txt
             api-center/nasa/requirements.txt
+            api-center/metno-geosatellite/requirements.txt
 
       - name: Install isolated intelligence dependencies
         run: |
@@ -78,7 +79,8 @@ jobs:
             -r api-center/aisstream/requirements.txt \
             -r api-center/internet-archive/requirements.txt \
             -r api-center/marketstack/requirements.txt \
-            -r api-center/nasa/requirements.txt
+            -r api-center/nasa/requirements.txt \
+            -r api-center/metno-geosatellite/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -112,6 +114,7 @@ jobs:
           python -m unittest discover -s api-center/internet-archive/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/marketstack/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/nasa/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/metno-geosatellite/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Rebuild deterministic contracts
@@ -138,11 +141,11 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 36
-          assert catalog['enabled_managed_provider_count'] == 36
+          assert catalog['managed_provider_count'] == len(providers) == 37
+          assert catalog['enabled_managed_provider_count'] == 37
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 409
+          ) == 413
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
@@ -219,6 +222,17 @@ jobs:
           assert nasa['limits']['archived_mars_rover_api_allowed'] is False
           assert nasa['limits']['write_operations_allowed'] is False
 
+          metno = providers['metno-geosatellite']
+          assert metno['ticket_prefix'] == '[intel-metno-geosatellite]'
+          assert metno['required_secret_environment_variable_name'] == ''
+          assert len(metno['operations']) == 4
+          assert metno['limits']['requests_per_ticket_max'] == 1
+          assert metno['limits']['fixed_api_host'] == 'api.met.no'
+          assert metno['limits']['small_size_images_allowed'] is False
+          assert metno['limits']['unfiltered_availability_listing_allowed'] is False
+          assert metno['limits']['bulk_download_allowed'] is False
+          assert metno['limits']['write_operations_allowed'] is False
+
           aisstream = providers['aisstream']
           assert aisstream['ticket_prefix'] == '[intel-aisstream]'
           assert aisstream['required_secret_environment_variable_name'] == 'AISSTREAM_API_KEY'
@@ -241,8 +255,8 @@ jobs:
               'status': 'PASS',
               'connectors': 68,
               'worldbank_connectors': 9,
-              'managed_providers': 36,
-              'managed_operations': 409,
+              'managed_providers': 37,
+              'managed_operations': 413,
               'overture_maps_operations': 7,
               'oecd_operations': 6,
               'alphafeed_operations': 10,
@@ -254,6 +268,7 @@ jobs:
               'internet_archive_operations': 6,
               'marketstack_operations': 11,
               'nasa_operations': 25,
+              'metno_geosatellite_operations': 4,
               'removed_providers': ['agent-toolbelt', 'gapup-mcp'],
           }))
           PY

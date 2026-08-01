@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`36/36` 已启用
-- 托管操作总数：`409`
-- 已公开参数总数：`1545`
-- 目录 SHA-256：`e1701bb0417b7fdcd831cbb10308e6e5d9ed089295b12a84d3577a38b763b739`
+- 托管提供方：`37/37` 已启用
+- 托管操作总数：`413`
+- 已公开参数总数：`1551`
+- 目录 SHA-256：`7b8a588be52e66f19d05bf8ec85c9ad65cdc245529b8b840cfb563fe9b438243`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -51,6 +51,7 @@
 | 互联网档案馆 Internet Archive | `internet-archive` | 启用 | `[intel-internet-archive]` | `6` | 否 |
 | Marketstack 全球股票 EOD 与历史数据 | `marketstack` | 启用 | `[intel-marketstack]` | `11` | 否 |
 | NASA Open APIs 与 Earthdata GIBS | `nasa` | 启用 | `[intel-nasa]` | `25` | 否 |
+| 挪威气象研究所 Geosatellite | `metno-geosatellite` | 启用 | `[intel-metno-geosatellite]` | `4` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -15026,6 +15027,170 @@
   "archived_mars_rover_api_allowed": false,
   "write_operations_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## 挪威气象研究所 Geosatellite (`metno-geosatellite`)
+
+- 状态：`启用`
+- 说明：通过 MET Norway Geosatellite 1.4 固定只读端点获取地球同步气象卫星静态图、欧洲动画和按区域过滤的可用影像清单。
+- 目录策略：只开放4项固定只读操作；固定访问api.met.no；不开放任意URL、任意主机、任意路径、small缩略图、批量全目录下载、后台轮询或写入。
+- 执行策略：每张票据最多一次HTTPS GET，不自动重试或翻页；使用可识别User-Agent；遵守Expires、Last-Modified和ETag缓存头；响应受30MB硬上限约束。
+- 票据前缀：`[intel-metno-geosatellite]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`c6002056463a8b97d0cb136bceaa50a12355fd64b6113e0bc79f33d41e0f88ac`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地MET Norway Geosatellite安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-static-image` | 获取指定区域、光谱和可选UTC时刻的PNG卫星图；未给time时返回最新图。 | `area, spectrum, time` |
+
+`get-static-image` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "area": {
+      "type": "string",
+      "enum": [
+        "africa",
+        "atlantic_ocean",
+        "europe",
+        "global",
+        "mediterranean"
+      ]
+    },
+    "spectrum": {
+      "type": "string",
+      "enum": [
+        "infrared",
+        "visible"
+      ],
+      "default": "infrared"
+    },
+    "time": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:00Z$"
+    }
+  },
+  "required": [
+    "area"
+  ]
+}
+```
+
+| `get-europe-animation` | 获取欧洲区域的MP4或WebM卫星动画。 | `format` |
+
+`get-europe-animation` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "format": {
+      "type": "string",
+      "enum": [
+        "mp4",
+        "webm"
+      ],
+      "default": "mp4"
+    }
+  }
+}
+```
+
+| `list-available` | 按必选区域和可选光谱读取静态PNG影像可用清单，禁止无过滤全目录请求。 | `area, spectrum` |
+
+`list-available` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "area": {
+      "type": "string",
+      "enum": [
+        "africa",
+        "atlantic_ocean",
+        "europe",
+        "global",
+        "mediterranean"
+      ]
+    },
+    "spectrum": {
+      "type": "string",
+      "enum": [
+        "infrared",
+        "visible"
+      ]
+    }
+  },
+  "required": [
+    "area"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 30000000,
+  "fixed_api_host": "api.met.no",
+  "supported_areas": [
+    "africa",
+    "atlantic_ocean",
+    "europe",
+    "global",
+    "mediterranean"
+  ],
+  "supported_spectra": [
+    "infrared",
+    "visible"
+  ],
+  "supported_video_area": "europe",
+  "supported_video_formats": [
+    "mp4",
+    "webm"
+  ],
+  "small_size_images_allowed": false,
+  "unfiltered_availability_listing_allowed": false,
+  "automatic_pagination_allowed": false,
+  "bulk_download_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_user_agent_allowed": false,
+  "background_polling_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "fixed_paths": [
+    "/weatherapi/geosatellite/1.4/",
+    "/weatherapi/geosatellite/1.4/europe.mp4",
+    "/weatherapi/geosatellite/1.4/europe.webm",
+    "/weatherapi/geosatellite/1.4/available.json"
+  ]
 }
 ```
 
