@@ -54,11 +54,11 @@ jobs:
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
           git diff --check
 
-      - name: Commit permanent removal
+      - name: Commit API contracts only
         run: |
           set -euo pipefail
           git config user.name "a15280020511"
           git config user.email "270211234+a15280020511@users.noreply.github.com"
-          git add -A
+          git add api-center
           git commit -m "refactor: remove unsupported Agent Toolbelt stock tools"
           git push origin HEAD:${{ github.head_ref }}
