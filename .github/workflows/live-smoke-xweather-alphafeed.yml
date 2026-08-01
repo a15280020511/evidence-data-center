@@ -1,4 +1,5 @@
 name: Live Smoke AlphaFeed and Xweather
+# Temporary PR-only live verification; removed after evidence capture.
 
 on:
   pull_request:
