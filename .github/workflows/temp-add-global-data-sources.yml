@@ -69,12 +69,12 @@ jobs:
           python -m unittest discover -s api-center/tests -p 'test_capability_maximization.py' -v
           git diff --check
 
-      - name: Remove one-shot migration machinery
+      - name: Defer workflow writes to GitHub connector
         run: |
-          rm -f .github/scripts/add_global_data_sources.py
-          rm -f .github/workflows/temp-add-global-data-sources.yml
+          git restore --source=HEAD -- .github/workflows
+          git restore --source=HEAD -- .github/scripts/add_global_data_sources.py
 
-      - name: Commit verified implementation
+      - name: Commit verified non-workflow implementation
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
