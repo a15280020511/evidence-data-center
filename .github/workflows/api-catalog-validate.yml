@@ -40,6 +40,7 @@ jobs:
             api-center/eodhd/requirements.txt
             api-center/data-commons/requirements.txt
             api-center/qweather/requirements.txt
+            api-center/miaoxiang-mcp/requirements.txt
 
       - name: Install isolated API dependencies
         run: |
@@ -48,7 +49,8 @@ jobs:
             -r api-center/baostock/requirements.txt \
             -r api-center/eodhd/requirements.txt \
             -r api-center/data-commons/requirements.txt \
-            -r api-center/qweather/requirements.txt
+            -r api-center/qweather/requirements.txt \
+            -r api-center/miaoxiang-mcp/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -74,6 +76,8 @@ jobs:
             api-center/data-commons/tests/*.py \
             api-center/qweather/qweather_task.py \
             api-center/qweather/tests/*.py \
+            api-center/miaoxiang-mcp/miaoxiang_mcp_task.py \
+            api-center/miaoxiang-mcp/tests/*.py \
             api-center/tests/*.py
           python api-center/build_config.py
           python api-center/build_catalog_market_search.py
@@ -81,6 +85,7 @@ jobs:
           python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/qweather/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/miaoxiang-mcp/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Verify deterministic contracts and provider invariants
@@ -109,6 +114,7 @@ jobs:
               'yuandian-law': 40,
               'tianyancha': 3,
               'miaoxiang': 4,
+              'miaoxiang-mcp': 13,
               'jina-reader': 2,
               'exa': 3,
               'tavily': 5,
@@ -124,12 +130,12 @@ jobs:
           assert manifest['connector_count'] == 68
           assert manifest['enabled_connector_count'] == 68
           assert catalog['schema_version'] == 'api-catalog-v3'
-          assert catalog['managed_provider_count'] == 21
-          assert catalog['enabled_managed_provider_count'] == 21
-          assert catalog['managed_operation_count'] == 213
+          assert catalog['managed_provider_count'] == 22
+          assert catalog['enabled_managed_provider_count'] == 22
+          assert catalog['managed_operation_count'] == 226
           assert catalog['secret_values_exposed'] is False
           assert set(providers) == set(expected_counts)
-          assert sum(len(row['operations']) for row in providers.values()) == 213
+          assert sum(len(row['operations']) for row in providers.values()) == 226
           for provider_id, count in expected_counts.items():
               assert len(providers[provider_id]['operations']) == count
               assert providers[provider_id]['secret_value_exposed'] is False
@@ -160,6 +166,23 @@ jobs:
           assert qweather['limits']['redirects_allowed'] is False
           assert qweather['limits']['write_operations_allowed'] is False
 
+          miaoxiang_mcp = providers['miaoxiang-mcp']
+          assert miaoxiang_mcp['ticket_prefix'] == '[api-mx-mcp]'
+          assert miaoxiang_mcp['required_secret_environment_variable_name'] == 'EM_API_KEY'
+          assert miaoxiang_mcp['limits']['fixed_mcp_host'] == 'mxapi.eastmoney.com'
+          assert miaoxiang_mcp['limits']['fixed_mcp_path'] == '/mxds/mcp'
+          assert miaoxiang_mcp['limits']['fixed_mcp_tool_count'] == 11
+          assert miaoxiang_mcp['limits']['arbitrary_urls_allowed'] is False
+          assert miaoxiang_mcp['limits']['arbitrary_hosts_allowed'] is False
+          assert miaoxiang_mcp['limits']['arbitrary_headers_allowed'] is False
+          assert miaoxiang_mcp['limits']['client_supplied_api_key_allowed'] is False
+          assert miaoxiang_mcp['limits']['arbitrary_jsonrpc_methods_allowed'] is False
+          assert miaoxiang_mcp['limits']['arbitrary_mcp_tool_names_allowed'] is False
+          assert miaoxiang_mcp['limits']['resources_allowed'] is False
+          assert miaoxiang_mcp['limits']['prompts_allowed'] is False
+          assert miaoxiang_mcp['limits']['write_operations_allowed'] is False
+          assert miaoxiang_mcp['limits']['trading_or_order_execution_allowed'] is False
+
           baostock = providers['baostock']
           assert baostock['ticket_prefix'] == '[api-baostock]'
           assert baostock['required_secret_environment_variable_name'] == ''
@@ -185,21 +208,26 @@ jobs:
               'eodhd/provider-catalog.json',
               'data-commons/provider-catalog.json',
               'qweather/provider-catalog.json',
+              'miaoxiang-mcp/provider-catalog.json',
           ):
               assert path in catalog['managed_provider_catalog_files']
               assert path in catalog['detail_reading_order']
 
-          serialized = json.dumps(data_commons, ensure_ascii=False)
-          assert 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' not in serialized
-          assert 'data_commons_api_key' not in serialized
+          serialized_dc = json.dumps(data_commons, ensure_ascii=False)
+          assert 'GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON' not in serialized_dc
+          assert 'data_commons_api_key' not in serialized_dc
+          serialized_mcp = json.dumps(miaoxiang_mcp, ensure_ascii=False)
+          assert 'MX_APIKEY' not in serialized_mcp
+          assert 'mkt_' not in serialized_mcp
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 21,
-              'managed_operations': 213,
+              'managed_providers': 22,
+              'managed_operations': 226,
               'qweather_operations': 18,
-              'qweather_host': 'ka6r72kcc3.re.qweatherapi.com',
-              'qweather_secret': 'QWEATHER_API_KEY',
+              'miaoxiang_mcp_operations': 13,
+              'miaoxiang_mcp_tools': 11,
+              'miaoxiang_mcp_secret': 'EM_API_KEY',
           }))
           PY
           git diff --check
@@ -222,6 +250,9 @@ jobs:
             api-center/data-commons/china-starter-pack.json
             api-center/qweather/provider-catalog.json
             api-center/qweather/ticket.schema.json
+            api-center/miaoxiang-mcp/provider-catalog.json
+            api-center/miaoxiang-mcp/ticket.schema.json
+            api-center/miaoxiang-mcp/tool-discovery-snapshot.json
             api-center/akshare/provider-catalog.json
             api-center/aifin-market/provider-catalog.json
             api-center/yuandian/provider-catalog.json
