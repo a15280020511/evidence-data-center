@@ -1,0 +1,177 @@
+name: Live Smoke Agent Toolbelt Final Two
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+    paths:
+      - ".github/workflows/live-smoke-agent-toolbelt-final-two.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-smoke-agent-toolbelt-final-two-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  final-two:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      AGENT_TOOLBELT_KEY: ${{ secrets.AGENT_TOOLBELT_KEY }}
+    steps:
+      - name: Checkout PR source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Test contract parser and real PNG metadata stripping
+        id: test
+        continue-on-error: true
+        shell: bash
+        run: |
+          set +x
+          mkdir -p agent-toolbelt-final-two
+          python - <<'PY'
+          import hashlib, json, os, sys, time, urllib.error, urllib.request
+          from datetime import datetime, timezone
+          from pathlib import Path
+
+          BASE = 'https://www.agenttoolbelt.live'
+          KEY = os.environ.get('AGENT_TOOLBELT_KEY', '').strip()
+          OUT = Path('agent-toolbelt-final-two')
+          PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z6uQAAAAASUVORK5CYII='
+
+          def call(tool, body):
+              data = json.dumps(body, ensure_ascii=False, separators=(',', ':')).encode('utf-8')
+              req = urllib.request.Request(
+                  f'{BASE}/api/tools/{tool}',
+                  data=data,
+                  method='POST',
+                  headers={
+                      'Authorization': f'Bearer {KEY}',
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                      'User-Agent': 'evidence-data-center-agent-toolbelt-final-two/1.0',
+                  },
+              )
+              try:
+                  with urllib.request.urlopen(req, timeout=120) as response:
+                      raw = response.read(20_000_000)
+                      return response.status, json.loads(raw.decode('utf-8')), len(raw)
+              except urllib.error.HTTPError as exc:
+                  raw = exc.read(1_000_000)
+                  try:
+                      payload = json.loads(raw.decode('utf-8', errors='replace'))
+                  except Exception:
+                      payload = {'error': raw.decode('utf-8', errors='replace')[:1000]}
+                  return exc.code, payload, len(raw)
+
+          report = {
+              'schema_version': 'agent-toolbelt-final-two-live-v1',
+              'tested_at': datetime.now(timezone.utc).isoformat(),
+              'credential_present': bool(KEY),
+              'credential_prefix_valid': KEY.startswith('atb_'),
+              'secret_values_exposed': False,
+              'results': [],
+          }
+          if not KEY:
+              report['status'] = 'FAIL'
+              report['failure_reason'] = 'missing AGENT_TOOLBELT_KEY'
+              OUT.joinpath('summary.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
+              sys.exit(1)
+
+          contract_payload = {
+              'contract': (
+                  'PUBLIC SYNTHETIC SERVICE AGREEMENT. Provider Alpha and Customer Beta agree as follows. '
+                  'Payment: Customer shall pay USD 100 within 30 days of invoice. '
+                  'Termination: Either party may terminate on 14 days written notice. '
+                  'Liability: Each party liability is capped at USD 1000. '
+                  'Governing law: This agreement is governed by the laws of California. '
+                  'No personal or confidential information is included in this test.'
+              ),
+              'clauses': ['payment_terms', 'termination', 'liability', 'governing_law'],
+              'flagRisks': False,
+          }
+          image_payload = {'image': PNG_BASE64, 'format': 'png', 'quality': 90}
+
+          # Wait for any previous free-tier bucket to expire.
+          time.sleep(65)
+
+          for tool, body in [
+              ('contract-clause-extractor', contract_payload),
+              ('image-metadata-stripper', image_payload),
+          ]:
+              started = time.monotonic()
+              status, payload, response_bytes = call(tool, body)
+              elapsed_ms = round((time.monotonic() - started) * 1000)
+              success = status == 200 and isinstance(payload, dict) and payload.get('success') is True
+              result = payload.get('result') if isinstance(payload, dict) else None
+              record = {
+                  'tool': tool,
+                  'http_status': status,
+                  'success': success,
+                  'elapsed_ms': elapsed_ms,
+                  'reported_duration_ms': payload.get('durationMs') if isinstance(payload, dict) else None,
+                  'cached': payload.get('cached') if isinstance(payload, dict) else None,
+                  'version': payload.get('version') if isinstance(payload, dict) else None,
+                  'response_bytes': response_bytes,
+                  'input_sha256': hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False).encode()).hexdigest(),
+                  'result_keys': sorted(result.keys()) if isinstance(result, dict) else [],
+                  'safe_error': None if success else str((payload.get('message') or payload.get('error') or 'request failed') if isinstance(payload, dict) else 'invalid response')[:1000],
+              }
+              if tool == 'contract-clause-extractor' and isinstance(result, dict):
+                  record['clauses_requested'] = result.get('clausesRequested')
+                  record['clauses_found'] = result.get('clausesFound')
+                  record['contract_type'] = result.get('contractType')
+              if tool == 'image-metadata-stripper' and isinstance(result, dict):
+                  original = result.get('original') or {}
+                  output = result.get('output') or {}
+                  record['output_format'] = result.get('outputFormat')
+                  record['original_format'] = original.get('format')
+                  record['width'] = original.get('width')
+                  record['height'] = original.get('height')
+                  record['output_size_bytes'] = output.get('sizeBytes')
+                  record['metadata_stripped'] = result.get('metadataStripped')
+              report['results'].append(record)
+              print(json.dumps(record, ensure_ascii=False))
+              time.sleep(13)
+
+          failed = [r for r in report['results'] if not r['success']]
+          report['summary'] = {
+              'total': 2,
+              'passed': 2 - len(failed),
+              'failed': len(failed),
+              'failed_tools': [r['tool'] for r in failed],
+          }
+          report['status'] = 'PASS' if not failed else 'FAIL'
+          OUT.joinpath('summary.json').write_text(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + '\n', encoding='utf-8')
+          print(json.dumps({'status': report['status'], **report['summary'], 'secret_values_exposed': False}, ensure_ascii=False))
+          sys.exit(0 if report['status'] == 'PASS' else 1)
+          PY
+
+      - name: Verify no credential entered evidence
+        if: always()
+        shell: bash
+        run: |
+          set +x
+          test -f agent-toolbelt-final-two/summary.json
+          if [ -n "${AGENT_TOOLBELT_KEY:-}" ] && grep -R -Fq -- "$AGENT_TOOLBELT_KEY" agent-toolbelt-final-two; then
+            echo "Credential value found in evidence"
+            exit 1
+          fi
+
+      - name: Upload final-two evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agent-toolbelt-final-two-${{ github.run_id }}
+          path: agent-toolbelt-final-two/
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Mark failed final-two test
+        if: steps.test.outcome != 'success'
+        run: exit 1
