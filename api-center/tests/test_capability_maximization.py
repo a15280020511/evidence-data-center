@@ -55,12 +55,13 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            213,
+            226,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
         expected_counts = {
             "miaoxiang": 4,
+            "miaoxiang-mcp": 13,
             "aifin-market": 17,
             "akshare": 17,
             "bigquery": 7,
@@ -212,6 +213,21 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(qw_provider["limits"]["arbitrary_hosts_allowed"])
         self.assertFalse(qw_provider["limits"]["redirects_allowed"])
         self.assertFalse(qw_provider["limits"]["write_operations_allowed"])
+
+        miaoxiang_mcp = json.loads(
+            (ROOT / "miaoxiang-mcp/provider-catalog.json").read_text(encoding="utf-8")
+        )
+        mcp_provider = miaoxiang_mcp["providers"][0]
+        self.assertEqual(mcp_provider["required_secret_environment_variable"], "EM_API_KEY")
+        self.assertEqual(mcp_provider["official_endpoint"], "https://mxapi.eastmoney.com/mxds/mcp")
+        self.assertEqual(mcp_provider["mcp_protocol_version"], "2025-11-25")
+        self.assertEqual(mcp_provider["limits"]["fixed_mcp_tool_count"], 11)
+        self.assertFalse(mcp_provider["limits"]["arbitrary_jsonrpc_methods_allowed"])
+        self.assertFalse(mcp_provider["limits"]["arbitrary_mcp_tool_names_allowed"])
+        self.assertFalse(mcp_provider["limits"]["resources_allowed"])
+        self.assertFalse(mcp_provider["limits"]["prompts_allowed"])
+        self.assertFalse(mcp_provider["limits"]["write_operations_allowed"])
+        self.assertFalse(mcp_provider["limits"]["trading_or_order_execution_allowed"])
 
         eodhd = json.loads(
             (ROOT / "eodhd/provider-catalog.json").read_text(encoding="utf-8")

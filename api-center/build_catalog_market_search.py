@@ -21,6 +21,7 @@ BAOSTOCK_CATALOG = HERE / "baostock/provider-catalog.json"
 EODHD_CATALOG = HERE / "eodhd/provider-catalog.json"
 DATA_COMMONS_CATALOG = HERE / "data-commons/provider-catalog.json"
 QWEATHER_CATALOG = HERE / "qweather/provider-catalog.json"
+MIAOXIANG_MCP_CATALOG = HERE / "miaoxiang-mcp/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -30,6 +31,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "eodhd": 25,
     "data-commons": 5,
     "qweather": 18,
+    "miaoxiang-mcp": 13,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -41,6 +43,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     EODHD_CATALOG,
     DATA_COMMONS_CATALOG,
     QWEATHER_CATALOG,
+    MIAOXIANG_MCP_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -68,6 +71,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "eodhd/provider-catalog.json",
         "data-commons/provider-catalog.json",
         "qweather/provider-catalog.json",
+        "miaoxiang-mcp/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:

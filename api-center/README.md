@@ -44,6 +44,8 @@ TUSHARE_API_TOKEN
 EODHD_API_TOKEN
 WOLFRAM_ALPHA_APP_ID
 LLAMA_CLOUD_API_KEY
+MX_APIKEY
+EM_API_KEY
 ```
 
 以上凭据不与其他金融、搜索、计算知识或文档解析服务复用。Secret 只能在后端注入，不能进入仓库、Issue、日志或 Artifact。完整规则见 `SECRET_ISOLATION_POLICY.md`。
@@ -230,3 +232,23 @@ API 中心产生 Snapshot
 - Fixed Host: `ka6r72kcc3.re.qweatherapi.com`
 - Authentication: backend-only `X-QW-Api-Key`
 - Fixed read-only operations: 18
+
+
+## 东方财富妙想 MCP
+
+`api-center/miaoxiang-mcp/` 使用东方财富官方 Streamable HTTP MCP Server：
+
+```text
+https://mxapi.eastmoney.com/mxds/mcp
+```
+
+正式票据前缀和独立 Secret：
+
+```text
+[api-mx-mcp]
+EM_API_KEY
+```
+
+MCP 协议固定为 `2025-11-25`，鉴权只通过后端 `em_api_key` 请求头注入。当前固定开放 11 个上游只读工具，覆盖 A股、港股、美股、基金、债券、指数板块、宏观经济、新闻研报、公告披露和证券筛选；连同本地能力目录与 `tools/list`，总计 13 项操作。禁止任意 JSON-RPC 方法、任意 MCP 工具名、Resources、Prompts、自选股修改、模拟交易和真实交易。
+
+原有 `api-center/miaoxiang/` 是 Skills REST Provider，使用 `MX_APIKEY`（`mkt_` 类型）；MCP Provider 使用 `EM_API_KEY`（`em_` 类型）。两类密钥必须独立保存，不能互换。
