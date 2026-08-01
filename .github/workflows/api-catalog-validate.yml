@@ -241,7 +241,7 @@ jobs:
           assert 'MX_APIKEY' not in serialized_mcp
           assert 'mkt_' not in serialized_mcp
           serialized_browserless = json.dumps(browserless, ensure_ascii=False)
-          assert 'browserless_token' not in serialized_browserless.lower()
+          assert '?token=' not in serialized_browserless.lower()
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
