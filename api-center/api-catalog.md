@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`38/38` 已启用
-- 托管操作总数：`420`
-- 已公开参数总数：`1580`
-- 目录 SHA-256：`0c0d29323e05fba2b09b0d44b681d24f6bfb246cde2514880e7f63f7b21f7935`
+- 托管提供方：`39/39` 已启用
+- 托管操作总数：`426`
+- 已公开参数总数：`1595`
+- 目录 SHA-256：`8b4d8639754c03f99dc829ead297ace76b7604b0900c877c04f2d85ee8636700`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -53,6 +53,7 @@
 | NASA Open APIs 与 Earthdata GIBS | `nasa` | 启用 | `[intel-nasa]` | `25` | 否 |
 | 挪威气象研究所 Geosatellite | `metno-geosatellite` | 启用 | `[intel-metno-geosatellite]` | `4` | 否 |
 | 哥白尼数据空间 Copernicus CDSE | `copernicus-cdse` | 启用 | `[intel-copernicus]` | `7` | 否 |
+| 美国能源信息署 EIA 能源数据 | `eia` | 启用 | `[intel-eia]` | `6` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -15532,6 +15533,261 @@
   "oauth_token_persistence_allowed": false,
   "write_operations_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## 美国能源信息署 EIA 能源数据 (`eia`)
+
+- 状态：`启用`
+- 说明：通过美国能源信息署 EIA 官方 API v2 读取能源数据树、路线元数据、Facet 值、结构化能源时间序列和兼容的历史 Series ID，覆盖电力、石油、天然气、煤炭、核能、可再生能源、国际能源、州级能源、短期展望等公开数据。
+- 目录策略：固定访问 api.eia.gov 的 API v2；开放受约束的层级路线发现、元数据、Facet、数据查询和 Series ID 兼容读取。禁止任意主机、完整 URL、路径穿越、客户端密钥、任意请求头、XML、大文件批量下载、后台抓取和写操作。
+- 执行策略：EIA_API_KEY 仅由 GitHub Actions 后端注入 URL 查询参数。每张票据最多一次 GET，不自动重试或翻页；数据返回最多5000行，限制路线深度、列数、Facet数量和值数量、排序规则、超时和响应体积。EIA 会在调试回显中包含请求参数，执行器会递归清除密钥后才写入 Snapshot 和 Artifact。
+- 票据前缀：`[intel-eia]`
+- Secret环境变量名：`EIA_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`08f4919b0570ec00deba2ce943d66d1386e53cf372e0a9589b42e95539a00e29`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 EIA 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `api-root` | 读取 EIA API v2 根目录，发现当前顶级能源数据路线。 | `无` |
+
+`api-root` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `route-metadata` | 读取指定 EIA 层级路线的子路线、频率、Facet、数据列、时间范围和说明元数据。 | `route` |
+
+`route-metadata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "route": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 519,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"
+    }
+  },
+  "required": [
+    "route"
+  ]
+}
+```
+
+| `facet-values` | 读取指定路线和 Facet 的可用过滤值，支持有限 offset/length。 | `route, facet, offset, length` |
+
+`facet-values` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "route": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 519,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"
+    },
+    "facet": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000,
+      "default": 0
+    },
+    "length": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "default": 500
+    }
+  },
+  "required": [
+    "route",
+    "facet"
+  ]
+}
+```
+
+| `route-data` | 按路线、数据列、频率、时间、Facet、排序和分页参数读取 EIA 结构化能源数据。 | `route, data, frequency, facets, start, end, sort, offset, length` |
+
+`route-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "route": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 519,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]*$"
+    },
+    "data": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+      }
+    },
+    "frequency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "facets": {
+      "type": "object",
+      "maxProperties": 12,
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 50,
+        "uniqueItems": true,
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "start": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:+._-]{0,31}$"
+    },
+    "end": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9:+._-]{0,31}$"
+    },
+    "sort": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "column",
+          "direction"
+        ],
+        "properties": {
+          "column": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc",
+              "ASC",
+              "DESC"
+            ]
+          }
+        }
+      }
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000000,
+      "default": 0
+    },
+    "length": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "default": 500
+    }
+  },
+  "required": [
+    "route",
+    "data"
+  ]
+}
+```
+
+| `series-by-id` | 通过 API v2 的 seriesid 兼容路线读取一个历史 EIA APIv1 Series ID。 | `series_id` |
+
+`series-by-id` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$"
+    }
+  },
+  "required": [
+    "series_id"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 20000000,
+  "rows_per_response_max": 5000,
+  "route_segments_max": 8,
+  "data_columns_max": 20,
+  "facet_keys_max": 12,
+  "facet_values_per_key_max": 50,
+  "facet_values_total_max": 100,
+  "sort_rules_max": 4,
+  "fixed_api_host": "api.eia.gov",
+  "fixed_api_prefix": "/v2",
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "bulk_download_allowed": false,
+  "xml_output_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "path_traversal_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "background_crawling_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": true
 }
 ```
 
