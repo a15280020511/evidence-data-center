@@ -63,6 +63,7 @@ EXPECTED_OPERATION_COUNTS = {
     "bis": 8,
     "wolfram-alpha": 4,
     "llamaparse": 3,
+    "public-data-geospatial": 39,
 }
 
 
@@ -85,9 +86,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 47)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 47)
-        self.assertEqual(catalog["managed_operation_count"], 487)
+        self.assertEqual(catalog["managed_provider_count"], 48)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 48)
+        self.assertEqual(catalog["managed_operation_count"], 526)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
