@@ -6,6 +6,8 @@
 https://comtradeapi.un.org
 ```
 
+不允许票据覆盖或替换该主机。
+
 正式票据前缀与独立 Repository Secret：
 
 ```text
