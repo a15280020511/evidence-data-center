@@ -38,6 +38,7 @@ jobs:
         run: |
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
+            -r api-center/google-cloud/requirements.txt \
             -r api-center/baostock/requirements.txt \
             -r api-center/eodhd/requirements.txt \
             -r api-center/data-commons/requirements.txt \
