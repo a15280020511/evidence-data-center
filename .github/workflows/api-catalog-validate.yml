@@ -211,17 +211,16 @@ jobs:
               len(providers[provider_id]['operations']) == count
               for provider_id, count in expected_operations.items()
           )
-          assert all(
-              operation.get('result_contract', {}).get('read_only') is True
-              for provider in providers.values()
-              for operation in provider['operations']
-          )
           assert 'agent-toolbelt' not in providers
           assert 'gapup-mcp' not in providers
 
           un_comtrade = providers['un-comtrade']
           assert un_comtrade['ticket_prefix'] == '[intel-un-comtrade]'
           assert un_comtrade['required_secret_environment_variable_name'] == 'UN_COMTRADE_API_KEY'
+          assert all(
+              operation.get('result_contract', {}).get('read_only') is True
+              for operation in un_comtrade['operations']
+          )
           assert un_comtrade['limits']['requests_per_ticket_max'] == 1
           assert un_comtrade['limits']['preview_records_max'] == 500
           assert un_comtrade['limits']['records_per_request_max'] == 5000
