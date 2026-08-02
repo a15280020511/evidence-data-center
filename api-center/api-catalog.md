@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`50/50` 已启用
-- 托管操作总数：`569`
-- 已公开参数总数：`2095`
-- 目录 SHA-256：`fa8725155044d6049750f42c7cec1f6e2a7a720840aed33d93cfc6a3bb5e3822`
+- 托管提供方：`51/51` 已启用
+- 托管操作总数：`580`
+- 已公开参数总数：`2133`
+- 目录 SHA-256：`abd5976cac2defd4ee81d4fad2fd26e13279a3770696ab0a23dca294f23cc725`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -67,6 +67,7 @@
 | 全球公共数据、空间地理与中国数据 | `public-data-geospatial` | 启用 | `[intel-public-data]` | `35` | 否 |
 | Cloudflare 情报与云端浏览器 | `cloudflare` | 启用 | `[intel-cloudflare]` | `22` | 否 |
 | FRED 官方经济与金融时间序列 | `fred` | 启用 | `[intel-fred]` | `25` | 否 |
+| Hugging Face Hub 公共模型与数据情报 | `huggingface-hub` | 启用 | `[intel-huggingface]` | `11` | 否 |
 
 ## 普通连接器
 
@@ -22117,6 +22118,461 @@
   "write_operations_allowed": false,
   "secret_values_exposed": false,
   "authentication_required": true
+}
+```
+
+## Hugging Face Hub 公共模型与数据情报 (`huggingface-hub`)
+
+- 状态：`启用`
+- 说明：读取 Hugging Face Hub 上公开模型、数据集、Spaces、仓库目录、引用和文件元数据，用于模型市场、数据源与开源能力情报发现。
+- 目录策略：仅开放11项固定公共只读能力；不使用登录令牌，不读取私有仓库，不执行推理、训练、Jobs、Space调用、文件下载、仓库克隆、写入或访问审批操作。
+- 执行策略：固定使用 huggingface.co 官方 Hub API；每张票据最多一次受控 Hub 方法调用，搜索最多50项，目录最多100项，路径查询最多20项；不自动翻页、不递归全仓、不持久化缓存。
+- 票据前缀：`[intel-huggingface]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`6be00a64b355317fc9cc44cda61c226f088e6409e2ef23245edcd7ef1e1cb0c0`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Hugging Face 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `models-search` | 按关键词、作者、任务、库和排序方式搜索公开模型，最多50项。 | `query, author, task, library, sort, limit, gated` |
+
+`models-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "task": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "library": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "trendingScore",
+        "downloads",
+        "likes",
+        "createdAt",
+        "lastModified"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    },
+    "gated": {
+      "type": "boolean"
+    }
+  },
+  "maxProperties": 7
+}
+```
+
+| `model-info` | 读取一个公开模型仓库的元数据、标签、下载、卡片和文件清单摘要。 | `repo_id, revision` |
+
+`model-info` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repo_id"
+  ],
+  "properties": {
+    "repo_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 193,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+    }
+  },
+  "maxProperties": 2
+}
+```
+
+| `model-security` | 读取公开模型仓库的 Hub 安全扫描状态与模型元数据。 | `repo_id, revision` |
+
+`model-security` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repo_id"
+  ],
+  "properties": {
+    "repo_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 193,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+    }
+  },
+  "maxProperties": 2
+}
+```
+
+| `datasets-search` | 按关键词、作者、语言、任务类别和排序方式搜索公开数据集，最多50项。 | `query, author, language, task_category, sort, limit, gated` |
+
+`datasets-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "language": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 32
+    },
+    "task_category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "trendingScore",
+        "downloads",
+        "likes",
+        "createdAt",
+        "lastModified"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    },
+    "gated": {
+      "type": "boolean"
+    }
+  },
+  "maxProperties": 7
+}
+```
+
+| `dataset-info` | 读取一个公开数据集仓库的元数据、标签、卡片和文件清单摘要。 | `repo_id, revision` |
+
+`dataset-info` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repo_id"
+  ],
+  "properties": {
+    "repo_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 193,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+    }
+  },
+  "maxProperties": 2
+}
+```
+
+| `spaces-search` | 按关键词、作者和排序方式搜索公开 Spaces，最多50项。 | `query, author, sort, limit` |
+
+`spaces-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 96
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "trendingScore",
+        "likes",
+        "createdAt",
+        "lastModified"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "maxProperties": 4
+}
+```
+
+| `space-info` | 读取一个公开 Space 的元数据、SDK、关联模型和数据集，不调用 Space。 | `repo_id, revision` |
+
+`space-info` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repo_id"
+  ],
+  "properties": {
+    "repo_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 193,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+    }
+  },
+  "maxProperties": 2
+}
+```
+
+| `repo-tree` | 读取公开模型、数据集或 Space 指定目录的非递归文件树，最多100项。 | `repo_id, repo_type, revision, path, limit` |
+
+`repo-tree` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repo_id",
+    "repo_type"
+  ],
+  "properties": {
+    "repo_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 193,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+    },
+    "repo_type": {
+      "type": "string",
+      "enum": [
+        "model",
+        "dataset",
+        "space"
+      ]
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+    },
+    "path": {
+      "type": "string",
+      "maxLength": 300,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\x00-\\x1f\\x7f]*$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    }
+  },
+  "maxProperties": 5
+}
+```
+
+| `repo-refs` | 读取公开模型、数据集或 Space 的分支和标签引用，不含 Pull Request 引用。 | `repo_id, repo_type` |
+
+`repo-refs` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repo_id",
+    "repo_type"
+  ],
+  "properties": {
+    "repo_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 193,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+    },
+    "repo_type": {
+      "type": "string",
+      "enum": [
+        "model",
+        "dataset",
+        "space"
+      ]
+    }
+  },
+  "maxProperties": 2
+}
+```
+
+| `repo-paths-info` | 读取公开仓库最多20个指定路径的大小、Blob、LFS/Xet与安全元数据。 | `repo_id, repo_type, revision, paths, expand` |
+
+`repo-paths-info` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "repo_id",
+    "repo_type",
+    "paths"
+  ],
+  "properties": {
+    "repo_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 193,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+    },
+    "repo_type": {
+      "type": "string",
+      "enum": [
+        "model",
+        "dataset",
+        "space"
+      ]
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+    },
+    "paths": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\x00-\\x1f\\x7f]+$"
+      }
+    },
+    "expand": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 5
+}
+```
+
+限制：
+
+```json
+{
+  "hub_method_calls_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "search_results_max": 50,
+  "repo_tree_entries_max": 100,
+  "repo_paths_per_ticket_max": 20,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 10000000,
+  "fixed_api_host": "huggingface.co",
+  "public_repositories_only": true,
+  "authentication_used": false,
+  "private_repositories_allowed": false,
+  "gated_file_download_allowed": false,
+  "inference_allowed": false,
+  "training_or_jobs_allowed": false,
+  "space_invocation_allowed": false,
+  "repository_clone_allowed": false,
+  "file_download_allowed": false,
+  "recursive_full_repository_listing_allowed": false,
+  "automatic_pagination_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 

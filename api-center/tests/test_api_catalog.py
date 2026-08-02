@@ -66,6 +66,7 @@ EXPECTED_OPERATION_COUNTS = {
     "public-data-geospatial": 35,
     "cloudflare": 22,
     "fred": 25,
+    "huggingface-hub": 11,
 }
 
 
@@ -88,9 +89,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 50)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 50)
-        self.assertEqual(catalog["managed_operation_count"], 569)
+        self.assertEqual(catalog["managed_provider_count"], 51)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 51)
+        self.assertEqual(catalog["managed_operation_count"], 580)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -154,6 +155,17 @@ class ApiCatalogTests(unittest.TestCase):
                 ],
                 secret_name,
             )
+
+        huggingface = providers["huggingface-hub"]
+        self.assertEqual(huggingface["ticket_prefix"], "[intel-huggingface]")
+        self.assertEqual(huggingface["required_secret_environment_variable_name"], "")
+        self.assertEqual(len(huggingface["operations"]), 11)
+        self.assertEqual(huggingface["limits"]["fixed_api_host"], "huggingface.co")
+        self.assertTrue(huggingface["limits"]["public_repositories_only"])
+        self.assertFalse(huggingface["limits"]["authentication_used"])
+        self.assertFalse(huggingface["limits"]["inference_allowed"])
+        self.assertFalse(huggingface["limits"]["training_or_jobs_allowed"])
+        self.assertFalse(huggingface["limits"]["write_operations_allowed"])
 
         cloudflare = providers["cloudflare"]
         self.assertEqual(cloudflare["ticket_prefix"], "[intel-cloudflare]")
