@@ -1,0 +1,67 @@
+name: Temporary Add WTO IMF FAOSTAT
+
+on:
+  push:
+    branches:
+      - feat/wto-imf-faostat-providers
+    paths:
+      - "tools/temporary_add_wto_imf_faostat.py"
+      - ".github/workflows/temporary-add-wto-imf-faostat.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-add-wto-imf-faostat
+  cancel-in-progress: false
+
+jobs:
+  integrate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/wto-imf-faostat-providers
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Generate providers and catalogs
+        run: python tools/temporary_add_wto_imf_faostat.py
+
+      - name: Install and validate generated providers
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/wto/requirements.txt \
+            -r api-center/imf/requirements.txt \
+            -r api-center/faostat/requirements.txt
+          python -m pip check
+          python -m py_compile \
+            api-center/managed_provider_runtime.py \
+            api-center/wto/wto_task.py \
+            api-center/imf/imf_task.py \
+            api-center/faostat/faostat_task.py \
+            api-center/wto/tests/test_wto_task.py \
+            api-center/imf/tests/test_imf_task.py \
+            api-center/faostat/tests/test_faostat_task.py
+          python -m unittest discover -s api-center/wto/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/imf/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/faostat/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_capability_maximization.py' -v
+          python api-center/build_catalog_market_search.py
+          git diff --check
+
+      - name: Commit non-workflow integration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center
+          git commit -m "feat: add WTO IMF and FAOSTAT providers"
+          git push origin HEAD:feat/wto-imf-faostat-providers
