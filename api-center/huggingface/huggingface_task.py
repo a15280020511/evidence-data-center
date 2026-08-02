@@ -181,17 +181,22 @@ def execute_operation(
     with bounded_call(timeout):
         if operation == "models-search":
             limit = bounded_int(parameters.get("limit"), default=20, minimum=1, maximum=50, name="limit")
+            model_kwargs = {
+                "search": text(parameters, "query", 100),
+                "author": text(parameters, "author", 96),
+                "pipeline_tag": text(parameters, "task", 80),
+                "filter": text(parameters, "library", 80),
+                "sort": optional_sort(parameters, SORT_MODELS),
+                "limit": limit,
+                "gated": parameters.get("gated")
+                if isinstance(parameters.get("gated"), bool)
+                else None,
+                "token": False,
+            }
             result = list(
                 islice(
                     api.list_models(
-                        search=text(parameters, "query", 100),
-                        author=text(parameters, "author", 96),
-                        pipeline_tag=text(parameters, "task", 80),
-                        library=text(parameters, "library", 80),
-                        sort=optional_sort(parameters, SORT_MODELS),
-                        limit=limit,
-                        gated=parameters.get("gated") if isinstance(parameters.get("gated"), bool) else None,
-                        token=False,
+                        **{key: value for key, value in model_kwargs.items() if value is not None}
                     ),
                     limit,
                 )
