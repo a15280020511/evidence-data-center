@@ -68,11 +68,3 @@ for provider in catalog.get("providers", []):
 if not changed:
     raise SystemExit("SerpAPI hl schema was not found")
 provider_path.write_text(json.dumps(catalog, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-validate = ROOT / ".github/workflows/public-data-geospatial-provider-validate.yml"
-text = validate.read_text(encoding="utf-8")
-old = "      - run: python api-center/build_catalog_market_search.py --check\n"
-new = "      - run: |\n          python api-center/build_catalog_market_search.py --json-output /tmp/api-catalog.json --markdown-output /tmp/api-catalog.md\n          diff -u api-center/api-catalog.json /tmp/api-catalog.json\n          diff -u api-center/api-catalog.md /tmp/api-catalog.md\n"
-if old not in text:
-    raise SystemExit("validation workflow anchor missing")
-validate.write_text(text.replace(old, new, 1), encoding="utf-8")
