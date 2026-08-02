@@ -75,4 +75,5 @@ jobs:
           name: hexdb-aviation-integration-${{ github.run_id }}
           path: integration-output/
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 7
