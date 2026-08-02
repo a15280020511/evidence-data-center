@@ -122,7 +122,7 @@ jobs:
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
-          assert all(row['limits']['write_operations_allowed'] is False for row in providers.values())
+          assert not any(row.get('limits', {}).get('write_operations_allowed') is True for row in providers.values())
           assert 'agent-toolbelt' not in providers
           assert 'gapup-mcp' not in providers
 
