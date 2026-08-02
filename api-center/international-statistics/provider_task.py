@@ -85,7 +85,7 @@ def build_request(provider: str, operation: str, p: Mapping[str, Any]) -> tuple[
     if provider == "wto":
         fixed = {
             "indicator-categories": "/indicator_categories",
-            "indicators": "/indicator",
+            "indicators": "/indicators",
             "reporters": "/reporter",
             "partners": "/partner",
         }

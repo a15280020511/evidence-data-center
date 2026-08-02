@@ -1,0 +1,431 @@
+{
+  "schema_version": "bis-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "bis",
+      "display_name": "Bank for International Settlements SDMX API",
+      "description": "读取国际清算银行公开的国际银行、全球流动性、信贷、汇率、衍生品、消费价格和央行资产等统计与结构元数据。",
+      "enabled": true,
+      "ticket_prefix": "[intel-bis]",
+      "required_secret_environment_variable": "",
+      "catalog_policy": "固定访问 stats.bis.org/api/v2；仅开放 SDMX v2.1 数据、可用性和结构查询；禁止任意 URL、主机、请求头和批量下载。",
+      "execution_policy": "每张票据最多一次 HTTPS GET；不自动重试或翻页；序列键和时间范围必须显式提供；响应最大20MB。",
+      "official_documentation": "https://stats.bis.org/api-doc/v2/",
+      "official_origin": "https://stats.bis.org/api/v2",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "key_length_max": 500,
+        "fixed_api_host": "stats.bis.org",
+        "fixed_api_prefix": "/api/v2",
+        "sdmx_rest_version": "2.1.0",
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "bulk_download_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "source_citation_required": true,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 BIS SDMX 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-dataflows",
+          "description": "读取 BIS 公开 SDMX 数据流目录。",
+          "parameters": [
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-dataflow",
+          "description": "读取指定 BIS 数据流定义。",
+          "parameters": [
+            "agency",
+            "flow",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "flow"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-datastructure",
+          "description": "读取指定 BIS 数据结构定义。",
+          "parameters": [
+            "agency",
+            "structure_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "structure_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "structure_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-codelist",
+          "description": "读取指定 BIS 代码表。",
+          "parameters": [
+            "agency",
+            "codelist_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "codelist_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "codelist_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-conceptscheme",
+          "description": "读取指定 BIS 概念表。",
+          "parameters": [
+            "agency",
+            "conceptscheme_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "conceptscheme_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "conceptscheme_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-data",
+          "description": "按 SDMX 数据流、序列键和时间范围读取 BIS 统计。",
+          "parameters": [
+            "context",
+            "agency",
+            "flow",
+            "version",
+            "key",
+            "start_period",
+            "end_period",
+            "format",
+            "detail",
+            "dimension_at_observation"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "context": {
+                "type": "string",
+                "enum": [
+                  "dataflow",
+                  "datastructure"
+                ]
+              },
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "key": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9*+.,_@-]{1,500}$"
+              },
+              "start_period": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]|S[12]))?$"
+              },
+              "end_period": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]|S[12]))?$"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              },
+              "detail": {
+                "type": "string",
+                "enum": [
+                  "full",
+                  "dataonly",
+                  "serieskeysonly",
+                  "nodata"
+                ]
+              },
+              "dimension_at_observation": {
+                "type": "string",
+                "enum": [
+                  "AllDimensions",
+                  "TimeDimension",
+                  "MeasureDimension"
+                ]
+              }
+            },
+            "required": [
+              "flow",
+              "key"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-availability",
+          "description": "读取指定 BIS 数据集和序列键的数据可用性约束。",
+          "parameters": [
+            "context",
+            "agency",
+            "flow",
+            "version",
+            "key",
+            "component_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "context": {
+                "type": "string",
+                "enum": [
+                  "dataflow",
+                  "datastructure"
+                ]
+              },
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "key": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9*+.,_@-]{1,500}$"
+              },
+              "component_id": {
+                "type": "string",
+                "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}|all)$"
+              }
+            },
+            "required": [
+              "flow",
+              "key"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ]
+    }
+  ]
+}
