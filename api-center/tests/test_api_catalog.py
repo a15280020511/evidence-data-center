@@ -56,6 +56,9 @@ EXPECTED_OPERATION_COUNTS = {
     "un-comtrade": 10,
     "opensky-network": 9,
     "hexdb-aviation": 6,
+    "wto": 7,
+    "imf": 6,
+    "faostat": 7,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -80,9 +83,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 42)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 42)
-        self.assertEqual(catalog["managed_operation_count"], 451)
+        self.assertEqual(catalog["managed_provider_count"], 45)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 45)
+        self.assertEqual(catalog["managed_operation_count"], 471)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -132,6 +135,8 @@ class ApiCatalogTests(unittest.TestCase):
             "eia": "EIA_API_KEY",
             "un-comtrade": "UN_COMTRADE_API_KEY",
             "opensky-network": "OPEN_SKY_CLIENT_SECRET",
+            "wto": "WTO_API_KEY",
+            "faostat": "FAOSTAT_PASSWORD",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
         }

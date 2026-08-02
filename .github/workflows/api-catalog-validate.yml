@@ -63,7 +63,10 @@ jobs:
             -r api-center/eia/requirements.txt \
             -r api-center/un-comtrade/requirements.txt \
             -r api-center/opensky-network/requirements.txt \
-            -r api-center/hexdb-aviation/requirements.txt
+            -r api-center/hexdb-aviation/requirements.txt \
+            -r api-center/wto/requirements.txt \
+            -r api-center/imf/requirements.txt \
+            -r api-center/faostat/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -106,9 +109,9 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 42
-          assert catalog['enabled_managed_provider_count'] == 42
-          assert catalog['managed_operation_count'] == 451
+          assert catalog['managed_provider_count'] == len(providers) == 45
+          assert catalog['enabled_managed_provider_count'] == 45
+          assert catalog['managed_operation_count'] == 471
           assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values())
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
@@ -149,13 +152,51 @@ jobs:
           assert hexdb['limits']['write_operations_allowed'] is False
           assert all(row['result_contract']['read_only'] is True for row in hexdb['operations'])
 
+          wto = providers['wto']
+          assert wto['ticket_prefix'] == '[intel-wto]'
+          assert wto['required_secret_environment_variable_name'] == 'WTO_API_KEY'
+          assert len(wto['operations']) == 7
+          assert wto['limits']['requests_per_ticket_max'] == 1
+          assert wto['limits']['fixed_api_host'] == 'api.wto.org'
+          assert wto['limits']['records_per_ticket_max'] == 500
+          assert wto['limits']['automatic_pagination_allowed'] is False
+          assert wto['limits']['write_operations_allowed'] is False
+
+          imf = providers['imf']
+          assert imf['ticket_prefix'] == '[intel-imf]'
+          assert imf['required_secret_environment_variable_name'] == ''
+          assert len(imf['operations']) == 6
+          assert imf['limits']['fixed_api_host'] == 'www.imf.org'
+          assert imf['limits']['locations_per_ticket_max'] == 20
+          assert imf['limits']['periods_per_ticket_max'] == 50
+          assert imf['limits']['write_operations_allowed'] is False
+
+          faostat = providers['faostat']
+          assert faostat['ticket_prefix'] == '[intel-faostat]'
+          assert faostat['required_secret_environment_variable_name'] == 'FAOSTAT_PASSWORD'
+          assert faostat['required_repository_variable'] == 'FAOSTAT_USERNAME'
+          assert len(faostat['operations']) == 7
+          assert faostat['limits']['network_requests_per_ticket_max'] == 2
+          assert faostat['limits']['fixed_api_host'] == 'faostatservices.fao.org'
+          assert faostat['limits']['oauth_token_persistence_allowed'] is False
+          assert faostat['limits']['write_operations_allowed'] is False
+
+          oecd = providers['oecd']
+          assert len(oecd['operations']) == 6
+          assert oecd['limits']['fixed_api_host'] == 'sdmx.oecd.org'
+          assert oecd['limits']['write_operations_allowed'] is False
+
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 42,
-              'managed_operations': 451,
+              'managed_providers': 45,
+              'managed_operations': 471,
               'opensky_operations': 9,
               'hexdb_operations': 6,
+              'wto_operations': 7,
+              'imf_operations': 6,
+              'faostat_operations': 7,
+              'oecd_operations': 6,
           }))
           PY
           git diff --check

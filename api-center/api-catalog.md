@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`42/42` 已启用
-- 托管操作总数：`451`
-- 已公开参数总数：`1699`
-- 目录 SHA-256：`4b938a7368c359e9cc5476e6e01da1a4be78d8c0c1e33e1927c2b5db743f9053`
+- 托管提供方：`45/45` 已启用
+- 托管操作总数：`471`
+- 已公开参数总数：`1749`
+- 目录 SHA-256：`f9869715d2dce77bd64c3fc2b68ced0cfc4456f7e7063c9a2c1132c944080d63`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -57,6 +57,9 @@
 | 联合国 UN Comtrade 全球贸易数据 | `un-comtrade` | 启用 | `[intel-un-comtrade]` | `10` | 否 |
 | OpenSky Network 全球航空状态与航迹数据 | `opensky-network` | 启用 | `[intel-opensky]` | `9` | 否 |
 | HexDB 航空器型号、注册与航线补全 | `hexdb-aviation` | 启用 | `[intel-hexdb]` | `6` | 否 |
+| WTO Timeseries 国际贸易与关税统计 | `wto` | 启用 | `[intel-wto]` | `7` | 否 |
+| IMF DataMapper 宏观经济与财政统计 | `imf` | 启用 | `[intel-imf]` | `6` | 否 |
+| FAOSTAT 农业、粮食、贸易与排放统计 | `faostat` | 启用 | `[intel-faostat]` | `7` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -17112,6 +17115,776 @@
   "write_operations_allowed": false,
   "secret_values_exposed": false,
   "authentication_required": false
+}
+```
+
+## WTO Timeseries 国际贸易与关税统计 (`wto`)
+
+- 状态：`启用`
+- 说明：通过 WTO 官方 Timeseries API 读取贸易、关税、市场准入、非关税措施及相关指标。
+- 目录策略：固定访问 api.wto.org/timeseries/v1；订阅密钥仅经后端请求头发送。
+- 执行策略：每张票据最多一次 GET；无重试、无自动翻页、最多500条。
+- 票据前缀：`[intel-wto]`
+- Secret环境变量名：`WTO_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`c7f7c35db19f28776454639121531431bd67a89cca7b7242176c647ceef12d78`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 WTO 能力目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `indicator-categories` | 读取 WTO 指标分类。 | `lang` |
+
+`indicator-categories` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lang": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    }
+  }
+}
+```
+
+| `indicators` | 读取 WTO 指标目录。 | `lang` |
+
+`indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lang": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    }
+  }
+}
+```
+
+| `reporters` | 读取报告经济体目录。 | `lang` |
+
+`reporters` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lang": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    }
+  }
+}
+```
+
+| `partners` | 读取伙伴经济体目录。 | `lang` |
+
+`partners` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lang": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    }
+  }
+}
+```
+
+| `data-count` | 按受限条件读取 WTO 匹配记录数。 | `indicator_codes, reporter_codes, partner_codes, periods, product_codes, product_subsector, mode, decimals, offset, max_records, heading_style, lang, include_metadata` |
+
+`data-count` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "indicator_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "reporter_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "partner_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
+      }
+    },
+    "product_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "product_subsector": {
+      "type": "boolean"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "full",
+        "codes"
+      ]
+    },
+    "decimals": {
+      "oneOf": [
+        {
+          "type": "string",
+          "const": "default"
+        },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        }
+      ]
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "max_records": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    },
+    "heading_style": {
+      "type": "string",
+      "enum": [
+        "H",
+        "C"
+      ]
+    },
+    "lang": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    },
+    "include_metadata": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "indicator_codes"
+  ]
+}
+```
+
+| `data` | 按受限条件读取 WTO 时间序列。 | `indicator_codes, reporter_codes, partner_codes, periods, product_codes, product_subsector, mode, decimals, offset, max_records, heading_style, lang, include_metadata` |
+
+`data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "indicator_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "reporter_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "partner_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 24,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
+      }
+    },
+    "product_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "product_subsector": {
+      "type": "boolean"
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "full",
+        "codes"
+      ]
+    },
+    "decimals": {
+      "oneOf": [
+        {
+          "type": "string",
+          "const": "default"
+        },
+        {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        }
+      ]
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "max_records": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    },
+    "heading_style": {
+      "type": "string",
+      "enum": [
+        "H",
+        "C"
+      ]
+    },
+    "lang": {
+      "type": "integer",
+      "enum": [
+        1,
+        2,
+        3
+      ]
+    },
+    "include_metadata": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "indicator_codes"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 20000000,
+  "records_per_ticket_max": 500,
+  "fixed_api_host": "api.wto.org",
+  "fixed_api_prefix": "/timeseries/v1",
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "bulk_download_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## IMF DataMapper 宏观经济与财政统计 (`imf`)
+
+- 状态：`启用`
+- 说明：通过 IMF 官方 DataMapper API v2 读取指标、国家、地区、分组和宏观时间序列。
+- 目录策略：固定访问 IMF DataMapper API v2，不需要密钥。
+- 执行策略：每张票据最多一次 GET；无重试、无自动翻页；最多20个地点、50个时期。
+- 票据前缀：`[intel-imf]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`0f451d1a130396b6734cf7cf282d9227a61a6a48d65652f50815459d0e2cf15b`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 IMF 能力目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-indicators` | 读取 IMF 指标目录。 | `无` |
+
+`list-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-countries` | 读取国家目录。 | `无` |
+
+`list-countries` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-regions` | 读取地区目录。 | `无` |
+
+`list-regions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-groups` | 读取经济体分组目录。 | `无` |
+
+`list-groups` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-series` | 读取一个指标、最多20个地点和50个时期的序列。 | `indicator, locations, periods` |
+
+`get-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "indicator": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "locations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+      }
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
+      }
+    }
+  },
+  "required": [
+    "indicator",
+    "locations"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 20000000,
+  "locations_per_ticket_max": 20,
+  "periods_per_ticket_max": 50,
+  "fixed_api_host": "www.imf.org",
+  "fixed_api_prefix": "/external/datamapper/api/v2",
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "bulk_download_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": false
+}
+```
+
+## FAOSTAT 农业、粮食、贸易与排放统计 (`faostat`)
+
+- 状态：`启用`
+- 说明：通过 FAO 官方 FAOSTAT API 读取农业生产、粮食安全、价格、贸易、投入、排放及相关代码表。
+- 目录策略：固定访问 faostatservices.fao.org；用户名与密码仅用于后端登录，JWT仅驻留内存。
+- 执行策略：每张票据最多一次登录 POST 和一次业务 GET；无重试、无自动翻页；数据查询必须含筛选条件。
+- 票据前缀：`[intel-faostat]`
+- Secret环境变量名：`FAOSTAT_PASSWORD`（仅名称）
+- Repository Variable名：`FAOSTAT_USERNAME`（仅名称）
+- 提供方SHA-256：`f897ff99486fd64894d54f22c3b12ed97c52bb3de2be471c179eb964a621ec7f`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 FAOSTAT 能力目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-groups` | 读取 FAOSTAT 数据组。 | `lang` |
+
+`list-groups` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es",
+        "fr"
+      ]
+    }
+  }
+}
+```
+
+| `list-datasets` | 读取 FAOSTAT 数据集目录。 | `lang` |
+
+`list-datasets` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es",
+        "fr"
+      ]
+    }
+  }
+}
+```
+
+| `list-parameters` | 读取数据集维度。 | `dataset, lang` |
+
+`list-parameters` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_]{1,16}$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es",
+        "fr"
+      ]
+    }
+  },
+  "required": [
+    "dataset"
+  ]
+}
+```
+
+| `get-parameter-codes` | 读取数据集维度代码。 | `dataset, parameter, lang` |
+
+`get-parameter-codes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_]{1,16}$"
+    },
+    "parameter": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es",
+        "fr"
+      ]
+    }
+  },
+  "required": [
+    "dataset",
+    "parameter"
+  ]
+}
+```
+
+| `get-data-size` | 读取受限筛选条件的数据规模与首批结构。 | `dataset, lang, filters, page_number, page_size` |
+
+`get-data-size` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_]{1,16}$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es",
+        "fr"
+      ]
+    },
+    "filters": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 12,
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 20,
+        "uniqueItems": true,
+        "items": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+        }
+      }
+    },
+    "page_number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000
+    },
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    }
+  },
+  "required": [
+    "dataset",
+    "filters"
+  ]
+}
+```
+
+| `get-data` | 读取受限 FAOSTAT 数据页。 | `dataset, lang, filters, page_number, page_size` |
+
+`get-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_]{1,16}$"
+    },
+    "lang": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es",
+        "fr"
+      ]
+    },
+    "filters": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 12,
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "maxItems": 20,
+        "uniqueItems": true,
+        "items": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+        }
+      }
+    },
+    "page_number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100000
+    },
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    }
+  },
+  "required": [
+    "dataset",
+    "filters"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "network_requests_per_ticket_max": 2,
+  "business_requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "records_per_ticket_max": 500,
+  "filter_dimensions_per_ticket_max": 12,
+  "filter_values_per_dimension_max": 20,
+  "fixed_api_host": "faostatservices.fao.org",
+  "fixed_api_prefix": "/api/v1",
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "bulk_download_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "oauth_token_persistence_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 
