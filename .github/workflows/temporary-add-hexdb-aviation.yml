@@ -51,10 +51,12 @@ jobs:
           python api-center/build_catalog_market_search.py
           git diff --check
 
-      - name: Remove temporary integration files
+      - name: Exclude workflow changes from bot commit
         run: |
+          git restore --source=HEAD -- .github/workflows/api-catalog-validate.yml
+          rm -f .github/workflows/hexdb-aviation-api-ticket.yml
+          rm -f .github/workflows/hexdb-aviation-provider-validate.yml
           rm -f tools/temporary_add_hexdb_aviation.py
-          rm -f .github/workflows/temporary-add-hexdb-aviation.yml
 
       - name: Commit generated provider and catalogs
         run: |
