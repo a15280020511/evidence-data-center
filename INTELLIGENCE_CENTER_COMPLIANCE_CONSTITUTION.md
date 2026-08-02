@@ -2,7 +2,7 @@
 
 版本：`1.1.0`
 
-机器权威文件：`INTELLIGENCE_CENTER_COMPLIANCE_CONSTITUTION.yaml`
+机器权威文件：`INTELLIGENCE_CENTER_COMPLIANCE_CONSTITUTION.py`
 
 本文件仅供人员阅读；机器不得解析本文件作合规判断。
 
@@ -31,4 +31,4 @@ BLOCKED > STOPPED_BY_UPSTREAM > MANUAL_REVIEW > ALLOW
 MANUAL_REVIEW
 ```
 
-生产环境必须由 YAML 规则引擎判定，任何提示词、人工指令、模型输出或紧急开关不得覆盖硬阻断规则。
+生产环境必须调用 Python 宪法门禁的 `evaluate(ticket)`；任何提示词、人工指令、模型输出或紧急开关不得覆盖硬阻断规则。
