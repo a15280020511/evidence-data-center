@@ -47,15 +47,16 @@
     "wto/provider-catalog.json",
     "imf/provider-catalog.json",
     "faostat/provider-catalog.json",
+    "adb/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "cb231bf14bb2efe8b3f99f37aceeed3ff543e769458f33dc4292dba1224f217f",
+  "managed_provider_catalog_sha256": "beef9b59ee1aedb6866f82dcd6d7e136a2a67b5eed4eb04450ffa0eb4edf027c",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 45,
-  "enabled_managed_provider_count": 45,
-  "managed_operation_count": 471,
-  "exposed_parameter_count": 1765,
+  "managed_provider_count": 46,
+  "enabled_managed_provider_count": 46,
+  "managed_operation_count": 479,
+  "exposed_parameter_count": 1790,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -97,6 +98,7 @@
     "wto/provider-catalog.json",
     "imf/provider-catalog.json",
     "faostat/provider-catalog.json",
+    "adb/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -21800,6 +21802,394 @@
       "catalog_file": "faostat/provider-catalog.json"
     },
     {
+      "provider_id": "adb",
+      "display_name": "Asian Development Bank KIDB SDMX",
+      "description": "通过亚洲开发银行官方 Key Indicators Database SDMX API v4 读取亚洲及太平洋宏观、金融、社会、环境和可持续发展统计。",
+      "enabled": true,
+      "ticket_prefix": "[intel-adb]",
+      "catalog_policy": "仅开放固定的 ADB KIDB 数据流、结构元数据、指标目录和有界数据查询；不接受任意 URL、主机、请求头或空维度全库请求。",
+      "execution_policy": "每张票据最多一次 HTTPS GET；不自动重试或翻页；遵守官方每分钟20次限制；数据请求最多20个指标、20个经济体和25年。",
+      "operation_count": 8,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 ADB KIDB 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "adb",
+            "official_origin": "https://kidb.adb.org/api/v4/sdmx",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-dataflows",
+          "description": "读取 ADB KIDB 当前公开数据流目录。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "adb",
+            "official_origin": "https://kidb.adb.org/api/v4/sdmx",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-dataflow",
+          "description": "读取指定 ADB SDMX 数据流定义。",
+          "parameter_names": [
+            "agency",
+            "flow",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "flow"
+            ]
+          },
+          "result_contract": {
+            "provider": "adb",
+            "official_origin": "https://kidb.adb.org/api/v4/sdmx",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-datastructure",
+          "description": "读取指定 ADB SDMX 数据结构定义。",
+          "parameter_names": [
+            "agency",
+            "structure_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "structure_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "structure_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "adb",
+            "official_origin": "https://kidb.adb.org/api/v4/sdmx",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-codelist",
+          "description": "读取指定 ADB SDMX 代码表。",
+          "parameter_names": [
+            "agency",
+            "codelist_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "codelist_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "codelist_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "adb",
+            "official_origin": "https://kidb.adb.org/api/v4/sdmx",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-conceptscheme",
+          "description": "读取指定 ADB SDMX 概念表。",
+          "parameter_names": [
+            "agency",
+            "conceptscheme_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "conceptscheme_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "conceptscheme_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "adb",
+            "official_origin": "https://kidb.adb.org/api/v4/sdmx",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-indicators",
+          "description": "读取指定 ADB 数据流中的指标代码目录。",
+          "parameter_names": [
+            "dataflow"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dataflow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              }
+            },
+            "required": [
+              "dataflow"
+            ]
+          },
+          "result_contract": {
+            "provider": "adb",
+            "official_origin": "https://kidb.adb.org/api/v4/sdmx",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-data",
+          "description": "按数据流、指标、经济体和时间范围读取 ADB KIDB 统计。",
+          "parameter_names": [
+            "dataflow",
+            "indicators",
+            "economies",
+            "start_period",
+            "end_period",
+            "sdmx_version",
+            "format",
+            "grouping"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dataflow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "indicators": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,39}$"
+                }
+              },
+              "economies": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,39}$"
+                }
+              },
+              "start_period": {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2024
+              },
+              "end_period": {
+                "type": "integer",
+                "minimum": 2000,
+                "maximum": 2024
+              },
+              "sdmx_version": {
+                "type": "string",
+                "enum": [
+                  "3.0",
+                  "2.1"
+                ]
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              },
+              "grouping": {
+                "type": "string",
+                "enum": [
+                  "indicator",
+                  "economy"
+                ]
+              }
+            },
+            "required": [
+              "dataflow",
+              "indicators",
+              "economies"
+            ]
+          },
+          "result_contract": {
+            "provider": "adb",
+            "official_origin": "https://kidb.adb.org/api/v4/sdmx",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "official_rate_limit_queries_per_minute": 20,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "indicators_per_ticket_max": 20,
+        "economies_per_ticket_max": 20,
+        "period_span_years_max": 25,
+        "documented_start_period_min": 2000,
+        "documented_end_period_max": 2024,
+        "fixed_api_host": "kidb.adb.org",
+        "fixed_api_prefix": "/api/v4/sdmx",
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "empty_dimension_bulk_queries_allowed": false,
+        "bulk_download_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "0bbf83a649e64b79a42cb8d1981b0af99ddc98443840c16137e89361b2d5b51b",
+      "catalog_file": "adb/provider-catalog.json"
+    },
+    {
       "provider_id": "wolfram-alpha",
       "display_name": "Wolfram|Alpha 计算知识 API",
       "description": "通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。",
@@ -30557,5 +30947,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "b645e04f58acaf2c6a59dd08a10ec9a5e379b9679c89cee809cbe9703e5b5dc9"
+  "catalog_sha256": "97199a589a6c90f691176e3e7cdfbc915fd073aa9d05097720a6b43e9d20ad64"
 }

@@ -42,6 +42,7 @@ EXPECTED_OPERATION_COUNTS = {
     "alpha-vantage": 66,
     "overture-maps": 7,
     "oecd": 6,
+    "adb": 8,
     "alphafeed": 10,
     "who-gho-odata": 8,
     "mediastack": 5,
@@ -83,9 +84,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 45)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 45)
-        self.assertEqual(catalog["managed_operation_count"], 471)
+        self.assertEqual(catalog["managed_provider_count"], 46)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 46)
+        self.assertEqual(catalog["managed_operation_count"], 479)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -240,6 +241,18 @@ class ApiCatalogTests(unittest.TestCase):
         self.assertEqual(len(oecd["operations"]), 6)
         self.assertEqual(oecd["limits"]["fixed_api_host"], "sdmx.oecd.org")
         self.assertFalse(oecd["limits"]["arbitrary_sdmx_resource_types_allowed"])
+
+        adb = providers["adb"]
+        self.assertEqual(adb["ticket_prefix"], "[intel-adb]")
+        self.assertEqual(adb["required_secret_environment_variable_name"], "")
+        self.assertEqual(len(adb["operations"]), 8)
+        self.assertEqual(adb["limits"]["fixed_api_host"], "kidb.adb.org")
+        self.assertEqual(adb["limits"]["official_rate_limit_queries_per_minute"], 20)
+        self.assertEqual(adb["limits"]["requests_per_ticket_max"], 1)
+        self.assertFalse(adb["limits"]["empty_dimension_bulk_queries_allowed"])
+        self.assertFalse(adb["limits"]["automatic_retry_allowed"])
+        self.assertFalse(adb["limits"]["automatic_pagination_allowed"])
+        self.assertFalse(adb["limits"]["write_operations_allowed"])
 
         alphafeed = providers["alphafeed"]
         self.assertEqual(alphafeed["ticket_prefix"], "[api-alphafeed]")
