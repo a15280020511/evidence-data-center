@@ -1,9 +1,8 @@
 name: Temporary Add WTO IMF FAOSTAT
 
 on:
-  push:
-    branches:
-      - feat/wto-imf-faostat-providers
+  pull_request:
+    branches: [main]
     paths:
       - "tools/temporary_add_wto_imf_faostat.py"
       - ".github/workflows/temporary-add-wto-imf-faostat.yml"
@@ -12,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: temporary-add-wto-imf-faostat
+  group: temporary-add-wto-imf-faostat-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -65,5 +64,3 @@ jobs:
           git add api-center
           git commit -m "feat: add WTO IMF and FAOSTAT providers"
           git push origin HEAD:feat/wto-imf-faostat-providers
-
-# trigger: 2026-08-02T09:46+08:00
