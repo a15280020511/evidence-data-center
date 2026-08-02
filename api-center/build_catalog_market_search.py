@@ -41,6 +41,9 @@ EIA_CATALOG = HERE / "eia/provider-catalog.json"
 UN_COMTRADE_CATALOG = HERE / "un-comtrade/provider-catalog.json"
 OPENSKY_NETWORK_CATALOG = HERE / "opensky-network/provider-catalog.json"
 HEXDB_AVIATION_CATALOG = HERE / "hexdb-aviation/provider-catalog.json"
+WTO_CATALOG = HERE / "wto/provider-catalog.json"
+IMF_CATALOG = HERE / "imf/provider-catalog.json"
+FAOSTAT_CATALOG = HERE / "faostat/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -70,6 +73,9 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "un-comtrade": 10,
     "opensky-network": 9,
     "hexdb-aviation": 6,
+    "wto": 7,
+    "imf": 6,
+    "faostat": 7,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -101,6 +107,9 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     UN_COMTRADE_CATALOG,
     OPENSKY_NETWORK_CATALOG,
     HEXDB_AVIATION_CATALOG,
+    WTO_CATALOG,
+    IMF_CATALOG,
+    FAOSTAT_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
 
@@ -148,6 +157,9 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "un-comtrade/provider-catalog.json",
         "opensky-network/provider-catalog.json",
         "hexdb-aviation/provider-catalog.json",
+        "wto/provider-catalog.json",
+        "imf/provider-catalog.json",
+        "faostat/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
         if item not in reading_order:
