@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`40/40` 已启用
-- 托管操作总数：`436`
-- 已公开参数总数：`1665`
-- 目录 SHA-256：`449f0578fe77b254fbdf2e9b92387539c792ddda18228815d8e121fb948ab723`
+- 托管提供方：`41/41` 已启用
+- 托管操作总数：`445`
+- 已公开参数总数：`1694`
+- 目录 SHA-256：`88f3ec0aba285d4c1bcb9d6fea06134f8b0cbcac9dd00fa66003fd87e87c9443`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -55,6 +55,7 @@
 | 哥白尼数据空间 Copernicus CDSE | `copernicus-cdse` | 启用 | `[intel-copernicus]` | `7` | 否 |
 | 美国能源信息署 EIA 能源数据 | `eia` | 启用 | `[intel-eia]` | `6` | 否 |
 | 联合国 UN Comtrade 全球贸易数据 | `un-comtrade` | 启用 | `[intel-un-comtrade]` | `10` | 否 |
+| OpenSky Network 全球航空状态与航迹数据 | `opensky-network` | 启用 | `[intel-opensky]` | `9` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -16602,6 +16603,360 @@
   "write_operations_allowed": false,
   "secret_values_exposed": false,
   "authentication_required": true
+}
+```
+
+## OpenSky Network 全球航空状态与航迹数据 (`opensky-network`)
+
+- 状态：`启用`
+- 说明：通过OpenSky Network官方REST API读取受限范围内的实时飞机状态、最近状态、本人接收器状态、航班、机场到离港和单机航迹。
+- 目录策略：固定访问opensky-network.org和auth.opensky-network.org；最新状态支持匿名读取，其余能力使用OAuth2 Client Credentials。禁止全球无过滤状态查询、Trino历史查询、批量下载、任意URL、任意主机、客户端凭据、后台轮询和写操作。
+- 执行策略：每张票据最多一次OAuth令牌POST和一次业务GET，不自动重试或翻页。状态查询必须按最多20个ICAO24或最大400平方度边界框过滤；历史状态限最近1小时；航班区间严格遵循官方2小时/2天限制；航迹限最近30天。
+- 票据前缀：`[intel-opensky]`
+- Secret环境变量名：`OPEN_SKY_CLIENT_SECRET`（仅名称）
+- Repository Variable名：`OPEN_SKY_CLIENT_ID`（仅名称）
+- 提供方SHA-256：`218564dbd30dff0ffbad39429d90b6fcbca9c35ecfdebad2ff12bd87629477b8`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地OpenSky安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `states-current` | 按ICAO24或最大400平方度边界框读取最新状态向量；可匿名或使用OAuth。 | `icao24, lamin, lomin, lamax, lomax, extended` |
+
+`states-current` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "icao24": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9A-Fa-f]{6}$"
+      }
+    },
+    "lamin": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lomin": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "lamax": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lomax": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "extended": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+| `states-recent` | 使用OAuth读取最近一小时内的状态向量。 | `icao24, lamin, lomin, lamax, lomax, extended, time` |
+
+`states-recent` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "icao24": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9A-Fa-f]{6}$"
+      }
+    },
+    "lamin": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lomin": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "lamax": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lomax": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "extended": {
+      "type": "boolean"
+    },
+    "time": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "time"
+  ]
+}
+```
+
+| `states-own` | 使用OAuth读取本人接收器观测到的状态向量，必须按接收器或ICAO24过滤。 | `icao24, serials, time` |
+
+`states-own` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "icao24": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9A-Fa-f]{6}$"
+      }
+    },
+    "serials": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 2147483647
+      }
+    },
+    "time": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}
+```
+
+| `flights-interval` | 使用OAuth读取最多两小时的网络航班区间。 | `begin, end` |
+
+`flights-interval` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "begin": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "end": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "begin",
+    "end"
+  ]
+}
+```
+
+| `flights-aircraft` | 使用OAuth读取单架飞机最多两天的已完成航班。 | `icao24, begin, end` |
+
+`flights-aircraft` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "icao24": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9A-Fa-f]{6}$"
+      }
+    },
+    "begin": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "end": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "icao24",
+    "begin",
+    "end"
+  ]
+}
+```
+
+| `airport-arrivals` | 使用OAuth读取机场最多两天的已完成到港航班。 | `airport, begin, end` |
+
+`airport-arrivals` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "airport": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{4}$"
+    },
+    "begin": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "end": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "airport",
+    "begin",
+    "end"
+  ]
+}
+```
+
+| `airport-departures` | 使用OAuth读取机场最多两天的已完成离港航班。 | `airport, begin, end` |
+
+`airport-departures` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "airport": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{4}$"
+    },
+    "begin": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "end": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "required": [
+    "airport",
+    "begin",
+    "end"
+  ]
+}
+```
+
+| `track-aircraft` | 使用OAuth读取单架飞机实时或最近30天内的实验性航迹。 | `icao24, time` |
+
+`track-aircraft` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "icao24": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9A-Fa-f]{6}$"
+      }
+    },
+    "time": {
+      "type": "integer",
+      "minimum": 0
+    }
+  },
+  "required": [
+    "icao24",
+    "time"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "network_requests_per_ticket_max": 2,
+  "business_requests_per_ticket_max": 1,
+  "oauth_token_requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 20000000,
+  "anonymous_credits_per_day": 400,
+  "standard_user_credits_per_day_per_endpoint_bucket": 4000,
+  "state_history_seconds_max": 3600,
+  "state_bbox_area_square_degrees_max": 400,
+  "icao24_per_ticket_max": 20,
+  "flight_interval_seconds_max": 7200,
+  "aircraft_or_airport_interval_seconds_max": 172800,
+  "track_history_days_max": 30,
+  "fixed_api_host": "opensky-network.org",
+  "fixed_auth_host": "auth.opensky-network.org",
+  "oauth2_client_credentials_required_for_historical_operations": true,
+  "anonymous_current_states_allowed": true,
+  "global_state_query_allowed": false,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "background_polling_allowed": false,
+  "trino_historical_access_allowed": false,
+  "bulk_download_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "oauth_token_persistence_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": false
 }
 ```
 
