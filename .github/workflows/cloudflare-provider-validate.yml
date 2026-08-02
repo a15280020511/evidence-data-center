@@ -61,10 +61,15 @@ jobs:
       - name: Compile and run Cloudflare regressions
         run: |
           set -euo pipefail
-          python -m py_compile api-center/managed_provider_runtime.py api-center/cloudflare/cloudflare_task.py api-center/cloudflare/tests/test_cloudflare.py
+          python -m py_compile \
+            api-center/managed_provider_runtime.py \
+            api-center/cloudflare/cloudflare_task.py \
+            api-center/cloudflare/hf_archive.py \
+            api-center/cloudflare/tests/test_cloudflare.py \
+            api-center/cloudflare/tests/test_hf_archive.py
           python -m unittest discover -s api-center/cloudflare/tests -p 'test_*.py' -v
 
-      - name: Verify provider and catalog invariants
+      - name: Verify provider, archive, and catalog invariants
         run: |
           set -euo pipefail
           python - <<'PY'
@@ -74,6 +79,9 @@ jobs:
           provider = json.loads(Path('api-center/cloudflare/provider-catalog.json').read_text(encoding='utf-8'))['providers'][0]
           schema = json.loads(Path('api-center/cloudflare/ticket.schema.json').read_text(encoding='utf-8'))
           operation_ids = [row['operation_id'] for row in provider['operations']]
+          workflow = Path('.github/workflows/cloudflare-api-ticket.yml').read_text(encoding='utf-8')
+          archive = Path('api-center/cloudflare/hf_archive.py').read_text(encoding='utf-8')
+          requirements = Path('api-center/cloudflare/requirements.txt').read_text(encoding='utf-8')
           assert provider['provider_id'] == 'cloudflare'
           assert provider['ticket_prefix'] == '[intel-cloudflare]'
           assert provider['required_secret_environment_variable'] == 'CLOUDFLARE_API_TOKEN'
@@ -86,6 +94,20 @@ jobs:
           assert provider['limits']['custom_cookies_allowed'] is False
           assert provider['limits']['custom_browser_scripts_allowed'] is False
           assert all(row['result_contract']['read_only'] is True for row in provider['operations'])
-          print(json.dumps({'status':'PASS','provider':'cloudflare','operations':22,'write_operations_allowed':False}))
+          assert 'HF_TOKEN: ${{ secrets.HF_TOKEN }}' in workflow
+          assert 'HF_CLOUDFLARE_DATASET_REPO: ${{ vars.HF_CLOUDFLARE_DATASET_REPO }}' in workflow
+          assert 'steps.archive.outcome' in workflow
+          assert 'private=True' in archive
+          assert 'classification") != "public"' in archive
+          assert 'contains_personal_data") is not False' in archive
+          assert 'huggingface_hub==1.24.0' in requirements
+          print(json.dumps({
+              'status':'PASS',
+              'provider':'cloudflare',
+              'operations':22,
+              'cloudflare_write_operations_allowed':False,
+              'hf_archive_private':True,
+              'hf_archive_fail_closed':True,
+          }))
           PY
           git diff --check
