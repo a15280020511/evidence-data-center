@@ -112,12 +112,20 @@ def build_request(operation: str, p: Mapping[str,Any]) -> list[tuple[str,str]] |
 def count_rows(payload: Any) -> int:
     if isinstance(payload, Mapping):
         docs = payload.get("documents")
-        if isinstance(docs, list): return len(docs)
-        if isinstance(docs, Mapping): return len(docs)
-        for key in ("total","count"):
-            if isinstance(payload.get(key),int): return int(payload[key])
+        if isinstance(docs, list):
+            return len(docs)
+        if isinstance(docs, Mapping):
+            return sum(
+                1
+                for key, value in docs.items()
+                if key != "facets" and isinstance(value, Mapping)
+            )
+        for key in ("total", "count"):
+            if isinstance(payload.get(key), int):
+                return int(payload[key])
         return 1
-    if isinstance(payload,list): return len(payload)
+    if isinstance(payload, list):
+        return len(payload)
     return 0
 
 def execute(ticket_path: Path, output_dir: Path) -> int:

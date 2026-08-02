@@ -66,12 +66,23 @@ def build_request(operation:str,p:Mapping[str,Any])->tuple[str|None,list[tuple[s
         return f"{PREFIX}/data/{context}/{agency}/{flow}/{ver}/{safe_key}",query,fmt
     raise ValueError(f"unsupported operation: {operation}")
 def row_count(payload:Any)->int:
-    if isinstance(payload,list): return len(payload)
+    if isinstance(payload,list):
+        return len(payload)
     if isinstance(payload,Mapping):
-        for key in ("data","dataSets","series","structures"):
+        data=payload.get("data")
+        if isinstance(data,Mapping):
+            for key in ("dataflows","dataStructures","codelists","conceptSchemes"):
+                value=data.get(key)
+                if isinstance(value,list):
+                    return len(value)
+                if isinstance(value,Mapping):
+                    return len(value)
+        for key in ("dataSets","series","structures"):
             value=payload.get(key)
-            if isinstance(value,list): return len(value)
-            if isinstance(value,Mapping): return len(value)
+            if isinstance(value,list):
+                return len(value)
+            if isinstance(value,Mapping):
+                return len(value)
         return 1
     return 0
 def execute(ticket_path:Path,output_dir:Path)->int:
