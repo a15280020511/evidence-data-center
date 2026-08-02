@@ -42,8 +42,9 @@ jobs:
           python api-center/build_catalog_market_search.py
           git diff --check
 
-      - name: Commit integration outputs
+      - name: Commit non-workflow integration outputs
         run: |
+          git restore .github/workflows/api-catalog-validate.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add \
@@ -55,8 +56,7 @@ jobs:
             api-center/api-catalog.md \
             api-center/connector-manifest.json \
             api-center/krakend.validation.json \
-            api-center/krakend.tmpl \
-            .github/workflows/api-catalog-validate.yml
+            api-center/krakend.tmpl
           if git diff --cached --quiet; then
             echo "No generated changes"
           else
