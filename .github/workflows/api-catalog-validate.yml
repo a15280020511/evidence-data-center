@@ -164,11 +164,14 @@ jobs:
 
           imf = providers['imf']
           assert imf['ticket_prefix'] == '[intel-imf]'
-          assert imf['required_secret_environment_variable_name'] == ''
+          assert imf['required_secret_environment_variable_name'] == 'IMF_API_KEY'
           assert len(imf['operations']) == 6
-          assert imf['limits']['fixed_api_host'] == 'www.imf.org'
-          assert imf['limits']['locations_per_ticket_max'] == 20
-          assert imf['limits']['periods_per_ticket_max'] == 50
+          assert imf['limits']['fixed_api_host'] == 'api.imf.org'
+          assert imf['limits']['fixed_api_prefix'] == '/external/sdmx/3.0'
+          assert imf['limits']['subscription_key_header'] == 'Ocp-Apim-Subscription-Key'
+          assert imf['limits']['authentication_required'] is True
+          assert imf['limits']['arbitrary_sdmx_resource_types_allowed'] is False
+          assert imf['limits']['automatic_pagination_allowed'] is False
           assert imf['limits']['write_operations_allowed'] is False
 
           faostat = providers['faostat']
