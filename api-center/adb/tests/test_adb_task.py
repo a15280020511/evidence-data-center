@@ -88,8 +88,8 @@ class ADBTests(unittest.TestCase):
                     "dataflow": "EO_NA",
                     "indicators": ["NGDP_XDC"],
                     "economies": ["CHN"],
-                    "start_period": 2000,
-                    "end_period": 2024,
+                    "start_period": 2024,
+                    "end_period": 2020,
                 },
             )
         with self.assertRaises(ValueError):
