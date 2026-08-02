@@ -122,7 +122,7 @@ jobs:
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
-          assert all(operation['result_contract']['read_only'] is True for row in providers.values() for operation in row['operations'])
+          assert all(row['limits']['write_operations_allowed'] is False for row in providers.values())
           assert 'agent-toolbelt' not in providers
           assert 'gapup-mcp' not in providers
 
@@ -136,6 +136,7 @@ jobs:
           assert public_data['limits']['arbitrary_urls_allowed'] is False
           assert public_data['limits']['arbitrary_headers_allowed'] is False
           assert public_data['limits']['write_operations_allowed'] is False
+          assert all(operation['result_contract']['read_only'] is True for operation in public_data['operations'])
           operation_ids = {row['operation_id'] for row in public_data['operations']}
           assert {
               'openrouteservice-directions',
