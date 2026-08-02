@@ -29,7 +29,7 @@ from managed_provider_runtime import (  # noqa: E402
 SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
 API_ORIGIN = "https://opensky-network.org"
-TOKEN_URL = "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
+AUTH_ENDPOINT = "https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"
 CLIENT_ID_ENV = "OPEN_SKY_CLIENT_ID"
 CLIENT_SECRET_ENV = "OPEN_SKY_CLIENT_SECRET"
 
@@ -235,7 +235,7 @@ def _credentials() -> tuple[str, str]:
 
 def _token(client_id: str, client_secret: str, timeout: int) -> str:
     response = requests.post(
-        TOKEN_URL,
+        AUTH_ENDPOINT,
         data={
             "grant_type": "client_credentials",
             "client_id": client_id,
