@@ -66,7 +66,6 @@ jobs:
             -r api-center/hexdb-aviation/requirements.txt \
             -r api-center/wto/requirements.txt \
             -r api-center/imf/requirements.txt \
-            -r api-center/faostat/requirements.txt \
             -r api-center/adb/requirements.txt
           python -m pip check
 
@@ -110,9 +109,9 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 46
-          assert catalog['enabled_managed_provider_count'] == 46
-          assert catalog['managed_operation_count'] == 479
+          assert catalog['managed_provider_count'] == len(providers) == 45
+          assert catalog['enabled_managed_provider_count'] == 45
+          assert catalog['managed_operation_count'] == 472
           assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values())
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
@@ -175,16 +174,6 @@ jobs:
           assert imf['limits']['automatic_pagination_allowed'] is False
           assert imf['limits']['write_operations_allowed'] is False
 
-          faostat = providers['faostat']
-          assert faostat['ticket_prefix'] == '[intel-faostat]'
-          assert faostat['required_secret_environment_variable_name'] == 'FAOSTAT_PASSWORD'
-          assert faostat['required_repository_variable'] == 'FAOSTAT_USERNAME'
-          assert len(faostat['operations']) == 7
-          assert faostat['limits']['network_requests_per_ticket_max'] == 2
-          assert faostat['limits']['fixed_api_host'] == 'faostatservices.fao.org'
-          assert faostat['limits']['oauth_token_persistence_allowed'] is False
-          assert faostat['limits']['write_operations_allowed'] is False
-
           oecd = providers['oecd']
           assert len(oecd['operations']) == 6
           assert oecd['limits']['fixed_api_host'] == 'sdmx.oecd.org'
@@ -206,13 +195,12 @@ jobs:
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 46,
-              'managed_operations': 479,
+              'managed_providers': 45,
+              'managed_operations': 472,
               'opensky_operations': 9,
               'hexdb_operations': 6,
               'wto_operations': 7,
               'imf_operations': 6,
-              'faostat_operations': 7,
               'oecd_operations': 6,
               'adb_operations': 8,
           }))
