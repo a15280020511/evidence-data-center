@@ -25,7 +25,7 @@ class InternationalStatisticsTests(unittest.TestCase):
             self.assertFalse(row["limits"]["automatic_pagination_allowed"])
 
     def test_fixed_request_builders(self):
-        self.assertEqual(mod.build_request("wto", "indicators", {})[0], "/indicator")
+        self.assertEqual(mod.build_request("wto", "indicators", {})[0], "/indicators")
         self.assertEqual(
             mod.build_request(
                 "imf", "get-dataflow", {"agency": "IMF.RES", "flow": "WEO"}

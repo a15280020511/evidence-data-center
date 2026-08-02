@@ -46,16 +46,18 @@
     "hexdb-aviation/provider-catalog.json",
     "wto/provider-catalog.json",
     "imf/provider-catalog.json",
+    "worldbank-documents/provider-catalog.json",
+    "bis/provider-catalog.json",
     "adb/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "dd1afab0264affb5dacbc8d65035de96783cec4304189b9f8241636f93999e0a",
+  "managed_provider_catalog_sha256": "3ef616fdc27492bc8fd92a59f1121245d2d280b975485b6ae9b680b9f7e55b20",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 45,
-  "enabled_managed_provider_count": 45,
-  "managed_operation_count": 472,
-  "exposed_parameter_count": 1773,
+  "managed_provider_count": 47,
+  "enabled_managed_provider_count": 47,
+  "managed_operation_count": 487,
+  "exposed_parameter_count": 1843,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -96,6 +98,8 @@
     "hexdb-aviation/provider-catalog.json",
     "wto/provider-catalog.json",
     "imf/provider-catalog.json",
+    "worldbank-documents/provider-catalog.json",
+    "bis/provider-catalog.json",
     "adb/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
@@ -21485,6 +21489,992 @@
       "catalog_file": "imf/provider-catalog.json"
     },
     {
+      "provider_id": "worldbank-documents",
+      "display_name": "World Bank Documents & Reports API",
+      "description": "检索世界银行 Documents & Reports 官方公开报告、项目文件、研究论文、董事会文件和元数据。",
+      "enabled": true,
+      "ticket_prefix": "[intel-worldbank-docs]",
+      "catalog_policy": "固定访问 search.worldbank.org/api/v3/wds；仅返回公开元数据和官方文档链接，不抓取或批量下载文档正文。",
+      "execution_policy": "每张票据最多一次 HTTPS GET；不自动重试或翻页；每页最多50条、offset最多10000；字段、Facet、筛选条件均采用固定白名单。",
+      "operation_count": 7,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 World Bank Documents & Reports 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "worldbank-documents",
+            "official_origin": "https://search.worldbank.org/api/v3/wds",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "search-documents",
+          "description": "按关键词、国家、语言、文件类型、项目、日期等受约束条件检索世界银行公开文档。",
+          "parameter_names": [
+            "query",
+            "country",
+            "language",
+            "document_type",
+            "project_id",
+            "report_number",
+            "start_date",
+            "end_date",
+            "rows",
+            "offset",
+            "fields",
+            "sort",
+            "order"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "country": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "language": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "document_type": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "project_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,80}$"
+              },
+              "report_number": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._/-]{1,80}$"
+              },
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "rows": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "id",
+                    "guid",
+                    "display_title",
+                    "docdt",
+                    "docty",
+                    "majdocty",
+                    "count",
+                    "countcode",
+                    "lang",
+                    "authr",
+                    "abstracts",
+                    "projectid",
+                    "projn",
+                    "repnb",
+                    "repnme",
+                    "pdfurl",
+                    "txturl",
+                    "url",
+                    "topicv3",
+                    "keywd",
+                    "src_cit"
+                  ]
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "docdt",
+                  "display_title",
+                  "repnb",
+                  "docty"
+                ]
+              },
+              "order": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "worldbank-documents",
+            "official_origin": "https://search.worldbank.org/api/v3/wds",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-document",
+          "description": "按 Documents & Reports 文档 ID 读取公开文档元数据。",
+          "parameter_names": [
+            "document_id",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "document_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_:-]{1,120}$"
+              },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "id",
+                    "guid",
+                    "display_title",
+                    "docdt",
+                    "docty",
+                    "majdocty",
+                    "count",
+                    "countcode",
+                    "lang",
+                    "authr",
+                    "abstracts",
+                    "projectid",
+                    "projn",
+                    "repnb",
+                    "repnme",
+                    "pdfurl",
+                    "txturl",
+                    "url",
+                    "topicv3",
+                    "keywd",
+                    "src_cit"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "document_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "worldbank-documents",
+            "official_origin": "https://search.worldbank.org/api/v3/wds",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "project-documents",
+          "description": "按世界银行项目 ID 检索公开项目文件。",
+          "parameter_names": [
+            "project_id",
+            "rows",
+            "offset",
+            "fields",
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "project_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._-]{1,80}$"
+              },
+              "rows": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "id",
+                    "guid",
+                    "display_title",
+                    "docdt",
+                    "docty",
+                    "majdocty",
+                    "count",
+                    "countcode",
+                    "lang",
+                    "authr",
+                    "abstracts",
+                    "projectid",
+                    "projn",
+                    "repnb",
+                    "repnme",
+                    "pdfurl",
+                    "txturl",
+                    "url",
+                    "topicv3",
+                    "keywd",
+                    "src_cit"
+                  ]
+                }
+              },
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "project_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "worldbank-documents",
+            "official_origin": "https://search.worldbank.org/api/v3/wds",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "report-documents",
+          "description": "按报告编号检索公开报告及卷册元数据。",
+          "parameter_names": [
+            "report_number",
+            "rows",
+            "offset",
+            "fields"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "report_number": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._/-]{1,80}$"
+              },
+              "rows": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "id",
+                    "guid",
+                    "display_title",
+                    "docdt",
+                    "docty",
+                    "majdocty",
+                    "count",
+                    "countcode",
+                    "lang",
+                    "authr",
+                    "abstracts",
+                    "projectid",
+                    "projn",
+                    "repnb",
+                    "repnme",
+                    "pdfurl",
+                    "txturl",
+                    "url",
+                    "topicv3",
+                    "keywd",
+                    "src_cit"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "report_number"
+            ]
+          },
+          "result_contract": {
+            "provider": "worldbank-documents",
+            "official_origin": "https://search.worldbank.org/api/v3/wds",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "recent-documents",
+          "description": "按日期范围读取最新公开文档。",
+          "parameter_names": [
+            "start_date",
+            "end_date",
+            "query",
+            "rows",
+            "offset",
+            "fields",
+            "sort",
+            "order"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "rows": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "fields": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "id",
+                    "guid",
+                    "display_title",
+                    "docdt",
+                    "docty",
+                    "majdocty",
+                    "count",
+                    "countcode",
+                    "lang",
+                    "authr",
+                    "abstracts",
+                    "projectid",
+                    "projn",
+                    "repnb",
+                    "repnme",
+                    "pdfurl",
+                    "txturl",
+                    "url",
+                    "topicv3",
+                    "keywd",
+                    "src_cit"
+                  ]
+                }
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "docdt",
+                  "display_title",
+                  "repnb",
+                  "docty"
+                ]
+              },
+              "order": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              }
+            },
+            "required": [
+              "start_date"
+            ]
+          },
+          "result_contract": {
+            "provider": "worldbank-documents",
+            "official_origin": "https://search.worldbank.org/api/v3/wds",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "document-facets",
+          "description": "读取受约束检索结果的国家、语言、文件类型、主题或行业 Facet。",
+          "parameter_names": [
+            "query",
+            "facets",
+            "start_date",
+            "end_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "facets": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 6,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "count_exact",
+                    "lang_exact",
+                    "docty_exact",
+                    "majdocty_exact",
+                    "topic_exact",
+                    "sectr_exact"
+                  ]
+                }
+              },
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            },
+            "required": [
+              "facets"
+            ]
+          },
+          "result_contract": {
+            "provider": "worldbank-documents",
+            "official_origin": "https://search.worldbank.org/api/v3/wds",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "records_per_ticket_max": 50,
+        "offset_max": 10000,
+        "fields_per_ticket_max": 20,
+        "facets_per_ticket_max": 6,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "fixed_api_host": "search.worldbank.org",
+        "fixed_api_prefix": "/api/v3/wds",
+        "document_body_download_allowed": false,
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "ae66f469a549fd6079f6060cb4fb7f71310026120928a39f9643fa5490c852ae",
+      "catalog_file": "worldbank-documents/provider-catalog.json"
+    },
+    {
+      "provider_id": "bis",
+      "display_name": "Bank for International Settlements SDMX API",
+      "description": "读取国际清算银行公开的国际银行、全球流动性、信贷、汇率、衍生品、消费价格和央行资产等统计与结构元数据。",
+      "enabled": true,
+      "ticket_prefix": "[intel-bis]",
+      "catalog_policy": "固定访问 stats.bis.org/api/v2；仅开放 SDMX v2.1 数据、可用性和结构查询；禁止任意 URL、主机、请求头和批量下载。",
+      "execution_policy": "每张票据最多一次 HTTPS GET；不自动重试或翻页；序列键和时间范围必须显式提供；响应最大20MB。",
+      "operation_count": 8,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 BIS SDMX 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-dataflows",
+          "description": "读取 BIS 公开 SDMX 数据流目录。",
+          "parameter_names": [
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-dataflow",
+          "description": "读取指定 BIS 数据流定义。",
+          "parameter_names": [
+            "agency",
+            "flow",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "flow"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-datastructure",
+          "description": "读取指定 BIS 数据结构定义。",
+          "parameter_names": [
+            "agency",
+            "structure_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "structure_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "structure_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-codelist",
+          "description": "读取指定 BIS 代码表。",
+          "parameter_names": [
+            "agency",
+            "codelist_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "codelist_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "codelist_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-conceptscheme",
+          "description": "读取指定 BIS 概念表。",
+          "parameter_names": [
+            "agency",
+            "conceptscheme_id",
+            "version",
+            "references"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "conceptscheme_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "references": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "parents",
+                  "ancestors",
+                  "children",
+                  "descendants",
+                  "all"
+                ]
+              }
+            },
+            "required": [
+              "conceptscheme_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-data",
+          "description": "按 SDMX 数据流、序列键和时间范围读取 BIS 统计。",
+          "parameter_names": [
+            "context",
+            "agency",
+            "flow",
+            "version",
+            "key",
+            "start_period",
+            "end_period",
+            "format",
+            "detail",
+            "dimension_at_observation"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "context": {
+                "type": "string",
+                "enum": [
+                  "dataflow",
+                  "datastructure"
+                ]
+              },
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "key": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9*+.,_@-]{1,500}$"
+              },
+              "start_period": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]|S[12]))?$"
+              },
+              "end_period": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]|S[12]))?$"
+              },
+              "format": {
+                "type": "string",
+                "enum": [
+                  "json",
+                  "csv"
+                ]
+              },
+              "detail": {
+                "type": "string",
+                "enum": [
+                  "full",
+                  "dataonly",
+                  "serieskeysonly",
+                  "nodata"
+                ]
+              },
+              "dimension_at_observation": {
+                "type": "string",
+                "enum": [
+                  "AllDimensions",
+                  "TimeDimension",
+                  "MeasureDimension"
+                ]
+              }
+            },
+            "required": [
+              "flow",
+              "key"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-availability",
+          "description": "读取指定 BIS 数据集和序列键的数据可用性约束。",
+          "parameter_names": [
+            "context",
+            "agency",
+            "flow",
+            "version",
+            "key",
+            "component_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "context": {
+                "type": "string",
+                "enum": [
+                  "dataflow",
+                  "datastructure"
+                ]
+              },
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "key": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9*+.,_@-]{1,500}$"
+              },
+              "component_id": {
+                "type": "string",
+                "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}|all)$"
+              }
+            },
+            "required": [
+              "flow",
+              "key"
+            ]
+          },
+          "result_contract": {
+            "provider": "bis",
+            "official_origin": "https://stats.bis.org/api/v2",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "key_length_max": 500,
+        "fixed_api_host": "stats.bis.org",
+        "fixed_api_prefix": "/api/v2",
+        "sdmx_rest_version": "2.1.0",
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "bulk_download_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "source_citation_required": true,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "775226b29d473da42f432bd6a05d1ef320b61739ea29bd80365a2e809828cd15",
+      "catalog_file": "bis/provider-catalog.json"
+    },
+    {
       "provider_id": "adb",
       "display_name": "Asian Development Bank KIDB SDMX",
       "description": "通过亚洲开发银行官方 Key Indicators Database SDMX API v4 读取亚洲及太平洋宏观、金融、社会、环境和可持续发展统计。",
@@ -30630,5 +31620,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "50e7ff7fec700a4054b666ce95bec9035a064a768ad5e964bb734e7d4a7362db"
+  "catalog_sha256": "dafd804ad93effc57713824d1ac1956fba7223d6fa2db016939f13e58cf981fe"
 }

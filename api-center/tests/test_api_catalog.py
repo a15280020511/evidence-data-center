@@ -59,6 +59,8 @@ EXPECTED_OPERATION_COUNTS = {
     "hexdb-aviation": 6,
     "wto": 7,
     "imf": 6,
+    "worldbank-documents": 7,
+    "bis": 8,
     "wolfram-alpha": 4,
     "llamaparse": 3,
 }
@@ -83,9 +85,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 45)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 45)
-        self.assertEqual(catalog["managed_operation_count"], 472)
+        self.assertEqual(catalog["managed_provider_count"], 47)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 47)
+        self.assertEqual(catalog["managed_operation_count"], 487)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])

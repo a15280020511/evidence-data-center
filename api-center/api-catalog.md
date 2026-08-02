@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`45/45` 已启用
-- 托管操作总数：`472`
-- 已公开参数总数：`1773`
-- 目录 SHA-256：`50e7ff7fec700a4054b666ce95bec9035a064a768ad5e964bb734e7d4a7362db`
+- 托管提供方：`47/47` 已启用
+- 托管操作总数：`487`
+- 已公开参数总数：`1843`
+- 目录 SHA-256：`dafd804ad93effc57713824d1ac1956fba7223d6fa2db016939f13e58cf981fe`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -59,6 +59,8 @@
 | HexDB 航空器型号、注册与航线补全 | `hexdb-aviation` | 启用 | `[intel-hexdb]` | `6` | 否 |
 | WTO Timeseries 国际贸易与关税统计 | `wto` | 启用 | `[intel-wto]` | `7` | 否 |
 | IMF SDMX 3.0 全球宏观、财政与金融统计 | `imf` | 启用 | `[intel-imf]` | `6` | 否 |
+| World Bank Documents & Reports API | `worldbank-documents` | 启用 | `[intel-worldbank-docs]` | `7` | 否 |
+| Bank for International Settlements SDMX API | `bis` | 启用 | `[intel-bis]` | `8` | 否 |
 | Asian Development Bank KIDB SDMX | `adb` | 启用 | `[intel-adb]` | `8` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
@@ -17698,6 +17700,834 @@
   "write_operations_allowed": false,
   "secret_values_exposed": false,
   "authentication_required": true
+}
+```
+
+## World Bank Documents & Reports API (`worldbank-documents`)
+
+- 状态：`启用`
+- 说明：检索世界银行 Documents & Reports 官方公开报告、项目文件、研究论文、董事会文件和元数据。
+- 目录策略：固定访问 search.worldbank.org/api/v3/wds；仅返回公开元数据和官方文档链接，不抓取或批量下载文档正文。
+- 执行策略：每张票据最多一次 HTTPS GET；不自动重试或翻页；每页最多50条、offset最多10000；字段、Facet、筛选条件均采用固定白名单。
+- 票据前缀：`[intel-worldbank-docs]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`ae66f469a549fd6079f6060cb4fb7f71310026120928a39f9643fa5490c852ae`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 World Bank Documents & Reports 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `search-documents` | 按关键词、国家、语言、文件类型、项目、日期等受约束条件检索世界银行公开文档。 | `query, country, language, document_type, project_id, report_number, start_date, end_date, rows, offset, fields, sort, order` |
+
+`search-documents` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "country": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "language": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "document_type": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "project_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,80}$"
+    },
+    "report_number": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._/-]{1,80}$"
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "id",
+          "guid",
+          "display_title",
+          "docdt",
+          "docty",
+          "majdocty",
+          "count",
+          "countcode",
+          "lang",
+          "authr",
+          "abstracts",
+          "projectid",
+          "projn",
+          "repnb",
+          "repnme",
+          "pdfurl",
+          "txturl",
+          "url",
+          "topicv3",
+          "keywd",
+          "src_cit"
+        ]
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "docdt",
+        "display_title",
+        "repnb",
+        "docty"
+      ]
+    },
+    "order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `get-document` | 按 Documents & Reports 文档 ID 读取公开文档元数据。 | `document_id, fields` |
+
+`get-document` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "document_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_:-]{1,120}$"
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "id",
+          "guid",
+          "display_title",
+          "docdt",
+          "docty",
+          "majdocty",
+          "count",
+          "countcode",
+          "lang",
+          "authr",
+          "abstracts",
+          "projectid",
+          "projn",
+          "repnb",
+          "repnme",
+          "pdfurl",
+          "txturl",
+          "url",
+          "topicv3",
+          "keywd",
+          "src_cit"
+        ]
+      }
+    }
+  },
+  "required": [
+    "document_id"
+  ]
+}
+```
+
+| `project-documents` | 按世界银行项目 ID 检索公开项目文件。 | `project_id, rows, offset, fields, start_date, end_date` |
+
+`project-documents` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,80}$"
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "id",
+          "guid",
+          "display_title",
+          "docdt",
+          "docty",
+          "majdocty",
+          "count",
+          "countcode",
+          "lang",
+          "authr",
+          "abstracts",
+          "projectid",
+          "projn",
+          "repnb",
+          "repnme",
+          "pdfurl",
+          "txturl",
+          "url",
+          "topicv3",
+          "keywd",
+          "src_cit"
+        ]
+      }
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "project_id"
+  ]
+}
+```
+
+| `report-documents` | 按报告编号检索公开报告及卷册元数据。 | `report_number, rows, offset, fields` |
+
+`report-documents` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "report_number": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._/-]{1,80}$"
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "id",
+          "guid",
+          "display_title",
+          "docdt",
+          "docty",
+          "majdocty",
+          "count",
+          "countcode",
+          "lang",
+          "authr",
+          "abstracts",
+          "projectid",
+          "projn",
+          "repnb",
+          "repnme",
+          "pdfurl",
+          "txturl",
+          "url",
+          "topicv3",
+          "keywd",
+          "src_cit"
+        ]
+      }
+    }
+  },
+  "required": [
+    "report_number"
+  ]
+}
+```
+
+| `recent-documents` | 按日期范围读取最新公开文档。 | `start_date, end_date, query, rows, offset, fields, sort, order` |
+
+`recent-documents` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "id",
+          "guid",
+          "display_title",
+          "docdt",
+          "docty",
+          "majdocty",
+          "count",
+          "countcode",
+          "lang",
+          "authr",
+          "abstracts",
+          "projectid",
+          "projn",
+          "repnb",
+          "repnme",
+          "pdfurl",
+          "txturl",
+          "url",
+          "topicv3",
+          "keywd",
+          "src_cit"
+        ]
+      }
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "docdt",
+        "display_title",
+        "repnb",
+        "docty"
+      ]
+    },
+    "order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  },
+  "required": [
+    "start_date"
+  ]
+}
+```
+
+| `document-facets` | 读取受约束检索结果的国家、语言、文件类型、主题或行业 Facet。 | `query, facets, start_date, end_date` |
+
+`document-facets` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "facets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "count_exact",
+          "lang_exact",
+          "docty_exact",
+          "majdocty_exact",
+          "topic_exact",
+          "sectr_exact"
+        ]
+      }
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  },
+  "required": [
+    "facets"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "records_per_ticket_max": 50,
+  "offset_max": 10000,
+  "fields_per_ticket_max": 20,
+  "facets_per_ticket_max": 6,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "fixed_api_host": "search.worldbank.org",
+  "fixed_api_prefix": "/api/v3/wds",
+  "document_body_download_allowed": false,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## Bank for International Settlements SDMX API (`bis`)
+
+- 状态：`启用`
+- 说明：读取国际清算银行公开的国际银行、全球流动性、信贷、汇率、衍生品、消费价格和央行资产等统计与结构元数据。
+- 目录策略：固定访问 stats.bis.org/api/v2；仅开放 SDMX v2.1 数据、可用性和结构查询；禁止任意 URL、主机、请求头和批量下载。
+- 执行策略：每张票据最多一次 HTTPS GET；不自动重试或翻页；序列键和时间范围必须显式提供；响应最大20MB。
+- 票据前缀：`[intel-bis]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`775226b29d473da42f432bd6a05d1ef320b61739ea29bd80365a2e809828cd15`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 BIS SDMX 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-dataflows` | 读取 BIS 公开 SDMX 数据流目录。 | `references` |
+
+`list-dataflows` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  }
+}
+```
+
+| `get-dataflow` | 读取指定 BIS 数据流定义。 | `agency, flow, version, references` |
+
+`get-dataflow` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "flow"
+  ]
+}
+```
+
+| `get-datastructure` | 读取指定 BIS 数据结构定义。 | `agency, structure_id, version, references` |
+
+`get-datastructure` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "structure_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "structure_id"
+  ]
+}
+```
+
+| `get-codelist` | 读取指定 BIS 代码表。 | `agency, codelist_id, version, references` |
+
+`get-codelist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "codelist_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "codelist_id"
+  ]
+}
+```
+
+| `get-conceptscheme` | 读取指定 BIS 概念表。 | `agency, conceptscheme_id, version, references` |
+
+`get-conceptscheme` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "conceptscheme_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "conceptscheme_id"
+  ]
+}
+```
+
+| `get-data` | 按 SDMX 数据流、序列键和时间范围读取 BIS 统计。 | `context, agency, flow, version, key, start_period, end_period, format, detail, dimension_at_observation` |
+
+`get-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "context": {
+      "type": "string",
+      "enum": [
+        "dataflow",
+        "datastructure"
+      ]
+    },
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9*+.,_@-]{1,500}$"
+    },
+    "start_period": {
+      "type": "string",
+      "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]|S[12]))?$"
+    },
+    "end_period": {
+      "type": "string",
+      "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]|S[12]))?$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    },
+    "detail": {
+      "type": "string",
+      "enum": [
+        "full",
+        "dataonly",
+        "serieskeysonly",
+        "nodata"
+      ]
+    },
+    "dimension_at_observation": {
+      "type": "string",
+      "enum": [
+        "AllDimensions",
+        "TimeDimension",
+        "MeasureDimension"
+      ]
+    }
+  },
+  "required": [
+    "flow",
+    "key"
+  ]
+}
+```
+
+| `get-availability` | 读取指定 BIS 数据集和序列键的数据可用性约束。 | `context, agency, flow, version, key, component_id` |
+
+`get-availability` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "context": {
+      "type": "string",
+      "enum": [
+        "dataflow",
+        "datastructure"
+      ]
+    },
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9*+.,_@-]{1,500}$"
+    },
+    "component_id": {
+      "type": "string",
+      "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}|all)$"
+    }
+  },
+  "required": [
+    "flow",
+    "key"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "key_length_max": 500,
+  "fixed_api_host": "stats.bis.org",
+  "fixed_api_prefix": "/api/v2",
+  "sdmx_rest_version": "2.1.0",
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "bulk_download_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "source_citation_required": true,
+  "secret_values_exposed": false
 }
 ```
 
