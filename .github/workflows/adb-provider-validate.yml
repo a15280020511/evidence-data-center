@@ -1,0 +1,74 @@
+name: Validate ADB KIDB Provider
+
+on:
+  pull_request:
+    paths:
+      - "api-center/adb/**"
+      - ".github/workflows/adb-api-ticket.yml"
+      - ".github/workflows/adb-provider-validate.yml"
+  push:
+    branches: [main]
+    paths:
+      - "api-center/adb/**"
+      - ".github/workflows/adb-api-ticket.yml"
+      - ".github/workflows/adb-provider-validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout pinned source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/adb/requirements.txt
+          python -m pip check
+      - name: Compile and test provider
+        run: |
+          python -m py_compile \
+            api-center/managed_provider_runtime.py \
+            api-center/adb/adb_task.py \
+            api-center/adb/tests/test_adb_task.py
+          python -m unittest discover -s api-center/adb/tests -p 'test_*.py' -v
+      - name: Validate fixed safe contracts
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from jsonschema import Draft202012Validator
+
+          root = Path('api-center/adb')
+          schema = json.loads((root / 'ticket.schema.json').read_text(encoding='utf-8'))
+          row = json.loads((root / 'provider-catalog.json').read_text(encoding='utf-8'))['providers'][0]
+          Draft202012Validator.check_schema(schema)
+          assert row['provider_id'] == 'adb'
+          assert row['ticket_prefix'] == '[intel-adb]'
+          assert row['required_secret_environment_variable'] == ''
+          assert len(row['operations']) == 8
+          assert row['limits']['fixed_api_host'] == 'kidb.adb.org'
+          assert row['limits']['fixed_api_prefix'] == '/api/v4/sdmx'
+          assert row['limits']['official_rate_limit_queries_per_minute'] == 20
+          assert row['limits']['requests_per_ticket_max'] == 1
+          assert row['limits']['indicators_per_ticket_max'] == 20
+          assert row['limits']['economies_per_ticket_max'] == 20
+          assert row['limits']['empty_dimension_bulk_queries_allowed'] is False
+          assert row['limits']['automatic_retry_allowed'] is False
+          assert row['limits']['automatic_pagination_allowed'] is False
+          assert row['limits']['write_operations_allowed'] is False
+          assert all(op['result_contract']['read_only'] is True for op in row['operations'])
+          print(json.dumps({'status': 'PASS', 'provider': 'adb', 'operations': 8}))
+          PY
+          git diff --check
