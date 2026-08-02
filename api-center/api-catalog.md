@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`41/41` 已启用
-- 托管操作总数：`445`
-- 已公开参数总数：`1694`
-- 目录 SHA-256：`88f3ec0aba285d4c1bcb9d6fea06134f8b0cbcac9dd00fa66003fd87e87c9443`
+- 托管提供方：`42/42` 已启用
+- 托管操作总数：`451`
+- 已公开参数总数：`1699`
+- 目录 SHA-256：`4b938a7368c359e9cc5476e6e01da1a4be78d8c0c1e33e1927c2b5db743f9053`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -56,6 +56,7 @@
 | 美国能源信息署 EIA 能源数据 | `eia` | 启用 | `[intel-eia]` | `6` | 否 |
 | 联合国 UN Comtrade 全球贸易数据 | `un-comtrade` | 启用 | `[intel-un-comtrade]` | `10` | 否 |
 | OpenSky Network 全球航空状态与航迹数据 | `opensky-network` | 启用 | `[intel-opensky]` | `9` | 否 |
+| HexDB 航空器型号、注册与航线补全 | `hexdb-aviation` | 启用 | `[intel-hexdb]` | `6` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -16954,6 +16955,160 @@
   "arbitrary_headers_allowed": false,
   "client_supplied_credentials_allowed": false,
   "oauth_token_persistence_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": false
+}
+```
+
+## HexDB 航空器型号、注册与航线补全 (`hexdb-aviation`)
+
+- 状态：`启用`
+- 说明：使用 HexDB 的只读 REST API，按 ICAO24、航班呼号或机场代码补全 OpenSky 状态向量缺少的飞机注册号、制造商、具体型号、登记所有人、运营方代码、航线和机场基础信息。
+- 目录策略：固定访问 hexdb.io 的公开只读 REST API；不允许任意 URL、批量抓取、图片抓取、后台轮询、自动重试或写操作。数据来自第三方和众包来源，仅作为证据补全，不替代航空主管机关登记。
+- 执行策略：每张票据最多一次 GET，只允许单个 ICAO24、单个呼号或单个机场代码。上游当前公开说明为每 5 分钟不超过 1000 次请求，情报中心进一步限制为全局并发 1、无重试、无自动翻页。
+- 票据前缀：`[intel-hexdb]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`d43a95964080a2a0b0481d5769a06139cec8f6c33768e662486fcfb6223d47ab`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 HexDB 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `aircraft-by-icao24` | 按六位 ICAO24/Mode-S 地址读取注册号、制造商、ICAO 机型代码、具体机型、登记所有人和运营方代码。 | `icao24` |
+
+`aircraft-by-icao24` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "icao24": {
+      "type": "string",
+      "pattern": "^[0-9A-Fa-f]{6}$"
+    }
+  },
+  "required": [
+    "icao24"
+  ]
+}
+```
+
+| `route-by-icao-callsign` | 按 ICAO 航班呼号读取推定起点—终点机场代码。 | `callsign` |
+
+`route-by-icao-callsign` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "callsign": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{2,12}$"
+    }
+  },
+  "required": [
+    "callsign"
+  ]
+}
+```
+
+| `route-by-iata-callsign` | 按 IATA 航班呼号读取推定起点—终点机场代码。 | `callsign` |
+
+`route-by-iata-callsign` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "callsign": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{2,12}$"
+    }
+  },
+  "required": [
+    "callsign"
+  ]
+}
+```
+
+| `airport-by-icao` | 按四位 ICAO 机场代码读取机场名称、IATA 代码、国家、地区及坐标。 | `airport` |
+
+`airport-by-icao` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "airport": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{4}$"
+    }
+  },
+  "required": [
+    "airport"
+  ]
+}
+```
+
+| `airport-by-iata` | 按三位 IATA 机场代码读取机场名称、ICAO 代码、国家、地区及坐标。 | `airport` |
+
+`airport-by-iata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "airport": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{3}$"
+    }
+  },
+  "required": [
+    "airport"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 30,
+  "max_response_bytes": 2000000,
+  "upstream_requests_per_window_max": 1000,
+  "upstream_rate_window_seconds": 300,
+  "fixed_api_host": "hexdb.io",
+  "single_identifier_per_ticket_required": true,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "background_polling_allowed": false,
+  "bulk_lookup_allowed": false,
+  "image_retrieval_allowed": false,
+  "legacy_text_endpoints_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
   "write_operations_allowed": false,
   "secret_values_exposed": false,
   "authentication_required": false
