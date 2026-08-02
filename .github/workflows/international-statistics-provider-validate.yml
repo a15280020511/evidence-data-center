@@ -1,4 +1,4 @@
-name: Validate WTO IMF FAOSTAT Providers
+name: Validate WTO and IMF Providers
 
 on:
   pull_request:
@@ -6,13 +6,11 @@ on:
       - "api-center/international-statistics/**"
       - "api-center/wto/**"
       - "api-center/imf/**"
-      - "api-center/faostat/**"
       - "api-center/build_catalog_market_search.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
       - ".github/workflows/wto-api-ticket.yml"
       - ".github/workflows/imf-api-ticket.yml"
-      - ".github/workflows/faostat-api-ticket.yml"
       - ".github/workflows/international-statistics-provider-validate.yml"
   push:
     branches: [main]
@@ -20,13 +18,11 @@ on:
       - "api-center/international-statistics/**"
       - "api-center/wto/**"
       - "api-center/imf/**"
-      - "api-center/faostat/**"
       - "api-center/build_catalog_market_search.py"
       - "api-center/api-catalog.json"
       - "api-center/api-catalog.md"
       - ".github/workflows/wto-api-ticket.yml"
       - ".github/workflows/imf-api-ticket.yml"
-      - ".github/workflows/faostat-api-ticket.yml"
       - ".github/workflows/international-statistics-provider-validate.yml"
   workflow_dispatch:
 
@@ -51,8 +47,7 @@ jobs:
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
             -r api-center/wto/requirements.txt \
-            -r api-center/imf/requirements.txt \
-            -r api-center/faostat/requirements.txt
+            -r api-center/imf/requirements.txt
           python -m pip check
       - name: Compile and test providers
         run: |
@@ -61,8 +56,7 @@ jobs:
             api-center/international-statistics/provider_task.py \
             api-center/international-statistics/tests/test_international_statistics.py \
             api-center/wto/wto_task.py \
-            api-center/imf/imf_task.py \
-            api-center/faostat/faostat_task.py
+            api-center/imf/imf_task.py
           python -m unittest discover -s api-center/international-statistics/tests -p 'test_*.py' -v
       - name: Validate fixed safe contracts
         run: |
@@ -71,7 +65,7 @@ jobs:
           from pathlib import Path
           from jsonschema import Draft202012Validator
 
-          expected = {'wto': 7, 'imf': 6, 'faostat': 7}
+          expected = {'wto': 7, 'imf': 6}
           providers = {}
           for provider, count in expected.items():
               root = Path('api-center') / provider
@@ -99,12 +93,6 @@ jobs:
           assert imf['limits']['authentication_required'] is True
           assert imf['limits']['arbitrary_sdmx_resource_types_allowed'] is False
 
-          fao = providers['faostat']
-          assert fao['required_secret_environment_variable'] == 'FAOSTAT_PASSWORD'
-          assert fao['required_repository_variable'] == 'FAOSTAT_USERNAME'
-          assert fao['limits']['oauth_token_persistence_allowed'] is False
-          assert fao['limits']['fixed_api_host'] == 'faostatservices.fao.org'
-
-          print(json.dumps({'status':'PASS','providers':3,'operations':20}))
+          print(json.dumps({'status':'PASS','providers':2,'operations':13}))
           PY
           git diff --check
