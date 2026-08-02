@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import re
 import subprocess
 from pathlib import Path
 
@@ -16,13 +15,23 @@ def replace_once(path: Path, old: str, new: str) -> None:
     path.write_text(text.replace(old, new, 1), encoding="utf-8")
 
 
-def regex_once(path: Path, pattern: str, replacement: str) -> None:
-    text = path.read_text(encoding="utf-8")
-    updated, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE)
-    if count != 1:
-        raise RuntimeError(f"expected one match in {path}, got {count}: {pattern}")
-    path.write_text(updated, encoding="utf-8")
-
+builder = API / "build_catalog_market_search.py"
+replace_once(
+    builder,
+    'FAOSTAT_CATALOG = HERE / "faostat/provider-catalog.json"\n',
+    'FAOSTAT_CATALOG = HERE / "faostat/provider-catalog.json"\nADB_CATALOG = HERE / "adb/provider-catalog.json"\n',
+)
+replace_once(builder, '    "faostat": 7,\n', '    "faostat": 7,\n    "adb": 8,\n')
+replace_once(
+    builder,
+    '    FAOSTAT_CATALOG,\n    KNOWLEDGE_TOOLS_CATALOG,\n',
+    '    FAOSTAT_CATALOG,\n    ADB_CATALOG,\n    KNOWLEDGE_TOOLS_CATALOG,\n',
+)
+replace_once(
+    builder,
+    '        "faostat/provider-catalog.json",\n        "knowledge-tools/provider-catalog.json",\n',
+    '        "faostat/provider-catalog.json",\n        "adb/provider-catalog.json",\n        "knowledge-tools/provider-catalog.json",\n',
+)
 
 test_path = API / "tests" / "test_api_catalog.py"
 replace_once(test_path, '    "oecd": 6,\n', '    "oecd": 6,\n    "adb": 8,\n')
