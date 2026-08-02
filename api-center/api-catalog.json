@@ -52,13 +52,13 @@
     "knowledge-tools/provider-catalog.json",
     "public-data-geospatial/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "d1ffa265f2d707ea705f5834f6720d9800480399c0c444e93744c0a244218517",
+  "managed_provider_catalog_sha256": "a51030bda46c08327beea34a823102d97933f58f6b65fdf24acd55e29d5850d1",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 48,
   "enabled_managed_provider_count": 48,
-  "managed_operation_count": 526,
-  "exposed_parameter_count": 1964,
+  "managed_operation_count": 522,
+  "exposed_parameter_count": 1953,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -23298,7 +23298,7 @@
       "ticket_prefix": "[intel-public-data]",
       "catalog_policy": "仅允许调用代码内固定官方主机和固定只读端点；禁止任意 URL、任意请求头、自动翻页、批量镜像、登录绕过、写入、交易或个人数据查询。",
       "execution_policy": "每张票据最多执行一次上游只读请求；密钥和用户名仅由后端环境注入；无密钥操作可直接运行，有密钥操作缺少相应字段时结构化失败。",
-      "operation_count": 39,
+      "operation_count": 35,
       "operations": [
         {
           "operation_id": "catalog-capabilities",
@@ -24747,192 +24747,6 @@
           }
         },
         {
-          "operation_id": "nbs-search",
-          "description": "检索中国国家统计局“国家数据”旧版公开指标和最新值。",
-          "parameter_names": [
-            "query"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "query": {
-                "type": "string",
-                "maxLength": 100
-              }
-            },
-            "required": [
-              "query"
-            ]
-          },
-          "result_contract": {
-            "official_endpoint": "https://data.stats.gov.cn/search.htm",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation"
-          }
-        },
-        {
-          "operation_id": "nbs-query-data",
-          "description": "查询中国国家统计局“国家数据”旧版 EasyQuery 时间序列。",
-          "parameter_names": [
-            "dbcode",
-            "rowcode",
-            "colcode",
-            "wds",
-            "dfwds"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "dbcode": {
-                "type": "string",
-                "pattern": "^[a-z]{4}$"
-              },
-              "rowcode": {
-                "type": "string",
-                "pattern": "^[a-z]{2,4}$"
-              },
-              "colcode": {
-                "type": "string",
-                "pattern": "^[a-z]{2,4}$"
-              },
-              "wds": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "wdcode",
-                    "valuecode"
-                  ],
-                  "properties": {
-                    "wdcode": {
-                      "type": "string",
-                      "pattern": "^[a-z]{2,4}$"
-                    },
-                    "valuecode": {
-                      "type": "string",
-                      "pattern": "^[A-Za-z0-9_+.-]{1,80}$"
-                    }
-                  }
-                },
-                "maxItems": 10
-              },
-              "dfwds": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "required": [
-                    "wdcode",
-                    "valuecode"
-                  ],
-                  "properties": {
-                    "wdcode": {
-                      "type": "string",
-                      "pattern": "^[a-z]{2,4}$"
-                    },
-                    "valuecode": {
-                      "type": "string",
-                      "pattern": "^[A-Za-z0-9_+.-]{1,80}$"
-                    }
-                  }
-                },
-                "maxItems": 10
-              }
-            },
-            "required": [
-              "dbcode",
-              "rowcode",
-              "colcode"
-            ]
-          },
-          "result_contract": {
-            "official_endpoint": "https://data.stats.gov.cn/easyquery.htm",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation"
-          }
-        },
-        {
-          "operation_id": "nbs-new-tree",
-          "description": "读取中国国家统计局 2026 新版 UUID 指标目录树。",
-          "parameter_names": [
-            "code",
-            "parent_id"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "code": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 14
-              },
-              "parent_id": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9-]{0,80}$"
-              }
-            },
-            "required": [
-              "code"
-            ]
-          },
-          "result_contract": {
-            "official_endpoint": "https://data.stats.gov.cn/dg/website/publicrelease/web/external/new/queryIndexTreeAsync",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation"
-          }
-        },
-        {
-          "operation_id": "nbs-new-indicators",
-          "description": "读取中国国家统计局 2026 新版目录节点指标元数据。",
-          "parameter_names": [
-            "catalog_id",
-            "name",
-            "root_id"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "catalog_id": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9-]{1,80}$"
-              },
-              "name": {
-                "type": "string",
-                "maxLength": 100
-              },
-              "root_id": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9-]{0,80}$"
-              }
-            },
-            "required": [
-              "catalog_id"
-            ]
-          },
-          "result_contract": {
-            "official_endpoint": "https://data.stats.gov.cn/dg/website/publicrelease/web/external/new/queryIndicatorsByCid",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation"
-          }
-        },
-        {
           "operation_id": "china-local-open-data-catalog",
           "description": "读取本地维护的中国大陆地方政府开放数据门户目录（浙江、深圳、上海、北京、广东、福建等），不访问上游。",
           "parameter_names": [],
@@ -24997,19 +24811,23 @@
           "global-fishing-watch-vessels"
         ],
         "china_first_operations": [
-          "nbs-search",
-          "nbs-query-data",
-          "nbs-new-tree",
-          "nbs-new-indicators",
           "china-local-open-data-catalog",
           "china-science-data-centers"
+        ],
+        "known_upstream_constraints": [
+          {
+            "provider": "China National Bureau of Statistics National Data",
+            "status": "not_exposed_as_production_operation",
+            "reason": "Official upstream WAF returned HTTP 403 UrlACL to the GitHub Actions public-cloud egress during production acceptance on 2026-08-03.",
+            "evidence_issue": 527
+          }
         ]
       },
       "required_secret_environment_variable_name": "",
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "e04f7d136de8b1b8f48723d22218edf022e86b664f768add88622c7421008d65",
+      "provider_sha256": "d5fe5865aa0cc96fb5ff5fe0fd7b41ce39ba53a27011213a2eabb2ee074e0dc4",
       "catalog_file": "public-data-geospatial/provider-catalog.json"
     }
   ],
@@ -33350,5 +33168,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "ebd5346566fddb96aa26fefe8f04565822b855720e31136d332fc63310ed91d9"
+  "catalog_sha256": "f4e5c4d96d5ee1e9c0ca6d71e99ed188d08bc232cf8c5d2dce14a2ce7abe2765"
 }

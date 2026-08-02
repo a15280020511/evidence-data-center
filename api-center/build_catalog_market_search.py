@@ -83,7 +83,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "adb": 8,
     "wolfram-alpha": 4,
     "llamaparse": 3,
-    "public-data-geospatial": 39,
+    "public-data-geospatial": 35,
 }
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
     *base.MANAGED_PROVIDER_CATALOG_PATHS,
