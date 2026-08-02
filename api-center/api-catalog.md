@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`47/47` 已启用
-- 托管操作总数：`487`
-- 已公开参数总数：`1843`
-- 目录 SHA-256：`dafd804ad93effc57713824d1ac1956fba7223d6fa2db016939f13e58cf981fe`
+- 托管提供方：`48/48` 已启用
+- 托管操作总数：`526`
+- 已公开参数总数：`1964`
+- 目录 SHA-256：`ebd5346566fddb96aa26fefe8f04565822b855720e31136d332fc63310ed91d9`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -64,6 +64,7 @@
 | Asian Development Bank KIDB SDMX | `adb` | 启用 | `[intel-adb]` | `8` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
+| 全球公共数据、空间地理与中国数据 | `public-data-geospatial` | 启用 | `[intel-public-data]` | `39` | 否 |
 
 ## 普通连接器
 
@@ -5081,7 +5082,7 @@
 - 票据前缀：`[api-serpapi]`
 - Secret环境变量名：`SERPAPI_API_KEY`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`058e437fae61170070a799442456adabaace2c0daa7521e6f9813c27e71ea27f`
+- 提供方SHA-256：`76d40e7ea071c4d19a624b64430d831ca87801b8e750f5f3ee3839ada48c8e5d`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -5125,7 +5126,9 @@
     },
     "hl": {
       "type": "string",
-      "pattern": "^[A-Za-z]{2}$"
+      "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+      "minLength": 2,
+      "maxLength": 5
     },
     "start": {
       "type": "integer",
@@ -5184,7 +5187,9 @@
     },
     "hl": {
       "type": "string",
-      "pattern": "^[A-Za-z]{2}$"
+      "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+      "minLength": 2,
+      "maxLength": 5
     },
     "sort_by_date": {
       "type": "boolean"
@@ -5227,7 +5232,9 @@
     },
     "hl": {
       "type": "string",
-      "pattern": "^[A-Za-z]{2}$"
+      "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+      "minLength": 2,
+      "maxLength": 5
     },
     "start": {
       "type": "integer",
@@ -19190,6 +19197,1341 @@
   "write_operations_allowed": false,
   "presigned_urls_exposed": false,
   "secret_values_exposed": false
+}
+```
+
+## 全球公共数据、空间地理与中国数据 (`public-data-geospatial`)
+
+- 状态：`启用`
+- 说明：统一开放免费或有免费额度的全球公共数据、空间地理、道路交通及中国大陆官方数据能力。
+- 目录策略：仅允许调用代码内固定官方主机和固定只读端点；禁止任意 URL、任意请求头、自动翻页、批量镜像、登录绕过、写入、交易或个人数据查询。
+- 执行策略：每张票据最多执行一次上游只读请求；密钥和用户名仅由后端环境注入；无密钥操作可直接运行，有密钥操作缺少相应字段时结构化失败。
+- 票据前缀：`[intel-public-data]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`e04f7d136de8b1b8f48723d22218edf022e86b664f768add88622c7421008d65`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地能力、鉴权字段和使用限制目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `ilostat-dataflows` | 读取 ILOSTAT 官方 SDMX 数据流目录。 | `无` |
+
+`ilostat-dataflows` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `unicef-dataflows` | 读取 UNICEF Data Warehouse 官方 SDMX 数据流目录。 | `无` |
+
+`unicef-dataflows` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `un-sdg-indicators` | 读取联合国统计司官方 SDG 指标与序列目录。 | `include_children` |
+
+`un-sdg-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "include_children": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+| `faostat-definitions` | 读取 FAOSTAT 官方 API 的定义/目录资源。 | `language` |
+
+`faostat-definitions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "zh",
+        "fr",
+        "es",
+        "ar",
+        "ru"
+      ]
+    }
+  }
+}
+```
+
+| `worldpop-catalog` | 读取 WorldPop REST 数据集与元数据目录。 | `alias, iso3` |
+
+`worldpop-catalog` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "alias": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "iso3": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    }
+  }
+}
+```
+
+| `worldpop-services` | 读取 WorldPop 空间统计服务目录。 | `无` |
+
+`worldpop-services` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `gbif-occurrences` | 检索 GBIF 全球生物多样性出现记录。 | `scientific_name, country, year, decimal_latitude, decimal_longitude, radius_km, limit, offset` |
+
+`gbif-occurrences` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "scientific_name": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "year": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "decimal_latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "decimal_longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "radius_km": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 100
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    }
+  }
+}
+```
+
+| `unhcr-population` | 查询 UNHCR Refugee Data Finder 官方人口统计。 | `year_from, year_to, coa, coo, limit, page` |
+
+`unhcr-population` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "year_from": {
+      "type": "integer",
+      "minimum": 1951,
+      "maximum": 2100
+    },
+    "year_to": {
+      "type": "integer",
+      "minimum": 1951,
+      "maximum": 2100
+    },
+    "coa": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "coo": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    }
+  }
+}
+```
+
+| `reliefweb-reports` | 检索 ReliefWeb 官方人道主义报告。 | `query, country, limit, offset` |
+
+`reliefweb-reports` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "country": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  }
+}
+```
+
+| `gleif-lei-search` | 检索 GLEIF 官方 LEI 主体记录。 | `query, country, page_size, page_number` |
+
+`gleif-lei-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "page_number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `usaspending-awards` | 查询 USAspending 官方联邦支出奖项。 | `keywords, award_type_codes, start_date, end_date, page, limit` |
+
+`usaspending-awards` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 100
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "award_type_codes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 4
+      },
+      "minItems": 1,
+      "maxItems": 20
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "keywords",
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+| `openfda-drug-events` | 查询 openFDA 药品不良事件公共数据。 | `search, limit, skip` |
+
+`openfda-drug-events` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 25000
+    }
+  },
+  "required": [
+    "search"
+  ]
+}
+```
+
+| `eurostat-data` | 读取 Eurostat 官方 SDMX 3.0 数据。 | `dataflow, key, start_period, end_period` |
+
+`eurostat-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataflow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_+.-]{1,300}$"
+    },
+    "start_period": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "end_period": {
+      "type": "string",
+      "maxLength": 20
+    }
+  },
+  "required": [
+    "dataflow",
+    "key"
+  ]
+}
+```
+
+| `our-world-in-data-series` | 读取 Our World in Data Grapher CSV 序列。 | `slug` |
+
+`our-world-in-data-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_-]{0,119}$"
+    }
+  },
+  "required": [
+    "slug"
+  ]
+}
+```
+
+| `hdx-hapi-metadata` | 读取 HDX Humanitarian API 标准化人道指标元数据。 | `无` |
+
+`hdx-hapi-metadata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `iati-activities` | 检索 IATI Datastore 发展援助活动。 | `query, rows, start` |
+
+`iati-activities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `companies-house-search` | 检索英国 Companies House 官方企业记录。 | `query, items_per_page, start_index` |
+
+`companies-house-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "items_per_page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "start_index": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `sam-opportunities` | 查询 SAM.gov 官方合同机会。 | `posted_from, posted_to, keywords, limit, offset` |
+
+`sam-opportunities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "posted_from": {
+      "type": "string",
+      "pattern": "^[0-9]{2}/[0-9]{2}/[0-9]{4}$"
+    },
+    "posted_to": {
+      "type": "string",
+      "pattern": "^[0-9]{2}/[0-9]{2}/[0-9]{4}$"
+    },
+    "keywords": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000
+    }
+  },
+  "required": [
+    "posted_from",
+    "posted_to"
+  ]
+}
+```
+
+| `openaq-locations` | 查询 OpenAQ 全球空气质量监测站。 | `country, city, coordinates, radius, limit, page` |
+
+`openaq-locations` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "city": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "coordinates": {
+      "type": "string",
+      "pattern": "^-?[0-9.]+,-?[0-9.]+$"
+    },
+    "radius": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 25000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    }
+  }
+}
+```
+
+| `usgs-earthquakes` | 查询 USGS 全球地震事件目录。 | `start_time, end_time, min_magnitude, latitude, longitude, max_radius_km, limit` |
+
+`usgs-earthquakes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "end_time": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "min_magnitude": {
+      "type": "number",
+      "minimum": -2,
+      "maximum": 10
+    },
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "max_radius_km": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 20000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2000
+    }
+  }
+}
+```
+
+| `overpass-query` | 执行受限只读 Overpass QL，获取道路、POI、行政边界、公共交通等 OSM 数据。 | `query, timeout_seconds` |
+
+`overpass-query` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 8000
+    },
+    "timeout_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 25
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `geonames-search` | 检索 GeoNames 全球地名、行政区和地理实体。 | `query, country, feature_class, max_rows, start_row` |
+
+`geonames-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "feature_class": {
+      "type": "string",
+      "pattern": "^[A-Z]$"
+    },
+    "max_rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "start_row": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `openrouteservice-directions` | 使用 OpenRouteService/HeiGIT 计算道路、步行、自行车等路线。 | `profile, coordinates, preference, units, language, instructions` |
+
+`openrouteservice-directions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile": {
+      "type": "string",
+      "enum": [
+        "driving-car",
+        "driving-hgv",
+        "cycling-regular",
+        "cycling-road",
+        "cycling-mountain",
+        "cycling-electric",
+        "foot-walking",
+        "foot-hiking",
+        "wheelchair"
+      ]
+    },
+    "coordinates": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "minItems": 2,
+      "maxItems": 50
+    },
+    "preference": {
+      "type": "string",
+      "enum": [
+        "fastest",
+        "shortest",
+        "recommended"
+      ]
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "m",
+        "km",
+        "mi"
+      ]
+    },
+    "language": {
+      "type": "string",
+      "maxLength": 8
+    },
+    "instructions": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "profile",
+    "coordinates"
+  ]
+}
+```
+
+| `openrouteservice-matrix` | 使用 OpenRouteService/HeiGIT 计算时间与距离矩阵。 | `profile, locations, metrics, units` |
+
+`openrouteservice-matrix` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile": {
+      "type": "string",
+      "enum": [
+        "driving-car",
+        "driving-hgv",
+        "cycling-regular",
+        "foot-walking",
+        "wheelchair"
+      ]
+    },
+    "locations": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "minItems": 2,
+      "maxItems": 50
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "distance",
+          "duration"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 2
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "m",
+        "km",
+        "mi"
+      ]
+    }
+  },
+  "required": [
+    "profile",
+    "locations"
+  ]
+}
+```
+
+| `openrouteservice-isochrones` | 使用 OpenRouteService/HeiGIT 生成时间或距离等时圈。 | `profile, locations, range, range_type, units` |
+
+`openrouteservice-isochrones` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "profile": {
+      "type": "string",
+      "enum": [
+        "driving-car",
+        "driving-hgv",
+        "cycling-regular",
+        "foot-walking",
+        "wheelchair"
+      ]
+    },
+    "locations": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "minItems": 1,
+      "maxItems": 5
+    },
+    "range": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 10800
+      },
+      "minItems": 1,
+      "maxItems": 10
+    },
+    "range_type": {
+      "type": "string",
+      "enum": [
+        "time",
+        "distance"
+      ]
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "m",
+        "km",
+        "mi"
+      ]
+    }
+  },
+  "required": [
+    "profile",
+    "locations",
+    "range"
+  ]
+}
+```
+
+| `openrouteservice-geocode` | 使用 HeiGIT Pelias 执行正向地理编码，支持中国地址与 POI。 | `text, focus_point_lat, focus_point_lon, country, size` |
+
+`openrouteservice-geocode` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "maxLength": 300
+    },
+    "focus_point_lat": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "focus_point_lon": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40
+    }
+  },
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `opentopography-globaldem` | 通过 OpenTopography 获取全球 DEM 高程裁剪。 | `dem_type, south, north, west, east, output_format` |
+
+`opentopography-globaldem` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dem_type": {
+      "type": "string",
+      "enum": [
+        "SRTMGL3",
+        "SRTMGL1",
+        "SRTMGL1_E",
+        "AW3D30",
+        "AW3D30_E",
+        "SRTM15Plus",
+        "NASADEM",
+        "COP30",
+        "COP90"
+      ]
+    },
+    "south": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "north": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "west": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "east": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "output_format": {
+      "type": "string",
+      "enum": [
+        "GTiff",
+        "AAIGrid",
+        "HFA"
+      ]
+    }
+  },
+  "required": [
+    "dem_type",
+    "south",
+    "north",
+    "west",
+    "east"
+  ]
+}
+```
+
+| `geoboundaries-release` | 读取 geoBoundaries 全球行政区边界发布元数据。 | `iso3, admin_level, product` |
+
+`geoboundaries-release` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "iso3": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$"
+    },
+    "admin_level": {
+      "type": "string",
+      "pattern": "^ADM[0-5]$"
+    },
+    "product": {
+      "type": "string",
+      "enum": [
+        "gbOpen",
+        "gbHumanitarian",
+        "gbAuthoritative"
+      ]
+    }
+  },
+  "required": [
+    "iso3",
+    "admin_level"
+  ]
+}
+```
+
+| `soilgrids-wcs-capabilities` | 读取 SoilGrids 官方 WCS 图层能力，避免使用暂停的 REST beta。 | `property` |
+
+`soilgrids-wcs-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "property": {
+      "type": "string",
+      "enum": [
+        "bdod",
+        "cec",
+        "cfvo",
+        "clay",
+        "nitrogen",
+        "ocd",
+        "ocs",
+        "phh2o",
+        "sand",
+        "silt",
+        "soc"
+      ]
+    }
+  },
+  "required": [
+    "property"
+  ]
+}
+```
+
+| `global-fishing-watch-vessels` | 检索 Global Fishing Watch v3 船舶身份，限非商业用途。 | `query, limit` |
+
+`global-fishing-watch-vessels` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `opencharge-map-poi` | 查询 Open Charge Map 全球充电设施点位。 | `latitude, longitude, distance_km, max_results` |
+
+`opencharge-map-poi` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "distance_km": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 500
+    },
+    "max_results": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "latitude",
+    "longitude"
+  ]
+}
+```
+
+| `transitland-routes` | 查询 Transitland 公共交通路线目录。 | `bbox, operator_onestop_id, limit` |
+
+`transitland-routes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "type": "string",
+      "pattern": "^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$"
+    },
+    "operator_onestop_id": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  }
+}
+```
+
+| `nbs-search` | 检索中国国家统计局“国家数据”旧版公开指标和最新值。 | `query` |
+
+`nbs-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "maxLength": 100
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `nbs-query-data` | 查询中国国家统计局“国家数据”旧版 EasyQuery 时间序列。 | `dbcode, rowcode, colcode, wds, dfwds` |
+
+`nbs-query-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dbcode": {
+      "type": "string",
+      "pattern": "^[a-z]{4}$"
+    },
+    "rowcode": {
+      "type": "string",
+      "pattern": "^[a-z]{2,4}$"
+    },
+    "colcode": {
+      "type": "string",
+      "pattern": "^[a-z]{2,4}$"
+    },
+    "wds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "wdcode",
+          "valuecode"
+        ],
+        "properties": {
+          "wdcode": {
+            "type": "string",
+            "pattern": "^[a-z]{2,4}$"
+          },
+          "valuecode": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_+.-]{1,80}$"
+          }
+        }
+      },
+      "maxItems": 10
+    },
+    "dfwds": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "wdcode",
+          "valuecode"
+        ],
+        "properties": {
+          "wdcode": {
+            "type": "string",
+            "pattern": "^[a-z]{2,4}$"
+          },
+          "valuecode": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_+.-]{1,80}$"
+          }
+        }
+      },
+      "maxItems": 10
+    }
+  },
+  "required": [
+    "dbcode",
+    "rowcode",
+    "colcode"
+  ]
+}
+```
+
+| `nbs-new-tree` | 读取中国国家统计局 2026 新版 UUID 指标目录树。 | `code, parent_id` |
+
+`nbs-new-tree` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "code": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 14
+    },
+    "parent_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9-]{0,80}$"
+    }
+  },
+  "required": [
+    "code"
+  ]
+}
+```
+
+| `nbs-new-indicators` | 读取中国国家统计局 2026 新版目录节点指标元数据。 | `catalog_id, name, root_id` |
+
+`nbs-new-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "catalog_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9-]{1,80}$"
+    },
+    "name": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "root_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9-]{0,80}$"
+    }
+  },
+  "required": [
+    "catalog_id"
+  ]
+}
+```
+
+| `china-local-open-data-catalog` | 读取本地维护的中国大陆地方政府开放数据门户目录（浙江、深圳、上海、北京、广东、福建等），不访问上游。 | `无` |
+
+`china-local-open-data-catalog` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `china-science-data-centers` | 读取本地维护的中国国家科学数据中心目录，标注公开目录/API/OGC/注册审批状态，不访问上游。 | `无` |
+
+`china-science-data-centers` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "redirects_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "optional_secret_environment_variables": [
+    "OPENROUTESERVICE_API_KEY",
+    "GEONAMES_USERNAME",
+    "OPENAQ_API_KEY",
+    "OPENFDA_API_KEY",
+    "RELIEFWEB_APPNAME",
+    "HDX_HAPI_APP_IDENTIFIER",
+    "IATI_API_KEY",
+    "COMPANIES_HOUSE_API_KEY",
+    "SAM_GOV_API_KEY",
+    "OPENTOPOGRAPHY_API_KEY",
+    "GLOBAL_FISHING_WATCH_API_TOKEN",
+    "OPENCHARGEMAP_API_KEY",
+    "TRANSITLAND_API_KEY"
+  ],
+  "noncommercial_only_operations": [
+    "global-fishing-watch-vessels"
+  ],
+  "china_first_operations": [
+    "nbs-search",
+    "nbs-query-data",
+    "nbs-new-tree",
+    "nbs-new-indicators",
+    "china-local-open-data-catalog",
+    "china-science-data-centers"
+  ]
 }
 ```
 

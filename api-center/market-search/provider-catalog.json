@@ -26,73 +26,235 @@
           "operation_id": "catalog-capabilities",
           "description": "读取 TickFlow 本地安全能力目录，不访问上游且不需要密钥。",
           "parameters": [],
-          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}}
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
         },
         {
           "operation_id": "quotes",
           "description": "读取一个或多个标的、或受支持标的池的实时行情快照。",
-          "parameters": ["symbols", "universes"],
+          "parameters": [
+            "symbols",
+            "universes"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "symbols": {"type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": {"type": "string", "minLength": 3, "maxLength": 32}},
-              "universes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "string", "enum": ["CN_Equity_A", "CN_ETF", "CN_Index", "US_Equity", "HK_Equity"]}}
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 32
+                }
+              },
+              "universes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "CN_Equity_A",
+                    "CN_ETF",
+                    "CN_Index",
+                    "US_Equity",
+                    "HK_Equity"
+                  ]
+                }
+              }
             },
-            "anyOf": [{"required": ["symbols"]}, {"required": ["universes"]}]
+            "anyOf": [
+              {
+                "required": [
+                  "symbols"
+                ]
+              },
+              {
+                "required": [
+                  "universes"
+                ]
+              }
+            ]
           },
-          "result_contract": {"provider": "tickflow", "official_endpoint": "https://api.tickflow.org/v1/quotes", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://docs.tickflow.org/zh-hans/api-reference/实时行情/查询实时行情"}
+          "result_contract": {
+            "provider": "tickflow",
+            "official_endpoint": "https://api.tickflow.org/v1/quotes",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.tickflow.org/zh-hans/api-reference/实时行情/查询实时行情"
+          }
         },
         {
           "operation_id": "klines",
           "description": "读取单个标的的历史 K 线，支持分钟、日、周、月、季和年周期及复权。",
-          "parameters": ["symbol", "period", "count", "start_time", "end_time", "adjust"],
+          "parameters": [
+            "symbol",
+            "period",
+            "count",
+            "start_time",
+            "end_time",
+            "adjust"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["symbol"],
+            "required": [
+              "symbol"
+            ],
             "properties": {
-              "symbol": {"type": "string", "minLength": 3, "maxLength": 32},
-              "period": {"type": "string", "enum": ["1m", "5m", "10m", "15m", "30m", "60m", "1d", "1w", "1M", "1Q", "1Y"]},
-              "count": {"type": "integer", "minimum": 1, "maximum": 10000},
-              "start_time": {"type": "integer", "minimum": 0},
-              "end_time": {"type": "integer", "minimum": 0},
-              "adjust": {"type": "string", "enum": ["forward", "backward", "forward_additive", "backward_additive", "none"]}
+              "symbol": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 32
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "10m",
+                  "15m",
+                  "30m",
+                  "60m",
+                  "1d",
+                  "1w",
+                  "1M",
+                  "1Q",
+                  "1Y"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "start_time": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "end_time": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "adjust": {
+                "type": "string",
+                "enum": [
+                  "forward",
+                  "backward",
+                  "forward_additive",
+                  "backward_additive",
+                  "none"
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "tickflow", "official_endpoint": "https://api.tickflow.org/v1/klines", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://docs.tickflow.org/zh-hans/api-reference/k线数据/查询-k线数据"}
+          "result_contract": {
+            "provider": "tickflow",
+            "official_endpoint": "https://api.tickflow.org/v1/klines",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.tickflow.org/zh-hans/api-reference/k线数据/查询-k线数据"
+          }
         },
         {
           "operation_id": "intraday-klines",
           "description": "读取单个标的的当日分钟 K 线。",
-          "parameters": ["symbol", "period", "count"],
+          "parameters": [
+            "symbol",
+            "period",
+            "count"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["symbol"],
+            "required": [
+              "symbol"
+            ],
             "properties": {
-              "symbol": {"type": "string", "minLength": 3, "maxLength": 32},
-              "period": {"type": "string", "enum": ["1m", "5m", "10m", "15m", "30m", "60m"]},
-              "count": {"type": "integer", "minimum": 1, "maximum": 2000}
+              "symbol": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 32
+              },
+              "period": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "10m",
+                  "15m",
+                  "30m",
+                  "60m"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2000
+              }
             }
           },
-          "result_contract": {"provider": "tickflow", "official_endpoint": "https://api.tickflow.org/v1/klines/intraday", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://docs.tickflow.org/zh-hans/api-reference/k线数据/查询当日分钟k线"}
+          "result_contract": {
+            "provider": "tickflow",
+            "official_endpoint": "https://api.tickflow.org/v1/klines/intraday",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.tickflow.org/zh-hans/api-reference/k线数据/查询当日分钟k线"
+          }
         },
         {
           "operation_id": "instruments",
           "description": "读取最多 100 个标的的名称、交易所、地区、类型及上市信息等元数据。",
-          "parameters": ["symbols"],
+          "parameters": [
+            "symbols"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["symbols"],
-            "properties": {"symbols": {"type": "array", "minItems": 1, "maxItems": 100, "uniqueItems": true, "items": {"type": "string", "minLength": 3, "maxLength": 32}}}
+            "required": [
+              "symbols"
+            ],
+            "properties": {
+              "symbols": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 32
+                }
+              }
+            }
           },
-          "result_contract": {"provider": "tickflow", "official_endpoint": "https://api.tickflow.org/v1/instruments", "http_method": "GET", "read_only": true},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://docs.tickflow.org/zh-hans/api-reference/标的/查询标的元数据"}
+          "result_contract": {
+            "provider": "tickflow",
+            "official_endpoint": "https://api.tickflow.org/v1/instruments",
+            "http_method": "GET",
+            "read_only": true
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://docs.tickflow.org/zh-hans/api-reference/标的/查询标的元数据"
+          }
         }
       ]
     },
@@ -119,69 +281,222 @@
           "operation_id": "catalog-capabilities",
           "description": "读取 SerpAPI 本地安全能力目录，不访问上游且不需要密钥。",
           "parameters": [],
-          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}}
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
         },
         {
           "operation_id": "google-search",
           "description": "执行同步 Google 网页搜索并返回结构化 JSON 结果。",
-          "parameters": ["query", "location", "gl", "hl", "start", "device", "safe", "time_range"],
+          "parameters": [
+            "query",
+            "location",
+            "gl",
+            "hl",
+            "start",
+            "device",
+            "safe",
+            "time_range"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["query"],
+            "required": [
+              "query"
+            ],
             "properties": {
-              "query": {"type": "string", "minLength": 1, "maxLength": 1000},
-              "location": {"type": "string", "minLength": 1, "maxLength": 200},
-              "gl": {"type": "string", "pattern": "^[A-Za-z]{2}$"},
-              "hl": {"type": "string", "pattern": "^[A-Za-z]{2}$"},
-              "start": {"type": "integer", "minimum": 0, "maximum": 90, "multipleOf": 10},
-              "device": {"type": "string", "enum": ["desktop", "tablet", "mobile"]},
-              "safe": {"type": "string", "enum": ["active", "off"]},
-              "time_range": {"type": "string", "enum": ["day", "week", "month", "year"]}
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "gl": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2}$"
+              },
+              "hl": {
+                "type": "string",
+                "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+                "minLength": 2,
+                "maxLength": 5
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 90,
+                "multipleOf": 10
+              },
+              "device": {
+                "type": "string",
+                "enum": [
+                  "desktop",
+                  "tablet",
+                  "mobile"
+                ]
+              },
+              "safe": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "off"
+                ]
+              },
+              "time_range": {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "serpapi", "official_endpoint": "https://serpapi.com/search?engine=google", "http_method": "GET", "read_only": true, "output": "json"},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://serpapi.com/search-api"}
+          "result_contract": {
+            "provider": "serpapi",
+            "official_endpoint": "https://serpapi.com/search?engine=google",
+            "http_method": "GET",
+            "read_only": true,
+            "output": "json"
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://serpapi.com/search-api"
+          }
         },
         {
           "operation_id": "google-news",
           "description": "执行同步 Google News 搜索并返回结构化 JSON 结果。",
-          "parameters": ["query", "gl", "hl", "sort_by_date", "start", "time_range"],
+          "parameters": [
+            "query",
+            "gl",
+            "hl",
+            "sort_by_date",
+            "start",
+            "time_range"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["query"],
+            "required": [
+              "query"
+            ],
             "properties": {
-              "query": {"type": "string", "minLength": 1, "maxLength": 1000},
-              "gl": {"type": "string", "pattern": "^[A-Za-z]{2}$"},
-              "hl": {"type": "string", "pattern": "^[A-Za-z]{2}$"},
-              "sort_by_date": {"type": "boolean"},
-              "start": {"type": "integer", "minimum": 0, "maximum": 90, "multipleOf": 10},
-              "time_range": {"type": "string", "enum": ["day", "week", "month", "year"]}
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "gl": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2}$"
+              },
+              "hl": {
+                "type": "string",
+                "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+                "minLength": 2,
+                "maxLength": 5
+              },
+              "sort_by_date": {
+                "type": "boolean"
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 90,
+                "multipleOf": 10
+              },
+              "time_range": {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ]
+              }
             }
           },
-          "result_contract": {"provider": "serpapi", "official_endpoint": "https://serpapi.com/search?engine=google_news", "http_method": "GET", "read_only": true, "output": "json"},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://serpapi.com/google-news-api"}
+          "result_contract": {
+            "provider": "serpapi",
+            "official_endpoint": "https://serpapi.com/search?engine=google_news",
+            "http_method": "GET",
+            "read_only": true,
+            "output": "json"
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://serpapi.com/google-news-api"
+          }
         },
         {
           "operation_id": "google-scholar",
           "description": "执行同步 Google Scholar 文献搜索并返回结构化 JSON 结果。",
-          "parameters": ["query", "hl", "start", "year_low", "year_high", "sort_by_date"],
+          "parameters": [
+            "query",
+            "hl",
+            "start",
+            "year_low",
+            "year_high",
+            "sort_by_date"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["query"],
+            "required": [
+              "query"
+            ],
             "properties": {
-              "query": {"type": "string", "minLength": 1, "maxLength": 1000},
-              "hl": {"type": "string", "pattern": "^[A-Za-z]{2}$"},
-              "start": {"type": "integer", "minimum": 0, "maximum": 90, "multipleOf": 10},
-              "year_low": {"type": "integer", "minimum": 1900, "maximum": 2100},
-              "year_high": {"type": "integer", "minimum": 1900, "maximum": 2100},
-              "sort_by_date": {"type": "boolean"}
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "hl": {
+                "type": "string",
+                "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+                "minLength": 2,
+                "maxLength": 5
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 90,
+                "multipleOf": 10
+              },
+              "year_low": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "year_high": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "sort_by_date": {
+                "type": "boolean"
+              }
             }
           },
-          "result_contract": {"provider": "serpapi", "official_endpoint": "https://serpapi.com/search?engine=google_scholar", "http_method": "GET", "read_only": true, "output": "json"},
-          "discovery_policy": {"source": "official-documentation", "documentation_url": "https://serpapi.com/google-scholar-api"}
+          "result_contract": {
+            "provider": "serpapi",
+            "official_endpoint": "https://serpapi.com/search?engine=google_scholar",
+            "http_method": "GET",
+            "read_only": true,
+            "output": "json"
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://serpapi.com/google-scholar-api"
+          }
         }
       ]
     }
