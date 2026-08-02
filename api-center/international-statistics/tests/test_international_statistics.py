@@ -29,7 +29,7 @@ class InternationalStatisticsTests(unittest.TestCase):
             mod.build_request(
                 "imf", "get-dataflow", {"agency": "IMF.RES", "flow": "WEO"}
             )[0],
-            "/structure/dataflow/IMF.RES/WEO/%2B",
+            "/structure/dataflow/IMF.RES/WEO/+",
         )
         self.assertEqual(
             mod.build_request("faostat", "list-datasets", {})[0],
@@ -47,7 +47,7 @@ class InternationalStatisticsTests(unittest.TestCase):
                 "end_period": "2026",
             },
         )
-        self.assertEqual(path, "/data/dataflow/IMF.RES/WEO/%2B/CHN.NGDP_RPCH.A")
+        self.assertEqual(path, "/data/dataflow/IMF.RES/WEO/+/CHN.NGDP_RPCH.A")
         self.assertEqual(query, [("startPeriod", "2024"), ("endPeriod", "2026")])
 
     def test_unbounded_inputs_rejected(self):
