@@ -136,6 +136,7 @@ class ApiCatalogTests(unittest.TestCase):
             "un-comtrade": "UN_COMTRADE_API_KEY",
             "opensky-network": "OPEN_SKY_CLIENT_SECRET",
             "wto": "WTO_API_KEY",
+            "imf": "IMF_API_KEY",
             "faostat": "FAOSTAT_PASSWORD",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",

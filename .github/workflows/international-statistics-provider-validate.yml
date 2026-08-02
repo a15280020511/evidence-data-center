@@ -70,11 +70,14 @@ jobs:
           import json
           from pathlib import Path
           from jsonschema import Draft202012Validator
+
           expected = {'wto': 7, 'imf': 6, 'faostat': 7}
+          providers = {}
           for provider, count in expected.items():
               root = Path('api-center') / provider
               schema = json.loads((root / 'ticket.schema.json').read_text(encoding='utf-8'))
               row = json.loads((root / 'provider-catalog.json').read_text(encoding='utf-8'))['providers'][0]
+              providers[provider] = row
               Draft202012Validator.check_schema(schema)
               assert row['provider_id'] == provider
               assert len(row['operations']) == count
@@ -82,11 +85,26 @@ jobs:
               assert row['limits']['automatic_pagination_allowed'] is False
               assert row['limits']['write_operations_allowed'] is False
               assert all(op['result_contract']['read_only'] is True for op in row['operations'])
-          assert json.loads(Path('api-center/wto/provider-catalog.json').read_text())['providers'][0]['required_secret_environment_variable'] == 'WTO_API_KEY'
-          fao = json.loads(Path('api-center/faostat/provider-catalog.json').read_text())['providers'][0]
+
+          wto = providers['wto']
+          assert wto['required_secret_environment_variable'] == 'WTO_API_KEY'
+          assert wto['limits']['fixed_api_host'] == 'api.wto.org'
+          assert wto['limits']['requests_per_ticket_max'] == 1
+
+          imf = providers['imf']
+          assert imf['required_secret_environment_variable'] == 'IMF_API_KEY'
+          assert imf['limits']['fixed_api_host'] == 'api.imf.org'
+          assert imf['limits']['fixed_api_prefix'] == '/external/sdmx/3.0'
+          assert imf['limits']['subscription_key_header'] == 'Ocp-Apim-Subscription-Key'
+          assert imf['limits']['authentication_required'] is True
+          assert imf['limits']['arbitrary_sdmx_resource_types_allowed'] is False
+
+          fao = providers['faostat']
           assert fao['required_secret_environment_variable'] == 'FAOSTAT_PASSWORD'
           assert fao['required_repository_variable'] == 'FAOSTAT_USERNAME'
           assert fao['limits']['oauth_token_persistence_allowed'] is False
+          assert fao['limits']['fixed_api_host'] == 'faostatservices.fao.org'
+
           print(json.dumps({'status':'PASS','providers':3,'operations':20}))
           PY
           git diff --check

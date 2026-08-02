@@ -40,10 +40,11 @@ PROVIDERS = {
         "max_requests": 1,
     },
     "imf": {
-        "origin": "https://www.imf.org/external/datamapper/api/v2",
+        "origin": "https://api.imf.org/external/sdmx/3.0",
         "prefix": "[intel-imf]",
         "status": "INTEL_IMF",
-        "secret": "",
+        "secret": "IMF_API_KEY",
+        "secret_header": "Ocp-Apim-Subscription-Key",
         "max_requests": 1,
     },
     "faostat": {
@@ -125,25 +126,58 @@ def build_request(provider: str, operation: str, p: Mapping[str, Any]) -> tuple[
         return "/data_count" if operation == "data-count" else "/data", query
 
     if provider == "imf":
-        fixed = {
-            "list-indicators": "/indicators",
-            "list-countries": "/countries",
-            "list-regions": "/regions",
-            "list-groups": "/groups",
+        structure_ops = {
+            "get-dataflow": ("dataflow", "flow"),
+            "get-datastructure": ("datastructure", "structure_id"),
+            "get-codelist": ("codelist", "codelist_id"),
+            "get-conceptscheme": ("conceptscheme", "conceptscheme_id"),
         }
-        if operation in fixed:
-            if p:
-                raise ValueError(f"{operation} accepts no parameters")
-            return fixed[operation], []
-        if operation != "get-series":
+        if operation in structure_ops:
+            resource_type, parameter_name = structure_ops[operation]
+            agency = str(p.get("agency") or "")
+            resource_id = str(p.get(parameter_name) or "")
+            version = str(p.get("version") or "+")
+            if not CODE_RE.fullmatch(agency) or not CODE_RE.fullmatch(resource_id):
+                raise ValueError(f"agency and {parameter_name} are required")
+            if not re.fullmatch(r"^(?:\+|latest|[0-9]+(?:\.[0-9]+){0,3})$", version):
+                raise ValueError("version is invalid")
+            path = "/structure/" + "/".join(
+                quote(value, safe="._@+-")
+                for value in (resource_type, agency, resource_id, version)
+            )
+            return path, []
+        if operation != "get-data":
             raise ValueError(f"unsupported IMF operation: {operation}")
-        indicator = str(p.get("indicator") or "")
-        locations = _codes(p.get("locations"), "locations", 20)
-        if not CODE_RE.fullmatch(indicator) or not locations:
-            raise ValueError("indicator and at least one location are required")
-        path = "/" + "/".join([quote(indicator, safe=""), *[quote(x, safe="") for x in locations]])
-        periods = _periods(p.get("periods"), 50)
-        return path, ([("periods", ",".join(periods))] if periods else [])
+        agency = str(p.get("agency") or "")
+        flow = str(p.get("flow") or "")
+        version = str(p.get("version") or "+")
+        key = str(p.get("key") or "")
+        if not CODE_RE.fullmatch(agency) or not CODE_RE.fullmatch(flow):
+            raise ValueError("agency and flow are required")
+        if not re.fullmatch(r"^(?:\+|latest|[0-9]+(?:\.[0-9]+){0,3})$", version):
+            raise ValueError("version is invalid")
+        if not re.fullmatch(r"^[A-Za-z0-9*+._@-]{1,500}$", key):
+            raise ValueError("key is invalid")
+        path = "/data/dataflow/" + "/".join(
+            quote(value, safe="*+._@-") for value in (agency, flow, version, key)
+        )
+        query: list[tuple[str, str]] = []
+        start_period = p.get("start_period")
+        end_period = p.get("end_period")
+        if start_period not in (None, ""):
+            if not PERIOD_RE.fullmatch(str(start_period)):
+                raise ValueError("start_period is invalid")
+            query.append(("startPeriod", str(start_period)))
+        if end_period not in (None, ""):
+            if not PERIOD_RE.fullmatch(str(end_period)):
+                raise ValueError("end_period is invalid")
+            query.append(("endPeriod", str(end_period)))
+        dimension = p.get("dimension_at_observation")
+        if dimension not in (None, ""):
+            if dimension not in {"AllDimensions", "TimeDimension", "MeasureDimension"}:
+                raise ValueError("dimension_at_observation is invalid")
+            query.append(("dimensionAtObservation", str(dimension)))
+        return path, query
 
     if provider == "faostat":
         lang = str(p.get("lang") or "en")
@@ -246,10 +280,15 @@ def execute_for(provider: str, ticket_path: Path, output_dir: Path) -> int:
             snapshot = {"provider": provider_row(_catalog(provider))}
         else:
             headers = {"Accept": "application/json", "User-Agent": f"intelligence-center-{provider}/1"}
-            if provider == "wto":
+            if provider in {"wto", "imf"}:
                 if not password:
-                    raise RuntimeError("WTO_API_KEY is not configured")
+                    raise RuntimeError(f"{cfg['secret']} is not configured")
                 headers[cfg["secret_header"]] = password
+                if provider == "imf":
+                    headers["Accept"] = (
+                        "application/json, application/vnd.sdmx.data+json, "
+                        "application/vnd.sdmx.structure+json, */*;q=0.8"
+                    )
             elif provider == "faostat":
                 if not username or not password:
                     raise RuntimeError("FAOSTAT_USERNAME and FAOSTAT_PASSWORD must both be configured")
@@ -268,30 +307,41 @@ def execute_for(provider: str, ticket_path: Path, output_dir: Path) -> int:
                 metadata["authentication_http_status"] = auth.status_code
             response = requests.get(cfg["origin"] + path, params=query, headers=headers, timeout=timeout, allow_redirects=False)
             raw = bytes(response.content or b"")
-            if len(raw) > max_bytes:
-                raise RuntimeError(f"response exceeds acceptance.max_response_bytes={max_bytes}")
-            try:
-                payload = response.json()
-            except ValueError as exc:
-                raise RuntimeError(f"{provider.upper()} returned invalid JSON") from exc
-            clean = _scrub(payload, secrets)
-            if not response.ok:
-                raise RuntimeError(f"{provider.upper()} HTTP {response.status_code}: {str(clean)[:1200]}")
-            sanitized = (json.dumps(clean, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode()
-            if len(sanitized) > max_bytes:
-                raise RuntimeError("sanitized response exceeds max_response_bytes")
-            (output_dir / "response.json").write_bytes(sanitized)
-            snapshot = {"provider": provider, "operation": operation, "row_count": _row_count(clean), "data": clean}
             metadata.update({
                 "upstream_called": True,
                 "http_status": response.status_code,
                 "content_type": response.headers.get("Content-Type", ""),
                 "request_path": path,
                 "query_parameter_names": sorted({k for k, _ in query}),
+            })
+            if len(raw) > max_bytes:
+                raise RuntimeError(f"response exceeds acceptance.max_response_bytes={max_bytes}")
+            if not response.ok:
+                try:
+                    error_payload = _scrub(response.json(), secrets)
+                    detail = str(error_payload)[:1200]
+                except ValueError:
+                    detail = _scrub(raw[:1200].decode("utf-8", errors="replace"), secrets)
+                raise RuntimeError(f"{provider.upper()} HTTP {response.status_code}: {detail}")
+            try:
+                payload = response.json()
+            except ValueError as exc:
+                content_type = response.headers.get("Content-Type", "")
+                raise RuntimeError(
+                    f"{provider.upper()} HTTP {response.status_code} returned non-JSON "
+                    f"content-type {content_type or 'unknown'}"
+                ) from exc
+            clean = _scrub(payload, secrets)
+            sanitized = (json.dumps(clean, ensure_ascii=False, indent=2, allow_nan=False) + "\n").encode()
+            if len(sanitized) > max_bytes:
+                raise RuntimeError("sanitized response exceeds max_response_bytes")
+            (output_dir / "response.json").write_bytes(sanitized)
+            snapshot = {"provider": provider, "operation": operation, "row_count": _row_count(clean), "data": clean}
+            metadata.update({
                 "response_bytes": len(sanitized),
                 "response_sha256": bytes_sha(sanitized),
                 "row_count": _row_count(clean),
-                "credential_used": provider in {"wto", "faostat"},
+                "credential_used": provider in {"wto", "imf", "faostat"},
                 "ephemeral_token_persisted": False,
             })
         status = f"{cfg['status']}_COMPLETED"

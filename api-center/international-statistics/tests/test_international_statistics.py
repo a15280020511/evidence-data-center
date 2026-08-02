@@ -11,6 +11,7 @@ assert SPEC and SPEC.loader
 mod = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(mod)
 
+
 class InternationalStatisticsTests(unittest.TestCase):
     def test_catalog_contracts(self):
         expected = {"wto": 7, "imf": 6, "faostat": 7}
@@ -21,17 +22,46 @@ class InternationalStatisticsTests(unittest.TestCase):
             self.assertFalse(row["limits"]["write_operations_allowed"])
             self.assertFalse(row["limits"]["automatic_retry_allowed"])
             self.assertFalse(row["limits"]["automatic_pagination_allowed"])
+
     def test_fixed_request_builders(self):
         self.assertEqual(mod.build_request("wto", "indicators", {})[0], "/indicator")
-        self.assertEqual(mod.build_request("imf", "list-countries", {})[0], "/countries")
-        self.assertEqual(mod.build_request("faostat", "list-datasets", {})[0], "/en/definitions/domaincodes")
-        path, query = mod.build_request("imf", "get-series", {"indicator":"NGDP_RPCH","locations":["CHN"],"periods":["2025","2026"]})
-        self.assertEqual(path, "/NGDP_RPCH/CHN")
-        self.assertEqual(query, [("periods","2025,2026")])
+        self.assertEqual(
+            mod.build_request(
+                "imf", "get-dataflow", {"agency": "IMF.RES", "flow": "WEO"}
+            )[0],
+            "/structure/dataflow/IMF.RES/WEO/+",
+        )
+        self.assertEqual(
+            mod.build_request("faostat", "list-datasets", {})[0],
+            "/en/definitions/domaincodes",
+        )
+        path, query = mod.build_request(
+            "imf",
+            "get-data",
+            {
+                "agency": "IMF.RES",
+                "flow": "WEO",
+                "version": "+",
+                "key": "CHN.NGDP_RPCH.A",
+                "start_period": "2024",
+                "end_period": "2026",
+            },
+        )
+        self.assertEqual(path, "/data/dataflow/IMF.RES/WEO/+/CHN.NGDP_RPCH.A")
+        self.assertEqual(query, [("startPeriod", "2024"), ("endPeriod", "2026")])
+
     def test_unbounded_inputs_rejected(self):
         with self.assertRaises(ValueError):
-            mod.build_request("wto","data",{"indicator_codes":["bad/value"]})
+            mod.build_request("wto", "data", {"indicator_codes": ["bad/value"]})
         with self.assertRaises(ValueError):
-            mod.build_request("faostat","get-data",{"dataset":"QCL","filters":{}})
+            mod.build_request("faostat", "get-data", {"dataset": "QCL", "filters": {}})
+        with self.assertRaises(ValueError):
+            mod.build_request(
+                "imf",
+                "get-data",
+                {"agency": "IMF.RES", "flow": "WEO", "key": "https://example.com"},
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

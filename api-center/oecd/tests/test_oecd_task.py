@@ -52,6 +52,12 @@ class OECDTests(unittest.TestCase):
         self.assertTrue(path.startswith("/data/OECD.SDD.STES,DSD_STES,latest/"))
         self.assertEqual(query["startPeriod"], "2020-01")
         self.assertEqual(fmt, "json")
+        self.assertEqual(
+            task.accept_header("list-dataflows", "json"),
+            "application/vnd.sdmx.structure+json;version=1.0",
+        )
+        with self.assertRaises(ValueError):
+            task.accept_header("list-dataflows", "csv")
         with self.assertRaises(ValueError):
             task.build_request(
                 "get-data",
