@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`39/39` 已启用
-- 托管操作总数：`426`
-- 已公开参数总数：`1595`
-- 目录 SHA-256：`8b4d8639754c03f99dc829ead297ace76b7604b0900c877c04f2d85ee8636700`
+- 托管提供方：`40/40` 已启用
+- 托管操作总数：`436`
+- 已公开参数总数：`1665`
+- 目录 SHA-256：`449f0578fe77b254fbdf2e9b92387539c792ddda18228815d8e121fb948ab723`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -54,6 +54,7 @@
 | 挪威气象研究所 Geosatellite | `metno-geosatellite` | 启用 | `[intel-metno-geosatellite]` | `4` | 否 |
 | 哥白尼数据空间 Copernicus CDSE | `copernicus-cdse` | 启用 | `[intel-copernicus]` | `7` | 否 |
 | 美国能源信息署 EIA 能源数据 | `eia` | 启用 | `[intel-eia]` | `6` | 否 |
+| 联合国 UN Comtrade 全球贸易数据 | `un-comtrade` | 启用 | `[intel-un-comtrade]` | `10` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -15782,6 +15783,819 @@
   "arbitrary_urls_allowed": false,
   "arbitrary_hosts_allowed": false,
   "path_traversal_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "background_crawling_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": true
+}
+```
+
+## 联合国 UN Comtrade 全球贸易数据 (`un-comtrade`)
+
+- 状态：`启用`
+- 说明：通过联合国统计司 UN Comtrade 官方 API 读取全球货物与服务贸易、关税行、数据可用性、最近发布、元数据、贸易差额以及报告方和伙伴方参考代码。
+- 目录策略：固定访问 comtradeapi.un.org；开放无需密钥的预览和固定参考表，以及使用独立 Subscription Key 的免费数据接口。禁止 Bulk、Async、文件下载、任意 URL、任意主机、客户端密钥、任意请求头、自动翻页和写操作。
+- 执行策略：每张票据只发送一次 GET，不自动重试或翻页；预览最多500条，正式数据、关税行和贸易差额在情报中心内硬限制为5000条。最多12个时期、5个报告方、20个商品代码、10个伙伴和20 MB响应。Subscription Key仅由GitHub Actions后端注入并在落盘前递归清除。
+- 票据前缀：`[intel-un-comtrade]`
+- Secret环境变量名：`UN_COMTRADE_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`45d51c68e656c8338e7ba5f39f18368c28f78e548d6c54cd9da400efd115aa2e`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地UN Comtrade安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `preview-trade` | 无需密钥预览一个时期和一个商品代码的货物或服务贸易数据，最多500条。 | `type_code, frequency, classification, periods, reporter_codes, commodity_codes, flow_codes, partner_codes, partner2_codes, customs_codes, mode_of_transport_codes, max_records, breakdown_mode, count_only, include_descriptions` |
+
+`preview-trade` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type_code": {
+      "type": "string",
+      "enum": [
+        "C",
+        "S",
+        "c",
+        "s"
+      ]
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "A",
+        "M",
+        "a",
+        "m"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": [
+          "string",
+          "integer"
+        ]
+      }
+    },
+    "reporter_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "commodity_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"
+      }
+    },
+    "flow_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"
+      }
+    },
+    "partner_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "partner2_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "customs_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+      }
+    },
+    "mode_of_transport_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+      }
+    },
+    "max_records": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500,
+      "default": 500
+    },
+    "breakdown_mode": {
+      "type": "string",
+      "enum": [
+        "classic",
+        "plus"
+      ]
+    },
+    "count_only": {
+      "type": "boolean"
+    },
+    "include_descriptions": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "type_code",
+    "frequency",
+    "classification",
+    "periods",
+    "reporter_codes",
+    "commodity_codes",
+    "flow_codes"
+  ]
+}
+```
+
+| `final-trade` | 使用免费Subscription Key读取正式货物或服务贸易数据，情报中心单次最多5000条。 | `type_code, frequency, classification, periods, reporter_codes, commodity_codes, flow_codes, partner_codes, partner2_codes, customs_codes, mode_of_transport_codes, max_records, breakdown_mode, count_only, include_descriptions` |
+
+`final-trade` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type_code": {
+      "type": "string",
+      "enum": [
+        "C",
+        "S",
+        "c",
+        "s"
+      ]
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "A",
+        "M",
+        "a",
+        "m"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": [
+          "string",
+          "integer"
+        ]
+      }
+    },
+    "reporter_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "commodity_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"
+      }
+    },
+    "flow_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"
+      }
+    },
+    "partner_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "partner2_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "customs_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+      }
+    },
+    "mode_of_transport_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+      }
+    },
+    "max_records": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "default": 5000
+    },
+    "breakdown_mode": {
+      "type": "string",
+      "enum": [
+        "classic",
+        "plus"
+      ]
+    },
+    "count_only": {
+      "type": "boolean"
+    },
+    "include_descriptions": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "type_code",
+    "frequency",
+    "classification",
+    "periods",
+    "reporter_codes",
+    "commodity_codes",
+    "flow_codes"
+  ]
+}
+```
+
+| `tariffline-trade` | 读取正式货物关税行数据，禁止服务类型，单次最多5000条。 | `type_code, frequency, classification, periods, reporter_codes, commodity_codes, flow_codes, partner_codes, partner2_codes, customs_codes, mode_of_transport_codes, max_records, breakdown_mode, count_only, include_descriptions` |
+
+`tariffline-trade` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type_code": {
+      "type": "string",
+      "enum": [
+        "C",
+        "c"
+      ]
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "A",
+        "M",
+        "a",
+        "m"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": [
+          "string",
+          "integer"
+        ]
+      }
+    },
+    "reporter_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "commodity_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"
+      }
+    },
+    "flow_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"
+      }
+    },
+    "partner_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "partner2_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "customs_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+      }
+    },
+    "mode_of_transport_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+      }
+    },
+    "max_records": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "default": 5000
+    },
+    "breakdown_mode": {
+      "type": "string",
+      "enum": [
+        "classic",
+        "plus"
+      ]
+    },
+    "count_only": {
+      "type": "boolean"
+    },
+    "include_descriptions": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "type_code",
+    "frequency",
+    "classification",
+    "periods",
+    "reporter_codes",
+    "commodity_codes",
+    "flow_codes"
+  ]
+}
+```
+
+| `data-availability` | 查询正式贸易数据集可用性，可按时期、报告方和发布日期过滤。 | `type_code, frequency, classification, periods, reporter_codes, published_date_from, published_date_to` |
+
+`data-availability` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type_code": {
+      "type": "string",
+      "enum": [
+        "C",
+        "S",
+        "c",
+        "s"
+      ]
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "A",
+        "M",
+        "a",
+        "m"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": [
+          "string",
+          "integer"
+        ]
+      }
+    },
+    "reporter_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "published_date_from": {
+      "type": "string",
+      "format": "date"
+    },
+    "published_date_to": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "type_code",
+    "frequency",
+    "classification"
+  ]
+}
+```
+
+| `live-updates` | 读取UN Comtrade最近数据发布和修订进度。 | `无` |
+
+`live-updates` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `metadata` | 读取指定数据集的发布说明、脚注和元数据信息。 | `type_code, frequency, classification, periods, reporter_codes` |
+
+`metadata` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type_code": {
+      "type": "string",
+      "enum": [
+        "C",
+        "S",
+        "c",
+        "s"
+      ]
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "A",
+        "M",
+        "a",
+        "m"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": [
+          "string",
+          "integer"
+        ]
+      }
+    },
+    "reporter_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    }
+  },
+  "required": [
+    "type_code",
+    "frequency",
+    "classification",
+    "periods",
+    "reporter_codes"
+  ]
+}
+```
+
+| `trade-balance` | 读取货物贸易差额工具结果，单次最多5000条。 | `type_code, frequency, classification, periods, reporter_codes, commodity_codes, partner_codes, partner2_codes, customs_codes, mode_of_transport_codes, max_records, breakdown_mode, include_descriptions` |
+
+`trade-balance` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "type_code": {
+      "type": "string",
+      "enum": [
+        "C",
+        "c"
+      ]
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "A",
+        "M",
+        "a",
+        "m"
+      ]
+    },
+    "classification": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": [
+          "string",
+          "integer"
+        ]
+      }
+    },
+    "reporter_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "commodity_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"
+      }
+    },
+    "partner_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "partner2_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 9999
+      }
+    },
+    "customs_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+      }
+    },
+    "mode_of_transport_codes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+      }
+    },
+    "max_records": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "default": 5000
+    },
+    "breakdown_mode": {
+      "type": "string",
+      "enum": [
+        "classic",
+        "plus"
+      ]
+    },
+    "include_descriptions": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "type_code",
+    "frequency",
+    "classification",
+    "periods",
+    "reporter_codes",
+    "commodity_codes"
+  ]
+}
+```
+
+| `reporters-reference` | 读取固定的UN Comtrade报告国家和地区参考代码表。 | `无` |
+
+`reporters-reference` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `partners-reference` | 读取固定的UN Comtrade伙伴国家和地区参考代码表。 | `无` |
+
+`partners-reference` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 20000000,
+  "preview_records_max": 500,
+  "records_per_request_max": 5000,
+  "official_free_records_per_call_max": 100000,
+  "free_api_calls_per_day": 500,
+  "periods_per_ticket_max": 12,
+  "reporters_per_ticket_max": 5,
+  "commodity_codes_per_ticket_max": 20,
+  "partners_per_ticket_max": 10,
+  "fixed_api_host": "comtradeapi.un.org",
+  "fixed_data_prefix": "/data/v1",
+  "fixed_public_prefix": "/public/v1",
+  "keyless_preview_allowed": true,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "bulk_api_allowed": false,
+  "async_api_allowed": false,
+  "file_downloads_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
   "arbitrary_headers_allowed": false,
   "client_supplied_credentials_allowed": false,
   "background_crawling_allowed": false,

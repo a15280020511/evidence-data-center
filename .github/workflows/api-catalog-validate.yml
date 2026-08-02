@@ -58,6 +58,7 @@ jobs:
             api-center/metno-geosatellite/requirements.txt
             api-center/copernicus/requirements.txt
             api-center/eia/requirements.txt
+            api-center/un-comtrade/requirements.txt
 
       - name: Install isolated intelligence dependencies
         run: |
@@ -84,7 +85,8 @@ jobs:
             -r api-center/nasa/requirements.txt \
             -r api-center/metno-geosatellite/requirements.txt \
             -r api-center/copernicus/requirements.txt \
-            -r api-center/eia/requirements.txt
+            -r api-center/eia/requirements.txt \
+            -r api-center/un-comtrade/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -99,29 +101,34 @@ jobs:
         run: |
           set -euo pipefail
           python -m compileall -q api-center
-          python -m unittest discover -s api-center/baostock/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/eodhd/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/data-commons/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/qweather/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/xweather/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/miaoxiang-mcp/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/browserless/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/east-asia-econ/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/alpha-vantage/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/overture-maps/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/oecd/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/alphafeed/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/who-gho/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/mediastack/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/statistics-of-the-world/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/aisstream/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/internet-archive/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/marketstack/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/nasa/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/metno-geosatellite/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/copernicus/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/eia/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
+          for test_dir in \
+            api-center/baostock/tests \
+            api-center/eodhd/tests \
+            api-center/data-commons/tests \
+            api-center/qweather/tests \
+            api-center/xweather/tests \
+            api-center/miaoxiang-mcp/tests \
+            api-center/browserless/tests \
+            api-center/east-asia-econ/tests \
+            api-center/alpha-vantage/tests \
+            api-center/overture-maps/tests \
+            api-center/oecd/tests \
+            api-center/alphafeed/tests \
+            api-center/who-gho/tests \
+            api-center/mediastack/tests \
+            api-center/statistics-of-the-world/tests \
+            api-center/aisstream/tests \
+            api-center/internet-archive/tests \
+            api-center/marketstack/tests \
+            api-center/nasa/tests \
+            api-center/metno-geosatellite/tests \
+            api-center/copernicus/tests \
+            api-center/eia/tests \
+            api-center/un-comtrade/tests \
+            api-center/tests
+          do
+            python -m unittest discover -s "$test_dir" -p 'test_*.py' -v
+          done
 
       - name: Rebuild deterministic contracts
         run: |
@@ -134,7 +141,7 @@ jobs:
           cmp /tmp/committed-krakend.validation.json api-center/krakend.validation.json
           cmp /tmp/committed-krakend.tmpl api-center/krakend.tmpl
 
-      - name: Verify provider and World Bank invariants
+      - name: Verify unified provider invariants
         run: |
           python - <<'PY'
           import json
@@ -143,166 +150,95 @@ jobs:
           catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
           manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
-          connectors = manifest['connectors']
+          expected_operations = {
+              'bigquery': 7,
+              'earth-engine': 6,
+              'data-commons': 5,
+              'qweather': 18,
+              'xweather': 10,
+              'akshare': 17,
+              'ashare': 1,
+              'aifin-market': 17,
+              'yuandian-law': 40,
+              'tianyancha': 3,
+              'miaoxiang': 4,
+              'miaoxiang-mcp': 13,
+              'jina-reader': 2,
+              'exa': 3,
+              'tavily': 5,
+              'firecrawl': 4,
+              'browserless': 8,
+              'tickflow': 5,
+              'serpapi': 4,
+              'tushare': 20,
+              'baostock': 20,
+              'eodhd': 25,
+              'east-asia-econ': 6,
+              'alpha-vantage': 66,
+              'overture-maps': 7,
+              'oecd': 6,
+              'alphafeed': 10,
+              'who-gho-odata': 8,
+              'mediastack': 5,
+              'statistics-of-the-world': 11,
+              'aisstream': 4,
+              'internet-archive': 6,
+              'marketstack': 11,
+              'nasa': 25,
+              'metno-geosatellite': 4,
+              'copernicus-cdse': 7,
+              'eia': 6,
+              'un-comtrade': 10,
+              'wolfram-alpha': 4,
+              'llamaparse': 3,
+          }
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
-          assert sum(row['id'].startswith('worldbank-') for row in connectors) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 39
-          assert catalog['enabled_managed_provider_count'] == 39
+          assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
+          assert set(providers) == set(expected_operations)
+          assert catalog['managed_provider_count'] == len(providers) == 40
+          assert catalog['enabled_managed_provider_count'] == 40
+          assert catalog['managed_operation_count'] == sum(expected_operations.values()) == 436
           assert catalog['managed_operation_count'] == sum(
               len(row['operations']) for row in providers.values()
-          ) == 426
+          )
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
+          assert all(
+              len(providers[provider_id]['operations']) == count
+              for provider_id, count in expected_operations.items()
+          )
           assert 'agent-toolbelt' not in providers
           assert 'gapup-mcp' not in providers
 
-          overture = providers['overture-maps']
-          assert overture['ticket_prefix'] == '[api-overture]'
-          assert overture['required_secret_environment_variable_name'] == ''
-          assert len(overture['operations']) == 7
-          assert overture['limits']['whole_world_download_allowed'] is False
-
-          oecd = providers['oecd']
-          assert oecd['ticket_prefix'] == '[api-oecd]'
-          assert oecd['required_secret_environment_variable_name'] == ''
-          assert len(oecd['operations']) == 6
-          assert oecd['limits']['fixed_api_host'] == 'sdmx.oecd.org'
-
-          alphafeed = providers['alphafeed']
-          assert alphafeed['ticket_prefix'] == '[api-alphafeed]'
-          assert alphafeed['required_secret_environment_variable_name'] == 'ALPHAFEED_API_KEY'
-          assert len(alphafeed['operations']) == 10
-          assert alphafeed['limits']['trading_or_order_execution_allowed'] is False
-
-          xweather = providers['xweather']
-          assert xweather['ticket_prefix'] == '[api-xweather]'
-          assert xweather['required_secret_environment_variable_name'] == 'XWEATHER_CLIENT_SECRET'
-          assert xweather['required_repository_variable'] == 'XWEATHER_CLIENT_ID'
-          assert len(xweather['operations']) == 10
-          assert xweather['limits']['write_operations_allowed'] is False
-
-          who = providers['who-gho-odata']
-          assert who['ticket_prefix'] == '[intel-who-gho]'
-          assert who['required_secret_environment_variable_name'] == ''
-          assert len(who['operations']) == 8
-          assert who['limits']['legacy_endpoint_migration_watch_required'] is True
-
-          mediastack = providers['mediastack']
-          assert mediastack['ticket_prefix'] == '[intel-mediastack]'
-          assert mediastack['required_secret_environment_variable_name'] == 'MEDIASTACK_API_KEY'
-          assert len(mediastack['operations']) == 5
-          assert mediastack['limits']['write_operations_allowed'] is False
-
-          sotw = providers['statistics-of-the-world']
-          assert sotw['ticket_prefix'] == '[intel-sotw]'
-          assert sotw['required_secret_environment_variable_name'] == ''
-          assert len(sotw['operations']) == 11
-          assert sotw['limits']['bulk_download_allowed'] is False
-          assert sotw['limits']['write_operations_allowed'] is False
-
-          marketstack = providers['marketstack']
-          assert marketstack['ticket_prefix'] == '[intel-marketstack]'
-          assert marketstack['required_secret_environment_variable_name'] == 'MARKETSTACK_ACCESS_KEY'
-          assert len(marketstack['operations']) == 11
-          assert marketstack['limits']['requests_per_ticket_max'] == 1
-          assert marketstack['limits']['free_plan_requests_per_month'] == 100
-          assert marketstack['limits']['historical_span_days_max'] == 366
-          assert marketstack['limits']['automatic_pagination_allowed'] is False
-          assert marketstack['limits']['intraday_or_realtime_operations_allowed'] is False
-          assert marketstack['limits']['write_operations_allowed'] is False
-
-          nasa = providers['nasa']
-          assert nasa['ticket_prefix'] == '[intel-nasa]'
-          assert nasa['required_secret_environment_variable_name'] == 'NASA_API_KEY'
-          assert len(nasa['operations']) == 25
-          assert nasa['limits']['requests_per_ticket_max'] == 1
-          assert nasa['limits']['neo_feed_span_days_max'] == 7
-          assert nasa['limits']['donki_date_span_days_max'] == 31
-          assert nasa['limits']['gibs_tiles_per_ticket_max'] == 1
-          assert nasa['limits']['bulk_download_allowed'] is False
-          assert nasa['limits']['archived_earth_api_allowed'] is False
-          assert nasa['limits']['archived_mars_rover_api_allowed'] is False
-          assert nasa['limits']['write_operations_allowed'] is False
-
-          metno = providers['metno-geosatellite']
-          assert metno['ticket_prefix'] == '[intel-metno-geosatellite]'
-          assert metno['required_secret_environment_variable_name'] == ''
-          assert len(metno['operations']) == 4
-          assert metno['limits']['requests_per_ticket_max'] == 1
-          assert metno['limits']['fixed_api_host'] == 'api.met.no'
-          assert metno['limits']['small_size_images_allowed'] is False
-          assert metno['limits']['unfiltered_availability_listing_allowed'] is False
-          assert metno['limits']['bulk_download_allowed'] is False
-          assert metno['limits']['write_operations_allowed'] is False
-
-          copernicus = providers['copernicus-cdse']
-          assert copernicus['ticket_prefix'] == '[intel-copernicus]'
-          assert copernicus['required_secret_environment_variable_name'] == 'COPERNICUS_CLIENT_SECRET'
-          assert copernicus['required_repository_variable'] == 'COPERNICUS_CLIENT_ID'
-          assert len(copernicus['operations']) == 7
-          assert copernicus['limits']['requests_per_ticket_max'] == 2
-          assert copernicus['limits']['fixed_stac_host'] == 'stac.dataspace.copernicus.eu'
-          assert copernicus['limits']['fixed_processing_host'] == 'sh.dataspace.copernicus.eu'
-          assert copernicus['limits']['bulk_download_allowed'] is False
-          assert copernicus['limits']['arbitrary_evalscripts_allowed'] is False
-          assert copernicus['limits']['oauth_token_persistence_allowed'] is False
-          assert copernicus['limits']['write_operations_allowed'] is False
-
-          eia = providers['eia']
-          assert eia['ticket_prefix'] == '[intel-eia]'
-          assert eia['required_secret_environment_variable_name'] == 'EIA_API_KEY'
-          assert len(eia['operations']) == 6
-          assert eia['limits']['requests_per_ticket_max'] == 1
-          assert eia['limits']['rows_per_response_max'] == 5000
-          assert eia['limits']['fixed_api_host'] == 'api.eia.gov'
-          assert eia['limits']['automatic_pagination_allowed'] is False
-          assert eia['limits']['bulk_download_allowed'] is False
-          assert eia['limits']['path_traversal_allowed'] is False
-          assert eia['limits']['background_crawling_allowed'] is False
-          assert eia['limits']['write_operations_allowed'] is False
-
-          aisstream = providers['aisstream']
-          assert aisstream['ticket_prefix'] == '[intel-aisstream]'
-          assert aisstream['required_secret_environment_variable_name'] == 'AISSTREAM_API_KEY'
-          assert len(aisstream['operations']) == 4
-          assert aisstream['limits']['connections_per_ticket_max'] == 1
-          assert aisstream['limits']['worldwide_subscription_allowed'] is False
-          assert aisstream['limits']['background_streaming_allowed'] is False
-          assert aisstream['limits']['write_operations_allowed'] is False
-
-          internet_archive = providers['internet-archive']
-          assert internet_archive['ticket_prefix'] == '[intel-internet-archive]'
-          assert internet_archive['required_secret_environment_variable_name'] == ''
-          assert len(internet_archive['operations']) == 6
-          assert internet_archive['limits']['file_downloads_allowed'] is False
-          assert internet_archive['limits']['archived_page_body_fetching_allowed'] is False
-          assert internet_archive['limits']['uploads_allowed'] is False
-          assert internet_archive['limits']['write_operations_allowed'] is False
+          un_comtrade = providers['un-comtrade']
+          assert un_comtrade['ticket_prefix'] == '[intel-un-comtrade]'
+          assert un_comtrade['required_secret_environment_variable_name'] == 'UN_COMTRADE_API_KEY'
+          assert all(
+              operation.get('result_contract', {}).get('read_only') is True
+              for operation in un_comtrade['operations']
+          )
+          assert un_comtrade['limits']['requests_per_ticket_max'] == 1
+          assert un_comtrade['limits']['preview_records_max'] == 500
+          assert un_comtrade['limits']['records_per_request_max'] == 5000
+          assert un_comtrade['limits']['free_api_calls_per_day'] == 500
+          assert un_comtrade['limits']['fixed_api_host'] == 'comtradeapi.un.org'
+          assert un_comtrade['limits']['automatic_pagination_allowed'] is False
+          assert un_comtrade['limits']['bulk_api_allowed'] is False
+          assert un_comtrade['limits']['async_api_allowed'] is False
+          assert un_comtrade['limits']['file_downloads_allowed'] is False
+          assert un_comtrade['limits']['write_operations_allowed'] is False
 
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
               'worldbank_connectors': 9,
-              'managed_providers': 39,
-              'managed_operations': 426,
-              'overture_maps_operations': 7,
-              'oecd_operations': 6,
-              'alphafeed_operations': 10,
-              'xweather_operations': 10,
-              'who_gho_operations': 8,
-              'mediastack_operations': 5,
-              'statistics_of_the_world_operations': 11,
-              'aisstream_operations': 4,
-              'internet_archive_operations': 6,
-              'marketstack_operations': 11,
-              'nasa_operations': 25,
-              'metno_geosatellite_operations': 4,
-              'copernicus_operations': 7,
-              'eia_operations': 6,
+              'managed_providers': 40,
+              'managed_operations': 436,
+              'un_comtrade_operations': 10,
               'removed_providers': ['agent-toolbelt', 'gapup-mcp'],
           }))
           PY
