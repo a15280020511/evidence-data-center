@@ -1,0 +1,260 @@
+version: "1.0.0"
+name: intelligence-center-compliance-constitution
+authority: highest_internal_policy
+default_decision: MANUAL_REVIEW
+
+statuses:
+  - ALLOW
+  - MANUAL_REVIEW
+  - BLOCKED
+  - STOPPED_BY_UPSTREAM
+  - QUARANTINED
+
+precedence:
+  - applicable_law
+  - source_contract_or_license
+  - this_constitution
+  - connector_policy
+  - task_instruction
+
+required_input:
+  task_id: string
+  source_owner: string
+  source_url: string
+  source_type:
+    enum: [government_open_api, government_download, public_html, commercial_api, commercial_sftp, commercial_web, other]
+  access_method:
+    enum: [official_api, official_download, public_html, authenticated_api, authenticated_web, sftp]
+  authorization_basis: string
+  terms_snapshot_sha256: string
+  purpose: string
+  fields: list[string]
+  collection_scope: string
+  contains_personal_data: boolean
+  contains_sensitive_personal_data: boolean
+  contains_identity_authentication_data: boolean
+  contains_secret_or_important_data: boolean
+  foreign_egress: boolean
+  egress_country: string|null
+  egress_provider: string|null
+  fixed_egress: boolean
+  ip_rotation: boolean
+  proxy_pool: boolean
+  bypass_attempted: boolean
+  login_required: boolean
+  geographic_restriction: boolean
+  storage_location: string
+  overseas_storage: boolean
+  redistribution: boolean
+  full_database_copy: boolean
+  rate_limit_rps: number
+  concurrency: integer
+  incremental_only: boolean
+
+runtime_limits:
+  public_html:
+    max_concurrency: 1
+    min_interval_seconds: 3
+    incremental_only: true
+  stop_status_codes: [401, 403, 429]
+  stop_signals: [CAPTCHA, WAF_CHALLENGE, DEVICE_VERIFICATION, ACCOUNT_FROZEN, IP_BLOCKED, GEO_BLOCKED, CEASE_NOTICE]
+
+rules:
+  - id: BLOCK_MISSING_REQUIRED_INPUT
+    priority: 1000
+    when:
+      any_required_input_missing: true
+    decision: BLOCKED
+
+  - id: BLOCK_BYPASS
+    priority: 990
+    when:
+      any:
+        - field: bypass_attempted
+          equals: true
+        - field: ip_rotation
+          equals: true
+        - field: proxy_pool
+          equals: true
+    decision: BLOCKED
+
+  - id: BLOCK_UPSTREAM_REJECTION_BYPASS
+    priority: 980
+    when:
+      upstream_signal_in: [401, 403, 429, CAPTCHA, WAF_CHALLENGE, DEVICE_VERIFICATION, ACCOUNT_FROZEN, IP_BLOCKED, GEO_BLOCKED, CEASE_NOTICE]
+    decision: STOPPED_BY_UPSTREAM
+    terminal: true
+
+  - id: BLOCK_UNAUTHORIZED_ACCESS
+    priority: 970
+    when:
+      any:
+        - authorization_basis_empty: true
+        - access_exceeds_authorization: true
+        - credential_source_in: [stolen, shared, purchased, leaked, expired, unknown]
+    decision: BLOCKED
+
+  - id: BLOCK_SECRET_OR_IMPORTANT_DATA
+    priority: 960
+    when:
+      field: contains_secret_or_important_data
+      equals: true
+    decision: BLOCKED
+
+  - id: BLOCK_IDENTITY_AUTH_DATA
+    priority: 950
+    when:
+      field: contains_identity_authentication_data
+      equals: true
+    decision: BLOCKED
+
+  - id: BLOCK_COMMERCIAL_WEB_SCRAPING
+    priority: 940
+    when:
+      all:
+        - field: source_type
+          equals: commercial_web
+        - field: access_method
+          in: [authenticated_web, public_html]
+    decision: BLOCKED
+
+  - id: BLOCK_COMMERCIAL_DATABASE_COPY
+    priority: 930
+    when:
+      any:
+        - field: full_database_copy
+          equals: true
+        - field: redistribution
+          equals: true
+    unless:
+      explicit_contract_permission: true
+    decision: BLOCKED
+
+  - id: BLOCK_OVERSEAS_RESTRICTED_DATA
+    priority: 920
+    when:
+      all:
+        - field: overseas_storage
+          equals: true
+        - any:
+            - field: contains_personal_data
+              equals: true
+            - field: contains_sensitive_personal_data
+              equals: true
+            - contract_allows_overseas_storage: false
+    decision: BLOCKED
+
+  - id: REVIEW_FOREIGN_EGRESS
+    priority: 700
+    when:
+      field: foreign_egress
+      equals: true
+    unless:
+      all:
+        - field: fixed_egress
+          equals: true
+        - egress_country_present: true
+        - egress_provider_present: true
+        - source_allows_foreign_access: true
+        - field: ip_rotation
+          equals: false
+        - field: proxy_pool
+          equals: false
+    decision: MANUAL_REVIEW
+
+  - id: REVIEW_PERSONAL_DATA
+    priority: 690
+    when:
+      field: contains_personal_data
+      equals: true
+    decision: MANUAL_REVIEW
+
+  - id: REVIEW_PUBLIC_HTML
+    priority: 680
+    when:
+      field: source_type
+      equals: public_html
+    unless:
+      all:
+        - robots_and_terms_allow: true
+        - field: concurrency
+          lte: 1
+        - field: rate_limit_rps
+          lte: 0.333333
+        - field: incremental_only
+          equals: true
+    decision: MANUAL_REVIEW
+
+  - id: ALLOW_GOVERNMENT_OPEN_DATA
+    priority: 500
+    when:
+      all:
+        - field: source_type
+          in: [government_open_api, government_download]
+        - field: access_method
+          in: [official_api, official_download]
+        - field: contains_personal_data
+          equals: false
+        - field: contains_secret_or_important_data
+          equals: false
+        - field: bypass_attempted
+          equals: false
+    decision: ALLOW
+
+  - id: ALLOW_COMMERCIAL_AUTHORIZED_INTERFACE
+    priority: 490
+    when:
+      all:
+        - field: source_type
+          in: [commercial_api, commercial_sftp]
+        - field: access_method
+          in: [official_api, authenticated_api, sftp]
+        - explicit_contract_permission: true
+        - contract_allows_current_purpose: true
+        - contract_allows_current_storage: true
+        - field: bypass_attempted
+          equals: false
+    decision: ALLOW
+
+decision_engine:
+  order: priority_descending
+  first_terminal_match_wins: true
+  blocked_overrides_review: true
+  review_overrides_allow: true
+  no_match: MANUAL_REVIEW
+
+mandatory_audit_output:
+  - task_id
+  - decision
+  - matched_rule_ids
+  - source_url
+  - authorization_basis
+  - terms_snapshot_sha256
+  - foreign_egress
+  - egress_country
+  - egress_provider
+  - storage_location
+  - request_count
+  - response_status_summary
+  - stopped_by_upstream
+  - data_snapshot_sha256
+  - code_commit_sha
+  - workflow_run_id
+
+connector_requirements:
+  - validate_required_input_before_network
+  - enforce_fixed_origin
+  - enforce_rate_limit
+  - stop_on_upstream_signal
+  - never_auto_switch_ip_account_region_or_user_agent
+  - redact_secrets_and_personal_data_from_logs
+  - emit_immutable_audit_artifact
+
+production_gate:
+  required:
+    - schema_validation_pass
+    - all_block_rules_implemented
+    - all_stop_signals_tested
+    - foreign_egress_recorded
+    - audit_artifact_verified
+  failure_decision: BLOCKED
