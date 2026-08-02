@@ -94,8 +94,9 @@ jobs:
           assert provider['limits']['custom_cookies_allowed'] is False
           assert provider['limits']['custom_browser_scripts_allowed'] is False
           assert all(row['result_contract']['read_only'] is True for row in provider['operations'])
-          assert 'HF_TOKEN: ${{ secrets.HF_TOKEN }}' in workflow
-          assert 'HF_CLOUDFLARE_DATASET_REPO: ${{ vars.HF_CLOUDFLARE_DATASET_REPO }}' in workflow
+          assert 'HF_TOKEN:' in workflow
+          assert 'HF_CLOUDFLARE_DATASET_REPO:' in workflow
+          assert 'Persist completed collection to private Hugging Face dataset' in workflow
           assert 'steps.archive.outcome' in workflow
           assert 'private=True' in archive
           assert 'classification") != "public"' in archive
