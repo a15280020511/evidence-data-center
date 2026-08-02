@@ -1,0 +1,37 @@
+name: Temporary Fix ADB Capability Test
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "tools/temporary_fix_adb_capability_test.py"
+      - ".github/workflows/temporary-fix-adb-capability-test.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout ADB branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/adb-kidb-provider
+          fetch-depth: 0
+      - name: Apply count fix
+        run: python tools/temporary_fix_adb_capability_test.py
+      - name: Validate affected tests
+        run: |
+          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
+          python -m unittest discover -s api-center/tests -p 'test_capability_maximization.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
+          git diff --check
+      - name: Commit API-center fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center/tests/test_capability_maximization.py
+          git commit -m "test: include ADB in capability invariants"
+          git push origin HEAD:feat/adb-kidb-provider
