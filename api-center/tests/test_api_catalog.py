@@ -64,6 +64,7 @@ EXPECTED_OPERATION_COUNTS = {
     "wolfram-alpha": 4,
     "llamaparse": 3,
     "public-data-geospatial": 35,
+    "cloudflare": 22,
 }
 
 
@@ -86,9 +87,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 48)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 48)
-        self.assertEqual(catalog["managed_operation_count"], 522)
+        self.assertEqual(catalog["managed_provider_count"], 49)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 49)
+        self.assertEqual(catalog["managed_operation_count"], 544)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -142,6 +143,7 @@ class ApiCatalogTests(unittest.TestCase):
             "imf": "IMF_API_KEY",
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
+            "cloudflare": "CLOUDFLARE_API_TOKEN",
         }
         for provider_id, secret_name in expected_secret_names.items():
             self.assertEqual(
@@ -150,6 +152,19 @@ class ApiCatalogTests(unittest.TestCase):
                 ],
                 secret_name,
             )
+
+        cloudflare = providers["cloudflare"]
+        self.assertEqual(cloudflare["ticket_prefix"], "[intel-cloudflare]")
+        self.assertEqual(cloudflare["required_secret_environment_variable_name"], "CLOUDFLARE_API_TOKEN")
+        self.assertEqual(len(cloudflare["operations"]), 22)
+        self.assertEqual(cloudflare["limits"]["fixed_api_hosts"], ["api.cloudflare.com"])
+        self.assertEqual(cloudflare["limits"]["requests_per_ticket_max"], 1)
+        self.assertFalse(cloudflare["limits"]["write_operations_allowed"])
+        self.assertFalse(cloudflare["limits"]["urlscanner_submission_allowed"])
+        self.assertFalse(cloudflare["limits"]["arbitrary_cloudflare_paths_allowed"])
+        self.assertFalse(cloudflare["limits"]["custom_cookies_allowed"])
+        self.assertFalse(cloudflare["limits"]["custom_browser_scripts_allowed"])
+        self.assertTrue(all(row["result_contract"]["read_only"] for row in cloudflare["operations"]))
 
         self.assertEqual(providers["browserless"]["ticket_prefix"], "[api-browserless]")
         self.assertEqual(providers["browserless"]["required_secret_environment_variable_name"], "BROWSERLESS_TOKEN")
