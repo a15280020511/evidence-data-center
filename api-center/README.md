@@ -45,6 +45,7 @@ EODHD_API_TOKEN
 ALPHA_VANTAGE_API_KEY
 ALPHAFEED_API_KEY
 MARKETSTACK_ACCESS_KEY
+FRED_API_KEY
 NASA_API_KEY
 XWEATHER_CLIENT_SECRET
 WOLFRAM_ALPHA_APP_ID
@@ -436,3 +437,14 @@ Fixed hosts: archive.org, web.archive.org
 ```
 
 支持受控馆藏搜索、项目元数据、文件目录、Wayback可用性和有限CDX捕获记录。禁止上传、删除、登录、借阅、文件内容下载、网页正文回放抓取和批量镜像。
+
+## FRED 官方经济与金融时间序列
+
+`api-center/fred/` 固定访问圣路易斯联邦储备银行官方 FRED API v1：
+
+```text
+[intel-fred]
+FRED_API_KEY
+```
+
+固定开放 25 项只读能力，覆盖分类、发布、序列、观测值、修订日期、来源和标签。每张票据最多一次 HTTPS GET，强制 JSON、最多 1,000 条、不自动重试或翻页；不开放 API v2 批量发布下载、Maps shape 文件、任意 URL、路径、请求头或写操作。
