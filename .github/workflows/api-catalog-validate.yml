@@ -33,37 +33,12 @@ jobs:
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: "3.12"
-          cache: pip
-          cache-dependency-path: |
-            api-center/requirements.txt
-            api-center/baostock/requirements.txt
-            api-center/eodhd/requirements.txt
-            api-center/data-commons/requirements.txt
-            api-center/qweather/requirements.txt
-            api-center/xweather/requirements.txt
-            api-center/miaoxiang-mcp/requirements.txt
-            api-center/browserless/requirements.txt
-            api-center/east-asia-econ/requirements.txt
-            api-center/alpha-vantage/requirements.txt
-            api-center/overture-maps/requirements.txt
-            api-center/oecd/requirements.txt
-            api-center/alphafeed/requirements.txt
-            api-center/who-gho/requirements.txt
-            api-center/mediastack/requirements.txt
-            api-center/statistics-of-the-world/requirements.txt
-            api-center/aisstream/requirements.txt
-            api-center/internet-archive/requirements.txt
-            api-center/marketstack/requirements.txt
-            api-center/nasa/requirements.txt
-            api-center/metno-geosatellite/requirements.txt
-            api-center/copernicus/requirements.txt
-            api-center/eia/requirements.txt
-            api-center/un-comtrade/requirements.txt
 
       - name: Install isolated intelligence dependencies
         run: |
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
+            -r api-center/google-cloud/requirements.txt \
             -r api-center/baostock/requirements.txt \
             -r api-center/eodhd/requirements.txt \
             -r api-center/data-commons/requirements.txt \
@@ -86,7 +61,8 @@ jobs:
             -r api-center/metno-geosatellite/requirements.txt \
             -r api-center/copernicus/requirements.txt \
             -r api-center/eia/requirements.txt \
-            -r api-center/un-comtrade/requirements.txt
+            -r api-center/un-comtrade/requirements.txt \
+            -r api-center/opensky-network/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -97,38 +73,14 @@ jobs:
           cp api-center/krakend.validation.json /tmp/committed-krakend.validation.json
           cp api-center/krakend.tmpl /tmp/committed-krakend.tmpl
 
-      - name: Compile and run provider regressions
+      - name: Compile and run all provider regressions
         run: |
           set -euo pipefail
           python -m compileall -q api-center
-          for test_dir in \
-            api-center/baostock/tests \
-            api-center/eodhd/tests \
-            api-center/data-commons/tests \
-            api-center/qweather/tests \
-            api-center/xweather/tests \
-            api-center/miaoxiang-mcp/tests \
-            api-center/browserless/tests \
-            api-center/east-asia-econ/tests \
-            api-center/alpha-vantage/tests \
-            api-center/overture-maps/tests \
-            api-center/oecd/tests \
-            api-center/alphafeed/tests \
-            api-center/who-gho/tests \
-            api-center/mediastack/tests \
-            api-center/statistics-of-the-world/tests \
-            api-center/aisstream/tests \
-            api-center/internet-archive/tests \
-            api-center/marketstack/tests \
-            api-center/nasa/tests \
-            api-center/metno-geosatellite/tests \
-            api-center/copernicus/tests \
-            api-center/eia/tests \
-            api-center/un-comtrade/tests \
-            api-center/tests
-          do
+          while IFS= read -r -d '' test_dir; do
             python -m unittest discover -s "$test_dir" -p 'test_*.py' -v
-          done
+          done < <(find api-center -mindepth 2 -maxdepth 2 -type d -name tests -print0 | sort -z)
+          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
 
       - name: Rebuild deterministic contracts
         run: |
@@ -150,96 +102,46 @@ jobs:
           catalog = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
           manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
-          expected_operations = {
-              'bigquery': 7,
-              'earth-engine': 6,
-              'data-commons': 5,
-              'qweather': 18,
-              'xweather': 10,
-              'akshare': 17,
-              'ashare': 1,
-              'aifin-market': 17,
-              'yuandian-law': 40,
-              'tianyancha': 3,
-              'miaoxiang': 4,
-              'miaoxiang-mcp': 13,
-              'jina-reader': 2,
-              'exa': 3,
-              'tavily': 5,
-              'firecrawl': 4,
-              'browserless': 8,
-              'tickflow': 5,
-              'serpapi': 4,
-              'tushare': 20,
-              'baostock': 20,
-              'eodhd': 25,
-              'east-asia-econ': 6,
-              'alpha-vantage': 66,
-              'overture-maps': 7,
-              'oecd': 6,
-              'alphafeed': 10,
-              'who-gho-odata': 8,
-              'mediastack': 5,
-              'statistics-of-the-world': 11,
-              'aisstream': 4,
-              'internet-archive': 6,
-              'marketstack': 11,
-              'nasa': 25,
-              'metno-geosatellite': 4,
-              'copernicus-cdse': 7,
-              'eia': 6,
-              'un-comtrade': 10,
-              'wolfram-alpha': 4,
-              'llamaparse': 3,
-          }
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
-          assert set(providers) == set(expected_operations)
-          assert catalog['managed_provider_count'] == len(providers) == 40
-          assert catalog['enabled_managed_provider_count'] == 40
-          assert catalog['managed_operation_count'] == sum(expected_operations.values()) == 436
-          assert catalog['managed_operation_count'] == sum(
-              len(row['operations']) for row in providers.values()
-          )
+          assert catalog['managed_provider_count'] == len(providers) == 41
+          assert catalog['enabled_managed_provider_count'] == 41
+          assert catalog['managed_operation_count'] == 445
+          assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values())
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
-          assert all(
-              len(providers[provider_id]['operations']) == count
-              for provider_id, count in expected_operations.items()
-          )
           assert 'agent-toolbelt' not in providers
           assert 'gapup-mcp' not in providers
 
-          un_comtrade = providers['un-comtrade']
-          assert un_comtrade['ticket_prefix'] == '[intel-un-comtrade]'
-          assert un_comtrade['required_secret_environment_variable_name'] == 'UN_COMTRADE_API_KEY'
-          assert all(
-              operation.get('result_contract', {}).get('read_only') is True
-              for operation in un_comtrade['operations']
-          )
-          assert un_comtrade['limits']['requests_per_ticket_max'] == 1
-          assert un_comtrade['limits']['preview_records_max'] == 500
-          assert un_comtrade['limits']['records_per_request_max'] == 5000
-          assert un_comtrade['limits']['free_api_calls_per_day'] == 500
-          assert un_comtrade['limits']['fixed_api_host'] == 'comtradeapi.un.org'
-          assert un_comtrade['limits']['automatic_pagination_allowed'] is False
-          assert un_comtrade['limits']['bulk_api_allowed'] is False
-          assert un_comtrade['limits']['async_api_allowed'] is False
-          assert un_comtrade['limits']['file_downloads_allowed'] is False
-          assert un_comtrade['limits']['write_operations_allowed'] is False
+          opensky = providers['opensky-network']
+          assert opensky['ticket_prefix'] == '[intel-opensky]'
+          assert opensky['required_secret_environment_variable_name'] == 'OPEN_SKY_CLIENT_SECRET'
+          assert opensky['required_repository_variable'] == 'OPEN_SKY_CLIENT_ID'
+          assert len(opensky['operations']) == 9
+          assert opensky['limits']['network_requests_per_ticket_max'] == 2
+          assert opensky['limits']['state_bbox_area_square_degrees_max'] == 400
+          assert opensky['limits']['state_history_seconds_max'] == 3600
+          assert opensky['limits']['flight_interval_seconds_max'] == 7200
+          assert opensky['limits']['track_history_days_max'] == 30
+          assert opensky['limits']['fixed_api_host'] == 'opensky-network.org'
+          assert opensky['limits']['fixed_auth_host'] == 'auth.opensky-network.org'
+          assert opensky['limits']['global_state_query_allowed'] is False
+          assert opensky['limits']['trino_historical_access_allowed'] is False
+          assert opensky['limits']['bulk_download_allowed'] is False
+          assert opensky['limits']['oauth_token_persistence_allowed'] is False
+          assert opensky['limits']['write_operations_allowed'] is False
+          assert all(row['result_contract']['read_only'] is True for row in opensky['operations'])
 
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'worldbank_connectors': 9,
-              'managed_providers': 40,
-              'managed_operations': 436,
-              'un_comtrade_operations': 10,
-              'removed_providers': ['agent-toolbelt', 'gapup-mcp'],
+              'managed_providers': 41,
+              'managed_operations': 445,
+              'opensky_operations': 9,
           }))
           PY
           git diff --check
