@@ -3,9 +3,9 @@
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
 - 托管提供方：`48/48` 已启用
-- 托管操作总数：`526`
-- 已公开参数总数：`1964`
-- 目录 SHA-256：`ebd5346566fddb96aa26fefe8f04565822b855720e31136d332fc63310ed91d9`
+- 托管操作总数：`522`
+- 已公开参数总数：`1953`
+- 目录 SHA-256：`f4e5c4d96d5ee1e9c0ca6d71e99ed188d08bc232cf8c5d2dce14a2ce7abe2765`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -64,7 +64,7 @@
 | Asian Development Bank KIDB SDMX | `adb` | 启用 | `[intel-adb]` | `8` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
-| 全球公共数据、空间地理与中国数据 | `public-data-geospatial` | 启用 | `[intel-public-data]` | `39` | 否 |
+| 全球公共数据、空间地理与中国数据 | `public-data-geospatial` | 启用 | `[intel-public-data]` | `35` | 否 |
 
 ## 普通连接器
 
@@ -19209,7 +19209,7 @@
 - 票据前缀：`[intel-public-data]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`e04f7d136de8b1b8f48723d22218edf022e86b664f768add88622c7421008d65`
+- 提供方SHA-256：`d5fe5865aa0cc96fb5ff5fe0fd7b41ce39ba53a27011213a2eabb2ee074e0dc4`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -20323,153 +20323,6 @@
 }
 ```
 
-| `nbs-search` | 检索中国国家统计局“国家数据”旧版公开指标和最新值。 | `query` |
-
-`nbs-search` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "query": {
-      "type": "string",
-      "maxLength": 100
-    }
-  },
-  "required": [
-    "query"
-  ]
-}
-```
-
-| `nbs-query-data` | 查询中国国家统计局“国家数据”旧版 EasyQuery 时间序列。 | `dbcode, rowcode, colcode, wds, dfwds` |
-
-`nbs-query-data` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "dbcode": {
-      "type": "string",
-      "pattern": "^[a-z]{4}$"
-    },
-    "rowcode": {
-      "type": "string",
-      "pattern": "^[a-z]{2,4}$"
-    },
-    "colcode": {
-      "type": "string",
-      "pattern": "^[a-z]{2,4}$"
-    },
-    "wds": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "wdcode",
-          "valuecode"
-        ],
-        "properties": {
-          "wdcode": {
-            "type": "string",
-            "pattern": "^[a-z]{2,4}$"
-          },
-          "valuecode": {
-            "type": "string",
-            "pattern": "^[A-Za-z0-9_+.-]{1,80}$"
-          }
-        }
-      },
-      "maxItems": 10
-    },
-    "dfwds": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": [
-          "wdcode",
-          "valuecode"
-        ],
-        "properties": {
-          "wdcode": {
-            "type": "string",
-            "pattern": "^[a-z]{2,4}$"
-          },
-          "valuecode": {
-            "type": "string",
-            "pattern": "^[A-Za-z0-9_+.-]{1,80}$"
-          }
-        }
-      },
-      "maxItems": 10
-    }
-  },
-  "required": [
-    "dbcode",
-    "rowcode",
-    "colcode"
-  ]
-}
-```
-
-| `nbs-new-tree` | 读取中国国家统计局 2026 新版 UUID 指标目录树。 | `code, parent_id` |
-
-`nbs-new-tree` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "code": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 14
-    },
-    "parent_id": {
-      "type": "string",
-      "pattern": "^[A-Za-z0-9-]{0,80}$"
-    }
-  },
-  "required": [
-    "code"
-  ]
-}
-```
-
-| `nbs-new-indicators` | 读取中国国家统计局 2026 新版目录节点指标元数据。 | `catalog_id, name, root_id` |
-
-`nbs-new-indicators` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "catalog_id": {
-      "type": "string",
-      "pattern": "^[A-Za-z0-9-]{1,80}$"
-    },
-    "name": {
-      "type": "string",
-      "maxLength": 100
-    },
-    "root_id": {
-      "type": "string",
-      "pattern": "^[A-Za-z0-9-]{0,80}$"
-    }
-  },
-  "required": [
-    "catalog_id"
-  ]
-}
-```
-
 | `china-local-open-data-catalog` | 读取本地维护的中国大陆地方政府开放数据门户目录（浙江、深圳、上海、北京、广东、福建等），不访问上游。 | `无` |
 
 `china-local-open-data-catalog` 参数Schema：
@@ -20525,12 +20378,16 @@
     "global-fishing-watch-vessels"
   ],
   "china_first_operations": [
-    "nbs-search",
-    "nbs-query-data",
-    "nbs-new-tree",
-    "nbs-new-indicators",
     "china-local-open-data-catalog",
     "china-science-data-centers"
+  ],
+  "known_upstream_constraints": [
+    {
+      "provider": "China National Bureau of Statistics National Data",
+      "status": "not_exposed_as_production_operation",
+      "reason": "Official upstream WAF returned HTTP 403 UrlACL to the GitHub Actions public-cloud egress during production acceptance on 2026-08-03.",
+      "evidence_issue": 527
+    }
   ]
 }
 ```

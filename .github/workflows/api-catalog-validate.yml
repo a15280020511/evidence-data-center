@@ -116,7 +116,7 @@ jobs:
           assert catalog['enabled_managed_provider_count'] == len(providers)
           assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values())
           assert catalog['managed_provider_count'] >= 48
-          assert catalog['managed_operation_count'] >= 526
+          assert catalog['managed_operation_count'] >= 522
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
@@ -129,7 +129,7 @@ jobs:
           public_data = providers['public-data-geospatial']
           assert public_data['ticket_prefix'] == '[intel-public-data]'
           assert public_data['required_secret_environment_variable_name'] == ''
-          assert len(public_data['operations']) == 39
+          assert len(public_data['operations']) == 35
           assert public_data['limits']['requests_per_ticket_max'] == 1
           assert public_data['limits']['automatic_retry_allowed'] is False
           assert public_data['limits']['automatic_pagination_allowed'] is False
@@ -144,12 +144,19 @@ jobs:
               'openrouteservice-isochrones',
               'openrouteservice-geocode',
               'overpass-query',
-              'nbs-query-data',
-              'nbs-new-tree',
-              'nbs-new-indicators',
               'china-local-open-data-catalog',
               'china-science-data-centers',
           } <= operation_ids
+          assert {
+              'nbs-search',
+              'nbs-query-data',
+              'nbs-new-tree',
+              'nbs-new-indicators',
+          }.isdisjoint(operation_ids)
+          constraints = public_data['limits']['known_upstream_constraints']
+          assert len(constraints) == 1
+          assert constraints[0]['evidence_issue'] == 527
+          assert constraints[0]['status'] == 'not_exposed_as_production_operation'
 
           for provider_id, expected_count in {
               'opensky-network': 9,
@@ -171,6 +178,7 @@ jobs:
               'managed_providers': catalog['managed_provider_count'],
               'managed_operations': catalog['managed_operation_count'],
               'public_data_geospatial_operations': len(public_data['operations']),
+              'nbs_direct_operations_exposed': False,
           }))
           PY
           git diff --check

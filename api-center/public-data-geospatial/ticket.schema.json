@@ -3,42 +3,98 @@
   "title": "Public data geospatial ticket",
   "type": "object",
   "additionalProperties": false,
-  "required": ["task_id", "provider", "operation", "parameters", "data_policy", "acceptance"],
+  "required": [
+    "task_id",
+    "provider",
+    "operation",
+    "parameters",
+    "data_policy",
+    "acceptance"
+  ],
   "properties": {
-    "task_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,120}$"},
-    "provider": {"const": "public-data-geospatial"},
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,120}$"
+    },
+    "provider": {
+      "const": "public-data-geospatial"
+    },
     "operation": {
       "enum": [
-        "catalog-capabilities", "ilostat-dataflows", "unicef-dataflows", "un-sdg-indicators",
-        "faostat-definitions", "worldpop-catalog", "worldpop-services", "gbif-occurrences",
-        "unhcr-population", "reliefweb-reports", "gleif-lei-search", "usaspending-awards",
-        "openfda-drug-events", "eurostat-data", "our-world-in-data-series", "hdx-hapi-metadata",
-        "iati-activities", "companies-house-search", "sam-opportunities", "openaq-locations",
-        "usgs-earthquakes", "overpass-query", "geonames-search", "openrouteservice-directions",
-        "openrouteservice-matrix", "openrouteservice-isochrones", "openrouteservice-geocode",
-        "opentopography-globaldem", "geoboundaries-release", "soilgrids-wcs-capabilities",
-        "global-fishing-watch-vessels", "opencharge-map-poi", "transitland-routes", "nbs-search",
-        "nbs-query-data", "nbs-new-tree", "nbs-new-indicators", "china-local-open-data-catalog",
+        "catalog-capabilities",
+        "ilostat-dataflows",
+        "unicef-dataflows",
+        "un-sdg-indicators",
+        "faostat-definitions",
+        "worldpop-catalog",
+        "worldpop-services",
+        "gbif-occurrences",
+        "unhcr-population",
+        "reliefweb-reports",
+        "gleif-lei-search",
+        "usaspending-awards",
+        "openfda-drug-events",
+        "eurostat-data",
+        "our-world-in-data-series",
+        "hdx-hapi-metadata",
+        "iati-activities",
+        "companies-house-search",
+        "sam-opportunities",
+        "openaq-locations",
+        "usgs-earthquakes",
+        "overpass-query",
+        "geonames-search",
+        "openrouteservice-directions",
+        "openrouteservice-matrix",
+        "openrouteservice-isochrones",
+        "openrouteservice-geocode",
+        "opentopography-globaldem",
+        "geoboundaries-release",
+        "soilgrids-wcs-capabilities",
+        "global-fishing-watch-vessels",
+        "opencharge-map-poi",
+        "transitland-routes",
+        "china-local-open-data-catalog",
         "china-science-data-centers"
       ]
     },
-    "parameters": {"type": "object"},
+    "parameters": {
+      "type": "object"
+    },
     "data_policy": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["classification", "contains_personal_data"],
+      "required": [
+        "classification",
+        "contains_personal_data"
+      ],
       "properties": {
-        "classification": {"const": "public"},
-        "contains_personal_data": {"const": false}
+        "classification": {
+          "const": "public"
+        },
+        "contains_personal_data": {
+          "const": false
+        }
       }
     },
     "acceptance": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["timeout_seconds", "max_response_bytes"],
+      "required": [
+        "timeout_seconds",
+        "max_response_bytes"
+      ],
       "properties": {
-        "timeout_seconds": {"type": "integer", "minimum": 5, "maximum": 120},
-        "max_response_bytes": {"type": "integer", "minimum": 1024, "maximum": 20000000}
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 120
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 20000000
+        }
       }
     }
   }

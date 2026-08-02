@@ -209,15 +209,6 @@ def build(operation:str,p:Mapping[str,Any])->Spec|dict[str,Any]:
         key=secret('TRANSITLAND_API_KEY',False)
         if key: q.append(('apikey',key))
         return Spec('GET','https://transit.land/api/v2/rest/routes',params=q,credential_mode='optional-api-key' if key else 'none')
-    if operation=='nbs-search':
-        return Spec('GET','https://data.stats.gov.cn/search.htm',params=[('s',text(p,'query',100,True)),('m','searchdata')])
-    if operation=='nbs-query-data':
-        q=[('m','QueryData'),('dbcode',text(p,'dbcode',4,True)),('rowcode',text(p,'rowcode',4,True)),('colcode',text(p,'colcode',4,True)),('wds',json.dumps(p.get('wds') or [],ensure_ascii=False,separators=(',',':'))),('dfwds',json.dumps(p.get('dfwds') or [],ensure_ascii=False,separators=(',',':'))),('k1',str(int(time.time()*1000))),('h','1')]
-        return Spec('GET','https://data.stats.gov.cn/easyquery.htm',params=q,headers={'Referer':'https://data.stats.gov.cn/'})
-    if operation=='nbs-new-tree':
-        return Spec('GET','https://data.stats.gov.cn/dg/website/publicrelease/web/external/new/queryIndexTreeAsync',params=[('pid',text(p,'parent_id',80)),('code',str(integer(p,'code',1,1,14)))],headers={'Referer':'https://data.stats.gov.cn/dg/website/page.html'})
-    if operation=='nbs-new-indicators':
-        return Spec('GET','https://data.stats.gov.cn/dg/website/publicrelease/web/external/new/queryIndicatorsByCid',params=[('cid',text(p,'catalog_id',80,True)),('dt',''),('name',text(p,'name',100)),('rootId',text(p,'root_id',80))],headers={'Referer':'https://data.stats.gov.cn/dg/website/page.html'})
     raise ValueError(f'unsupported operation: {operation}')
 
 def row_count(payload:Any)->int:
