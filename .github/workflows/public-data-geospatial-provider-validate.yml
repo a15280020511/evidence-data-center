@@ -26,4 +26,7 @@ jobs:
       - run: python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt -r api-center/public-data-geospatial/requirements.txt
       - run: python -m py_compile api-center/public-data-geospatial/public_data_geospatial_task.py
       - run: python -m unittest discover -s api-center/public-data-geospatial/tests -p 'test_*.py'
-      - run: python api-center/build_catalog_market_search.py --check
+      - run: |
+          python api-center/build_catalog_market_search.py --json-output /tmp/api-catalog.json --markdown-output /tmp/api-catalog.md
+          diff -u api-center/api-catalog.json /tmp/api-catalog.json
+          diff -u api-center/api-catalog.md /tmp/api-catalog.md
