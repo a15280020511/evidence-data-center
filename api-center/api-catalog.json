@@ -43,15 +43,16 @@
     "eia/provider-catalog.json",
     "un-comtrade/provider-catalog.json",
     "opensky-network/provider-catalog.json",
+    "hexdb-aviation/provider-catalog.json",
     "knowledge-tools/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "c8a2425d209102212166cc871eec67506b0ec15bb971828fcebfbf6f44cca8c5",
+  "managed_provider_catalog_sha256": "d06e6d04c27510d90c06e66a4394185e25a53e9a81d44fc885290a3af28d0ce2",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 41,
-  "enabled_managed_provider_count": 41,
-  "managed_operation_count": 445,
-  "exposed_parameter_count": 1694,
+  "managed_provider_count": 42,
+  "enabled_managed_provider_count": 42,
+  "managed_operation_count": 451,
+  "exposed_parameter_count": 1699,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -89,6 +90,7 @@
     "eia/provider-catalog.json",
     "un-comtrade/provider-catalog.json",
     "opensky-network/provider-catalog.json",
+    "hexdb-aviation/provider-catalog.json",
     "knowledge-tools/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
@@ -20589,6 +20591,199 @@
       "catalog_file": "opensky-network/provider-catalog.json"
     },
     {
+      "provider_id": "hexdb-aviation",
+      "display_name": "HexDB 航空器型号、注册与航线补全",
+      "description": "使用 HexDB 的只读 REST API，按 ICAO24、航班呼号或机场代码补全 OpenSky 状态向量缺少的飞机注册号、制造商、具体型号、登记所有人、运营方代码、航线和机场基础信息。",
+      "enabled": true,
+      "ticket_prefix": "[intel-hexdb]",
+      "catalog_policy": "固定访问 hexdb.io 的公开只读 REST API；不允许任意 URL、批量抓取、图片抓取、后台轮询、自动重试或写操作。数据来自第三方和众包来源，仅作为证据补全，不替代航空主管机关登记。",
+      "execution_policy": "每张票据最多一次 GET，只允许单个 ICAO24、单个呼号或单个机场代码。上游当前公开说明为每 5 分钟不超过 1000 次请求，情报中心进一步限制为全局并发 1、无重试、无自动翻页。",
+      "operation_count": 6,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 HexDB 安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "hexdb-aviation",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "aircraft-by-icao24",
+          "description": "按六位 ICAO24/Mode-S 地址读取注册号、制造商、ICAO 机型代码、具体机型、登记所有人和运营方代码。",
+          "parameter_names": [
+            "icao24"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "icao24": {
+                "type": "string",
+                "pattern": "^[0-9A-Fa-f]{6}$"
+              }
+            },
+            "required": [
+              "icao24"
+            ]
+          },
+          "result_contract": {
+            "provider": "hexdb-aviation",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "quality": "crowdsourced_best_effort"
+          }
+        },
+        {
+          "operation_id": "route-by-icao-callsign",
+          "description": "按 ICAO 航班呼号读取推定起点—终点机场代码。",
+          "parameter_names": [
+            "callsign"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "callsign": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9]{2,12}$"
+              }
+            },
+            "required": [
+              "callsign"
+            ]
+          },
+          "result_contract": {
+            "provider": "hexdb-aviation",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "quality": "crowdsourced_best_effort"
+          }
+        },
+        {
+          "operation_id": "route-by-iata-callsign",
+          "description": "按 IATA 航班呼号读取推定起点—终点机场代码。",
+          "parameter_names": [
+            "callsign"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "callsign": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9]{2,12}$"
+              }
+            },
+            "required": [
+              "callsign"
+            ]
+          },
+          "result_contract": {
+            "provider": "hexdb-aviation",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "quality": "crowdsourced_best_effort"
+          }
+        },
+        {
+          "operation_id": "airport-by-icao",
+          "description": "按四位 ICAO 机场代码读取机场名称、IATA 代码、国家、地区及坐标。",
+          "parameter_names": [
+            "airport"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "airport": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9]{4}$"
+              }
+            },
+            "required": [
+              "airport"
+            ]
+          },
+          "result_contract": {
+            "provider": "hexdb-aviation",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "quality": "crowdsourced_best_effort"
+          }
+        },
+        {
+          "operation_id": "airport-by-iata",
+          "description": "按三位 IATA 机场代码读取机场名称、ICAO 代码、国家、地区及坐标。",
+          "parameter_names": [
+            "airport"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "airport": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9]{3}$"
+              }
+            },
+            "required": [
+              "airport"
+            ]
+          },
+          "result_contract": {
+            "provider": "hexdb-aviation",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "quality": "crowdsourced_best_effort"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "transient_retry_max": 0,
+        "provider_concurrency_max": 1,
+        "timeout_seconds_max": 30,
+        "max_response_bytes": 2000000,
+        "upstream_requests_per_window_max": 1000,
+        "upstream_rate_window_seconds": 300,
+        "fixed_api_host": "hexdb.io",
+        "single_identifier_per_ticket_required": true,
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "background_polling_allowed": false,
+        "bulk_lookup_allowed": false,
+        "image_retrieval_allowed": false,
+        "legacy_text_endpoints_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false,
+        "authentication_required": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "d43a95964080a2a0b0481d5769a06139cec8f6c33768e662486fcfb6223d47ab",
+      "catalog_file": "hexdb-aviation/provider-catalog.json"
+    },
+    {
       "provider_id": "wolfram-alpha",
       "display_name": "Wolfram|Alpha 计算知识 API",
       "description": "通过 Wolfram|Alpha 官方 API 读取可验证的计算知识、短答案、完整结果与面向大模型的文本结果。",
@@ -29345,5 +29540,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "88f3ec0aba285d4c1bcb9d6fea06134f8b0cbcac9dd00fa66003fd87e87c9443"
+  "catalog_sha256": "4b938a7368c359e9cc5476e6e01da1a4be78d8c0c1e33e1927c2b5db743f9053"
 }

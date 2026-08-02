@@ -37,3 +37,7 @@ Issue 标题必须以 `[intel-opensky]` 开头，正文使用 `ticket.schema.jso
 - OAuth token 和 client secret 不写入 Artifact。
 
 OpenSky 明确说明该实时 API 面向研究和非商业用途，并可能阻断部分云服务商出口 IP。使用数据时应遵守其条款与引用要求。
+
+## 航空器型号与注册信息补全
+
+OpenSky 状态向量本身不保证返回注册号、制造商或具体机型。情报中心同时接入 `hexdb-aviation`：将 OpenSky 返回的 `icao24` 交给 `aircraft-by-icao24`，可补全注册号、制造商、ICAO 机型代码、具体机型、登记所有人和运营方代码；呼号可进一步补全推定航线和机场信息。该补全数据为第三方众包性质，必须保留来源和不确定性说明。
