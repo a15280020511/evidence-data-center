@@ -44,12 +44,12 @@ jobs:
           python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
           python api-center/build_catalog_market_search.py
           git diff --check
-      - name: Commit generated integration
+      - name: Commit generated API-center integration
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add api-center .github/workflows/api-catalog-validate.yml
+          git add api-center
           git commit -m "feat: integrate ADB into unified intelligence catalog"
           git push origin HEAD:feat/adb-kidb-provider
 
-# rerun after correcting the inclusive 25-year boundary regression
+# The formal api-catalog validation workflow is updated separately through the GitHub connector.
