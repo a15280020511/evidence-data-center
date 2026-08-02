@@ -14,7 +14,8 @@ SPEC.loader.exec_module(mod)
 
 class InternationalStatisticsTests(unittest.TestCase):
     def test_catalog_contracts(self):
-        expected = {"wto": 7, "imf": 6, "faostat": 7}
+        expected = {"wto": 7, "imf": 6}
+        self.assertEqual(set(mod.PROVIDERS), set(expected))
         for provider, count in expected.items():
             row = json.loads((ROOT / provider / "provider-catalog.json").read_text())["providers"][0]
             self.assertEqual(row["provider_id"], provider)
@@ -30,10 +31,6 @@ class InternationalStatisticsTests(unittest.TestCase):
                 "imf", "get-dataflow", {"agency": "IMF.RES", "flow": "WEO"}
             )[0],
             "/structure/dataflow/IMF.RES/WEO/+",
-        )
-        self.assertEqual(
-            mod.build_request("faostat", "list-datasets", {})[0],
-            "/en/definitions/domaincodes",
         )
         path, query = mod.build_request(
             "imf",
@@ -53,8 +50,6 @@ class InternationalStatisticsTests(unittest.TestCase):
     def test_unbounded_inputs_rejected(self):
         with self.assertRaises(ValueError):
             mod.build_request("wto", "data", {"indicator_codes": ["bad/value"]})
-        with self.assertRaises(ValueError):
-            mod.build_request("faostat", "get-data", {"dataset": "QCL", "filters": {}})
         with self.assertRaises(ValueError):
             mod.build_request(
                 "imf",

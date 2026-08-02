@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded read-only runtime for WTO, IMF DataMapper and FAOSTAT."""
+"""Bounded read-only runtime for WTO and IMF statistics providers."""
 from __future__ import annotations
 
 import argparse
@@ -29,7 +29,6 @@ from managed_provider_runtime import (  # noqa: E402
 
 CODE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$")
 PERIOD_RE = re.compile(r"^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$")
-DATASET_RE = re.compile(r"^[A-Z0-9_]{1,16}$")
 PROVIDERS = {
     "wto": {
         "origin": "https://api.wto.org/timeseries/v1",
@@ -46,17 +45,7 @@ PROVIDERS = {
         "secret": "IMF_API_KEY",
         "secret_header": "Ocp-Apim-Subscription-Key",
         "max_requests": 1,
-    },
-    "faostat": {
-        "origin": "https://faostatservices.fao.org/api/v1",
-        "prefix": "[intel-faostat]",
-        "status": "INTEL_FAOSTAT",
-        "secret": "FAOSTAT_PASSWORD",
-        "username": "FAOSTAT_USERNAME",
-        "auth_origin": "https://faostatservices.fao.org/api/v1/auth/login",
-        "max_requests": 2,
-    },
-}
+    },}
 
 
 def _catalog(provider: str) -> Path:
@@ -179,47 +168,6 @@ def build_request(provider: str, operation: str, p: Mapping[str, Any]) -> tuple[
             query.append(("dimensionAtObservation", str(dimension)))
         return path, query
 
-    if provider == "faostat":
-        lang = str(p.get("lang") or "en")
-        if lang not in {"en", "es", "fr"}:
-            raise ValueError("lang must be en, es or fr")
-        if operation == "list-groups":
-            return f"/{lang}/groups", []
-        if operation == "list-datasets":
-            return f"/{lang}/definitions/domaincodes", []
-        dataset = str(p.get("dataset") or "").upper()
-        if not DATASET_RE.fullmatch(dataset):
-            raise ValueError("dataset is invalid")
-        if operation == "list-parameters":
-            return f"/{lang}/dimensions/{quote(dataset, safe='')}", []
-        if operation == "get-parameter-codes":
-            parameter = str(p.get("parameter") or "")
-            if not CODE_RE.fullmatch(parameter):
-                raise ValueError("parameter is invalid")
-            return f"/{lang}/codes/{quote(parameter, safe='')}/{quote(dataset, safe='')}", []
-        if operation not in {"get-data-size", "get-data"}:
-            raise ValueError(f"unsupported FAOSTAT operation: {operation}")
-        filters = p.get("filters")
-        if not isinstance(filters, Mapping) or not filters:
-            raise ValueError("filters must contain at least one bounded dimension filter")
-        query: list[tuple[str, str]] = []
-        for key, raw in filters.items():
-            if not CODE_RE.fullmatch(str(key)):
-                raise ValueError("filter name is invalid")
-            values = _codes(raw, f"filters.{key}", 20)
-            if not values:
-                raise ValueError(f"filters.{key} is empty")
-            query.append((str(key), ",".join(values)))
-        query.extend([
-            ("page_number", str(bounded_int(p.get("page_number"), default=1, minimum=1, maximum=100000, name="page_number"))),
-            ("page_size", str(bounded_int(p.get("page_size"), default=100, minimum=1, maximum=500, name="page_size"))),
-            ("output_type", "objects"),
-        ])
-        path = f"/{lang}/data/{quote(dataset, safe='')}"
-        if operation == "get-data-size":
-            query.append(("show_codes", "true"))
-        return path, query
-
     raise ValueError(f"unsupported provider: {provider}")
 
 
@@ -263,8 +211,6 @@ def execute_for(provider: str, ticket_path: Path, output_dir: Path) -> int:
     started_at, started_perf = utc_now(), time.perf_counter()
     status, failure, snapshot = f"{cfg['status']}_FAILED", None, None
     password = str(os.getenv(cfg.get("secret", "")) or "").strip() if cfg.get("secret") else ""
-    username = str(os.getenv(cfg.get("username", "")) or "").strip() if cfg.get("username") else ""
-    token = ""
     secrets = [password]
     metadata: dict[str, Any] = {
         "upstream_called": False,
@@ -289,22 +235,6 @@ def execute_for(provider: str, ticket_path: Path, output_dir: Path) -> int:
                         "application/json, application/vnd.sdmx.data+json, "
                         "application/vnd.sdmx.structure+json, */*;q=0.8"
                     )
-            elif provider == "faostat":
-                if not username or not password:
-                    raise RuntimeError("FAOSTAT_USERNAME and FAOSTAT_PASSWORD must both be configured")
-                auth = requests.post(cfg["auth_origin"], data={"username": username, "password": password}, headers={"Accept": "application/json"}, timeout=timeout, allow_redirects=False)
-                try:
-                    auth_payload = auth.json()
-                except ValueError as exc:
-                    raise RuntimeError("FAOSTAT authentication returned invalid JSON") from exc
-                if not auth.ok:
-                    raise RuntimeError(f"FAOSTAT authentication HTTP {auth.status_code}")
-                token = str((auth_payload.get("AuthenticationResult") or {}).get("AccessToken") or auth_payload.get("access_token") or "")
-                if not token:
-                    raise RuntimeError("FAOSTAT authentication returned no access token")
-                secrets.append(token)
-                headers["Authorization"] = f"Bearer {token}"
-                metadata["authentication_http_status"] = auth.status_code
             response = requests.get(cfg["origin"] + path, params=query, headers=headers, timeout=timeout, allow_redirects=False)
             raw = bytes(response.content or b"")
             metadata.update({
@@ -341,7 +271,7 @@ def execute_for(provider: str, ticket_path: Path, output_dir: Path) -> int:
                 "response_bytes": len(sanitized),
                 "response_sha256": bytes_sha(sanitized),
                 "row_count": _row_count(clean),
-                "credential_used": provider in {"wto", "imf", "faostat"},
+                "credential_used": provider in {"wto", "imf"},
                 "ephemeral_token_persisted": False,
             })
         status = f"{cfg['status']}_COMPLETED"

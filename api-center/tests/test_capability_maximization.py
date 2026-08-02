@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            479,
+            472,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -100,7 +100,6 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "hexdb-aviation": 6,
             "wto": 7,
             "imf": 6,
-            "faostat": 7,
             "adb": 8,
             "wolfram-alpha": 4,
             "llamaparse": 3,

@@ -43,7 +43,6 @@ OPENSKY_NETWORK_CATALOG = HERE / "opensky-network/provider-catalog.json"
 HEXDB_AVIATION_CATALOG = HERE / "hexdb-aviation/provider-catalog.json"
 WTO_CATALOG = HERE / "wto/provider-catalog.json"
 IMF_CATALOG = HERE / "imf/provider-catalog.json"
-FAOSTAT_CATALOG = HERE / "faostat/provider-catalog.json"
 ADB_CATALOG = HERE / "adb/provider-catalog.json"
 KNOWLEDGE_TOOLS_CATALOG = HERE / "knowledge-tools/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
@@ -76,7 +75,6 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "hexdb-aviation": 6,
     "wto": 7,
     "imf": 6,
-    "faostat": 7,
     "adb": 8,
     "wolfram-alpha": 4,
     "llamaparse": 3,
@@ -111,7 +109,6 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     HEXDB_AVIATION_CATALOG,
     WTO_CATALOG,
     IMF_CATALOG,
-    FAOSTAT_CATALOG,
     ADB_CATALOG,
     KNOWLEDGE_TOOLS_CATALOG,
 )
@@ -162,7 +159,6 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "hexdb-aviation/provider-catalog.json",
         "wto/provider-catalog.json",
         "imf/provider-catalog.json",
-        "faostat/provider-catalog.json",
         "adb/provider-catalog.json",
         "knowledge-tools/provider-catalog.json",
     ):
