@@ -43,15 +43,12 @@ jobs:
           python -m pip check
           python -m py_compile \
             api-center/managed_provider_runtime.py \
+            api-center/international-statistics/provider_task.py \
+            api-center/international-statistics/tests/test_international_statistics.py \
             api-center/wto/wto_task.py \
             api-center/imf/imf_task.py \
-            api-center/faostat/faostat_task.py \
-            api-center/wto/tests/test_wto_task.py \
-            api-center/imf/tests/test_imf_task.py \
-            api-center/faostat/tests/test_faostat_task.py
-          python -m unittest discover -s api-center/wto/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/imf/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/faostat/tests -p 'test_*.py' -v
+            api-center/faostat/faostat_task.py
+          python -m unittest discover -s api-center/international-statistics/tests -p 'test_*.py' -v
           python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
           python -m unittest discover -s api-center/tests -p 'test_capability_maximization.py' -v
           python api-center/build_catalog_market_search.py
