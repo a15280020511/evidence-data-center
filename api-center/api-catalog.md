@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`48/48` 已启用
-- 托管操作总数：`522`
-- 已公开参数总数：`1953`
-- 目录 SHA-256：`f4e5c4d96d5ee1e9c0ca6d71e99ed188d08bc232cf8c5d2dce14a2ce7abe2765`
+- 托管提供方：`49/49` 已启用
+- 托管操作总数：`544`
+- 已公开参数总数：`1998`
+- 目录 SHA-256：`eb888cd4ef4c13b23c0704472bf0edb2eafd4796284ca3195142b85d9f32f23f`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -65,6 +65,7 @@
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 | 全球公共数据、空间地理与中国数据 | `public-data-geospatial` | 启用 | `[intel-public-data]` | `35` | 否 |
+| Cloudflare 情报与云端浏览器 | `cloudflare` | 启用 | `[intel-cloudflare]` | `22` | 否 |
 
 ## 普通连接器
 
@@ -20389,6 +20390,672 @@
       "evidence_issue": 527
     }
   ]
+}
+```
+
+## Cloudflare 情报与云端浏览器 (`cloudflare`)
+
+- 状态：`启用`
+- 说明：通过 Cloudflare Browser Rendering 获取动态网页证据，通过 Radar 获取全球互联网流量、故障、排名和攻击态势，并读取 URL Scanner 扫描证据。
+- 目录策略：开放22项固定能力；禁止 Global API Key、任意 Cloudflare API 路径、任意请求头、Cookie、代理、浏览器脚本、Workers/R2/D1/Queues 写操作和 URL Scanner 提交。
+- 执行策略：每张票据最多一个固定 Cloudflare HTTPS 请求；不自动分页、不自动重试、不跟随重定向；浏览器目标必须为解析到公网地址的 HTTPS URL。
+- 票据前缀：`[intel-cloudflare]`
+- Secret环境变量名：`CLOUDFLARE_API_TOKEN`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`4055697908613064a89c7c3a6faf041b1abf7ccc81306b59898aaadfc2784de4`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 Cloudflare 情报能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `browser-content` | 通过 Cloudflare Browser Rendering 获取执行 JavaScript 后的完整 HTML。 | `url` |
+
+`browser-content` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^\\s]+$"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `browser-markdown` | 将网页渲染后正文转换为 Markdown。 | `url` |
+
+`browser-markdown` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^\\s]+$"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `browser-links` | 提取渲染后页面中的链接。 | `url` |
+
+`browser-links` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^\\s]+$"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `browser-screenshot` | 获取渲染后网页截图。 | `url` |
+
+`browser-screenshot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^\\s]+$"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `browser-pdf` | 将渲染后网页输出为 PDF。 | `url` |
+
+`browser-pdf` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^\\s]+$"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `browser-snapshot` | 获取 HTML、Markdown、截图和可访问性树组合快照。 | `url` |
+
+`browser-snapshot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^\\s]+$"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `browser-accessibility-tree` | 获取渲染后页面的可访问性树。 | `url` |
+
+`browser-accessibility-tree` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 2048,
+      "pattern": "^https://[^\\s]+$"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `radar-global-search` | 搜索 Cloudflare Radar 的地点、ASN、报告和其他实体。 | `query, limit` |
+
+`radar-global-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `radar-outages` | 读取最新互联网中断与异常事件。 | `date_range, location, asn, limit, offset` |
+
+`radar-outages` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date_range": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 16,
+      "pattern": "^(?:[1-9]|[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-4])d(?:control)?$|^(?:[1-9]|[1-4][0-9]|5[0-2])w(?:control)?$"
+    },
+    "location": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "asn": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  },
+  "maxProperties": 5
+}
+```
+
+| `radar-outage-locations` | 按国家或地区汇总互联网中断数量。 | `date_range, location, asn` |
+
+`radar-outage-locations` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date_range": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 16,
+      "pattern": "^(?:[1-9]|[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-4])d(?:control)?$|^(?:[1-9]|[1-4][0-9]|5[0-2])w(?:control)?$"
+    },
+    "location": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "asn": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    }
+  },
+  "maxProperties": 3
+}
+```
+
+| `radar-http-summary` | 按固定维度读取 HTTP 请求分布摘要。 | `date_range, location, asn, dimension` |
+
+`radar-http-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date_range": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 16,
+      "pattern": "^(?:[1-9]|[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-4])d(?:control)?$|^(?:[1-9]|[1-4][0-9]|5[0-2])w(?:control)?$"
+    },
+    "location": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "asn": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "dimension": {
+      "type": "string",
+      "enum": [
+        "ADM1",
+        "API_TRAFFIC",
+        "AS",
+        "BOT_CLASS",
+        "BROWSER_FAMILY",
+        "DEVICE_TYPE",
+        "HTTP_PROTOCOL",
+        "HTTP_VERSION",
+        "IP_VERSION",
+        "OS",
+        "TLS_VERSION"
+      ]
+    }
+  },
+  "required": [
+    "dimension"
+  ],
+  "maxProperties": 4
+}
+```
+
+| `radar-http-timeseries` | 读取 HTTP 请求时间序列。 | `date_range, location, asn, aggregation_interval` |
+
+`radar-http-timeseries` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date_range": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 16,
+      "pattern": "^(?:[1-9]|[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-4])d(?:control)?$|^(?:[1-9]|[1-4][0-9]|5[0-2])w(?:control)?$"
+    },
+    "location": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "asn": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "aggregation_interval": {
+      "type": "string",
+      "enum": [
+        "15m",
+        "1h",
+        "1d",
+        "1w"
+      ]
+    }
+  },
+  "maxProperties": 4
+}
+```
+
+| `radar-ranking-top` | 读取热门或趋势域名排名。 | `date_range, location, asn, ranking_type, limit` |
+
+`radar-ranking-top` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date_range": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 16,
+      "pattern": "^(?:[1-9]|[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-4])d(?:control)?$|^(?:[1-9]|[1-4][0-9]|5[0-2])w(?:control)?$"
+    },
+    "location": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "asn": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "ranking_type": {
+      "type": "string",
+      "enum": [
+        "POPULAR",
+        "TRENDING_RISE",
+        "TRENDING_STEADY"
+      ],
+      "default": "POPULAR"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  },
+  "maxProperties": 5
+}
+```
+
+| `radar-ranking-domain` | 读取指定域名的 Cloudflare Radar 排名详情。 | `domain, location` |
+
+`radar-ranking-domain` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "domain": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 253,
+      "pattern": "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)+[A-Za-z]{2,63}$"
+    },
+    "location": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    }
+  },
+  "required": [
+    "domain"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `radar-layer7-summary` | 按固定维度读取第七层攻击分布摘要。 | `date_range, location, asn, dimension` |
+
+`radar-layer7-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date_range": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 16,
+      "pattern": "^(?:[1-9]|[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-4])d(?:control)?$|^(?:[1-9]|[1-4][0-9]|5[0-2])w(?:control)?$"
+    },
+    "location": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "asn": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    },
+    "dimension": {
+      "type": "string",
+      "enum": [
+        "HTTP_METHOD",
+        "HTTP_VERSION",
+        "IP_VERSION",
+        "MANAGED_RULES",
+        "MITIGATION_PRODUCT",
+        "INDUSTRY",
+        "VERTICAL"
+      ]
+    }
+  },
+  "required": [
+    "dimension"
+  ],
+  "maxProperties": 4
+}
+```
+
+| `radar-layer7-top-attacks` | 读取第七层攻击来源与目标地区的主要组合。 | `date_range, location, asn` |
+
+`radar-layer7-top-attacks` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date_range": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 16,
+      "pattern": "^(?:[1-9]|[1-9][0-9]|[1-2][0-9]{2}|3[0-5][0-9]|36[0-4])d(?:control)?$|^(?:[1-9]|[1-4][0-9]|5[0-2])w(?:control)?$"
+    },
+    "location": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2}$"
+    },
+    "asn": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4294967295
+    }
+  },
+  "maxProperties": 3
+}
+```
+
+| `urlscanner-search` | 使用受控查询语法搜索 Cloudflare URL Scanner 已有扫描。 | `query, size` |
+
+`urlscanner-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "maxProperties": 2
+}
+```
+
+| `urlscanner-result` | 按扫描 UUID 读取 URL Scanner 结果与判定。 | `scan_id` |
+
+`urlscanner-result` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "scan_id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    }
+  },
+  "required": [
+    "scan_id"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `urlscanner-har` | 按扫描 UUID 读取 HAR 网络请求记录。 | `scan_id` |
+
+`urlscanner-har` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "scan_id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    }
+  },
+  "required": [
+    "scan_id"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `urlscanner-dom` | 按扫描 UUID 读取 Chrome 渲染后的 DOM。 | `scan_id` |
+
+`urlscanner-dom` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "scan_id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    }
+  },
+  "required": [
+    "scan_id"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `urlscanner-screenshot` | 按扫描 UUID 读取扫描截图。 | `scan_id` |
+
+`urlscanner-screenshot` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "scan_id": {
+      "type": "string",
+      "format": "uuid",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    }
+  },
+  "required": [
+    "scan_id"
+  ],
+  "maxProperties": 1
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_hosts": [
+    "api.cloudflare.com"
+  ],
+  "fixed_products": [
+    "Browser Rendering",
+    "Radar",
+    "URL Scanner"
+  ],
+  "arbitrary_cloudflare_paths_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "custom_cookies_allowed": false,
+  "custom_browser_scripts_allowed": false,
+  "redirects_allowed": false,
+  "automatic_pagination_allowed": false,
+  "automatic_retry_allowed": false,
+  "urlscanner_submission_allowed": false,
+  "workers_deployment_allowed": false,
+  "r2_writes_allowed": false,
+  "d1_writes_allowed": false,
+  "queue_writes_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 
