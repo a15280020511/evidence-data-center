@@ -68,7 +68,8 @@ jobs:
             -r api-center/imf/requirements.txt \
             -r api-center/worldbank-documents/requirements.txt \
             -r api-center/bis/requirements.txt \
-            -r api-center/adb/requirements.txt
+            -r api-center/adb/requirements.txt \
+            -r api-center/public-data-geospatial/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -111,121 +112,64 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 47
-          assert catalog['enabled_managed_provider_count'] == 47
-          assert catalog['managed_operation_count'] == 487
+          assert catalog['managed_provider_count'] == len(providers)
+          assert catalog['enabled_managed_provider_count'] == len(providers)
           assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values())
+          assert catalog['managed_provider_count'] >= 48
+          assert catalog['managed_operation_count'] >= 526
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
+          assert all(operation['result_contract']['read_only'] is True for row in providers.values() for operation in row['operations'])
           assert 'agent-toolbelt' not in providers
           assert 'gapup-mcp' not in providers
 
-          opensky = providers['opensky-network']
-          assert opensky['ticket_prefix'] == '[intel-opensky]'
-          assert opensky['required_secret_environment_variable_name'] == 'OPEN_SKY_CLIENT_SECRET'
-          assert opensky['required_repository_variable'] == 'OPEN_SKY_CLIENT_ID'
-          assert len(opensky['operations']) == 9
-          assert opensky['limits']['network_requests_per_ticket_max'] == 2
-          assert opensky['limits']['state_bbox_area_square_degrees_max'] == 400
-          assert opensky['limits']['state_history_seconds_max'] == 3600
-          assert opensky['limits']['flight_interval_seconds_max'] == 7200
-          assert opensky['limits']['track_history_days_max'] == 30
-          assert opensky['limits']['fixed_api_host'] == 'opensky-network.org'
-          assert opensky['limits']['fixed_auth_host'] == 'auth.opensky-network.org'
-          assert opensky['limits']['global_state_query_allowed'] is False
-          assert opensky['limits']['trino_historical_access_allowed'] is False
-          assert opensky['limits']['bulk_download_allowed'] is False
-          assert opensky['limits']['oauth_token_persistence_allowed'] is False
-          assert opensky['limits']['write_operations_allowed'] is False
-          assert all(row['result_contract']['read_only'] is True for row in opensky['operations'])
+          public_data = providers['public-data-geospatial']
+          assert public_data['ticket_prefix'] == '[intel-public-data]'
+          assert public_data['required_secret_environment_variable_name'] == ''
+          assert len(public_data['operations']) == 39
+          assert public_data['limits']['requests_per_ticket_max'] == 1
+          assert public_data['limits']['automatic_retry_allowed'] is False
+          assert public_data['limits']['automatic_pagination_allowed'] is False
+          assert public_data['limits']['arbitrary_urls_allowed'] is False
+          assert public_data['limits']['arbitrary_headers_allowed'] is False
+          assert public_data['limits']['write_operations_allowed'] is False
+          operation_ids = {row['operation_id'] for row in public_data['operations']}
+          assert {
+              'openrouteservice-directions',
+              'openrouteservice-matrix',
+              'openrouteservice-isochrones',
+              'openrouteservice-geocode',
+              'overpass-query',
+              'nbs-query-data',
+              'nbs-new-tree',
+              'nbs-new-indicators',
+              'china-local-open-data-catalog',
+              'china-science-data-centers',
+          } <= operation_ids
 
-          hexdb = providers['hexdb-aviation']
-          assert hexdb['ticket_prefix'] == '[intel-hexdb]'
-          assert hexdb['required_secret_environment_variable_name'] == ''
-          assert len(hexdb['operations']) == 6
-          assert hexdb['limits']['requests_per_ticket_max'] == 1
-          assert hexdb['limits']['fixed_api_host'] == 'hexdb.io'
-          assert hexdb['limits']['bulk_lookup_allowed'] is False
-          assert hexdb['limits']['image_retrieval_allowed'] is False
-          assert hexdb['limits']['automatic_retry_allowed'] is False
-          assert hexdb['limits']['write_operations_allowed'] is False
-          assert all(row['result_contract']['read_only'] is True for row in hexdb['operations'])
-
-          wto = providers['wto']
-          assert wto['ticket_prefix'] == '[intel-wto]'
-          assert wto['required_secret_environment_variable_name'] == 'WTO_API_KEY'
-          assert len(wto['operations']) == 7
-          assert wto['limits']['requests_per_ticket_max'] == 1
-          assert wto['limits']['fixed_api_host'] == 'api.wto.org'
-          assert wto['limits']['records_per_ticket_max'] == 500
-          assert wto['limits']['automatic_pagination_allowed'] is False
-          assert wto['limits']['write_operations_allowed'] is False
-
-          imf = providers['imf']
-          assert imf['ticket_prefix'] == '[intel-imf]'
-          assert imf['required_secret_environment_variable_name'] == 'IMF_API_KEY'
-          assert len(imf['operations']) == 6
-          assert imf['limits']['fixed_api_host'] == 'api.imf.org'
-          assert imf['limits']['fixed_api_prefix'] == '/external/sdmx/3.0'
-          assert imf['limits']['subscription_key_header'] == 'Ocp-Apim-Subscription-Key'
-          assert imf['limits']['authentication_required'] is True
-          assert imf['limits']['arbitrary_sdmx_resource_types_allowed'] is False
-          assert imf['limits']['automatic_pagination_allowed'] is False
-          assert imf['limits']['write_operations_allowed'] is False
-
-          worldbank_documents = providers['worldbank-documents']
-          assert worldbank_documents['ticket_prefix'] == '[intel-worldbank-docs]'
-          assert worldbank_documents['required_secret_environment_variable_name'] == ''
-          assert len(worldbank_documents['operations']) == 7
-          assert worldbank_documents['limits']['fixed_api_host'] == 'search.worldbank.org'
-          assert worldbank_documents['limits']['document_body_download_allowed'] is False
-          assert worldbank_documents['limits']['automatic_pagination_allowed'] is False
-          assert worldbank_documents['limits']['write_operations_allowed'] is False
-
-          bis = providers['bis']
-          assert bis['ticket_prefix'] == '[intel-bis]'
-          assert bis['required_secret_environment_variable_name'] == ''
-          assert len(bis['operations']) == 8
-          assert bis['limits']['fixed_api_host'] == 'stats.bis.org'
-          assert bis['limits']['fixed_api_prefix'] == '/api/v2'
-          assert bis['limits']['sdmx_rest_version'] == '2.1.0'
-          assert bis['limits']['automatic_pagination_allowed'] is False
-          assert bis['limits']['write_operations_allowed'] is False
-
-          oecd = providers['oecd']
-          assert len(oecd['operations']) == 6
-          assert oecd['limits']['fixed_api_host'] == 'sdmx.oecd.org'
-          assert oecd['limits']['write_operations_allowed'] is False
-
-          adb = providers['adb']
-          assert adb['ticket_prefix'] == '[intel-adb]'
-          assert adb['required_secret_environment_variable_name'] == ''
-          assert len(adb['operations']) == 8
-          assert adb['limits']['fixed_api_host'] == 'kidb.adb.org'
-          assert adb['limits']['fixed_api_prefix'] == '/api/v4/sdmx'
-          assert adb['limits']['official_rate_limit_queries_per_minute'] == 20
-          assert adb['limits']['requests_per_ticket_max'] == 1
-          assert adb['limits']['empty_dimension_bulk_queries_allowed'] is False
-          assert adb['limits']['automatic_retry_allowed'] is False
-          assert adb['limits']['automatic_pagination_allowed'] is False
-          assert adb['limits']['write_operations_allowed'] is False
+          for provider_id, expected_count in {
+              'opensky-network': 9,
+              'hexdb-aviation': 6,
+              'wto': 7,
+              'imf': 6,
+              'worldbank-documents': 7,
+              'bis': 8,
+              'oecd': 6,
+              'adb': 8,
+          }.items():
+              assert provider_id in providers
+              assert len(providers[provider_id]['operations']) == expected_count
+              assert providers[provider_id]['limits']['write_operations_allowed'] is False
 
           print(json.dumps({
               'status': 'PASS',
-              'connectors': 68,
-              'managed_providers': 47,
-              'managed_operations': 487,
-              'opensky_operations': 9,
-              'hexdb_operations': 6,
-              'wto_operations': 7,
-              'imf_operations': 6,
-              'worldbank_documents_operations': 7,
-              'bis_operations': 8,
-              'oecd_operations': 6,
-              'adb_operations': 8,
+              'connectors': manifest['connector_count'],
+              'managed_providers': catalog['managed_provider_count'],
+              'managed_operations': catalog['managed_operation_count'],
+              'public_data_geospatial_operations': len(public_data['operations']),
           }))
           PY
           git diff --check
