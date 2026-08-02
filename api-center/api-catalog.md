@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`45/45` 已启用
-- 托管操作总数：`471`
-- 已公开参数总数：`1765`
-- 目录 SHA-256：`b645e04f58acaf2c6a59dd08a10ec9a5e379b9679c89cee809cbe9703e5b5dc9`
+- 托管提供方：`46/46` 已启用
+- 托管操作总数：`479`
+- 已公开参数总数：`1790`
+- 目录 SHA-256：`97199a589a6c90f691176e3e7cdfbc915fd073aa9d05097720a6b43e9d20ad64`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -60,6 +60,7 @@
 | WTO Timeseries 国际贸易与关税统计 | `wto` | 启用 | `[intel-wto]` | `7` | 否 |
 | IMF SDMX 3.0 全球宏观、财政与金融统计 | `imf` | 启用 | `[intel-imf]` | `6` | 否 |
 | FAOSTAT 农业、粮食、贸易与排放统计 | `faostat` | 启用 | `[intel-faostat]` | `7` | 否 |
+| Asian Development Bank KIDB SDMX | `adb` | 启用 | `[intel-adb]` | `8` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 
@@ -17961,6 +17962,323 @@
   "client_supplied_credentials_allowed": false,
   "oauth_token_persistence_allowed": false,
   "write_operations_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## Asian Development Bank KIDB SDMX (`adb`)
+
+- 状态：`启用`
+- 说明：通过亚洲开发银行官方 Key Indicators Database SDMX API v4 读取亚洲及太平洋宏观、金融、社会、环境和可持续发展统计。
+- 目录策略：仅开放固定的 ADB KIDB 数据流、结构元数据、指标目录和有界数据查询；不接受任意 URL、主机、请求头或空维度全库请求。
+- 执行策略：每张票据最多一次 HTTPS GET；不自动重试或翻页；遵守官方每分钟20次限制；数据请求最多20个指标、20个经济体和25年。
+- 票据前缀：`[intel-adb]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`0bbf83a649e64b79a42cb8d1981b0af99ddc98443840c16137e89361b2d5b51b`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 ADB KIDB 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-dataflows` | 读取 ADB KIDB 当前公开数据流目录。 | `无` |
+
+`list-dataflows` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `get-dataflow` | 读取指定 ADB SDMX 数据流定义。 | `agency, flow, version, references` |
+
+`get-dataflow` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "flow"
+  ]
+}
+```
+
+| `get-datastructure` | 读取指定 ADB SDMX 数据结构定义。 | `agency, structure_id, version, references` |
+
+`get-datastructure` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "structure_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "structure_id"
+  ]
+}
+```
+
+| `get-codelist` | 读取指定 ADB SDMX 代码表。 | `agency, codelist_id, version, references` |
+
+`get-codelist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "codelist_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "codelist_id"
+  ]
+}
+```
+
+| `get-conceptscheme` | 读取指定 ADB SDMX 概念表。 | `agency, conceptscheme_id, version, references` |
+
+`get-conceptscheme` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "conceptscheme_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "references": {
+      "type": "string",
+      "enum": [
+        "none",
+        "parents",
+        "ancestors",
+        "children",
+        "descendants",
+        "all"
+      ]
+    }
+  },
+  "required": [
+    "conceptscheme_id"
+  ]
+}
+```
+
+| `list-indicators` | 读取指定 ADB 数据流中的指标代码目录。 | `dataflow` |
+
+`list-indicators` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataflow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    }
+  },
+  "required": [
+    "dataflow"
+  ]
+}
+```
+
+| `get-data` | 按数据流、指标、经济体和时间范围读取 ADB KIDB 统计。 | `dataflow, indicators, economies, start_period, end_period, sdmx_version, format, grouping` |
+
+`get-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataflow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,79}$"
+    },
+    "indicators": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,39}$"
+      }
+    },
+    "economies": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@-]{0,39}$"
+      }
+    },
+    "start_period": {
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 2024
+    },
+    "end_period": {
+      "type": "integer",
+      "minimum": 2000,
+      "maximum": 2024
+    },
+    "sdmx_version": {
+      "type": "string",
+      "enum": [
+        "3.0",
+        "2.1"
+      ]
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    },
+    "grouping": {
+      "type": "string",
+      "enum": [
+        "indicator",
+        "economy"
+      ]
+    }
+  },
+  "required": [
+    "dataflow",
+    "indicators",
+    "economies"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "official_rate_limit_queries_per_minute": 20,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "indicators_per_ticket_max": 20,
+  "economies_per_ticket_max": 20,
+  "period_span_years_max": 25,
+  "documented_start_period_min": 2000,
+  "documented_end_period_max": 2024,
+  "fixed_api_host": "kidb.adb.org",
+  "fixed_api_prefix": "/api/v4/sdmx",
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "empty_dimension_bulk_queries_allowed": false,
+  "bulk_download_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
   "secret_values_exposed": false
 }
 ```

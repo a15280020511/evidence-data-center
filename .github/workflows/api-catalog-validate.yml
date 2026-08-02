@@ -66,7 +66,8 @@ jobs:
             -r api-center/hexdb-aviation/requirements.txt \
             -r api-center/wto/requirements.txt \
             -r api-center/imf/requirements.txt \
-            -r api-center/faostat/requirements.txt
+            -r api-center/faostat/requirements.txt \
+            -r api-center/adb/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -109,9 +110,9 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
           assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 45
-          assert catalog['enabled_managed_provider_count'] == 45
-          assert catalog['managed_operation_count'] == 471
+          assert catalog['managed_provider_count'] == len(providers) == 46
+          assert catalog['enabled_managed_provider_count'] == 46
+          assert catalog['managed_operation_count'] == 479
           assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values())
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
@@ -189,17 +190,31 @@ jobs:
           assert oecd['limits']['fixed_api_host'] == 'sdmx.oecd.org'
           assert oecd['limits']['write_operations_allowed'] is False
 
+          adb = providers['adb']
+          assert adb['ticket_prefix'] == '[intel-adb]'
+          assert adb['required_secret_environment_variable_name'] == ''
+          assert len(adb['operations']) == 8
+          assert adb['limits']['fixed_api_host'] == 'kidb.adb.org'
+          assert adb['limits']['fixed_api_prefix'] == '/api/v4/sdmx'
+          assert adb['limits']['official_rate_limit_queries_per_minute'] == 20
+          assert adb['limits']['requests_per_ticket_max'] == 1
+          assert adb['limits']['empty_dimension_bulk_queries_allowed'] is False
+          assert adb['limits']['automatic_retry_allowed'] is False
+          assert adb['limits']['automatic_pagination_allowed'] is False
+          assert adb['limits']['write_operations_allowed'] is False
+
           print(json.dumps({
               'status': 'PASS',
               'connectors': 68,
-              'managed_providers': 45,
-              'managed_operations': 471,
+              'managed_providers': 46,
+              'managed_operations': 479,
               'opensky_operations': 9,
               'hexdb_operations': 6,
               'wto_operations': 7,
               'imf_operations': 6,
               'faostat_operations': 7,
               'oecd_operations': 6,
+              'adb_operations': 8,
           }))
           PY
           git diff --check
