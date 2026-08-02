@@ -4,8 +4,8 @@
 - 普通连接器：`68/68` 已启用
 - 托管提供方：`45/45` 已启用
 - 托管操作总数：`471`
-- 已公开参数总数：`1749`
-- 目录 SHA-256：`f9869715d2dce77bd64c3fc2b68ced0cfc4456f7e7063c9a2c1132c944080d63`
+- 已公开参数总数：`1765`
+- 目录 SHA-256：`b645e04f58acaf2c6a59dd08a10ec9a5e379b9679c89cee809cbe9703e5b5dc9`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -58,7 +58,7 @@
 | OpenSky Network 全球航空状态与航迹数据 | `opensky-network` | 启用 | `[intel-opensky]` | `9` | 否 |
 | HexDB 航空器型号、注册与航线补全 | `hexdb-aviation` | 启用 | `[intel-hexdb]` | `6` | 否 |
 | WTO Timeseries 国际贸易与关税统计 | `wto` | 启用 | `[intel-wto]` | `7` | 否 |
-| IMF DataMapper 宏观经济与财政统计 | `imf` | 启用 | `[intel-imf]` | `6` | 否 |
+| IMF SDMX 3.0 全球宏观、财政与金融统计 | `imf` | 启用 | `[intel-imf]` | `6` | 否 |
 | FAOSTAT 农业、粮食、贸易与排放统计 | `faostat` | 启用 | `[intel-faostat]` | `7` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
@@ -11849,7 +11849,7 @@
 - 票据前缀：`[api-oecd]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`83c66dfcf37eb0574142e6053818daa536289f693541997a211ff20dd2f935bb`
+- 提供方SHA-256：`624be06b79018397cd4bf8865f29577681a5a505b76cfd539b494d517a1125a9`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -11877,8 +11877,7 @@
     "format": {
       "type": "string",
       "enum": [
-        "json",
-        "csv"
+        "json"
       ]
     }
   }
@@ -11909,8 +11908,7 @@
     "format": {
       "type": "string",
       "enum": [
-        "json",
-        "csv"
+        "json"
       ]
     }
   },
@@ -11945,8 +11943,7 @@
     "format": {
       "type": "string",
       "enum": [
-        "json",
-        "csv"
+        "json"
       ]
     }
   },
@@ -11981,8 +11978,7 @@
     "format": {
       "type": "string",
       "enum": [
-        "json",
-        "csv"
+        "json"
       ]
     }
   },
@@ -17485,20 +17481,20 @@
 }
 ```
 
-## IMF DataMapper 宏观经济与财政统计 (`imf`)
+## IMF SDMX 3.0 全球宏观、财政与金融统计 (`imf`)
 
 - 状态：`启用`
-- 说明：通过 IMF 官方 DataMapper API v2 读取指标、国家、地区、分组和宏观时间序列。
-- 目录策略：固定访问 IMF DataMapper API v2，不需要密钥。
-- 执行策略：每张票据最多一次 GET；无重试、无自动翻页；最多20个地点、50个时期。
+- 说明：通过 IMF 当前官方 SDMX 3.0 API 读取 WEO、CPI、BOP、财政、货币金融、贸易及其他公开统计数据流、结构、代码表、概念表和观测值。
+- 目录策略：固定访问 api.imf.org/external/sdmx/3.0；订阅密钥仅通过 Ocp-Apim-Subscription-Key 后端请求头发送，不进入 URL、Issue、日志或 Artifact。
+- 执行策略：每张票据最多一次 GET；无自动重试、无自动翻页；只允许固定 SDMX 结构资源和单一受限数据键。
 - 票据前缀：`[intel-imf]`
-- Secret环境变量名：`无`（仅名称）
+- Secret环境变量名：`IMF_API_KEY`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`0f451d1a130396b6734cf7cf282d9227a61a6a48d65652f50815459d0e2cf15b`
+- 提供方SHA-256：`52169236e694640319593d6cc7fffd1ef578831195fec2c2951b287613b15261`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
-| `catalog-capabilities` | 读取本地 IMF 能力目录。 | `无` |
+| `catalog-capabilities` | 读取本地 IMF SDMX 安全能力目录，不访问上游。 | `无` |
 
 `catalog-capabilities` 参数Schema：
 
@@ -17510,91 +17506,170 @@
 }
 ```
 
-| `list-indicators` | 读取 IMF 指标目录。 | `无` |
+| `get-dataflow` | 读取指定 IMF SDMX 数据流定义。 | `agency, flow, version` |
 
-`list-indicators` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {}
-}
-```
-
-| `list-countries` | 读取国家目录。 | `无` |
-
-`list-countries` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {}
-}
-```
-
-| `list-regions` | 读取地区目录。 | `无` |
-
-`list-regions` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {}
-}
-```
-
-| `list-groups` | 读取经济体分组目录。 | `无` |
-
-`list-groups` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {}
-}
-```
-
-| `get-series` | 读取一个指标、最多20个地点和50个时期的序列。 | `indicator, locations, periods` |
-
-`get-series` 参数Schema：
+`get-dataflow` 参数Schema：
 
 ```json
 {
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "indicator": {
+    "agency": {
       "type": "string",
       "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
     },
-    "locations": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 20,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
-      }
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
     },
-    "periods": {
-      "type": "array",
-      "minItems": 1,
-      "maxItems": 50,
-      "uniqueItems": true,
-      "items": {
-        "type": "string",
-        "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
-      }
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
     }
   },
   "required": [
-    "indicator",
-    "locations"
+    "agency",
+    "flow"
+  ]
+}
+```
+
+| `get-datastructure` | 读取指定 IMF SDMX 数据结构定义。 | `agency, structure_id, version` |
+
+`get-datastructure` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "structure_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    }
+  },
+  "required": [
+    "agency",
+    "structure_id"
+  ]
+}
+```
+
+| `get-codelist` | 读取指定 IMF SDMX 代码表。 | `agency, codelist_id, version` |
+
+`get-codelist` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "codelist_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    }
+  },
+  "required": [
+    "agency",
+    "codelist_id"
+  ]
+}
+```
+
+| `get-conceptscheme` | 读取指定 IMF SDMX 概念表。 | `agency, conceptscheme_id, version` |
+
+`get-conceptscheme` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "conceptscheme_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    }
+  },
+  "required": [
+    "agency",
+    "conceptscheme_id"
+  ]
+}
+```
+
+| `get-data` | 按固定数据流、版本、受限维度键和可选时期范围读取 IMF SDMX 观测数据。 | `agency, flow, version, key, start_period, end_period, dimension_at_observation` |
+
+`get-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "agency": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+    },
+    "key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500,
+      "pattern": "^[A-Za-z0-9*+._@-]+$"
+    },
+    "start_period": {
+      "type": "string",
+      "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
+    },
+    "end_period": {
+      "type": "string",
+      "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
+    },
+    "dimension_at_observation": {
+      "type": "string",
+      "enum": [
+        "AllDimensions",
+        "TimeDimension",
+        "MeasureDimension"
+      ]
+    }
+  },
+  "required": [
+    "agency",
+    "flow",
+    "key"
   ]
 }
 ```
@@ -17606,21 +17681,23 @@
   "requests_per_ticket_max": 1,
   "transient_retry_max": 0,
   "provider_concurrency_max": 1,
-  "timeout_seconds_max": 60,
+  "timeout_seconds_max": 120,
   "max_response_bytes": 20000000,
-  "locations_per_ticket_max": 20,
-  "periods_per_ticket_max": 50,
-  "fixed_api_host": "www.imf.org",
-  "fixed_api_prefix": "/external/datamapper/api/v2",
+  "fixed_api_host": "api.imf.org",
+  "fixed_api_prefix": "/external/sdmx/3.0",
+  "subscription_key_header": "Ocp-Apim-Subscription-Key",
+  "data_key_length_max": 500,
   "automatic_retry_allowed": false,
   "automatic_pagination_allowed": false,
   "bulk_download_allowed": false,
+  "arbitrary_sdmx_resource_types_allowed": false,
   "arbitrary_urls_allowed": false,
   "arbitrary_hosts_allowed": false,
   "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
   "write_operations_allowed": false,
   "secret_values_exposed": false,
-  "authentication_required": false
+  "authentication_required": true
 }
 ```
 

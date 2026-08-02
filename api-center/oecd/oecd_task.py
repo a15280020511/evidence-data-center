@@ -104,16 +104,14 @@ def build_request(
 
 def accept_header(operation: str, fmt: str) -> str:
     data = operation == "get-data"
+    if not data and fmt != "json":
+        raise ValueError("OECD structure resources support json format only")
     if fmt == "csv":
-        return (
-            "application/vnd.sdmx.data+csv;version=2.0.0"
-            if data
-            else "application/vnd.sdmx.structure+csv;version=2.0.0"
-        )
+        return "application/vnd.sdmx.data+csv;version=2.0.0"
     return (
         "application/vnd.sdmx.data+json;version=2.0.0"
         if data
-        else "application/vnd.sdmx.structure+json;version=2.0.0"
+        else "application/vnd.sdmx.structure+json;version=1.0"
     )
 
 

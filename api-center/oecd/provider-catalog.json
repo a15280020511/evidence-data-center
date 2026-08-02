@@ -61,8 +61,7 @@
               "format": {
                 "type": "string",
                 "enum": [
-                  "json",
-                  "csv"
+                  "json"
                 ]
               }
             }
@@ -103,8 +102,7 @@
               "format": {
                 "type": "string",
                 "enum": [
-                  "json",
-                  "csv"
+                  "json"
                 ]
               }
             },
@@ -149,8 +147,7 @@
               "format": {
                 "type": "string",
                 "enum": [
-                  "json",
-                  "csv"
+                  "json"
                 ]
               }
             },
@@ -195,8 +192,7 @@
               "format": {
                 "type": "string",
                 "enum": [
-                  "json",
-                  "csv"
+                  "json"
                 ]
               }
             },
@@ -290,7 +286,8 @@
             "credential_mode": "none"
           }
         }
-      ]
+      ],
+      "service_status_notice": "OECD structure resources use SDMX-JSON 1.0; data resources use SDMX-JSON or SDMX-CSV 2.0."
     }
   ]
 }

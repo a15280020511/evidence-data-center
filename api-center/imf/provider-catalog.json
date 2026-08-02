@@ -1,43 +1,48 @@
 {
-  "schema_version": "imf-provider-catalog-v1",
+  "schema_version": "imf-provider-catalog-v2",
   "secret_values_exposed": false,
-  "replaced_legacy_connectors": [],
+  "replaced_legacy_connectors": [
+    "imf-datamapper-v2"
+  ],
   "providers": [
     {
       "provider_id": "imf",
-      "display_name": "IMF DataMapper 宏观经济与财政统计",
-      "description": "通过 IMF 官方 DataMapper API v2 读取指标、国家、地区、分组和宏观时间序列。",
+      "display_name": "IMF SDMX 3.0 全球宏观、财政与金融统计",
+      "description": "通过 IMF 当前官方 SDMX 3.0 API 读取 WEO、CPI、BOP、财政、货币金融、贸易及其他公开统计数据流、结构、代码表、概念表和观测值。",
       "enabled": true,
       "ticket_prefix": "[intel-imf]",
-      "required_secret_environment_variable": "",
-      "catalog_policy": "固定访问 IMF DataMapper API v2，不需要密钥。",
-      "execution_policy": "每张票据最多一次 GET；无重试、无自动翻页；最多20个地点、50个时期。",
-      "official_documentation": "https://www.imf.org/external/datamapper/api/help",
-      "official_origin": "https://www.imf.org/external/datamapper/api/v2",
+      "required_secret_environment_variable": "IMF_API_KEY",
+      "catalog_policy": "固定访问 api.imf.org/external/sdmx/3.0；订阅密钥仅通过 Ocp-Apim-Subscription-Key 后端请求头发送，不进入 URL、Issue、日志或 Artifact。",
+      "execution_policy": "每张票据最多一次 GET；无自动重试、无自动翻页；只允许固定 SDMX 结构资源和单一受限数据键。",
+      "official_documentation": "https://data.imf.org/en/Resource-Pages/IMF-API",
+      "official_origin": "https://api.imf.org/external/sdmx/3.0",
+      "service_status_notice": "旧 DataMapper 接口会拒绝 GitHub 云端出口，生产连接已切换至 IMF 当前 SDMX 3.0 API。",
       "limits": {
         "requests_per_ticket_max": 1,
         "transient_retry_max": 0,
         "provider_concurrency_max": 1,
-        "timeout_seconds_max": 60,
+        "timeout_seconds_max": 120,
         "max_response_bytes": 20000000,
-        "locations_per_ticket_max": 20,
-        "periods_per_ticket_max": 50,
-        "fixed_api_host": "www.imf.org",
-        "fixed_api_prefix": "/external/datamapper/api/v2",
+        "fixed_api_host": "api.imf.org",
+        "fixed_api_prefix": "/external/sdmx/3.0",
+        "subscription_key_header": "Ocp-Apim-Subscription-Key",
+        "data_key_length_max": 500,
         "automatic_retry_allowed": false,
         "automatic_pagination_allowed": false,
         "bulk_download_allowed": false,
+        "arbitrary_sdmx_resource_types_allowed": false,
         "arbitrary_urls_allowed": false,
         "arbitrary_hosts_allowed": false,
         "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
         "write_operations_allowed": false,
         "secret_values_exposed": false,
-        "authentication_required": false
+        "authentication_required": true
       },
       "operations": [
         {
           "operation_id": "catalog-capabilities",
-          "description": "读取本地 IMF 能力目录。",
+          "description": "读取本地 IMF SDMX 安全能力目录，不访问上游。",
           "parameters": [],
           "parameter_schema": {
             "type": "object",
@@ -52,116 +57,215 @@
           }
         },
         {
-          "operation_id": "list-indicators",
-          "description": "读取 IMF 指标目录。",
-          "parameters": [],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {}
-          },
-          "result_contract": {
-            "provider": "imf",
-            "http_method": "GET",
-            "read_only": true,
-            "credential_mode": "none"
-          }
-        },
-        {
-          "operation_id": "list-countries",
-          "description": "读取国家目录。",
-          "parameters": [],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {}
-          },
-          "result_contract": {
-            "provider": "imf",
-            "http_method": "GET",
-            "read_only": true,
-            "credential_mode": "none"
-          }
-        },
-        {
-          "operation_id": "list-regions",
-          "description": "读取地区目录。",
-          "parameters": [],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {}
-          },
-          "result_contract": {
-            "provider": "imf",
-            "http_method": "GET",
-            "read_only": true,
-            "credential_mode": "none"
-          }
-        },
-        {
-          "operation_id": "list-groups",
-          "description": "读取经济体分组目录。",
-          "parameters": [],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {}
-          },
-          "result_contract": {
-            "provider": "imf",
-            "http_method": "GET",
-            "read_only": true,
-            "credential_mode": "none"
-          }
-        },
-        {
-          "operation_id": "get-series",
-          "description": "读取一个指标、最多20个地点和50个时期的序列。",
+          "operation_id": "get-dataflow",
+          "description": "读取指定 IMF SDMX 数据流定义。",
           "parameters": [
-            "indicator",
-            "locations",
-            "periods"
+            "agency",
+            "flow",
+            "version"
           ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "indicator": {
+              "agency": {
                 "type": "string",
                 "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
               },
-              "locations": {
-                "type": "array",
-                "minItems": 1,
-                "maxItems": 20,
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
-                }
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
               },
-              "periods": {
-                "type": "array",
-                "minItems": 1,
-                "maxItems": 50,
-                "uniqueItems": true,
-                "items": {
-                  "type": "string",
-                  "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
-                }
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
               }
             },
             "required": [
-              "indicator",
-              "locations"
+              "agency",
+              "flow"
             ]
           },
           "result_contract": {
             "provider": "imf",
             "http_method": "GET",
             "read_only": true,
-            "credential_mode": "none"
+            "credential_mode": "subscription_key_header"
+          }
+        },
+        {
+          "operation_id": "get-datastructure",
+          "description": "读取指定 IMF SDMX 数据结构定义。",
+          "parameters": [
+            "agency",
+            "structure_id",
+            "version"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+              },
+              "structure_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              }
+            },
+            "required": [
+              "agency",
+              "structure_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "imf",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_header"
+          }
+        },
+        {
+          "operation_id": "get-codelist",
+          "description": "读取指定 IMF SDMX 代码表。",
+          "parameters": [
+            "agency",
+            "codelist_id",
+            "version"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+              },
+              "codelist_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              }
+            },
+            "required": [
+              "agency",
+              "codelist_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "imf",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_header"
+          }
+        },
+        {
+          "operation_id": "get-conceptscheme",
+          "description": "读取指定 IMF SDMX 概念表。",
+          "parameters": [
+            "agency",
+            "conceptscheme_id",
+            "version"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+              },
+              "conceptscheme_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              }
+            },
+            "required": [
+              "agency",
+              "conceptscheme_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "imf",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_header"
+          }
+        },
+        {
+          "operation_id": "get-data",
+          "description": "按固定数据流、版本、受限维度键和可选时期范围读取 IMF SDMX 观测数据。",
+          "parameters": [
+            "agency",
+            "flow",
+            "version",
+            "key",
+            "start_period",
+            "end_period",
+            "dimension_at_observation"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "agency": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+              },
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.@+-]{0,79}$"
+              },
+              "version": {
+                "type": "string",
+                "pattern": "^(?:\\+|latest|[0-9]+(?:\\.[0-9]+){0,3})$"
+              },
+              "key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500,
+                "pattern": "^[A-Za-z0-9*+._@-]+$"
+              },
+              "start_period": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
+              },
+              "end_period": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(?:-(?:M[0-9]{2}|Q[1-4]))?$"
+              },
+              "dimension_at_observation": {
+                "type": "string",
+                "enum": [
+                  "AllDimensions",
+                  "TimeDimension",
+                  "MeasureDimension"
+                ]
+              }
+            },
+            "required": [
+              "agency",
+              "flow",
+              "key"
+            ]
+          },
+          "result_contract": {
+            "provider": "imf",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_header"
           }
         }
       ]
