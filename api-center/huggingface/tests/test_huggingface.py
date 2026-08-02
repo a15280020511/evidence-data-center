@@ -53,6 +53,35 @@ class FakeApi:
         return [{"path": path, "size": 100} for path in paths]
 
 
+class StrictModelApi:
+    def __init__(self) -> None:
+        self.kwargs = None
+
+    def list_models(
+        self,
+        *,
+        search=None,
+        author=None,
+        pipeline_tag=None,
+        filter=None,
+        sort=None,
+        limit=None,
+        gated=None,
+        token=None,
+    ):
+        self.kwargs = {
+            "search": search,
+            "author": author,
+            "pipeline_tag": pipeline_tag,
+            "filter": filter,
+            "sort": sort,
+            "limit": limit,
+            "gated": gated,
+            "token": token,
+        }
+        return iter([{"id": "open/model", "private": False}])
+
+
 class HuggingFaceProviderTests(unittest.TestCase):
     def test_catalog_and_schema_alignment(self) -> None:
         catalog = json.loads((ROOT / "provider-catalog.json").read_text(encoding="utf-8"))
@@ -80,6 +109,19 @@ class HuggingFaceProviderTests(unittest.TestCase):
         _, kwargs = api.calls[-1]
         self.assertIs(kwargs["token"], False)
         self.assertEqual(kwargs["limit"], 2)
+
+    def test_model_library_maps_to_supported_filter_parameter(self) -> None:
+        api = StrictModelApi()
+        result, method = module.execute_operation(
+            api,
+            "models-search",
+            {"query": "bert", "library": "transformers", "limit": 1},
+            5,
+        )
+        self.assertEqual(method, "list_models")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(api.kwargs["filter"], "transformers")
+        self.assertIs(api.kwargs["token"], False)
 
     def test_security_operation_is_anonymous(self) -> None:
         api = FakeApi()
