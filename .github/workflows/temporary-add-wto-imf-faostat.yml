@@ -65,3 +65,5 @@ jobs:
           git add api-center
           git commit -m "feat: add WTO IMF and FAOSTAT providers"
           git push origin HEAD:feat/wto-imf-faostat-providers
+
+# trigger: 2026-08-02T09:46+08:00
