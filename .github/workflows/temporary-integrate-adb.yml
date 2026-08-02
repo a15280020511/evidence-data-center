@@ -51,3 +51,5 @@ jobs:
           git add api-center .github/workflows/api-catalog-validate.yml
           git commit -m "feat: integrate ADB into unified intelligence catalog"
           git push origin HEAD:feat/adb-kidb-provider
+
+# rerun after correcting the inclusive 25-year boundary regression
