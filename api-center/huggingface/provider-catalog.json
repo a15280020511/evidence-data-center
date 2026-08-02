@@ -1,0 +1,553 @@
+{
+  "schema_version": "huggingface-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "huggingface-hub",
+      "display_name": "Hugging Face Hub 公共模型与数据情报",
+      "description": "读取 Hugging Face Hub 上公开模型、数据集、Spaces、仓库目录、引用和文件元数据，用于模型市场、数据源与开源能力情报发现。",
+      "enabled": true,
+      "ticket_prefix": "[intel-huggingface]",
+      "required_secret_environment_variable": "",
+      "catalog_policy": "仅开放11项固定公共只读能力；不使用登录令牌，不读取私有仓库，不执行推理、训练、Jobs、Space调用、文件下载、仓库克隆、写入或访问审批操作。",
+      "execution_policy": "固定使用 huggingface.co 官方 Hub API；每张票据最多一次受控 Hub 方法调用，搜索最多50项，目录最多100项，路径查询最多20项；不自动翻页、不递归全仓、不持久化缓存。",
+      "official_documentation": "https://huggingface.co/docs/huggingface_hub/en/package_reference/hf_api",
+      "official_origin": "https://huggingface.co",
+      "client_package": "huggingface_hub==1.24.0",
+      "limits": {
+        "hub_method_calls_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "search_results_max": 50,
+        "repo_tree_entries_max": 100,
+        "repo_paths_per_ticket_max": 20,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 10000000,
+        "fixed_api_host": "huggingface.co",
+        "public_repositories_only": true,
+        "authentication_used": false,
+        "private_repositories_allowed": false,
+        "gated_file_download_allowed": false,
+        "inference_allowed": false,
+        "training_or_jobs_allowed": false,
+        "space_invocation_allowed": false,
+        "repository_clone_allowed": false,
+        "file_download_allowed": false,
+        "recursive_full_repository_listing_allowed": false,
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 Hugging Face 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "models-search",
+          "description": "按关键词、作者、任务、库和排序方式搜索公开模型，最多50项。",
+          "parameters": [
+            "query",
+            "author",
+            "task",
+            "library",
+            "sort",
+            "limit",
+            "gated"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "author": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 96
+              },
+              "task": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "library": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "trendingScore",
+                  "downloads",
+                  "likes",
+                  "createdAt",
+                  "lastModified"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              },
+              "gated": {
+                "type": "boolean"
+              }
+            },
+            "maxProperties": 7
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "list_models",
+            "read_only": true,
+            "credential_mode": "anonymous-public"
+          }
+        },
+        {
+          "operation_id": "model-info",
+          "description": "读取一个公开模型仓库的元数据、标签、下载、卡片和文件清单摘要。",
+          "parameters": [
+            "repo_id",
+            "revision"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repo_id"
+            ],
+            "properties": {
+              "repo_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 193,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+              }
+            },
+            "maxProperties": 2
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "model_info",
+            "read_only": true,
+            "credential_mode": "anonymous-public"
+          }
+        },
+        {
+          "operation_id": "model-security",
+          "description": "读取公开模型仓库的 Hub 安全扫描状态与模型元数据。",
+          "parameters": [
+            "repo_id",
+            "revision"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repo_id"
+            ],
+            "properties": {
+              "repo_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 193,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+              }
+            },
+            "maxProperties": 2
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "model_info_securityStatus",
+            "read_only": true,
+            "credential_mode": "anonymous-public"
+          }
+        },
+        {
+          "operation_id": "datasets-search",
+          "description": "按关键词、作者、语言、任务类别和排序方式搜索公开数据集，最多50项。",
+          "parameters": [
+            "query",
+            "author",
+            "language",
+            "task_category",
+            "sort",
+            "limit",
+            "gated"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "author": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 96
+              },
+              "language": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 32
+              },
+              "task_category": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "trendingScore",
+                  "downloads",
+                  "likes",
+                  "createdAt",
+                  "lastModified"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              },
+              "gated": {
+                "type": "boolean"
+              }
+            },
+            "maxProperties": 7
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "list_datasets",
+            "read_only": true,
+            "credential_mode": "anonymous-public"
+          }
+        },
+        {
+          "operation_id": "dataset-info",
+          "description": "读取一个公开数据集仓库的元数据、标签、卡片和文件清单摘要。",
+          "parameters": [
+            "repo_id",
+            "revision"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repo_id"
+            ],
+            "properties": {
+              "repo_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 193,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+              }
+            },
+            "maxProperties": 2
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "dataset_info",
+            "read_only": true,
+            "credential_mode": "anonymous-public"
+          }
+        },
+        {
+          "operation_id": "spaces-search",
+          "description": "按关键词、作者和排序方式搜索公开 Spaces，最多50项。",
+          "parameters": [
+            "query",
+            "author",
+            "sort",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "author": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 96
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "trendingScore",
+                  "likes",
+                  "createdAt",
+                  "lastModified"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              }
+            },
+            "maxProperties": 4
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "list_spaces",
+            "read_only": true,
+            "credential_mode": "anonymous-public"
+          }
+        },
+        {
+          "operation_id": "space-info",
+          "description": "读取一个公开 Space 的元数据、SDK、关联模型和数据集，不调用 Space。",
+          "parameters": [
+            "repo_id",
+            "revision"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repo_id"
+            ],
+            "properties": {
+              "repo_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 193,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+              }
+            },
+            "maxProperties": 2
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "space_info",
+            "read_only": true,
+            "credential_mode": "anonymous-public"
+          }
+        },
+        {
+          "operation_id": "repo-tree",
+          "description": "读取公开模型、数据集或 Space 指定目录的非递归文件树，最多100项。",
+          "parameters": [
+            "repo_id",
+            "repo_type",
+            "revision",
+            "path",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repo_id",
+              "repo_type"
+            ],
+            "properties": {
+              "repo_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 193,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+              },
+              "repo_type": {
+                "type": "string",
+                "enum": [
+                  "model",
+                  "dataset",
+                  "space"
+                ]
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+              },
+              "path": {
+                "type": "string",
+                "maxLength": 300,
+                "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\x00-\\x1f\\x7f]*$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 100
+              }
+            },
+            "maxProperties": 5
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "list_repo_tree",
+            "read_only": true,
+            "credential_mode": "anonymous-public",
+            "recursive": false
+          }
+        },
+        {
+          "operation_id": "repo-refs",
+          "description": "读取公开模型、数据集或 Space 的分支和标签引用，不含 Pull Request 引用。",
+          "parameters": [
+            "repo_id",
+            "repo_type"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repo_id",
+              "repo_type"
+            ],
+            "properties": {
+              "repo_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 193,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+              },
+              "repo_type": {
+                "type": "string",
+                "enum": [
+                  "model",
+                  "dataset",
+                  "space"
+                ]
+              }
+            },
+            "maxProperties": 2
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "list_repo_refs",
+            "read_only": true,
+            "credential_mode": "anonymous-public",
+            "include_pull_requests": false
+          }
+        },
+        {
+          "operation_id": "repo-paths-info",
+          "description": "读取公开仓库最多20个指定路径的大小、Blob、LFS/Xet与安全元数据。",
+          "parameters": [
+            "repo_id",
+            "repo_type",
+            "revision",
+            "paths",
+            "expand"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "repo_id",
+              "repo_type",
+              "paths"
+            ],
+            "properties": {
+              "repo_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 193,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}(?:/[A-Za-z0-9][A-Za-z0-9._-]{0,95})?$"
+              },
+              "repo_type": {
+                "type": "string",
+                "enum": [
+                  "model",
+                  "dataset",
+                  "space"
+                ]
+              },
+              "revision": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._/-]{0,99}$"
+              },
+              "paths": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 300,
+                  "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\x00-\\x1f\\x7f]+$"
+                }
+              },
+              "expand": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "maxProperties": 5
+          },
+          "result_contract": {
+            "provider": "huggingface-hub",
+            "method": "get_paths_info",
+            "read_only": true,
+            "credential_mode": "anonymous-public"
+          }
+        }
+      ]
+    }
+  ]
+}

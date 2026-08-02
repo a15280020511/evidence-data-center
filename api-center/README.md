@@ -448,3 +448,14 @@ FRED_API_KEY
 ```
 
 固定开放 25 项只读能力，覆盖分类、发布、序列、观测值、修订日期、来源和标签。每张票据最多一次 HTTPS GET，强制 JSON、最多 1,000 条、不自动重试或翻页；不开放 API v2 批量发布下载、Maps shape 文件、任意 URL、路径、请求头或写操作。
+
+## Hugging Face Hub 公共模型与数据情报
+
+`api-center/huggingface/` 使用固定官方 Hub API 与 `huggingface_hub==1.24.0`：
+
+```text
+[intel-huggingface]
+无需 Repository Secret
+```
+
+固定开放11项公共只读能力，覆盖模型、数据集、Spaces 搜索与详情，以及非递归仓库目录、分支/标签和指定路径元数据。执行器强制匿名 `token=False`，不读取私有仓库；不开放推理、训练、Jobs、Space调用、文件下载、仓库克隆、自动翻页或写入。
