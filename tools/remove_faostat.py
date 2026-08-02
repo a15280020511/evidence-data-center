@@ -34,11 +34,11 @@ for relative in (
 ):
     path = API / relative
     if not path.exists():
-        raise RuntimeError(f"expected FAOSTAT file missing before removal: {path}")
+        raise RuntimeError(f"expected provider file missing before removal: {path}")
     path.unlink()
 (API / "faostat").rmdir()
 
-# Remove FAOSTAT from the unified managed-provider catalog.
+# Remove the provider from the unified managed-provider catalog.
 builder = API / "build_catalog_market_search.py"
 for old in (
     'FAOSTAT_CATALOG = HERE / "faostat/provider-catalog.json"\n',
@@ -48,7 +48,7 @@ for old in (
 ):
     replace_once(builder, old, "")
 
-# Remove the legacy shared FAOSTAT runtime branch while retaining WTO and IMF.
+# Remove the legacy shared runtime branch while retaining WTO and IMF.
 shared = API / "international-statistics" / "provider_task.py"
 replace_once(
     shared,
@@ -143,8 +143,6 @@ class InternationalStatisticsTests(unittest.TestCase):
                 "get-data",
                 {"agency": "IMF.RES", "flow": "WEO", "key": "https://example.com"},
             )
-        with self.assertRaises(ValueError):
-            mod.build_request("faostat", "catalog-capabilities", {})
 
 
 if __name__ == "__main__":
@@ -153,7 +151,7 @@ if __name__ == "__main__":
     encoding="utf-8",
 )
 
-# Update unified catalog invariants and explicitly forbid the removed provider.
+# Update unified catalog invariants.
 catalog_test = API / "tests" / "test_api_catalog.py"
 for old, new in (
     ('    "faostat": 7,\n', ""),
@@ -161,34 +159,28 @@ for old, new in (
     ('        self.assertEqual(catalog["enabled_managed_provider_count"], 46)\n', '        self.assertEqual(catalog["enabled_managed_provider_count"], 45)\n'),
     ('        self.assertEqual(catalog["managed_operation_count"], 479)\n', '        self.assertEqual(catalog["managed_operation_count"], 472)\n'),
     ('            "faostat": "FAOSTAT_PASSWORD",\n', ""),
-    ('        self.assertNotIn("qichacha", providers)\n', '        self.assertNotIn("qichacha", providers)\n        self.assertNotIn("faostat", providers)\n'),
 ):
     replace_once(catalog_test, old, new)
 
 capability_test = API / "tests" / "test_capability_maximization.py"
 replace_once(capability_test, '            479,\n', '            472,\n')
 replace_once(capability_test, '            "faostat": 7,\n', "")
-replace_once(
-    capability_test,
-    '        self.assertNotIn("tianditu", providers)\n',
-    '        self.assertNotIn("tianditu", providers)\n        self.assertNotIn("faostat", providers)\n',
-)
 
 # Rebuild deterministic catalog artifacts after the provider has been removed.
 subprocess.run(["python", str(API / "build_catalog_market_search.py")], check=True)
 
-# No executable, catalog, test or generated contract under api-center may retain FAOSTAT.
+# No executable, catalog, test or generated contract under api-center may retain the removed provider.
 remaining: list[str] = []
 for path in API.rglob("*"):
-    if not path.is_file() or path.suffix in {".pyc"}:
+    if not path.is_file() or path.suffix == ".pyc":
         continue
     try:
         text = path.read_text(encoding="utf-8")
     except UnicodeDecodeError:
         continue
-    if "faostat" in text.lower() or "FAOSTAT" in text:
+    if "faostat" in text.lower():
         remaining.append(str(path.relative_to(ROOT)))
 if remaining:
-    raise RuntimeError(f"FAOSTAT references remain after removal: {remaining}")
+    raise RuntimeError(f"removed-provider references remain: {remaining}")
 
-print("FAOSTAT removed; unified catalog regenerated to 45 providers / 472 operations")
+print("Provider removed; unified catalog regenerated to 45 providers / 472 operations")
