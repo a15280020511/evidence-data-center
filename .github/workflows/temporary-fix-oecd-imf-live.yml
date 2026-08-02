@@ -58,4 +58,4 @@ jobs:
           git commit -m "fix: repair OECD and IMF live connectivity"
           git push origin HEAD:fix/oecd-imf-live-connectivity
 
-# rerun after IMF SDMX contract test update
+# rerun after preserving IMF SDMX plus wildcard
