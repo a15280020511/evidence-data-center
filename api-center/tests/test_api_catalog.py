@@ -65,6 +65,7 @@ EXPECTED_OPERATION_COUNTS = {
     "llamaparse": 3,
     "public-data-geospatial": 35,
     "cloudflare": 22,
+    "fred": 25,
 }
 
 
@@ -87,9 +88,9 @@ class ApiCatalogTests(unittest.TestCase):
             manifest["enabled_connector_count"],
         )
         self.assertEqual(catalog["connector_count"], 68)
-        self.assertEqual(catalog["managed_provider_count"], 49)
-        self.assertEqual(catalog["enabled_managed_provider_count"], 49)
-        self.assertEqual(catalog["managed_operation_count"], 544)
+        self.assertEqual(catalog["managed_provider_count"], 50)
+        self.assertEqual(catalog["enabled_managed_provider_count"], 50)
+        self.assertEqual(catalog["managed_operation_count"], 569)
         self.assertGreaterEqual(catalog["exposed_parameter_count"], 500)
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
         self.assertFalse(catalog["secret_values_exposed"])
@@ -144,6 +145,7 @@ class ApiCatalogTests(unittest.TestCase):
             "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
             "cloudflare": "CLOUDFLARE_API_TOKEN",
+            "fred": "FRED_API_KEY",
         }
         for provider_id, secret_name in expected_secret_names.items():
             self.assertEqual(

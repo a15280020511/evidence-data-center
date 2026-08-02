@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`49/49` 已启用
-- 托管操作总数：`544`
-- 已公开参数总数：`1998`
-- 目录 SHA-256：`eb888cd4ef4c13b23c0704472bf0edb2eafd4796284ca3195142b85d9f32f23f`
+- 托管提供方：`50/50` 已启用
+- 托管操作总数：`569`
+- 已公开参数总数：`2095`
+- 目录 SHA-256：`fa8725155044d6049750f42c7cec1f6e2a7a720840aed33d93cfc6a3bb5e3822`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -66,6 +66,7 @@
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
 | 全球公共数据、空间地理与中国数据 | `public-data-geospatial` | 启用 | `[intel-public-data]` | `35` | 否 |
 | Cloudflare 情报与云端浏览器 | `cloudflare` | 启用 | `[intel-cloudflare]` | `22` | 否 |
+| FRED 官方经济与金融时间序列 | `fred` | 启用 | `[intel-fred]` | `25` | 否 |
 
 ## 普通连接器
 
@@ -21056,6 +21057,1066 @@
   "queue_writes_allowed": false,
   "write_operations_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## FRED 官方经济与金融时间序列 (`fred`)
+
+- 状态：`启用`
+- 说明：通过圣路易斯联邦储备银行官方 FRED API v1 读取 FRED/ALFRED 分类、发布、序列、观测值、修订日期、来源和标签数据。
+- 目录策略：开放25项固定只读JSON能力；禁止API v2批量发布下载、Maps shape文件、任意URL、路径、请求头、客户端密钥、自动翻页和写操作。
+- 执行策略：FRED_API_KEY仅由GitHub Actions后端注入查询参数；每张票据最多一次GET，不自动重试、不跟随重定向，limit最大1000。
+- 票据前缀：`[intel-fred]`
+- Secret环境变量名：`FRED_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`ac2782dbd152d88560672bb3a4b9a9f3afde7d2f51322bd49ffecc01a2d6b0c9`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地FRED安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `category` | 读取一个FRED分类。 | `category_id` |
+
+`category` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "category_id"
+  ],
+  "properties": {
+    "category_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    }
+  }
+}
+```
+
+| `category-children` | 读取一个分类的直接子分类。 | `category_id` |
+
+`category-children` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "category_id"
+  ],
+  "properties": {
+    "category_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    }
+  }
+}
+```
+
+| `category-related` | 读取一个分类的相关分类。 | `category_id` |
+
+`category-related` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "category_id"
+  ],
+  "properties": {
+    "category_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    }
+  }
+}
+```
+
+| `category-series` | 读取指定分类中的经济序列。 | `category_id, limit, offset, order_by, sort_order` |
+
+`category-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "category_id"
+  ],
+  "properties": {
+    "category_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2147483647
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "series_id",
+        "title",
+        "units",
+        "frequency",
+        "seasonal_adjustment",
+        "realtime_start",
+        "realtime_end",
+        "last_updated",
+        "observation_start",
+        "observation_end",
+        "popularity",
+        "group_popularity"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `releases` | 读取全部经济数据发布目录。 | `limit, offset, order_by, sort_order` |
+
+`releases` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "release_id",
+        "name",
+        "press_release",
+        "realtime_start",
+        "realtime_end"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `releases-dates` | 读取所有发布的发布日期。 | `limit, offset, sort_order, include_release_dates_with_no_data` |
+
+`releases-dates` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    },
+    "include_release_dates_with_no_data": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+| `release` | 读取一个经济数据发布。 | `release_id` |
+
+`release` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "release_id"
+  ],
+  "properties": {
+    "release_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    }
+  }
+}
+```
+
+| `release-dates` | 读取指定发布的历史发布日期。 | `release_id, limit, offset, sort_order, include_release_dates_with_no_data` |
+
+`release-dates` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "release_id"
+  ],
+  "properties": {
+    "release_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    },
+    "include_release_dates_with_no_data": {
+      "type": "boolean"
+    }
+  }
+}
+```
+
+| `release-series` | 读取指定发布包含的经济序列。 | `release_id, limit, offset, order_by, sort_order` |
+
+`release-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "release_id"
+  ],
+  "properties": {
+    "release_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "series_id",
+        "title",
+        "units",
+        "frequency",
+        "seasonal_adjustment",
+        "realtime_start",
+        "realtime_end",
+        "last_updated",
+        "observation_start",
+        "observation_end",
+        "popularity",
+        "group_popularity"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `release-sources` | 读取指定发布的数据来源。 | `release_id` |
+
+`release-sources` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "release_id"
+  ],
+  "properties": {
+    "release_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    }
+  }
+}
+```
+
+| `series` | 读取一个FRED经济序列的元数据。 | `series_id, realtime_start, realtime_end` |
+
+`series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "series_id"
+  ],
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "realtime_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "realtime_end": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}
+```
+
+| `series-categories` | 读取一个序列所属分类。 | `series_id, realtime_start, realtime_end` |
+
+`series-categories` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "series_id"
+  ],
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "realtime_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "realtime_end": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}
+```
+
+| `series-observations` | 读取一个序列的观测值，可限定观测日期、实时期、单位和频率。 | `series_id, observation_start, observation_end, realtime_start, realtime_end, limit, offset, sort_order, units, frequency, aggregation_method, output_type, vintage_dates` |
+
+`series-observations` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "series_id"
+  ],
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "observation_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "observation_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "realtime_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "realtime_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    },
+    "units": {
+      "type": "string",
+      "enum": [
+        "lin",
+        "chg",
+        "ch1",
+        "pch",
+        "pc1",
+        "pca",
+        "cch",
+        "cca",
+        "log"
+      ]
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "d",
+        "w",
+        "bw",
+        "m",
+        "q",
+        "sa",
+        "a",
+        "wef",
+        "weth",
+        "wew",
+        "wetu",
+        "wem",
+        "wesu",
+        "wesa",
+        "bwew",
+        "bwem"
+      ]
+    },
+    "aggregation_method": {
+      "type": "string",
+      "enum": [
+        "avg",
+        "sum",
+        "eop"
+      ]
+    },
+    "output_type": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 4
+    },
+    "vintage_dates": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "format": "date"
+      }
+    }
+  }
+}
+```
+
+| `series-release` | 读取一个序列对应的数据发布。 | `series_id, realtime_start, realtime_end` |
+
+`series-release` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "series_id"
+  ],
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "realtime_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "realtime_end": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}
+```
+
+| `series-search` | 按关键词或序列ID搜索经济序列。 | `search_text, search_type, limit, offset, order_by, sort_order` |
+
+`series-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "search_text"
+  ],
+  "properties": {
+    "search_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "search_type": {
+      "type": "string",
+      "enum": [
+        "full_text",
+        "series_id"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "search_rank",
+        "series_id",
+        "title",
+        "units",
+        "frequency",
+        "seasonal_adjustment",
+        "realtime_start",
+        "realtime_end",
+        "last_updated",
+        "observation_start",
+        "observation_end",
+        "popularity",
+        "group_popularity"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `series-updates` | 读取FRED服务器最近更新的经济序列。 | `limit, offset, filter_value` |
+
+`series-updates` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "filter_value": {
+      "type": "string",
+      "enum": [
+        "all",
+        "macro",
+        "regional"
+      ]
+    }
+  }
+}
+```
+
+| `series-vintagedates` | 读取一个序列发生修订或新增观测的历史日期。 | `series_id, limit, offset, sort_order` |
+
+`series-vintagedates` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "series_id"
+  ],
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `sources` | 读取全部经济数据来源。 | `limit, offset, order_by, sort_order` |
+
+`sources` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "source_id",
+        "name",
+        "realtime_start",
+        "realtime_end"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `source` | 读取一个经济数据来源。 | `source_id` |
+
+`source` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    }
+  }
+}
+```
+
+| `source-releases` | 读取指定来源对应的发布。 | `source_id, limit, offset, order_by, sort_order` |
+
+`source-releases` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "release_id",
+        "name",
+        "press_release",
+        "realtime_start",
+        "realtime_end"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `tags` | 读取或搜索FRED标签。 | `tag_names, tag_group_id, search_text, limit, offset, order_by, sort_order` |
+
+`tags` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "tag_names": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    },
+    "tag_group_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "search_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "series_count",
+        "popularity",
+        "created",
+        "name",
+        "group_id"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `related-tags` | 读取与给定标签关联的标签。 | `tag_names, exclude_tag_names, tag_group_id, search_text, limit, offset, order_by, sort_order` |
+
+`related-tags` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tag_names"
+  ],
+  "properties": {
+    "tag_names": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    },
+    "exclude_tag_names": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    },
+    "tag_group_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,32}$"
+    },
+    "search_text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "series_count",
+        "popularity",
+        "created",
+        "name",
+        "group_id"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `tags-series` | 读取匹配一组标签的经济序列。 | `tag_names, exclude_tag_names, limit, offset, order_by, sort_order` |
+
+`tags-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tag_names"
+  ],
+  "properties": {
+    "tag_names": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    },
+    "exclude_tag_names": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "series_id",
+        "title",
+        "units",
+        "frequency",
+        "seasonal_adjustment",
+        "realtime_start",
+        "realtime_end",
+        "last_updated",
+        "observation_start",
+        "observation_end",
+        "popularity",
+        "group_popularity"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+| `series-tags` | 读取一个经济序列的标签。 | `series_id, order_by, sort_order` |
+
+`series-tags` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "series_id"
+  ],
+  "properties": {
+    "series_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,64}$"
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "series_count",
+        "popularity",
+        "created",
+        "name",
+        "group_id"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 10000000,
+  "rows_per_request_max": 1000,
+  "fixed_api_host": "api.stlouisfed.org",
+  "fixed_api_prefix": "/fred",
+  "automatic_pagination_allowed": false,
+  "bulk_v2_release_download_allowed": false,
+  "maps_shapefile_download_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "arbitrary_query_parameters_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": true
 }
 ```
 
