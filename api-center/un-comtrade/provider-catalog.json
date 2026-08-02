@@ -53,172 +53,892 @@
           "operation_id": "catalog-capabilities",
           "description": "读取本地UN Comtrade安全能力目录，不访问上游。",
           "parameters": [],
-          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}, "maxProperties": 0},
-          "result_contract": {"provider": "un-comtrade", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "un-comtrade",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
         },
         {
           "operation_id": "preview-trade",
           "description": "无需密钥预览一个时期和一个商品代码的货物或服务贸易数据，最多500条。",
-          "parameters": ["type_code", "frequency", "classification", "periods", "reporter_codes", "commodity_codes", "flow_codes", "partner_codes", "partner2_codes", "customs_codes", "mode_of_transport_codes", "max_records", "breakdown_mode", "count_only", "include_descriptions"],
+          "parameters": [
+            "type_code",
+            "frequency",
+            "classification",
+            "periods",
+            "reporter_codes",
+            "commodity_codes",
+            "flow_codes",
+            "partner_codes",
+            "partner2_codes",
+            "customs_codes",
+            "mode_of_transport_codes",
+            "max_records",
+            "breakdown_mode",
+            "count_only",
+            "include_descriptions"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
+            "type": "object",
+            "additionalProperties": false,
             "properties": {
-              "type_code": {"type": "string", "enum": ["C", "S", "c", "s"]},
-              "frequency": {"type": "string", "enum": ["A", "M", "a", "m"]},
-              "classification": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"},
-              "periods": {"type": "array", "minItems": 1, "maxItems": 1, "uniqueItems": true, "items": {"type": ["string", "integer"]}},
-              "reporter_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "commodity_codes": {"type": "array", "minItems": 1, "maxItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"}},
-              "flow_codes": {"type": "array", "minItems": 1, "maxItems": 6, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"}},
-              "partner_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "partner2_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "customs_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"}},
-              "mode_of_transport_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"}},
-              "max_records": {"type": "integer", "minimum": 1, "maximum": 500, "default": 500},
-              "breakdown_mode": {"type": "string", "enum": ["classic", "plus"]},
-              "count_only": {"type": "boolean"},
-              "include_descriptions": {"type": "boolean"}
+              "type_code": {
+                "type": "string",
+                "enum": [
+                  "C",
+                  "S",
+                  "c",
+                  "s"
+                ]
+              },
+              "frequency": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "M",
+                  "a",
+                  "m"
+                ]
+              },
+              "classification": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+              },
+              "periods": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                }
+              },
+              "reporter_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "commodity_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"
+                }
+              },
+              "flow_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 6,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"
+                }
+              },
+              "partner_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "partner2_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "customs_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+                }
+              },
+              "mode_of_transport_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+                }
+              },
+              "max_records": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 500,
+                "default": 500
+              },
+              "breakdown_mode": {
+                "type": "string",
+                "enum": [
+                  "classic",
+                  "plus"
+                ]
+              },
+              "count_only": {
+                "type": "boolean"
+              },
+              "include_descriptions": {
+                "type": "boolean"
+              }
             },
-            "required": ["type_code", "frequency", "classification", "periods", "reporter_codes", "commodity_codes", "flow_codes"]
+            "required": [
+              "type_code",
+              "frequency",
+              "classification",
+              "periods",
+              "reporter_codes",
+              "commodity_codes",
+              "flow_codes"
+            ]
           },
-          "result_contract": {"provider": "un-comtrade", "path": "/public/v1/preview/{type}/{frequency}/{classification}", "http_method": "GET", "read_only": true, "credential_mode": "none", "records_max": 500}
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/public/v1/preview/{type}/{frequency}/{classification}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "records_max": 500
+          }
         },
         {
           "operation_id": "final-trade",
           "description": "使用免费Subscription Key读取正式货物或服务贸易数据，情报中心单次最多5000条。",
-          "parameters": ["type_code", "frequency", "classification", "periods", "reporter_codes", "commodity_codes", "flow_codes", "partner_codes", "partner2_codes", "customs_codes", "mode_of_transport_codes", "max_records", "breakdown_mode", "count_only", "include_descriptions"],
+          "parameters": [
+            "type_code",
+            "frequency",
+            "classification",
+            "periods",
+            "reporter_codes",
+            "commodity_codes",
+            "flow_codes",
+            "partner_codes",
+            "partner2_codes",
+            "customs_codes",
+            "mode_of_transport_codes",
+            "max_records",
+            "breakdown_mode",
+            "count_only",
+            "include_descriptions"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
+            "type": "object",
+            "additionalProperties": false,
             "properties": {
-              "type_code": {"type": "string", "enum": ["C", "S", "c", "s"]},
-              "frequency": {"type": "string", "enum": ["A", "M", "a", "m"]},
-              "classification": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"},
-              "periods": {"type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": {"type": ["string", "integer"]}},
-              "reporter_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "commodity_codes": {"type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true, "items": {"type": "string", "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"}},
-              "flow_codes": {"type": "array", "minItems": 1, "maxItems": 6, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"}},
-              "partner_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "partner2_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "customs_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"}},
-              "mode_of_transport_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"}},
-              "max_records": {"type": "integer", "minimum": 1, "maximum": 5000, "default": 5000},
-              "breakdown_mode": {"type": "string", "enum": ["classic", "plus"]},
-              "count_only": {"type": "boolean"},
-              "include_descriptions": {"type": "boolean"}
+              "type_code": {
+                "type": "string",
+                "enum": [
+                  "C",
+                  "S",
+                  "c",
+                  "s"
+                ]
+              },
+              "frequency": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "M",
+                  "a",
+                  "m"
+                ]
+              },
+              "classification": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+              },
+              "periods": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "uniqueItems": true,
+                "items": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                }
+              },
+              "reporter_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "commodity_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"
+                }
+              },
+              "flow_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 6,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"
+                }
+              },
+              "partner_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "partner2_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "customs_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+                }
+              },
+              "mode_of_transport_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+                }
+              },
+              "max_records": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5000,
+                "default": 5000
+              },
+              "breakdown_mode": {
+                "type": "string",
+                "enum": [
+                  "classic",
+                  "plus"
+                ]
+              },
+              "count_only": {
+                "type": "boolean"
+              },
+              "include_descriptions": {
+                "type": "boolean"
+              }
             },
-            "required": ["type_code", "frequency", "classification", "periods", "reporter_codes", "commodity_codes", "flow_codes"]
+            "required": [
+              "type_code",
+              "frequency",
+              "classification",
+              "periods",
+              "reporter_codes",
+              "commodity_codes",
+              "flow_codes"
+            ]
           },
-          "result_contract": {"provider": "un-comtrade", "path": "/data/v1/get/{type}/{frequency}/{classification}", "http_method": "GET", "read_only": true, "credential_mode": "subscription_key_query_backend_only", "records_max": 5000}
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/data/v1/get/{type}/{frequency}/{classification}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_query_backend_only",
+            "records_max": 5000
+          }
         },
         {
           "operation_id": "tariffline-trade",
           "description": "读取正式货物关税行数据，禁止服务类型，单次最多5000条。",
-          "parameters": ["type_code", "frequency", "classification", "periods", "reporter_codes", "commodity_codes", "flow_codes", "partner_codes", "partner2_codes", "customs_codes", "mode_of_transport_codes", "max_records", "breakdown_mode", "count_only", "include_descriptions"],
+          "parameters": [
+            "type_code",
+            "frequency",
+            "classification",
+            "periods",
+            "reporter_codes",
+            "commodity_codes",
+            "flow_codes",
+            "partner_codes",
+            "partner2_codes",
+            "customs_codes",
+            "mode_of_transport_codes",
+            "max_records",
+            "breakdown_mode",
+            "count_only",
+            "include_descriptions"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
+            "type": "object",
+            "additionalProperties": false,
             "properties": {
-              "type_code": {"type": "string", "enum": ["C", "c"]},
-              "frequency": {"type": "string", "enum": ["A", "M", "a", "m"]},
-              "classification": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"},
-              "periods": {"type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": {"type": ["string", "integer"]}},
-              "reporter_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "commodity_codes": {"type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true, "items": {"type": "string", "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"}},
-              "flow_codes": {"type": "array", "minItems": 1, "maxItems": 6, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"}},
-              "partner_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "partner2_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "customs_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"}},
-              "mode_of_transport_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"}},
-              "max_records": {"type": "integer", "minimum": 1, "maximum": 5000, "default": 5000},
-              "breakdown_mode": {"type": "string", "enum": ["classic", "plus"]},
-              "count_only": {"type": "boolean"},
-              "include_descriptions": {"type": "boolean"}
+              "type_code": {
+                "type": "string",
+                "enum": [
+                  "C",
+                  "c"
+                ]
+              },
+              "frequency": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "M",
+                  "a",
+                  "m"
+                ]
+              },
+              "classification": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+              },
+              "periods": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "uniqueItems": true,
+                "items": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                }
+              },
+              "reporter_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "commodity_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"
+                }
+              },
+              "flow_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 6,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9]{0,5}$"
+                }
+              },
+              "partner_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "partner2_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "customs_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+                }
+              },
+              "mode_of_transport_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+                }
+              },
+              "max_records": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5000,
+                "default": 5000
+              },
+              "breakdown_mode": {
+                "type": "string",
+                "enum": [
+                  "classic",
+                  "plus"
+                ]
+              },
+              "count_only": {
+                "type": "boolean"
+              },
+              "include_descriptions": {
+                "type": "boolean"
+              }
             },
-            "required": ["type_code", "frequency", "classification", "periods", "reporter_codes", "commodity_codes", "flow_codes"]
+            "required": [
+              "type_code",
+              "frequency",
+              "classification",
+              "periods",
+              "reporter_codes",
+              "commodity_codes",
+              "flow_codes"
+            ]
           },
-          "result_contract": {"provider": "un-comtrade", "path": "/data/v1/getTariffline/C/{frequency}/{classification}", "http_method": "GET", "read_only": true, "credential_mode": "subscription_key_query_backend_only", "records_max": 5000}
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/data/v1/getTariffline/C/{frequency}/{classification}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_query_backend_only",
+            "records_max": 5000
+          }
         },
         {
           "operation_id": "data-availability",
           "description": "查询正式贸易数据集可用性，可按时期、报告方和发布日期过滤。",
-          "parameters": ["type_code", "frequency", "classification", "periods", "reporter_codes", "published_date_from", "published_date_to"],
+          "parameters": [
+            "type_code",
+            "frequency",
+            "classification",
+            "periods",
+            "reporter_codes",
+            "published_date_from",
+            "published_date_to"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
+            "type": "object",
+            "additionalProperties": false,
             "properties": {
-              "type_code": {"type": "string", "enum": ["C", "S", "c", "s"]},
-              "frequency": {"type": "string", "enum": ["A", "M", "a", "m"]},
-              "classification": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"},
-              "periods": {"type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": {"type": ["string", "integer"]}},
-              "reporter_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "published_date_from": {"type": "string", "format": "date"},
-              "published_date_to": {"type": "string", "format": "date"}
+              "type_code": {
+                "type": "string",
+                "enum": [
+                  "C",
+                  "S",
+                  "c",
+                  "s"
+                ]
+              },
+              "frequency": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "M",
+                  "a",
+                  "m"
+                ]
+              },
+              "classification": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+              },
+              "periods": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "uniqueItems": true,
+                "items": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                }
+              },
+              "reporter_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "published_date_from": {
+                "type": "string",
+                "format": "date"
+              },
+              "published_date_to": {
+                "type": "string",
+                "format": "date"
+              }
             },
-            "required": ["type_code", "frequency", "classification"]
+            "required": [
+              "type_code",
+              "frequency",
+              "classification"
+            ]
           },
-          "result_contract": {"provider": "un-comtrade", "path": "/data/v1/getDa/{type}/{frequency}/{classification}", "http_method": "GET", "read_only": true, "credential_mode": "subscription_key_query_backend_only"}
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/data/v1/getDa/{type}/{frequency}/{classification}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_query_backend_only"
+          }
         },
         {
           "operation_id": "live-updates",
           "description": "读取UN Comtrade最近数据发布和修订进度。",
           "parameters": [],
-          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}, "maxProperties": 0},
-          "result_contract": {"provider": "un-comtrade", "path": "/data/v1/getLiveUpdate", "http_method": "GET", "read_only": true, "credential_mode": "subscription_key_query_backend_only"}
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/data/v1/getLiveUpdate",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_query_backend_only"
+          }
         },
         {
           "operation_id": "metadata",
           "description": "读取指定数据集的发布说明、脚注和元数据信息。",
-          "parameters": ["type_code", "frequency", "classification", "periods", "reporter_codes"],
+          "parameters": [
+            "type_code",
+            "frequency",
+            "classification",
+            "periods",
+            "reporter_codes"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
+            "type": "object",
+            "additionalProperties": false,
             "properties": {
-              "type_code": {"type": "string", "enum": ["C", "S", "c", "s"]},
-              "frequency": {"type": "string", "enum": ["A", "M", "a", "m"]},
-              "classification": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"},
-              "periods": {"type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": {"type": ["string", "integer"]}},
-              "reporter_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}}
+              "type_code": {
+                "type": "string",
+                "enum": [
+                  "C",
+                  "S",
+                  "c",
+                  "s"
+                ]
+              },
+              "frequency": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "M",
+                  "a",
+                  "m"
+                ]
+              },
+              "classification": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+              },
+              "periods": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "uniqueItems": true,
+                "items": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                }
+              },
+              "reporter_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              }
             },
-            "required": ["type_code", "frequency", "classification", "periods", "reporter_codes"]
+            "required": [
+              "type_code",
+              "frequency",
+              "classification",
+              "periods",
+              "reporter_codes"
+            ]
           },
-          "result_contract": {"provider": "un-comtrade", "path": "/data/v1/getMetadata/{type}/{frequency}/{classification}", "http_method": "GET", "read_only": true, "credential_mode": "subscription_key_query_backend_only"}
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/data/v1/getMetadata/{type}/{frequency}/{classification}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_query_backend_only"
+          }
         },
         {
           "operation_id": "trade-balance",
           "description": "读取货物贸易差额工具结果，单次最多5000条。",
-          "parameters": ["type_code", "frequency", "classification", "periods", "reporter_codes", "commodity_codes", "partner_codes", "partner2_codes", "customs_codes", "mode_of_transport_codes", "max_records", "breakdown_mode", "count_only", "include_descriptions"],
+          "parameters": [
+            "type_code",
+            "frequency",
+            "classification",
+            "periods",
+            "reporter_codes",
+            "commodity_codes",
+            "partner_codes",
+            "partner2_codes",
+            "customs_codes",
+            "mode_of_transport_codes",
+            "max_records",
+            "breakdown_mode",
+            "include_descriptions"
+          ],
           "parameter_schema": {
-            "type": "object", "additionalProperties": false,
+            "type": "object",
+            "additionalProperties": false,
             "properties": {
-              "type_code": {"type": "string", "enum": ["C", "c"]},
-              "frequency": {"type": "string", "enum": ["A", "M", "a", "m"]},
-              "classification": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"},
-              "periods": {"type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": {"type": ["string", "integer"]}},
-              "reporter_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "commodity_codes": {"type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true, "items": {"type": "string", "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"}},
-              "partner_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "partner2_codes": {"type": "array", "minItems": 1, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 0, "maximum": 9999}},
-              "customs_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"}},
-              "mode_of_transport_codes": {"type": "array", "minItems": 1, "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"}},
-              "max_records": {"type": "integer", "minimum": 1, "maximum": 5000, "default": 5000},
-              "breakdown_mode": {"type": "string", "enum": ["classic", "plus"]},
-              "count_only": {"type": "boolean"},
-              "include_descriptions": {"type": "boolean"}
+              "type_code": {
+                "type": "string",
+                "enum": [
+                  "C",
+                  "c"
+                ]
+              },
+              "frequency": {
+                "type": "string",
+                "enum": [
+                  "A",
+                  "M",
+                  "a",
+                  "m"
+                ]
+              },
+              "classification": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9]{0,7}$"
+              },
+              "periods": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 12,
+                "uniqueItems": true,
+                "items": {
+                  "type": [
+                    "string",
+                    "integer"
+                  ]
+                }
+              },
+              "reporter_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "commodity_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^(?:TOTAL|[A-Za-z0-9.]{1,20})$"
+                }
+              },
+              "partner_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "partner2_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9999
+                }
+              },
+              "customs_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+                }
+              },
+              "mode_of_transport_codes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,31}$"
+                }
+              },
+              "max_records": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5000,
+                "default": 5000
+              },
+              "breakdown_mode": {
+                "type": "string",
+                "enum": [
+                  "classic",
+                  "plus"
+                ]
+              },
+              "include_descriptions": {
+                "type": "boolean"
+              }
             },
-            "required": ["type_code", "frequency", "classification", "periods", "reporter_codes", "commodity_codes"]
+            "required": [
+              "type_code",
+              "frequency",
+              "classification",
+              "periods",
+              "reporter_codes",
+              "commodity_codes"
+            ]
           },
-          "result_contract": {"provider": "un-comtrade", "path": "/tools/v1/getTradeBalance/C/{frequency}/{classification}", "http_method": "GET", "read_only": true, "credential_mode": "subscription_key_query_backend_only", "records_max": 5000}
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/tools/v1/getTradeBalance/C/{frequency}/{classification}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "subscription_key_query_backend_only",
+            "records_max": 5000
+          }
         },
         {
           "operation_id": "reporters-reference",
           "description": "读取固定的UN Comtrade报告国家和地区参考代码表。",
           "parameters": [],
-          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}, "maxProperties": 0},
-          "result_contract": {"provider": "un-comtrade", "path": "/files/v1/app/reference/Reporters.json", "http_method": "GET", "read_only": true, "credential_mode": "none"}
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/files/v1/app/reference/Reporters.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
         },
         {
           "operation_id": "partners-reference",
           "description": "读取固定的UN Comtrade伙伴国家和地区参考代码表。",
           "parameters": [],
-          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}, "maxProperties": 0},
-          "result_contract": {"provider": "un-comtrade", "path": "/files/v1/app/reference/partnerAreas.json", "http_method": "GET", "read_only": true, "credential_mode": "none"}
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "un-comtrade",
+            "path": "/files/v1/app/reference/partnerAreas.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
         }
       ]
     }

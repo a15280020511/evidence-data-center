@@ -179,7 +179,8 @@ def _trade_query(parameters: Mapping[str, Any], *, preview: bool, trade_balance:
         if value not in {"classic", "plus"}:
             raise ValueError("breakdown_mode must be classic or plus")
         query.append(("breakdownMode", value))
-    _append_boolean(query, parameters, "count_only", "countOnly")
+    if not trade_balance:
+        _append_boolean(query, parameters, "count_only", "countOnly")
     _append_boolean(query, parameters, "include_descriptions", "includeDesc")
     return query
 
