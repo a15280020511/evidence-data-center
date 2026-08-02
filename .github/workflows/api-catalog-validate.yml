@@ -69,7 +69,8 @@ jobs:
             -r api-center/worldbank-documents/requirements.txt \
             -r api-center/bis/requirements.txt \
             -r api-center/adb/requirements.txt \
-            -r api-center/public-data-geospatial/requirements.txt
+            -r api-center/public-data-geospatial/requirements.txt \
+            -r api-center/huggingface/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
