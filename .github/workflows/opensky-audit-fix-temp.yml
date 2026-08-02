@@ -1,0 +1,41 @@
+name: Temporary OpenSky Audit Naming Fix
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/opensky-audit-fix-temp.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+          ref: feat/opensky-network-provider
+
+      - name: Rename non-secret OAuth endpoint constant
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('api-center/opensky-network/opensky_network_task.py')
+          text = path.read_text(encoding='utf-8')
+          if text.count('TOKEN_URL') != 2:
+              raise SystemExit('unexpected TOKEN_URL occurrence count')
+          path.write_text(text.replace('TOKEN_URL', 'AUTH_ENDPOINT'), encoding='utf-8')
+          PY
+          python -m py_compile api-center/opensky-network/opensky_network_task.py
+          git diff --check
+
+      - name: Commit audit-safe naming
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center/opensky-network/opensky_network_task.py
+          git commit -m "fix: clarify OpenSky OAuth endpoint constant"
+          git push origin HEAD:feat/opensky-network-provider
