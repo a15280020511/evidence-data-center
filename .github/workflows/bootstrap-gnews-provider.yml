@@ -6,6 +6,10 @@ on:
       - feat/gnews-provider-20260803
     paths:
       - ".github/workflows/bootstrap-gnews-provider.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/bootstrap-gnews-provider.yml"
 
 permissions:
   contents: write
