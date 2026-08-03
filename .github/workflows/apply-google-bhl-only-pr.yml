@@ -1,0 +1,78 @@
+name: Apply Google Books and BHL Reduction on PR
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-google-bhl-only-pr.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.head_ref == 'fix/retain-google-books-bhl-only'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/retain-google-books-bhl-only
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Execute audited patch script
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path('.github/workflows/apply-google-bhl-only.yml').read_text(encoding='utf-8').splitlines()
+          capture = False
+          lines = []
+          for line in source:
+              if line.strip() == "python - <<'PY'":
+                  capture = True
+                  continue
+              if capture and line.strip() == 'PY':
+                  break
+              if capture:
+                  lines.append(line[10:] if line.startswith('          ') else line)
+          if not lines:
+              raise RuntimeError('embedded patch script not found')
+          Path('/tmp/apply_google_bhl_only.py').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
+          python /tmp/apply_google_bhl_only.py
+          rm -f .github/workflows/apply-google-bhl-only-pr.yml
+
+      - name: Install pinned validation dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/global-knowledge-archives/requirements.txt
+          python -m pip check
+
+      - name: Regenerate catalogs and validate
+        run: |
+          python -m py_compile \
+            api-center/global-knowledge-archives/global_knowledge_archives_task.py \
+            api-center/global-knowledge-archives/validate_global_knowledge_archives.py
+          PYTHONPATH=api-center/global-knowledge-archives:api-center \
+            python api-center/global-knowledge-archives/validate_global_knowledge_archives.py \
+              --output /tmp/global-knowledge-registry.json
+          python api-center/build_catalog_market_search.py
+          python -m pytest -q api-center/tests/test_api_catalog.py
+          git diff --check
+
+      - name: Commit audited reduction
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'refactor: retain only Google Books and BHL keyed sources'
+          git push origin HEAD:fix/retain-google-books-bhl-only
