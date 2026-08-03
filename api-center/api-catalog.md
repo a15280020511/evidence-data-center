@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`53/53` 已启用
-- 托管操作总数：`611`
-- 已公开参数总数：`2202`
-- 目录 SHA-256：`61dc846f7080d316afa49671cfd76ce37eb6dd2ccc607891fed9d67e6febfab3`
+- 托管提供方：`54/54` 已启用
+- 托管操作总数：`618`
+- 已公开参数总数：`2211`
+- 目录 SHA-256：`ff08e99a12a74de2056bcd4db2a2fc55a54a9a7bd387c896956551b5fd5e81e7`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -70,6 +70,7 @@
 | Hugging Face Hub 公共模型与数据情报 | `huggingface-hub` | 启用 | `[intel-huggingface]` | `11` | 否 |
 | 证据标准化、去重、谱系与传输清单 | `evidence-standardization` | 启用 | `[intel-evidence-standardize]` | `8` | 否 |
 | 全球研报、政策、法律与公司文本情报 | `global-research-intelligence` | 启用 | `[intel-global-research]` | `23` | 否 |
+| OpenBB 免费官方数据补充层 | `openbb-free` | 启用 | `[intel-openbb-free]` | `7` | 否 |
 
 ## 普通连接器
 
@@ -23554,6 +23555,211 @@
   "trading_or_order_execution_allowed": false,
   "personal_data_targeting_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## OpenBB 免费官方数据补充层 (`openbb-free`)
+
+- 状态：`启用`
+- 说明：通过模块化 OpenBB Core 与免 Key Provider 读取 ECB 汇率、纽约联储有效联邦基金利率、SOFR 和 Fama-French 因子；同时公开安装包与免费/Key/付费分类。不会安装 openbb[all]，不会启用交易、付费订阅或任意 Provider。
+- 目录策略：仅安装锁定版本的 openbb-core、openbb-ecb、openbb-federal-reserve、openbb-famafrench。开放7项固定只读能力；禁止任意模型、任意 Provider、任意 URL、客户端密钥、交易、写入、自动翻页、自动重试和付费数据调用。
+- 执行策略：每张票据执行一个固定操作。远程操作只调用 OpenBB 官方扩展中明确免 Key的 Fetcher；ECB 汇率一次请求，纽约联储利率一次请求，Fama-French 因子一次受限下载。超时与输出体积受票据限制。
+- 票据前缀：`[intel-openbb-free]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`3f8b099f7c1556b5df44c13f39398a5be0cda460066afd7d8f73f277a907a68c`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 OpenBB 免费层安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `provider-access-matrix` | 读取 OpenBB Provider 的免 Key、免费 Key、付费和未启用分类，不访问上游。 | `无` |
+
+`provider-access-matrix` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `package-manifest` | 读取当前锁定的 OpenBB 包、版本、许可证和启用模块，不访问上游。 | `无` |
+
+`package-manifest` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `ecb-currency-reference-rates` | 通过 OpenBB ECB Fetcher 读取欧洲央行最新欧元参考汇率。 | `无` |
+
+`ecb-currency-reference-rates` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `federal-reserve-federal-funds-rate` | 通过 OpenBB Federal Reserve Fetcher 读取指定日期范围的有效联邦基金利率。 | `start_date, end_date` |
+
+`federal-reserve-federal-funds-rate` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "start_date",
+    "end_date"
+  ],
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}
+```
+
+| `federal-reserve-sofr` | 通过 OpenBB Federal Reserve Fetcher 读取指定日期范围的 SOFR。 | `start_date, end_date` |
+
+`federal-reserve-sofr` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "start_date",
+    "end_date"
+  ],
+  "properties": {
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}
+```
+
+| `fama-french-factors` | 通过 OpenBB Fama-French Fetcher 读取受限日期范围的研究因子数据。 | `region, factor, frequency, start_date, end_date` |
+
+`fama-french-factors` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "region",
+    "factor",
+    "frequency",
+    "start_date",
+    "end_date"
+  ],
+  "properties": {
+    "region": {
+      "type": "string",
+      "enum": [
+        "america",
+        "north_america",
+        "europe",
+        "japan",
+        "asia_pacific_ex_japan",
+        "developed",
+        "developed_ex_us",
+        "emerging"
+      ]
+    },
+    "factor": {
+      "type": "string",
+      "enum": [
+        "5_factors",
+        "3_factors",
+        "momentum",
+        "st_reversal",
+        "lt_reversal"
+      ]
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly",
+        "annual"
+      ]
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "transient_retry_max": 0,
+  "provider_concurrency_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 10000000,
+  "rows_per_response_max": 10000,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "arbitrary_provider_allowed": false,
+  "arbitrary_model_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "paid_provider_calls_allowed": false,
+  "trading_or_order_execution_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": false,
+  "fixed_hosts": [
+    "www.ecb.europa.eu",
+    "markets.newyorkfed.org",
+    "mba.tuck.dartmouth.edu"
+  ]
 }
 ```
 

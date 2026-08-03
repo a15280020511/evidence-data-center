@@ -1,0 +1,4 @@
+openbb-core==1.6.13
+openbb-ecb==1.6.1
+openbb-federal-reserve==1.6.2
+openbb-famafrench==1.2.1

@@ -114,9 +114,9 @@
     },
     {
       "requested_name": "openbb",
-      "classification": "data-provider aggregation framework, not a primary source",
-      "decision": "do-not-install-monolith",
-      "implementation": "use existing direct governed providers; avoid dependency and source duplication"
+      "classification": "modular open-source data-provider framework; upstream data access varies by provider",
+      "decision": "install-modular-free-layer",
+      "implementation": "openbb-free managed provider with pinned openbb-core, ECB, Federal Reserve and Fama-French extensions; paid, trading, duplicate and unofficial providers remain disabled"
     },
     {
       "requested_name": "pyeia",
@@ -248,8 +248,10 @@
       "GeoPandas",
       "OSMnx analysis functions",
       "routingpy",
-      "chinesecalendar",
-      "OpenBB monolith"
+      "chinesecalendar"
+    ],
+    "modular_frameworks_installed_with_restricted_scope": [
+      "OpenBB Core + ECB + Federal Reserve + Fama-French free/no-key providers"
     ]
   }
 }
