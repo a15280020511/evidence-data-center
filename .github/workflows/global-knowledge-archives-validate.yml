@@ -70,7 +70,7 @@ jobs:
           matrix=json.loads(Path('api-center/global-knowledge-archives/source-access-matrix.json').read_text())
           catalog=json.loads(Path('api-center/api-catalog.json').read_text())
           assert receipt['status']=='PASS'
-          assert receipt['source_count']==22
+          assert receipt['source_count']==20
           assert receipt['operation_count']==9
           assert receipt['network_used'] is False
           assert receipt['model_calls']==0
@@ -80,7 +80,11 @@ jobs:
           assert provider['limits']['automatic_pagination_allowed'] is False
           assert provider['limits']['paywall_bypass_allowed'] is False
           assert provider['limits']['patient_level_data_allowed'] is False
-          assert len(matrix['not_enabled']) >= 12
+          assert len(matrix['not_enabled']) >= 14
+          assert any(row['source_id']=='theses-fr' for row in matrix['not_enabled'])
+          assert any(row['source_id']=='oapen-oai' for row in matrix['not_enabled'])
+          trove=next(row for row in matrix['sources'] if row['source_id']=='trove')
+          assert trove['credential_mode']=='required_free_key'
           rows={row['provider_id']:row for row in catalog['managed_providers']}
           assert rows['global-knowledge-archives']['operation_count']==9
           assert catalog['managed_provider_count']==len(rows)
@@ -104,7 +108,6 @@ jobs:
       fail-fast: false
       matrix:
         source:
-          - theses-fr
           - eric
           - ukri-gtr
           - nih-reporter
@@ -114,11 +117,9 @@ jobs:
           - met-museum
           - art-institute-chicago
           - digitalnz
-          - trove
           - dnb-sru
           - hal-oai
           - doab-oai
-          - oapen-oai
           - rijksmuseum-oai
           - nber-metadata
     steps:
@@ -176,12 +177,14 @@ jobs:
       fail-fast: false
       matrix:
         source:
+          - trove
           - google-books
           - bhl
           - nara
           - smithsonian
           - govinfo
     env:
+      TROVE_API_KEY: ${{ secrets.TROVE_API_KEY }}
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
       BHL_API_KEY: ${{ secrets.BHL_API_KEY }}
       NARA_CATALOG_API_KEY: ${{ secrets.NARA_CATALOG_API_KEY }}
