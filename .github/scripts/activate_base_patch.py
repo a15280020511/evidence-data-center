@@ -82,8 +82,8 @@ def patch_task() -> None:
         '        query += [("func", "PerformSearch"), ("format", "json"), ("query", query_text), ("hits", str(limit)), ("offset", "0"), ("boost", "oa")]\n'
     )
     if block not in text:
-        if text.count(marker) != 1:
-            raise RuntimeError("semantic-scholar search marker is not unique")
+        if marker not in text:
+            raise RuntimeError("semantic-scholar search marker is missing")
         text = text.replace(marker, block + marker, 1)
     TASK_PATH.write_text(text, encoding="utf-8")
 
