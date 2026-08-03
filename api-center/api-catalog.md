@@ -4,8 +4,8 @@
 - 普通连接器：`68/68` 已启用
 - 托管提供方：`61/61` 已启用
 - 托管操作总数：`674`
-- 已公开参数总数：`2377`
-- 目录 SHA-256：`46dac9c89cd64f15901dfe9c02d2395a2cbbc03410063d44738e1591e3d11f9c`
+- 已公开参数总数：`2376`
+- 目录 SHA-256：`de95ccf64f1f918ea601222515201874ab0b0e5554c3cb3b7716743ea80a6ac8`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -25684,12 +25684,12 @@
 
 - 状态：`启用`
 - 说明：固定接入科研机构与作者标识、计算机科学书目、研究对象关系、科研数据集、政府资助与法规、欧盟出版物、生命科学知识和技术标准。
-- 目录策略：仅开放9项固定只读操作和16个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。
+- 目录策略：仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。
 - 执行策略：每票最多一次上游请求；只取首批结果；不自动翻页、不使用cursor、不自动重试、不跟随重定向；凭证仅后端注入；保留来源权利和响应哈希。
 - 票据前缀：`[intel-knowledge-fabric]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`8f52281cbde68abf5e8bb2c344b91c660d300e8ac472847f24d2f76b331aeeb5`
+- 提供方SHA-256：`f237e8794b12cf3aa8ccc907e0a190e6528565273dddb308fac8ecf38228282c`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -25753,7 +25753,7 @@
 }
 ```
 
-| `scholarly-search` | 检索计算机科学文献、学术场馆或研究对象关系事件。 | `source_id, query, limit, relation_type` |
+| `scholarly-search` | 检索计算机科学文献或学术场馆。 | `source_id, query, limit` |
 
 `scholarly-search` 参数Schema：
 
@@ -25766,8 +25766,7 @@
       "type": "string",
       "enum": [
         "dblp-publication",
-        "dblp-venue",
-        "crossref-events"
+        "dblp-venue"
       ]
     },
     "query": {
@@ -25780,10 +25779,6 @@
       "minimum": 1,
       "maximum": 50,
       "default": 20
-    },
-    "relation_type": {
-      "type": "string",
-      "maxLength": 80
     }
   },
   "required": [
@@ -25976,7 +25971,7 @@
 
 ```json
 {
-  "source_count": 16,
+  "source_count": 15,
   "requests_per_ticket_max": 1,
   "timeout_seconds_max": 75,
   "max_response_bytes": 5000000,

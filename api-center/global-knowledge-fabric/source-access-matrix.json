@@ -1,6 +1,6 @@
 {
   "schema_version": "global-knowledge-fabric-source-matrix-v1",
-  "active_source_count": 16,
+  "active_source_count": 15,
   "sources": [
     {
       "source_id": "ror",
@@ -75,20 +75,6 @@
       "cost": "free"
     },
     {
-      "source_id": "crossref-events",
-      "name": "Crossref Event Data",
-      "category": "scholarly-relations",
-      "protocol": "rest-filter",
-      "base_url": "https://api.eventdata.crossref.org/v1/events",
-      "operations": [
-        "scholarly-search"
-      ],
-      "credential_mode": "none",
-      "credential_env": "",
-      "license_policy": "CC0 event records; updates/deletions remain source-governed and results are indicators, not truth.",
-      "cost": "free"
-    },
-    {
       "source_id": "harvard-dataverse",
       "name": "Harvard Dataverse",
       "category": "research-data",
@@ -150,18 +136,18 @@
     },
     {
       "source_id": "data-gov",
-      "name": "Data.gov CKAN Catalog",
+      "name": "Data.gov Catalog API v4",
       "category": "government-data-catalog",
-      "protocol": "ckan-search-record",
-      "base_url": "https://catalog.data.gov/api/3/action",
+      "protocol": "api-data-gov-v4",
+      "base_url": "https://api.gsa.gov/technology/datagov/v4",
       "operations": [
         "government-search",
         "record-get"
       ],
-      "credential_mode": "none",
-      "credential_env": "",
+      "credential_mode": "required_free_key",
+      "credential_env": "DATA_GOV_API_KEY",
       "license_policy": "Catalog metadata only; dataset-specific rights and access rules apply.",
-      "cost": "free"
+      "cost": "free api.data.gov key required"
     },
     {
       "source_id": "eu-cellar",
@@ -330,6 +316,10 @@
     {
       "source_id": "commercial-knowledge-systems",
       "reason": "Scopus, Web of Science, ProQuest, EBSCO, JSTOR full text, CNKI, Wanfang, LexisNexis, Westlaw, Bloomberg, Factiva, PitchBook and Capital IQ require commercial authorization."
+    },
+    {
+      "source_id": "crossref-events",
+      "reason": "The documented public Event Data API host failed a bounded 45-second production connection acceptance on 2026-08-03. Core Crossref Works metadata, DataCite, OpenCitations and existing citation providers remain active; Event Data is deferred until the endpoint is reliably reachable."
     }
   ]
 }

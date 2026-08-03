@@ -17,7 +17,7 @@
 ## 凭证
 
 - `ORCID_PUBLIC_API_TOKEN`：ORCID Public API 的长期 `/read-public` Token。
-- `REGULATIONS_GOV_API_KEY`：免费 api.data.gov Key。
+- `REGULATIONS_GOV_API_KEY`、`DATA_GOV_API_KEY`：免费 api.data.gov Key。
 - `ROR_CLIENT_ID`：可选客户端标识，不是授权凭证；未配置时仍允许低频访问。
 
 ## 安全合同

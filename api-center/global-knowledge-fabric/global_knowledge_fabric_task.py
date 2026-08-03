@@ -91,7 +91,7 @@ def credentials_for(row: Mapping[str, Any]) -> tuple[dict[str, str], list[tuple[
         headers["Client-Id"] = value
     elif source_id == "orcid":
         headers["Authorization"] = f"Bearer {value}"
-    elif source_id == "regulations-gov":
+    elif source_id in {"regulations-gov", "data-gov"}:
         headers["X-Api-Key"] = value
     else:
         raise RuntimeError(f"credential injection is not configured for {source_id}")
@@ -140,14 +140,6 @@ def build_scholarly_search(row: Mapping[str, Any], parameters: Mapping[str, Any]
     elif source_id == "dblp-venue":
         url = "https://dblp.org/search/venue/api"
         query += [("q", term), ("format", "json"), ("h", str(limit)), ("f", "0")]
-    elif source_id == "crossref-events":
-        url = "https://api.eventdata.crossref.org/v1/events"
-        query += [("obj-id", term), ("rows", str(limit))]
-        relation = str(parameters.get("relation_type") or "").strip()
-        if relation:
-            if not re.fullmatch(r"[A-Za-z0-9._:-]{1,80}", relation):
-                raise ValueError("relation_type is invalid")
-            query.append(("relation-type", relation))
     else:
         raise ValueError("unsupported scholarly source")
     return "GET", url, headers, query, None, []
@@ -179,9 +171,9 @@ def build_government_search(row: Mapping[str, Any], parameters: Mapping[str, Any
             ("filter[searchTerm]", term), ("page[size]", str(min(limit, 250))), ("sort", "-postedDate"),
         ], None, credentials
     if source_id == "data-gov":
-        return "GET", "https://catalog.data.gov/api/3/action/package_search", headers, [
-            ("q", term), ("rows", str(limit)), ("start", "0"),
-        ], None, []
+        return "GET", "https://api.gsa.gov/technology/datagov/v4/search", headers, [
+            ("q", term), ("per_page", str(limit)), ("sort", "relevance"),
+        ], None, credentials
     if source_id == "eu-cellar":
         literal = safe_sparql_literal(term)
         sparql = (
@@ -238,7 +230,7 @@ def record_identifier(source_id: str, raw: Any) -> str:
         "openml": r"^[0-9]{1,12}$",
         "grants-gov": r"^[0-9]{1,12}$",
         "regulations-gov": r"^[A-Za-z0-9._-]{3,200}$",
-        "data-gov": r"^[A-Za-z0-9._-]{1,200}$",
+        "data-gov": r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
         "rcsb-pdb": r"^[A-Za-z0-9]{4}$",
         "uniprot": r"^[A-Za-z0-9]{6,20}$",
         "chembl": r"^CHEMBL[0-9]{1,12}$",
@@ -271,8 +263,7 @@ def build_record(row: Mapping[str, Any], parameters: Mapping[str, Any]):
     elif source_id == "regulations-gov":
         url = f"https://api.regulations.gov/v4/documents/{quote(record_id, safe='._-')}"
     elif source_id == "data-gov":
-        url = "https://catalog.data.gov/api/3/action/package_show"
-        query += [("id", record_id)]
+        url = f"https://api.gsa.gov/technology/datagov/v4/harvest_record/{record_id}"
     elif source_id == "rcsb-pdb":
         url = f"https://data.rcsb.org/rest/v1/core/entry/{record_id.upper()}"
     elif source_id == "uniprot":
