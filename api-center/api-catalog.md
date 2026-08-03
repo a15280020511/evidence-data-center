@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`59/59` 已启用
-- 托管操作总数：`656`
-- 已公开参数总数：`2336`
-- 目录 SHA-256：`8c4e01214202b0dcc18ffb10d1a9c19e4462f335c8336d53b76f5b7ff364a147`
+- 托管提供方：`60/60` 已启用
+- 托管操作总数：`665`
+- 已公开参数总数：`2356`
+- 目录 SHA-256：`f33b129653c6dda4f9b412c527f9b3cd2376f0aa0adaea4af069cb09aa0aebb1`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -76,6 +76,7 @@
 | OpenStreetMap / Overpass / Nominatim | `openstreetmap` | 启用 | `[intel-osm]` | `6` | 否 |
 | GNews 全球新闻情报 | `gnews` | 启用 | `[intel-gnews]` | `3` | 否 |
 | 全球开放文献与资料库 | `global-literature-libraries` | 启用 | `[intel-literature]` | `10` | 否 |
+| 全球文献档案资料库第二波 | `global-knowledge-archives` | 启用 | `[intel-knowledge]` | `9` | 否 |
 
 ## 普通连接器
 
@@ -25341,6 +25342,338 @@
   "paywall_bypass_allowed": false,
   "unauthorized_full_text_copying_allowed": false,
   "personal_profiling_allowed": false,
+  "real_time_tracking_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## 全球文献档案资料库第二波 (`global-knowledge-archives`)
+
+- 状态：`启用`
+- 说明：固定接入学位论文、教育研究、开放专著、国家目录、档案馆、博物馆、政府出版物、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据。
+- 目录策略：仅开放9项固定只读操作和20个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
+- 执行策略：每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。
+- 票据前缀：`[intel-knowledge]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`e65f7c045c71588225b75e83c060e6ad45829f1e9e6496e7d13b2c82ba987a58`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地第二波全球资料库能力目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `source-access-matrix` | 读取来源、Key、费用、权利和暂缓原因矩阵。 | `无` |
+
+`source-access-matrix` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `knowledge-search` | 在一个固定REST来源执行一页文献、档案、研究项目或馆藏检索。 | `source_id, query, limit` |
+
+`knowledge-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "eric",
+        "ukri-gtr",
+        "nih-reporter",
+        "clinicaltrials-gov",
+        "usgs-publications",
+        "federal-register",
+        "met-museum",
+        "art-institute-chicago",
+        "digitalnz",
+        "trove",
+        "google-books",
+        "bhl",
+        "nara",
+        "smithsonian"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "required": [
+    "source_id",
+    "query"
+  ]
+}
+```
+
+| `knowledge-record` | 从一个固定来源读取单条公开元数据记录或GovInfo包摘要。 | `source_id, record_id` |
+
+`knowledge-record` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "ukri-gtr",
+        "clinicaltrials-gov",
+        "federal-register",
+        "met-museum",
+        "art-institute-chicago",
+        "digitalnz",
+        "google-books",
+        "bhl",
+        "govinfo"
+      ]
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9._:/-]+$"
+    }
+  },
+  "required": [
+    "source_id",
+    "record_id"
+  ]
+}
+```
+
+| `oai-identify` | 对固定开放仓储或博物馆OAI-PMH端点执行Identify。 | `source_id` |
+
+`oai-identify` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "hal-oai",
+        "doab-oai",
+        "rijksmuseum-oai"
+      ]
+    }
+  },
+  "required": [
+    "source_id"
+  ]
+}
+```
+
+| `oai-list-records` | 从固定OAI-PMH来源读取首批记录；不接受或追随resumptionToken。 | `source_id, metadata_prefix, from_date, until_date, set` |
+
+`oai-list-records` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "hal-oai",
+        "doab-oai",
+        "rijksmuseum-oai"
+      ]
+    },
+    "metadata_prefix": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,64}$",
+      "default": "oai_dc"
+    },
+    "from_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "until_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "set": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.:/-]{1,200}$"
+    }
+  },
+  "required": [
+    "source_id",
+    "metadata_prefix"
+  ]
+}
+```
+
+| `oai-get-record` | 从固定OAI-PMH来源读取单条元数据记录。 | `source_id, identifier, metadata_prefix` |
+
+`oai-get-record` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "hal-oai",
+        "doab-oai",
+        "rijksmuseum-oai"
+      ]
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "metadata_prefix": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,64}$",
+      "default": "oai_dc"
+    }
+  },
+  "required": [
+    "source_id",
+    "identifier",
+    "metadata_prefix"
+  ]
+}
+```
+
+| `sru-search` | 在德国国家图书馆固定SRU端点执行首批书目检索。 | `source_id, query, limit, record_schema` |
+
+`sru-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "dnb-sru"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    },
+    "record_schema": {
+      "type": "string",
+      "enum": [
+        "MARC21-xml",
+        "RDFxml",
+        "oai_dc"
+      ],
+      "default": "MARC21-xml"
+    }
+  },
+  "required": [
+    "source_id",
+    "query"
+  ]
+}
+```
+
+| `metadata-file-get` | 读取一个固定NBER工作论文元数据TSV文件；不读取受限全文。 | `source_id, dataset` |
+
+`metadata-file-get` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "nber-metadata"
+      ]
+    },
+    "dataset": {
+      "type": "string",
+      "enum": [
+        "reference",
+        "titles",
+        "abstracts",
+        "authors",
+        "dates",
+        "jel",
+        "programs",
+        "projects",
+        "published"
+      ]
+    }
+  },
+  "required": [
+    "source_id",
+    "dataset"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "source_count": 20,
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 15000000,
+  "automatic_pagination_allowed": false,
+  "automatic_retry_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "dynamic_providers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "paywall_bypass_allowed": false,
+  "unauthorized_full_text_copying_allowed": false,
+  "personal_profiling_allowed": false,
+  "patient_level_data_allowed": false,
   "real_time_tracking_allowed": false,
   "secret_values_exposed": false
 }

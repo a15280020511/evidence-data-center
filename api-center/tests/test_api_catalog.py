@@ -75,6 +75,7 @@ EXPECTED_OPERATION_COUNTS = {
     "openstreetmap": 6,
     "gnews": 3,
     "global-literature-libraries": 10,
+    "global-knowledge-archives": 9,
 }
 
 

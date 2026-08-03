@@ -219,6 +219,12 @@
       "classification": "governed global open literature, repository, library, archive and patent aggregation layer",
       "decision": "integrate-new",
       "implementation": "26 fixed HTTPS sources through 10 bounded read-only operations; existing OpenAlex, Crossref, arXiv, PubMed, Internet Archive and institutional providers are mapped rather than duplicated"
+    },
+    {
+      "requested_name": "global-knowledge-archives",
+      "classification": "second-wave governed global theses, books, grants, trials, national catalogs, archives, museums, government publications and research metadata layer",
+      "decision": "integrate-new",
+      "implementation": "22 fixed HTTPS sources through 9 bounded read-only operations; existing scholarly, legal, international-organization and first-wave literature providers are mapped rather than duplicated"
     }
   ],
   "summary": {

@@ -61,15 +61,16 @@
     "nih-public-health/provider-catalog.json",
     "openstreetmap/provider-catalog.json",
     "gnews/provider-catalog.json",
-    "global-literature-libraries/provider-catalog.json"
+    "global-literature-libraries/provider-catalog.json",
+    "global-knowledge-archives/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "ee2919b4eb270e552a27f9967b168ed09bb197a92e8b600cbe3e48c46cf10d2f",
+  "managed_provider_catalog_sha256": "0ee32be643491b866a59fc9b00d9045b7e4bdbf2369edc4a65b350aa8d303c55",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 59,
-  "enabled_managed_provider_count": 59,
-  "managed_operation_count": 656,
-  "exposed_parameter_count": 2336,
+  "managed_provider_count": 60,
+  "enabled_managed_provider_count": 60,
+  "managed_operation_count": 665,
+  "exposed_parameter_count": 2356,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -126,6 +127,7 @@
     "openstreetmap/provider-catalog.json",
     "gnews/provider-catalog.json",
     "global-literature-libraries/provider-catalog.json",
+    "global-knowledge-archives/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -31019,6 +31021,446 @@
       "secret_value_exposed": false,
       "provider_sha256": "0aa88d2bb597e7fee8012bb93bd3ad0f0dafe597927525b89f6c692ca0b3fc21",
       "catalog_file": "global-literature-libraries/provider-catalog.json"
+    },
+    {
+      "provider_id": "global-knowledge-archives",
+      "display_name": "全球文献档案资料库第二波",
+      "description": "固定接入学位论文、教育研究、开放专著、国家目录、档案馆、博物馆、政府出版物、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据。",
+      "enabled": true,
+      "ticket_prefix": "[intel-knowledge]",
+      "catalog_policy": "仅开放9项固定只读操作和20个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。",
+      "operation_count": 9,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地第二波全球资料库能力目录。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "source": "local",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "source-access-matrix",
+          "description": "读取来源、Key、费用、权利和暂缓原因矩阵。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "source": "local",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "knowledge-search",
+          "description": "在一个固定REST来源执行一页文献、档案、研究项目或馆藏检索。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "eric",
+                  "ukri-gtr",
+                  "nih-reporter",
+                  "clinicaltrials-gov",
+                  "usgs-publications",
+                  "federal-register",
+                  "met-museum",
+                  "art-institute-chicago",
+                  "digitalnz",
+                  "trove",
+                  "google-books",
+                  "bhl",
+                  "nara",
+                  "smithsonian"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET_OR_FIXED_POST",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "knowledge-record",
+          "description": "从一个固定来源读取单条公开元数据记录或GovInfo包摘要。",
+          "parameter_names": [
+            "source_id",
+            "record_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "ukri-gtr",
+                  "clinicaltrials-gov",
+                  "federal-register",
+                  "met-museum",
+                  "art-institute-chicago",
+                  "digitalnz",
+                  "google-books",
+                  "bhl",
+                  "govinfo"
+                ]
+              },
+              "record_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9._:/-]+$"
+              }
+            },
+            "required": [
+              "source_id",
+              "record_id"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "oai-identify",
+          "description": "对固定开放仓储或博物馆OAI-PMH端点执行Identify。",
+          "parameter_names": [
+            "source_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "hal-oai",
+                  "doab-oai",
+                  "rijksmuseum-oai"
+                ]
+              }
+            },
+            "required": [
+              "source_id"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-oai-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "oai-list-records",
+          "description": "从固定OAI-PMH来源读取首批记录；不接受或追随resumptionToken。",
+          "parameter_names": [
+            "source_id",
+            "metadata_prefix",
+            "from_date",
+            "until_date",
+            "set"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "hal-oai",
+                  "doab-oai",
+                  "rijksmuseum-oai"
+                ]
+              },
+              "metadata_prefix": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]{1,64}$",
+                "default": "oai_dc"
+              },
+              "from_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "until_date": {
+                "type": "string",
+                "format": "date"
+              },
+              "set": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.:/-]{1,200}$"
+              }
+            },
+            "required": [
+              "source_id",
+              "metadata_prefix"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-oai-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "oai-get-record",
+          "description": "从固定OAI-PMH来源读取单条元数据记录。",
+          "parameter_names": [
+            "source_id",
+            "identifier",
+            "metadata_prefix"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "hal-oai",
+                  "doab-oai",
+                  "rijksmuseum-oai"
+                ]
+              },
+              "identifier": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "metadata_prefix": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]{1,64}$",
+                "default": "oai_dc"
+              }
+            },
+            "required": [
+              "source_id",
+              "identifier",
+              "metadata_prefix"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-oai-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "sru-search",
+          "description": "在德国国家图书馆固定SRU端点执行首批书目检索。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit",
+            "record_schema"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "dnb-sru"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              },
+              "record_schema": {
+                "type": "string",
+                "enum": [
+                  "MARC21-xml",
+                  "RDFxml",
+                  "oai_dc"
+                ],
+                "default": "MARC21-xml"
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "dnb-sru",
+            "official_endpoint": "https://services.dnb.de/sru/dnb",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "metadata-file-get",
+          "description": "读取一个固定NBER工作论文元数据TSV文件；不读取受限全文。",
+          "parameter_names": [
+            "source_id",
+            "dataset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "nber-metadata"
+                ]
+              },
+              "dataset": {
+                "type": "string",
+                "enum": [
+                  "reference",
+                  "titles",
+                  "abstracts",
+                  "authors",
+                  "dates",
+                  "jel",
+                  "programs",
+                  "projects",
+                  "published"
+                ]
+              }
+            },
+            "required": [
+              "source_id",
+              "dataset"
+            ]
+          },
+          "result_contract": {
+            "source": "nber-metadata",
+            "official_endpoint": "fixed-metadata-file-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-only"
+          }
+        }
+      ],
+      "limits": {
+        "source_count": 20,
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 15000000,
+        "automatic_pagination_allowed": false,
+        "automatic_retry_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "dynamic_providers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "paywall_bypass_allowed": false,
+        "unauthorized_full_text_copying_allowed": false,
+        "personal_profiling_allowed": false,
+        "patient_level_data_allowed": false,
+        "real_time_tracking_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "e65f7c045c71588225b75e83c060e6ad45829f1e9e6496e7d13b2c82ba987a58",
+      "catalog_file": "global-knowledge-archives/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -39358,5 +39800,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "8c4e01214202b0dcc18ffb10d1a9c19e4462f335c8336d53b76f5b7ff364a147"
+  "catalog_sha256": "f33b129653c6dda4f9b412c527f9b3cd2376f0aa0adaea4af069cb09aa0aebb1"
 }

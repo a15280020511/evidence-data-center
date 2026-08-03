@@ -1,0 +1,448 @@
+{
+  "schema_version": "global-knowledge-archives-source-matrix-v1",
+  "active_source_count": 20,
+  "sources": [
+    {
+      "source_id": "eric",
+      "name": "ERIC",
+      "category": "education-research",
+      "protocol": "rest-search",
+      "base_url": "https://api.ies.ed.gov/eric/",
+      "operations": [
+        "knowledge-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public education-research metadata and source-provided full-text links only.",
+      "cost": "free"
+    },
+    {
+      "source_id": "ukri-gtr",
+      "name": "UKRI Gateway to Research",
+      "category": "research-projects-outcomes",
+      "protocol": "rest-search-record",
+      "base_url": "https://gtr.ukri.org",
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Open Government Licence data; use moderate request rates.",
+      "cost": "free"
+    },
+    {
+      "source_id": "nih-reporter",
+      "name": "NIH RePORTER",
+      "category": "research-grants-publications",
+      "protocol": "rest-search-post",
+      "base_url": "https://api.reporter.nih.gov/v2",
+      "operations": [
+        "knowledge-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public scientific award and publication metadata; no personal profiling.",
+      "cost": "free"
+    },
+    {
+      "source_id": "clinicaltrials-gov",
+      "name": "ClinicalTrials.gov",
+      "category": "clinical-trials",
+      "protocol": "rest-search-record",
+      "base_url": "https://clinicaltrials.gov/api/v2",
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public study-level records only; no patient-level data or medical inference about individuals.",
+      "cost": "free"
+    },
+    {
+      "source_id": "usgs-publications",
+      "name": "USGS Publications Warehouse",
+      "category": "earth-science-technical-reports",
+      "protocol": "rest-search",
+      "base_url": "https://pubs.usgs.gov/pubs-services/publication/",
+      "operations": [
+        "knowledge-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Official USGS publication metadata and lawful document links; external publisher rights remain external.",
+      "cost": "free"
+    },
+    {
+      "source_id": "federal-register",
+      "name": "Federal Register",
+      "category": "regulatory-publications",
+      "protocol": "rest-search-record",
+      "base_url": "https://www.federalregister.gov/api/v1",
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "FederalRegister.gov metadata is a discovery layer; authoritative legal reliance should use linked GovInfo editions.",
+      "cost": "free"
+    },
+    {
+      "source_id": "met-museum",
+      "name": "Metropolitan Museum of Art",
+      "category": "museum-collections",
+      "protocol": "rest-search-record",
+      "base_url": "https://collectionapi.metmuseum.org/public/collection/v1",
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Open Access/CC0 metadata and public-domain images only; preserve per-object rights fields.",
+      "cost": "free"
+    },
+    {
+      "source_id": "art-institute-chicago",
+      "name": "Art Institute of Chicago",
+      "category": "museum-collections",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.artic.edu/api/v1",
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public collection metadata; preserve is_public_domain, copyright and IIIF rights information.",
+      "cost": "free; anonymous limit 60 requests/minute"
+    },
+    {
+      "source_id": "digitalnz",
+      "name": "DigitalNZ",
+      "category": "national-cultural-aggregator",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.digitalnz.org/v3",
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Metadata rights vary by partner; preserve is_commercial_use, copyright, rights_url and source_url.",
+      "cost": "free; API key no longer required for ordinary access"
+    },
+    {
+      "source_id": "trove",
+      "name": "Trove",
+      "category": "national-library-archives-australia",
+      "protocol": "rest-search",
+      "base_url": "https://api.trove.nla.gov.au/v3",
+      "operations": [
+        "knowledge-search"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "TROVE_API_KEY",
+      "license_policy": "Metadata and digitized-item rights vary; preserve cultural-sensitivity and rights fields.",
+      "cost": "free registration key required by the current production endpoint"
+    },
+    {
+      "source_id": "google-books",
+      "name": "Google Books",
+      "category": "global-books-catalog",
+      "protocol": "rest-search-record",
+      "base_url": "https://www.googleapis.com/books/v1",
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "GOOGLE_API_KEY",
+      "license_policy": "Book metadata, preview and access-status fields only; do not bypass viewability or download restrictions.",
+      "cost": "free public-data API key"
+    },
+    {
+      "source_id": "bhl",
+      "name": "Biodiversity Heritage Library",
+      "category": "biodiversity-literature",
+      "protocol": "rest-search-record",
+      "base_url": "https://www.biodiversitylibrary.org/api3",
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "BHL_API_KEY",
+      "license_policy": "Biodiversity publication metadata and explicitly exposed OCR/files; preserve item-level rights.",
+      "cost": "free registration key"
+    },
+    {
+      "source_id": "nara",
+      "name": "US National Archives Catalog",
+      "category": "national-archives",
+      "protocol": "rest-search",
+      "base_url": "https://catalog.archives.gov/api/v2",
+      "operations": [
+        "knowledge-search"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "NARA_CATALOG_API_KEY",
+      "license_policy": "Public archival metadata and linked digital objects; preserve record and object rights statements.",
+      "cost": "free API key; default quota documented by NARA"
+    },
+    {
+      "source_id": "smithsonian",
+      "name": "Smithsonian Open Access",
+      "category": "museum-library-archives",
+      "protocol": "rest-search",
+      "base_url": "https://api.si.edu/openaccess/api/v1.0",
+      "operations": [
+        "knowledge-search"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "SMITHSONIAN_API_KEY",
+      "license_policy": "CC0 metadata/media only where designated; restricted objects return metadata without unauthorized media.",
+      "cost": "free api.data.gov key"
+    },
+    {
+      "source_id": "govinfo",
+      "name": "GovInfo",
+      "category": "government-publications",
+      "protocol": "rest-record",
+      "base_url": "https://api.govinfo.gov",
+      "operations": [
+        "knowledge-record"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "GOVINFO_API_KEY",
+      "license_policy": "Authenticated official US government package metadata and lawful content links.",
+      "cost": "free api.data.gov key"
+    },
+    {
+      "source_id": "dnb-sru",
+      "name": "German National Library",
+      "category": "national-library-germany",
+      "protocol": "sru",
+      "base_url": "https://services.dnb.de/sru/dnb",
+      "operations": [
+        "sru-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Free bibliographic metadata; preserve DNB attribution and record identifiers.",
+      "cost": "free, no registration"
+    },
+    {
+      "source_id": "hal-oai",
+      "name": "HAL Open Archive",
+      "category": "open-repository-france",
+      "protocol": "oai-pmh",
+      "base_url": "https://api.archives-ouvertes.fr/oai/hal/",
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Metadata harvesting under HAL terms; full text remains governed by record-level licenses.",
+      "cost": "free"
+    },
+    {
+      "source_id": "doab-oai",
+      "name": "Directory of Open Access Books",
+      "category": "open-access-books",
+      "protocol": "oai-pmh",
+      "base_url": "https://directory.doabooks.org/oai/request",
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Open-access book metadata; preserve book and chapter license information.",
+      "cost": "free"
+    },
+    {
+      "source_id": "rijksmuseum-oai",
+      "name": "Rijksmuseum OAI-PMH",
+      "category": "museum-collections",
+      "protocol": "oai-pmh",
+      "base_url": "https://data.rijksmuseum.nl/oai",
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Museum collection metadata only; preserve EDM/Dublin Core rights and identifiers.",
+      "cost": "free, no key"
+    },
+    {
+      "source_id": "nber-metadata",
+      "name": "NBER Working Papers and Chapters Metadata",
+      "category": "economics-working-paper-metadata",
+      "protocol": "fixed-metadata-files",
+      "base_url": "https://data.nber.org/nber_paper_chapter_metadata/tsv",
+      "operations": [
+        "metadata-file-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Structured metadata only; do not bypass NBER working-paper subscription or author copyright restrictions.",
+      "cost": "free metadata files"
+    }
+  ],
+  "mapped_existing_sources": [
+    "global-literature-libraries provider",
+    "OpenAlex",
+    "Crossref",
+    "DataCite",
+    "OpenCitations",
+    "Unpaywall",
+    "arXiv",
+    "PubMed/PMC",
+    "Europe PMC",
+    "Zenodo",
+    "OSF",
+    "Figshare",
+    "Dryad",
+    "EconBiz",
+    "EconStor",
+    "OSTI.GOV",
+    "NASA/NTRS",
+    "Library of Congress",
+    "Open Library",
+    "Europeana",
+    "DPLA",
+    "CiNii",
+    "Gallica",
+    "NDL Search",
+    "Internet Archive",
+    "UN/World Bank/IMF/BIS/ADB/OECD",
+    "SEC",
+    "Congress.gov",
+    "CourtListener",
+    "global think-tank catalog"
+  ],
+  "not_enabled": [
+    {
+      "source_id": "base-oai",
+      "reason": "Official OAI access requires IP whitelisting/manual approval and the documented base endpoint is HTTP-only."
+    },
+    {
+      "source_id": "swepub-legacy-oai-sru",
+      "reason": "Legacy official OAI/SRU endpoints are documented over HTTP; a stable fixed HTTPS search contract was not verified."
+    },
+    {
+      "source_id": "libris-uppsok",
+      "reason": "Candidate retained until the current HTTPS SRU endpoint, response schema and long-term support contract pass a separate live acceptance."
+    },
+    {
+      "source_id": "epo-ops",
+      "reason": "Free tier exists but OAuth token exchange plus data retrieval requires more than the one upstream request allowed per ticket."
+    },
+    {
+      "source_id": "uspto-open-data-portal",
+      "reason": "From 2026 the service requires a USPTO account, MFA and evolving product-specific access contracts; activate only after a dedicated authenticated acceptance."
+    },
+    {
+      "source_id": "wipo-lex",
+      "reason": "Free public database, but no stable official programmatic API contract was verified."
+    },
+    {
+      "source_id": "ntrl",
+      "reason": "Free web search exists, but no stable official public API was verified."
+    },
+    {
+      "source_id": "legislation-gov-uk",
+      "reason": "Data and feed interfaces are useful but require a separate legal-data contract to avoid overlap with the existing legal center."
+    },
+    {
+      "source_id": "eurlex-cellar",
+      "reason": "SPARQL/SOAP/REST legal interfaces require a separate legal ontology and query governance design."
+    },
+    {
+      "source_id": "scielo",
+      "reason": "Coverage is already available through existing scholarly aggregators; no unique stable official fixed API contract was verified in this round."
+    },
+    {
+      "source_id": "redalyc",
+      "reason": "No stable official public API contract was verified."
+    },
+    {
+      "source_id": "la-referencia",
+      "reason": "Regional aggregation is valuable, but no current stable official fixed endpoint was verified."
+    },
+    {
+      "source_id": "ssrn",
+      "reason": "No verified free public API; paywall and access-control bypass are prohibited."
+    },
+    {
+      "source_id": "cepr",
+      "reason": "Public web content exists, but no stable free official metadata API was verified."
+    },
+    {
+      "source_id": "commercial-policy-and-research-indexes",
+      "reason": "Policy Commons, Overton, Scopus, Web of Science, ProQuest, CNKI, Wanfang and similar services require licensed access."
+    },
+    {
+      "source_id": "theses-fr",
+      "reason": "The official service and API documentation were confirmed, but the HTTPS API endpoint failed a bounded 60-second production connect acceptance on 2026-08-03. Direct activation is deferred until the endpoint is reliably reachable from the execution platform."
+    },
+    {
+      "source_id": "oapen-oai",
+      "reason": "The documented OAI endpoint closed the connection without returning an Identify response during the bounded production acceptance on 2026-08-03. DOAB remains active for open-book discovery; OAPEN is deferred until a current stable endpoint is verified."
+    }
+  ],
+  "governance": {
+    "fixed_sources_only": true,
+    "arbitrary_urls_allowed": false,
+    "arbitrary_hosts_allowed": false,
+    "arbitrary_paths_allowed": false,
+    "arbitrary_headers_allowed": false,
+    "client_supplied_credentials_allowed": false,
+    "requests_per_ticket_max": 1,
+    "automatic_pagination_allowed": false,
+    "automatic_retry_allowed": false,
+    "redirects_allowed": false,
+    "write_operations_allowed": false,
+    "paywall_bypass_allowed": false,
+    "unauthorized_full_text_copying_allowed": false,
+    "full_text_default": "metadata-and-declared-open-locations-only",
+    "personal_profiling_allowed": false,
+    "patient_level_data_allowed": false,
+    "real_time_tracking_allowed": false,
+    "gpts_is_sole_cross_center_relay": true
+  },
+  "discovery": {
+    "valid_real_exa_tasks": [
+      699,
+      702,
+      704,
+      706,
+      709,
+      714,
+      716,
+      718
+    ],
+    "valid_real_tavily_tasks": [
+      700,
+      703,
+      705,
+      707,
+      710,
+      715,
+      717,
+      719
+    ],
+    "valid_real_search_task_count": 16,
+    "rejected_without_upstream_call": "issues 683-698 used result limits above the control-plane maximum",
+    "model_calls": 0,
+    "secret_values_exposed": false
+  }
+}
