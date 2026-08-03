@@ -5,22 +5,18 @@
     {
       "provider_id": "global-knowledge-archives",
       "display_name": "全球文献档案资料库第二波",
-      "description": "固定接入学位论文、教育研究、开放专著、国家目录、档案馆、博物馆、政府出版物、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据。",
+      "description": "固定接入教育研究、开放专著、国家图书馆目录、博物馆开放馆藏、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据；需要Key的来源仅Google Books与BHL。",
       "enabled": true,
       "ticket_prefix": "[intel-knowledge]",
       "required_secret_environment_variable": "",
       "optional_secret_environment_variables": [
         "GOOGLE_API_KEY",
-        "BHL_API_KEY",
-        "NARA_CATALOG_API_KEY",
-        "SMITHSONIAN_API_KEY",
-        "GOVINFO_API_KEY",
-        "TROVE_API_KEY"
+        "BHL_API_KEY"
       ],
-      "catalog_policy": "仅开放9项固定只读操作和20个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "catalog_policy": "仅开放9项固定只读操作和16个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。",
       "limits": {
-        "source_count": 20,
+        "source_count": 16,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 90,
         "max_response_bytes": 15000000,
@@ -110,11 +106,8 @@
                   "met-museum",
                   "art-institute-chicago",
                   "digitalnz",
-                  "trove",
                   "google-books",
-                  "bhl",
-                  "nara",
-                  "smithsonian"
+                  "bhl"
                 ]
               },
               "query": {
@@ -148,7 +141,7 @@
         },
         {
           "operation_id": "knowledge-record",
-          "description": "从一个固定来源读取单条公开元数据记录或GovInfo包摘要。",
+          "description": "从一个固定来源读取单条公开元数据记录。",
           "parameters": [
             "source_id",
             "record_id"
@@ -167,8 +160,7 @@
                   "art-institute-chicago",
                   "digitalnz",
                   "google-books",
-                  "bhl",
-                  "govinfo"
+                  "bhl"
                 ]
               },
               "record_id": {

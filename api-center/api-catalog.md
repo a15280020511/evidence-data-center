@@ -5,7 +5,7 @@
 - 托管提供方：`63/63` 已启用
 - 托管操作总数：`688`
 - 已公开参数总数：`2416`
-- 目录 SHA-256：`ae224abf5a7f63e992bb38d15c8d949e0b0d76988263d2767720109c7d04d35b`
+- 目录 SHA-256：`0821521db806d6049f5b03ac74882013e523b432175eed86fe4dd4b443ca24ee`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -25353,13 +25353,13 @@
 ## 全球文献档案资料库第二波 (`global-knowledge-archives`)
 
 - 状态：`启用`
-- 说明：固定接入学位论文、教育研究、开放专著、国家目录、档案馆、博物馆、政府出版物、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据。
-- 目录策略：仅开放9项固定只读操作和20个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
+- 说明：固定接入教育研究、开放专著、国家图书馆目录、博物馆开放馆藏、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据；需要Key的来源仅Google Books与BHL。
+- 目录策略：仅开放9项固定只读操作和16个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
 - 执行策略：每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。
 - 票据前缀：`[intel-knowledge]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`e65f7c045c71588225b75e83c060e6ad45829f1e9e6496e7d13b2c82ba987a58`
+- 提供方SHA-256：`014bfec6d7bdadb9543c627942e5846557f67a8c5246ad99ad123bffac71f4a3`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -25410,11 +25410,8 @@
         "met-museum",
         "art-institute-chicago",
         "digitalnz",
-        "trove",
         "google-books",
-        "bhl",
-        "nara",
-        "smithsonian"
+        "bhl"
       ]
     },
     "query": {
@@ -25436,7 +25433,7 @@
 }
 ```
 
-| `knowledge-record` | 从一个固定来源读取单条公开元数据记录或GovInfo包摘要。 | `source_id, record_id` |
+| `knowledge-record` | 从一个固定来源读取单条公开元数据记录。 | `source_id, record_id` |
 
 `knowledge-record` 参数Schema：
 
@@ -25455,8 +25452,7 @@
         "art-institute-chicago",
         "digitalnz",
         "google-books",
-        "bhl",
-        "govinfo"
+        "bhl"
       ]
     },
     "record_id": {
@@ -25659,7 +25655,7 @@
 
 ```json
 {
-  "source_count": 20,
+  "source_count": 16,
   "requests_per_ticket_max": 1,
   "timeout_seconds_max": 90,
   "max_response_bytes": 15000000,
