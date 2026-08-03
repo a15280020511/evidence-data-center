@@ -65,7 +65,7 @@
     "global-knowledge-archives/provider-catalog.json",
     "global-knowledge-fabric/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "a3744f3c8d65a9bab2802a5ca891c9094852b15029b5793b210e4616c772db94",
+  "managed_provider_catalog_sha256": "96e3619ade043ee6c7b16665fb8245d33c3ae7d45a15fc6f89039397568fc6a0",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 61,
@@ -31026,10 +31026,10 @@
     {
       "provider_id": "global-knowledge-archives",
       "display_name": "全球文献档案资料库第二波",
-      "description": "固定接入学位论文、教育研究、开放专著、国家目录、档案馆、博物馆、政府出版物、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据。",
+      "description": "固定接入教育研究、开放专著、国家图书馆目录、博物馆开放馆藏、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据；需要Key的来源仅Google Books与BHL。",
       "enabled": true,
       "ticket_prefix": "[intel-knowledge]",
-      "catalog_policy": "仅开放9项固定只读操作和20个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "catalog_policy": "仅开放9项固定只读操作和16个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。",
       "operation_count": 9,
       "operations": [
@@ -31101,11 +31101,8 @@
                   "met-museum",
                   "art-institute-chicago",
                   "digitalnz",
-                  "trove",
                   "google-books",
-                  "bhl",
-                  "nara",
-                  "smithsonian"
+                  "bhl"
                 ]
               },
               "query": {
@@ -31139,7 +31136,7 @@
         },
         {
           "operation_id": "knowledge-record",
-          "description": "从一个固定来源读取单条公开元数据记录或GovInfo包摘要。",
+          "description": "从一个固定来源读取单条公开元数据记录。",
           "parameter_names": [
             "source_id",
             "record_id"
@@ -31158,8 +31155,7 @@
                   "art-institute-chicago",
                   "digitalnz",
                   "google-books",
-                  "bhl",
-                  "govinfo"
+                  "bhl"
                 ]
               },
               "record_id": {
@@ -31435,7 +31431,7 @@
         }
       ],
       "limits": {
-        "source_count": 20,
+        "source_count": 16,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 90,
         "max_response_bytes": 15000000,
@@ -31460,7 +31456,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "e65f7c045c71588225b75e83c060e6ad45829f1e9e6496e7d13b2c82ba987a58",
+      "provider_sha256": "014bfec6d7bdadb9543c627942e5846557f67a8c5246ad99ad123bffac71f4a3",
       "catalog_file": "global-knowledge-archives/provider-catalog.json"
     },
     {
@@ -40224,5 +40220,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "de95ccf64f1f918ea601222515201874ab0b0e5554c3cb3b7716743ea80a6ac8"
+  "catalog_sha256": "a565604bced4d04781054430646fe656b9d2428c18717d3052a58f1f5fe37cd9"
 }
