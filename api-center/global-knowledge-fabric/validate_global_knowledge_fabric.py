@@ -15,7 +15,6 @@ DUMMY_SECRETS = {
     "ORCID_PUBLIC_API_TOKEN": "fixture-orcid-token",
     "REGULATIONS_GOV_API_KEY": "fixture-regulations-key",
     "DATA_GOV_API_KEY": "fixture-data-gov-key",
-    "DATA_GOV_API_KEY": "fixture-data-gov-key",
 }
 
 SEARCH_PARAMS = {
@@ -105,7 +104,6 @@ LIVE_CASES = {
     "harvard-dataverse": ("dataset-search", {"source_id": "harvard-dataverse", "query": "climate", "limit": 2}),
     "openml": ("dataset-search", {"source_id": "openml", "query": "iris", "limit": 2}),
     "grants-gov": ("government-search", {"source_id": "grants-gov", "query": "health", "limit": 2}),
-    "data-gov": ("government-search", {"source_id": "data-gov", "query": "climate", "limit": 2}),
     "eu-cellar": ("government-search", {"source_id": "eu-cellar", "query": "climate", "limit": 2}),
     "rcsb-pdb": ("science-search", {"source_id": "rcsb-pdb", "query": "thymidine kinase", "limit": 2}),
     "uniprot": ("science-search", {"source_id": "uniprot", "query": "kinase", "limit": 2}),
@@ -113,7 +111,6 @@ LIVE_CASES = {
     "ietf-datatracker": ("standards-search", {"source_id": "ietf-datatracker", "query": "http", "limit": 2}),
 }
 KEY_CASES = {
-    "data-gov": ("DATA_GOV_API_KEY", "government-search", {"source_id": "data-gov", "query": "climate", "limit": 2}),
     "data-gov": ("DATA_GOV_API_KEY", "government-search", {"source_id": "data-gov", "query": "climate", "limit": 2}),
     "orcid": ("ORCID_PUBLIC_API_TOKEN", "entity-search", {"source_id": "orcid", "query": "family-name:Smith", "limit": 2}),
     "regulations-gov": ("REGULATIONS_GOV_API_KEY", "government-search", {"source_id": "regulations-gov", "query": "artificial intelligence", "limit": 2}),
