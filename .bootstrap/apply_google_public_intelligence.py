@@ -27,21 +27,6 @@ replace(
     '"GOOGLE_API_KEY",\n        "BHL_API_KEY"',
     '"GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",\n        "BHL_API_KEY"',
 )
-replace(
-    ".github/workflows/global-knowledge-archives-ticket.yml",
-    "GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}",
-    "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY: ${{ secrets.GOOGLE_PUBLIC_INTELLIGENCE_API_KEY }}",
-)
-replace(
-    ".github/workflows/global-knowledge-archives-validate.yml",
-    "GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}",
-    "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY: ${{ secrets.GOOGLE_PUBLIC_INTELLIGENCE_API_KEY }}",
-)
-replace(
-    ".github/workflows/global-knowledge-archives-validate.yml",
-    "assert provider['optional_secret_environment_variables']==['GOOGLE_API_KEY','BHL_API_KEY']",
-    "assert provider['optional_secret_environment_variables']==['GOOGLE_PUBLIC_INTELLIGENCE_API_KEY','BHL_API_KEY']",
-)
 
 # Register the new managed provider in the authoritative catalog builder.
 replace(
