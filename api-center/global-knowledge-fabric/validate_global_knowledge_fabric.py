@@ -15,6 +15,7 @@ DUMMY_SECRETS = {
     "ORCID_PUBLIC_API_TOKEN": "fixture-orcid-token",
     "REGULATIONS_GOV_API_KEY": "fixture-regulations-key",
     "DATA_GOV_API_KEY": "fixture-data-gov-key",
+    "DATA_GOV_API_KEY": "fixture-data-gov-key",
 }
 
 SEARCH_PARAMS = {
@@ -112,6 +113,7 @@ LIVE_CASES = {
     "ietf-datatracker": ("standards-search", {"source_id": "ietf-datatracker", "query": "http", "limit": 2}),
 }
 KEY_CASES = {
+    "data-gov": ("DATA_GOV_API_KEY", "government-search", {"source_id": "data-gov", "query": "climate", "limit": 2}),
     "data-gov": ("DATA_GOV_API_KEY", "government-search", {"source_id": "data-gov", "query": "climate", "limit": 2}),
     "orcid": ("ORCID_PUBLIC_API_TOKEN", "entity-search", {"source_id": "orcid", "query": "family-name:Smith", "limit": 2}),
     "regulations-gov": ("REGULATIONS_GOV_API_KEY", "government-search", {"source_id": "regulations-gov", "query": "artificial intelligence", "limit": 2}),
