@@ -1,0 +1,394 @@
+name: One-shot Enable Baidu Web Summary
+
+on:
+  pull_request:
+    types: [synchronize]
+    paths:
+      - .github/workflows/tmp-enable-baidu-web-summary.yml
+
+permissions:
+  contents: write
+
+jobs:
+  enable-web-summary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/restore-serpapi-and-audit-baidu-search
+          fetch-depth: 0
+
+      - name: Detect completed integration
+        id: detect
+        run: |
+          if grep -q '"operation_id": "web-summary"' api-center/baidu-ai-cloud/provider-catalog.json; then
+            echo 'needed=false' >> "$GITHUB_OUTPUT"
+          else
+            echo 'needed=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Python
+        if: steps.detect.outputs.needed == 'true'
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        if: steps.detect.outputs.needed == 'true'
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/baidu-ai-cloud/requirements.txt \
+            -r api-center/market-search/requirements.txt
+          python -m pip check
+
+      - name: Add bounded free web-summary operation
+        if: steps.detect.outputs.needed == 'true'
+        run: |
+          cat > /tmp/enable_baidu_summary.py <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: Path, old: str, new: str) -> None:
+              text = path.read_text(encoding='utf-8')
+              if text.count(old) != 1:
+                  raise SystemExit(f'{path}: expected one match, found {text.count(old)}')
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          build = Path('api-center/baidu-ai-cloud/build_free_catalog.py')
+          replace_once(
+              build,
+              '"""Generate the frozen Baidu AI Search-only provider contracts."""',
+              '"""Generate frozen Baidu AI search and model-summary contracts."""',
+          )
+          replace_once(
+              build,
+              '''            credential_mode="unified-api-key-bearer",
+                  ),
+              ]
+              assert len(rows) == 3''',
+              '''            credential_mode="unified-api-key-bearer",
+                  ),
+                  operation(
+                      "web-summary",
+                      "百度智能搜索生成高性能版：检索公开网页并由模型生成带来源引用的摘要。",
+                      [
+                          ("query", text(256), True),
+                          ("top_k", integer(1, 10, 3), False),
+                      ],
+                      origin="https://qianfan.baidubce.com",
+                      path="/v2/ai_search/web_summary",
+                      method="POST",
+                      content_type="application/json",
+                      credential_mode="unified-api-key-bearer",
+                  ),
+              ]
+              assert len(rows) == 4''',
+          )
+          replace_once(
+              build,
+              '"operator_action": "仅调用已实测通过的百度网页搜索；百度控制台不得启用按量后付费。",',
+              '"operator_action": "仅调用已实测通过的百度网页搜索与智能搜索摘要；百度控制台不得启用按量后付费。",',
+          )
+          replace_once(build, '"operations": ["web-search"],', '"operations": ["web-search", "web-summary"],')
+          replace_once(
+              build,
+              '"quota": "使用百度账户当前网页搜索免费额度；官方页面口径可能调整，以控制台为最终依据。",',
+              '"quota": "web-search每月1500次按天发放；web-summary每日100次。额度以百度控制台为最终依据。",',
+          )
+          replace_once(
+              build,
+              '"family": "intelligent-search-deep-search-web-summary-deep-research",\n                "reason": "当前Key未完成免费且可用的真实验收，并存在模型或按次计费风险。",',
+              '"family": "intelligent-search-deep-search-deep-research",\n                "reason": "尚未完成当前Key的免费且可用真实验收，继续保持关闭。",',
+          )
+          replace_once(build, '"display_name": "百度AI网页搜索",', '"display_name": "百度AI搜索与智能摘要",')
+          replace_once(
+              build,
+              '"description": "当前统一API Key已真实验证可用的百度公开网页搜索。",',
+              '"description": "当前统一API Key已真实验证可用的百度公开网页搜索与模型搜索摘要。",',
+          )
+          replace_once(
+              build,
+              '''                "credential_matrix": {
+                                  "web-search": ["BAIDU_AI_CLOUD_API_KEY"],
+                                  "local-governance": [],
+                              },''',
+              '''                "credential_matrix": {
+                                  "web-search": ["BAIDU_AI_CLOUD_API_KEY"],
+                                  "web-summary": ["BAIDU_AI_CLOUD_API_KEY"],
+                                  "local-governance": [],
+                              },''',
+          )
+          replace_once(
+              build,
+              '"catalog_policy": "只开放当前Key已实测通过的1项上游高价值能力和2项本地治理能力。",',
+              '"catalog_policy": "只开放当前Key已实测通过的2项上游高价值能力和2项本地治理能力。",',
+          )
+          replace_once(
+              build,
+              '"execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；零模型调用、零付费兜底。",',
+              '"execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；web-search模型调用0次，web-summary模型调用1次；零付费兜底。",',
+          )
+          replace_once(
+              build,
+              '"fixed_paths": ["/v2/ai_search/web_search"],',
+              '"fixed_paths": ["/v2/ai_search/web_search", "/v2/ai_search/web_summary"],',
+          )
+          replace_once(
+              build,
+              '"generative_model_chat_allowed": False,',
+              '"model_search_summary_allowed": True,\n                    "generative_model_chat_allowed": False,',
+          )
+
+          task = Path('api-center/baidu-ai-cloud/baidu_ai_cloud_task.py')
+          replace_once(
+              task,
+              '"""Bounded execution for the currently verified Baidu AI web-search capability."""',
+              '"""Bounded execution for verified Baidu AI search and model-summary capabilities."""',
+          )
+          replace_once(
+              task,
+              'WEB_SEARCH_PATH = "/v2/ai_search/web_search"\nAPI_KEY_ENV',
+              'WEB_SEARCH_PATH = "/v2/ai_search/web_search"\nWEB_SUMMARY_PATH = "/v2/ai_search/web_summary"\nAPI_KEY_ENV',
+          )
+          replace_once(
+              task,
+              '''        "paid_fallback_authorized": False,
+                      "secret_values_exposed": False,
+                  }
+
+
+              def _truncate''',
+              '''        "paid_fallback_authorized": False,
+                      "model_calls": 0,
+                      "secret_values_exposed": False,
+                  }
+
+
+              def _web_summary_body(parameters: Mapping[str, Any]) -> dict[str, Any]:
+                  query = str(parameters.get("query") or "").strip()
+                  if not query:
+                      raise ValueError("query must not be empty")
+                  top_k = bounded_int(
+                      parameters.get("top_k"),
+                      default=3,
+                      minimum=1,
+                      maximum=10,
+                      name="top_k",
+                  )
+                  return {
+                      "instruction": "仅根据公开网页生成简明事实摘要，保留来源引用，不推断个人敏感信息。",
+                      "messages": [{"role": "user", "content": query}],
+                      "stream": False,
+                      "resource_type_filter": [{"type": "web", "top_k": top_k}],
+                  }
+
+
+              def _post_web_summary(
+                  parameters: Mapping[str, Any],
+                  *,
+                  timeout: int,
+                  max_bytes: int,
+              ) -> tuple[Mapping[str, Any], dict[str, Any]]:
+                  row = _operation_row("web-summary")
+                  execution = row.get("execution") or {}
+                  if execution.get("official_origin") != QIANFAN_ORIGIN:
+                      raise ValueError("provider catalog origin is not approved")
+                  if execution.get("path_template") != WEB_SUMMARY_PATH:
+                      raise ValueError("provider catalog path is not approved")
+                  key = _secret()
+                  try:
+                      response = requests.post(
+                          QIANFAN_ORIGIN + WEB_SUMMARY_PATH,
+                          headers={
+                              "Accept": "application/json",
+                              "Authorization": f"Bearer {key}",
+                              "Content-Type": "application/json",
+                              "User-Agent": "evidence-intelligence-center-baidu-model-search/1",
+                          },
+                          json=_web_summary_body(parameters),
+                          timeout=timeout,
+                          allow_redirects=False,
+                      )
+                  except requests.RequestException as exc:
+                      raise BaiduAICloudError(
+                          "BAIDU_CONNECTION_FAILED",
+                          type(exc).__name__,
+                          retryable=True,
+                      ) from exc
+                  decoded = _decode_json(response, max_bytes=max_bytes)
+                  _check_http(response, decoded)
+                  if not isinstance(decoded, Mapping):
+                      raise BaiduAICloudError(
+                          "BAIDU_RESULT_INVALID",
+                          "upstream response must be a JSON object",
+                      )
+                  return decoded, {
+                      "request_origin": "qianfan.baidubce.com",
+                      "request_path": WEB_SUMMARY_PATH,
+                      "http_method": "POST",
+                      "credential_mode": "unified-api-key-bearer-backend-only",
+                      "credential_environment_variable": API_KEY_ENV,
+                      "http_status": response.status_code,
+                      "response_bytes": len(response.content),
+                      "requests_per_ticket": 1,
+                      "upstream_called": True,
+                      "paid_fallback_authorized": False,
+                      "model_calls": 1,
+                      "secret_values_exposed": False,
+                  }
+
+
+              def _truncate''',
+          )
+          replace_once(
+              task,
+              '''        elif operation == "web-search":
+                          payload, request_metadata = _post_web_search(
+                              parameters,
+                              timeout=timeout,
+                              max_bytes=max_bytes,
+                          )
+                          metadata.update(request_metadata)
+                          snapshot = {
+                              "provider": "baidu-ai-cloud",
+                              "operation": operation,
+                              "data": _redact(_truncate(payload, max_rows)),
+                          }
+                      else:''',
+              '''        elif operation == "web-search":
+                          payload, request_metadata = _post_web_search(
+                              parameters,
+                              timeout=timeout,
+                              max_bytes=max_bytes,
+                          )
+                          metadata.update(request_metadata)
+                          snapshot = {
+                              "provider": "baidu-ai-cloud",
+                              "operation": operation,
+                              "data": _redact(_truncate(payload, max_rows)),
+                          }
+                      elif operation == "web-summary":
+                          payload, request_metadata = _post_web_summary(
+                              parameters,
+                              timeout=timeout,
+                              max_bytes=max_bytes,
+                          )
+                          metadata.update(request_metadata)
+                          snapshot = {
+                              "provider": "baidu-ai-cloud",
+                              "operation": operation,
+                              "data": _redact(_truncate(payload, max_rows)),
+                          }
+                      else:''',
+          )
+          replace_once(task, 'display_name="百度AI网页搜索",', 'display_name="百度AI搜索与智能摘要",')
+
+          tests = Path('api-center/baidu-ai-cloud/tests/test_baidu_ai_cloud_task.py')
+          replace_once(tests, 'def test_catalog_registers_only_three_verified_operations(self):', 'def test_catalog_registers_four_verified_operations(self):')
+          replace_once(
+              tests,
+              '{"catalog-capabilities", "quota-policy", "web-search"},',
+              '{"catalog-capabilities", "quota-policy", "web-search", "web-summary"},',
+          )
+          replace_once(tests, 'self.assertEqual(len(provider["operations"]), 3)', 'self.assertEqual(len(provider["operations"]), 4)')
+          replace_once(
+              tests,
+              'self.assertEqual(limits["fixed_paths"], ["/v2/ai_search/web_search"])',
+              'self.assertEqual(limits["fixed_paths"], ["/v2/ai_search/web_search", "/v2/ai_search/web_summary"])',
+          )
+          replace_once(
+              tests,
+              'self.assertFalse(limits["generative_model_chat_allowed"])',
+              'self.assertTrue(limits["model_search_summary_allowed"])\n        self.assertFalse(limits["generative_model_chat_allowed"])',
+          )
+          replace_once(
+              tests,
+              '''    def test_local_operations_need_no_network_or_secret(self):''',
+              '''    def test_web_summary_uses_fixed_model_search_endpoint(self):
+                  captured = {}
+
+                  def fake_post(url, **kwargs):
+                      captured["url"] = url
+                      captured.update(kwargs)
+                      return FakeResponse({
+                          "content": "公开信息摘要",
+                          "references": [{"title": "来源", "url": "https://example.com"}],
+                      })
+
+                  with mock.patch.dict(
+                      os.environ,
+                      {module.API_KEY_ENV: "backend-unified-key"},
+                      clear=True,
+                  ), mock.patch.object(module.requests, "post", side_effect=fake_post):
+                      payload, metadata = module._post_web_summary(
+                          {"query": "福州政务公开", "top_k": 2},
+                          timeout=20,
+                          max_bytes=500000,
+                      )
+                  self.assertEqual(
+                      captured["url"],
+                      "https://qianfan.baidubce.com/v2/ai_search/web_summary",
+                  )
+                  self.assertEqual(captured["headers"]["Authorization"], "Bearer backend-unified-key")
+                  self.assertFalse(captured["allow_redirects"])
+                  self.assertFalse(captured["json"]["stream"])
+                  self.assertEqual(metadata["model_calls"], 1)
+                  self.assertEqual(metadata["requests_per_ticket"], 1)
+                  self.assertNotIn("backend-unified-key", json.dumps(payload, ensure_ascii=False))
+
+              def test_local_operations_need_no_network_or_secret(self):''',
+          )
+
+          for path_name in (
+              'api-center/build_catalog_market_search.py',
+              'api-center/tests/test_api_catalog.py',
+          ):
+              path = Path(path_name)
+              text = path.read_text(encoding='utf-8')
+              old = '"baidu-ai-cloud": 3'
+              if old not in text:
+                  raise SystemExit(f'{path}: missing Baidu operation count')
+              path.write_text(text.replace(old, '"baidu-ai-cloud": 4'), encoding='utf-8')
+          PY
+          python /tmp/enable_baidu_summary.py
+          python api-center/baidu-ai-cloud/build_free_catalog.py
+
+      - name: Rebuild catalogs and run regressions
+        if: steps.detect.outputs.needed == 'true'
+        run: |
+          python api-center/build_catalog_market_search.py \
+            --json-output api-center/api-catalog.json \
+            --markdown-output api-center/api-catalog.md
+          python -m py_compile \
+            api-center/baidu-ai-cloud/baidu_ai_cloud_task.py \
+            api-center/baidu-ai-cloud/build_free_catalog.py \
+            api-center/build_catalog_market_search.py
+          python -m unittest discover -s api-center/baidu-ai-cloud/tests -v
+          python -m unittest discover -s api-center/market-search/tests -v
+          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_capability_maximization.py' -v
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          provider = json.loads(Path('api-center/baidu-ai-cloud/provider-catalog.json').read_text(encoding='utf-8'))['providers'][0]
+          assert {row['operation_id'] for row in provider['operations']} == {
+              'catalog-capabilities', 'quota-policy', 'web-search', 'web-summary'
+          }
+          assert provider['limits']['paid_fallback_authorized'] is False
+          assert provider['limits']['model_search_summary_allowed'] is True
+          aggregate = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          assert aggregate['managed_provider_count'] == 63
+          assert aggregate['managed_operation_count'] == 689
+          print(json.dumps({'status': 'PASS', 'providers': 63, 'operations': 689}))
+          PY
+          git diff --check
+
+      - name: Commit Baidu web-summary integration
+        if: steps.detect.outputs.needed == 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add api-center
+          git commit -m 'feat: enable verified free Baidu model search summary'
+          git push origin HEAD:fix/restore-serpapi-and-audit-baidu-search
