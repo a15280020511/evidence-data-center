@@ -26,7 +26,8 @@
       "enum": [
         "catalog-capabilities",
         "quota-policy",
-        "web-search"
+        "web-search",
+        "web-summary"
       ]
     },
     "objective": {

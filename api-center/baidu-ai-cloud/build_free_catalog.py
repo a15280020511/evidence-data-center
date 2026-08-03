@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the frozen Baidu AI Search-only provider contracts."""
+"""Generate frozen Baidu AI search and model-summary contracts."""
 from __future__ import annotations
 
 import json
@@ -108,8 +108,21 @@ def operations() -> list[dict[str, Any]]:
             content_type="application/json",
             credential_mode="unified-api-key-bearer",
         ),
+        operation(
+            "web-summary",
+            "百度智能搜索生成高性能版：检索公开网页并由模型生成带来源引用的摘要。",
+            [
+                ("query", text(256), True),
+                ("top_k", integer(1, 10, 3), False),
+            ],
+            origin="https://qianfan.baidubce.com",
+            path="/v2/ai_search/web_summary",
+            method="POST",
+            content_type="application/json",
+            credential_mode="unified-api-key-bearer",
+        ),
     ]
-    assert len(rows) == 3
+    assert len(rows) == 4
     return rows
 
 
@@ -121,22 +134,22 @@ def quota_policy() -> dict[str, Any]:
             "free_only": True,
             "paid_fallback_authorized": False,
             "remaining_quota_api_available": False,
-            "operator_action": "仅调用已实测通过的百度网页搜索；百度控制台不得启用按量后付费。",
+            "operator_action": "仅调用已实测通过的百度网页搜索与智能搜索摘要；百度控制台不得启用按量后付费。",
             "quota_exhaustion_behavior": "立即失败，不重试、不切换模型或其他付费接口。",
         },
         "families": [
             {
                 "family": "baidu-ai-search",
-                "operations": ["web-search"],
-                "quota": "使用百度账户当前网页搜索免费额度；官方页面口径可能调整，以控制台为最终依据。",
+                "operations": ["web-search", "web-summary"],
+                "quota": "web-search每月1500次按天发放；web-summary每日100次。额度以百度控制台为最终依据。",
                 "reset": "daily_or_control_plane_defined",
                 "verified_with_current_key": True,
             }
         ],
         "excluded": [
             {
-                "family": "intelligent-search-deep-search-web-summary-deep-research",
-                "reason": "当前Key未完成免费且可用的真实验收，并存在模型或按次计费风险。",
+                "family": "intelligent-search-deep-search-deep-research",
+                "reason": "尚未完成当前Key的免费且可用真实验收，继续保持关闭。",
             },
             {
                 "family": "nlp-ocr-image-recognition",
@@ -162,18 +175,19 @@ def provider_catalog(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "providers": [
             {
                 "provider_id": "baidu-ai-cloud",
-                "display_name": "百度AI网页搜索",
-                "description": "当前统一API Key已真实验证可用的百度公开网页搜索。",
+                "display_name": "百度AI搜索与智能摘要",
+                "description": "当前统一API Key已真实验证可用的百度公开网页搜索与模型搜索摘要。",
                 "enabled": True,
                 "ticket_prefix": "[intel-baidu-ai]",
                 "required_secret_environment_variable": "BAIDU_AI_CLOUD_API_KEY",
                 "required_secret_environment_variables": ["BAIDU_AI_CLOUD_API_KEY"],
                 "credential_matrix": {
                     "web-search": ["BAIDU_AI_CLOUD_API_KEY"],
+                    "web-summary": ["BAIDU_AI_CLOUD_API_KEY"],
                     "local-governance": [],
                 },
-                "catalog_policy": "只开放当前Key已实测通过的1项上游高价值能力和2项本地治理能力。",
-                "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；零模型调用、零付费兜底。",
+                "catalog_policy": "只开放当前Key已实测通过的2项上游高价值能力和2项本地治理能力。",
+                "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；web-search模型调用0次，web-summary模型调用1次；零付费兜底。",
                 "official_origins": ["https://qianfan.baidubce.com"],
                 "limits": {
                     "requests_per_ticket_max": 1,
@@ -183,7 +197,7 @@ def provider_catalog(rows: list[dict[str, Any]]) -> dict[str, Any]:
                     "max_response_bytes": 2000000,
                     "max_search_results": 20,
                     "fixed_api_hosts": ["qianfan.baidubce.com"],
-                    "fixed_paths": ["/v2/ai_search/web_search"],
+                    "fixed_paths": ["/v2/ai_search/web_search", "/v2/ai_search/web_summary"],
                     "arbitrary_urls_allowed": False,
                     "arbitrary_hosts_allowed": False,
                     "arbitrary_paths_allowed": False,
@@ -195,6 +209,7 @@ def provider_catalog(rows: list[dict[str, Any]]) -> dict[str, Any]:
                     "background_monitoring_allowed": False,
                     "cloud_resource_management_allowed": False,
                     "paid_fallback_authorized": False,
+                    "model_search_summary_allowed": True,
                     "generative_model_chat_allowed": False,
                     "nlp_operations_allowed": False,
                     "ocr_operations_allowed": False,

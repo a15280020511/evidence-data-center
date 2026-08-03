@@ -77,7 +77,7 @@ EXPECTED_OPERATION_COUNTS = {
     "global-literature-libraries": 10,
     "global-knowledge-archives": 9,
     "global-knowledge-fabric": 9,
-    "baidu-ai-cloud": 3,
+    "baidu-ai-cloud": 4,
     "open-software-security-knowledge": 11,
 }
 
