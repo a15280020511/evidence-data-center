@@ -70,7 +70,7 @@ jobs:
           matrix=json.loads(Path('api-center/global-literature-libraries/source-access-matrix.json').read_text())
           catalog=json.loads(Path('api-center/api-catalog.json').read_text())
           assert receipt['status']=='PASS'
-          assert receipt['source_count']==25
+          assert receipt['source_count']==26
           assert receipt['operation_count']==10
           assert receipt['network_used'] is False
           assert receipt['model_calls']==0
