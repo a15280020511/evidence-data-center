@@ -87,14 +87,6 @@ def credentials_for(row: Mapping[str, Any]) -> tuple[dict[str, str], list[tuple[
         query.append(("key", value))
     elif source_id == "bhl":
         query.append(("apikey", value))
-    elif source_id == "nara":
-        headers["x-api-key"] = value
-    elif source_id == "smithsonian":
-        query.append(("api_key", value))
-    elif source_id == "govinfo":
-        query.append(("api_key", value))
-    elif source_id == "trove":
-        headers["X-API-KEY"] = value
     else:
         raise RuntimeError(f"credential injection is not configured for {source_id}")
     return headers, query, used
@@ -111,7 +103,6 @@ def record_identifier(source_id: str, raw: Any) -> str:
         "digitalnz": r"^[0-9]{1,20}$",
         "google-books": r"^[A-Za-z0-9_-]{1,80}$",
         "bhl": r"^[0-9]{1,20}$",
-        "govinfo": r"^[A-Za-z0-9._-]{1,160}$",
     }
     pattern = patterns.get(source_id)
     if pattern is None or not re.fullmatch(pattern, value):
@@ -176,21 +167,12 @@ def build_search(row: Mapping[str, Any], parameters: Mapping[str, Any]):
         url = "https://api.digitalnz.org/v3/records.json"
         fields = "id,title,description,creator,date,content_partner,display_collection,category,source_url,rights_url,copyright,is_commercial_use"
         query += [("text", query_text), ("per_page", str(limit)), ("page", "1"), ("fields", fields)]
-    elif source_id == "trove":
-        url = "https://api.trove.nla.gov.au/v3/result"
-        query += [("category", "all"), ("q", query_text), ("n", str(limit)), ("s", "*"), ("encoding", "json"), ("reclevel", "brief")]
     elif source_id == "google-books":
         url = "https://www.googleapis.com/books/v1/volumes"
         query += [("q", query_text), ("maxResults", str(min(limit, 40))), ("startIndex", "0"), ("printType", "all"), ("projection", "lite")]
     elif source_id == "bhl":
         url = "https://www.biodiversitylibrary.org/api3"
         query += [("op", "PublicationSearch"), ("searchterm", query_text), ("searchtype", "F"), ("page", "1"), ("format", "json")]
-    elif source_id == "nara":
-        url = "https://catalog.archives.gov/api/v2/records/search"
-        query += [("q", query_text), ("limit", str(limit)), ("page", "1")]
-    elif source_id == "smithsonian":
-        url = "https://api.si.edu/openaccess/api/v1.0/search"
-        query += [("q", query_text), ("rows", str(limit)), ("start", "0")]
     else:
         raise ValueError(f"unsupported search source: {source_id}")
     return method, url, headers, query, body, credentials
@@ -225,8 +207,6 @@ def build_record(row: Mapping[str, Any], parameters: Mapping[str, Any]):
     elif source_id == "bhl":
         url = "https://www.biodiversitylibrary.org/api3"
         query += [("op", "GetItemMetadata"), ("id", record_id), ("idtype", "bhl"), ("pages", "f"), ("ocr", "f"), ("parts", "t"), ("format", "json")]
-    elif source_id == "govinfo":
-        url = f"https://api.govinfo.gov/packages/{record_id}/summary"
     else:
         raise ValueError(f"unsupported record source: {source_id}")
     return method, url, headers, query, body, credentials
@@ -320,8 +300,8 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         "credential_names": [],
         "automatic_pagination_used": False,
         "automatic_retry_used": False,
-        "redirects_followed": False,
-        "secret_values_exposed": False,
+        "redirects_followed": false,
+        "secret_values_exposed": false,
         "model_calls": 0,
     }
     try:
