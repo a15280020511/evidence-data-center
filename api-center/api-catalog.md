@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`51/51` 已启用
-- 托管操作总数：`580`
-- 已公开参数总数：`2133`
-- 目录 SHA-256：`abd5976cac2defd4ee81d4fad2fd26e13279a3770696ab0a23dca294f23cc725`
+- 托管提供方：`52/52` 已启用
+- 托管操作总数：`588`
+- 已公开参数总数：`2142`
+- 目录 SHA-256：`bdd62b7b6dd2b38d3f4d6f96cb56878078b5bf6c1302b2849e51f86e43373a01`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -68,6 +68,7 @@
 | Cloudflare 情报与云端浏览器 | `cloudflare` | 启用 | `[intel-cloudflare]` | `22` | 否 |
 | FRED 官方经济与金融时间序列 | `fred` | 启用 | `[intel-fred]` | `25` | 否 |
 | Hugging Face Hub 公共模型与数据情报 | `huggingface-hub` | 启用 | `[intel-huggingface]` | `11` | 否 |
+| 证据标准化、去重、谱系与传输清单 | `evidence-standardization` | 启用 | `[intel-evidence-standardize]` | `8` | 否 |
 
 ## 普通连接器
 
@@ -22572,6 +22573,229 @@
   "arbitrary_headers_allowed": false,
   "client_supplied_credentials_allowed": false,
   "write_operations_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## 证据标准化、去重、谱系与传输清单 (`evidence-standardization`)
+
+- 状态：`启用`
+- 说明：对已采集的公开、非个人证据执行本地规范化、指纹去重、来源谱系、版本差异、STIX离线校验、来源质量画像和传输清单生成。
+- 目录策略：仅处理票据内已提供的公开、非个人结构化证据；不访问网络、不读取文件路径、不接受代码、不推断个人身份。
+- 执行策略：每张票据执行一个固定本地操作；输入有界，输出包含哈希、状态和零网络零模型调用回执。
+- 票据前缀：`[intel-evidence-standardize]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`8e400600c569dcbc0f510453cd62b2adcb54f65371641e18ad2a2b65c8962bfc`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地证据标准化能力目录，不访问外部网络。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `normalize-evidence-records` | 将公开、非个人的来源记录规范化为统一证据记录并生成内容哈希和稳定记录ID。 | `records` |
+
+`normalize-evidence-records` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "records"
+  ],
+  "properties": {
+    "records": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}
+```
+
+| `content-fingerprint` | 生成SHA-256和64位SimHash，识别精确重复和受限近重复内容。 | `near_duplicate_hamming_threshold, texts` |
+
+`content-fingerprint` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "texts"
+  ],
+  "properties": {
+    "texts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200000
+      }
+    },
+    "near_duplicate_hamming_threshold": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 16
+    }
+  }
+}
+```
+
+| `provenance-lineage` | 验证来源、快照、处理和传输节点形成的有向无环谱系图。 | `edges, nodes` |
+
+`provenance-lineage` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "nodes",
+    "edges"
+  ],
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5000,
+      "items": {
+        "type": "object"
+      }
+    },
+    "edges": {
+      "type": "array",
+      "maxItems": 20000,
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}
+```
+
+| `timeline-version-diff` | 按UTC时间排序公开文档版本并计算逐版本变更摘要。 | `versions` |
+
+`timeline-version-diff` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "versions"
+  ],
+  "properties": {
+    "versions": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 200,
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}
+```
+
+| `stix-bundle-validate` | 离线验证STIX 2.1 Bundle的对象身份、重复项和内部引用完整性。 | `bundle` |
+
+`stix-bundle-validate` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "bundle"
+  ],
+  "properties": {
+    "bundle": {
+      "type": "object"
+    }
+  }
+}
+```
+
+| `transfer-package-manifest` | 为GPTs证据中继生成公开、非个人文件清单和规范哈希。 | `files` |
+
+`transfer-package-manifest` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "files"
+  ],
+  "properties": {
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}
+```
+
+| `source-quality-profile` | 按权威性、直接性、时效性、交叉印证和方法透明度形成来源质量画像。 | `sources` |
+
+`source-quality-profile` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "sources"
+  ],
+  "properties": {
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket": 0,
+  "timeout_seconds_max": 60,
+  "max_response_bytes": 10000000,
+  "records_max": 1000,
+  "graph_nodes_max": 5000,
+  "graph_edges_max": 20000,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_files_allowed": false,
+  "arbitrary_code_allowed": false,
+  "network_allowed": false,
+  "personal_data_allowed": false,
   "secret_values_exposed": false
 }
 ```

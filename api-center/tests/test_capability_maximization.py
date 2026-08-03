@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            580,
+            588,
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -109,6 +109,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "cloudflare": 22,
             "fred": 25,
             "huggingface-hub": 11,
+            "evidence-standardization": 8,
         }
         for provider_id, count in expected_counts.items():
             self.assertEqual(len(providers[provider_id]["operations"]), count)
