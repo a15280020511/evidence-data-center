@@ -1,0 +1,80 @@
+name: Prune Baidu Provider To Verified Search
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/baidu-ai-cloud-prune-bootstrap.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: prune-baidu-provider-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  prune:
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: true
+          fetch-depth: 1
+
+      - name: Generate search-only contracts and aggregate catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          python api-center/baidu-ai-cloud/build_free_catalog.py
+          python - <<'PY'
+          from pathlib import Path
+
+          for name in (
+              'api-center/build_catalog_market_search.py',
+              'api-center/tests/test_api_catalog.py',
+          ):
+              path = Path(name)
+              text = path.read_text(encoding='utf-8')
+              old = '    "baidu-ai-cloud": 41,\n'
+              new = '    "baidu-ai-cloud": 3,\n'
+              if old in text:
+                  text = text.replace(old, new, 1)
+              elif new not in text:
+                  raise SystemExit(f'Baidu operation count marker missing in {name}')
+              path.write_text(text, encoding='utf-8')
+          PY
+          python api-center/build_catalog_market_search.py \
+            --json-output api-center/api-catalog.json \
+            --markdown-output api-center/api-catalog.md
+          python -m py_compile \
+            api-center/baidu-ai-cloud/build_free_catalog.py \
+            api-center/baidu-ai-cloud/baidu_ai_cloud_task.py \
+            api-center/baidu-ai-cloud/tests/test_baidu_ai_cloud_task.py
+          git diff --check
+
+      - name: Commit generated search-only contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            api-center/baidu-ai-cloud/provider-catalog.json \
+            api-center/baidu-ai-cloud/ticket.schema.json \
+            api-center/baidu-ai-cloud/free-quota-policy.json \
+            api-center/build_catalog_market_search.py \
+            api-center/tests/test_api_catalog.py \
+            api-center/api-catalog.json \
+            api-center/api-catalog.md
+          if git diff --cached --quiet; then
+            echo 'Search-only contracts already synchronized.'
+          else
+            git commit -m 'chore(baidu): regenerate verified search-only contracts'
+            git push origin HEAD:${{ github.event.pull_request.head.ref }}
+          fi
