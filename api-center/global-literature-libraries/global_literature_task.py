@@ -286,7 +286,7 @@ def build(operation: str, parameters: Mapping[str, Any]):
     if operation == "patent-publication-get":
         row = source_for(parameters.get("source_id"), operation)
         number = text(parameters.get("publication_number"), "publication_number", 30)
-        if not re.fullmatch(r"EP[0-9]{6,10}N[A-Z][0-9]", number):
+        if not re.fullmatch(r"EP[0-9]{6,10}N[A-Z]{1,3}[0-9]", number):
             raise ValueError("publication_number is invalid")
         output_format = str(parameters.get("format") or "")
         if output_format not in {"formats","xml","html","pdf"}:

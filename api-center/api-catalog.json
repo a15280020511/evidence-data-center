@@ -63,7 +63,7 @@
     "gnews/provider-catalog.json",
     "global-literature-libraries/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "59eac4aad25467675832480aec6adec741168dc7722db1ef5522648c82d0bc7f",
+  "managed_provider_catalog_sha256": "b9013746f7a76a797afcd08370c4c82c4734588fdf299558aacb454fe75551fc",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 59,
@@ -30963,7 +30963,7 @@
               },
               "publication_number": {
                 "type": "string",
-                "pattern": "^EP[0-9]{6,10}N[A-Z][0-9]$"
+                "pattern": "^EP[0-9]{6,10}N[A-Z]{1,3}[0-9]$"
               },
               "format": {
                 "type": "string",
@@ -31020,7 +31020,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "b687f8260aa2beb87ce0f8948c537a456d5735d6c51db16859f07d2eb10e6337",
+      "provider_sha256": "64996835566c208cdf13a08ddd3626c9d37358d35a5cfb61537fd342e13c167a",
       "catalog_file": "global-literature-libraries/provider-catalog.json"
     }
   ],
@@ -39361,5 +39361,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "e510af1f984a8596c6576caf65a5cbdfad1b1d9953ef50e2ec71581ceaf02f5c"
+  "catalog_sha256": "a5421a6ac6cd69cc3ded4bb5e0c464d56e8195218a78625eca43155cfaba9709"
 }

@@ -5,7 +5,7 @@
 - 托管提供方：`59/59` 已启用
 - 托管操作总数：`656`
 - 已公开参数总数：`2336`
-- 目录 SHA-256：`e510af1f984a8596c6576caf65a5cbdfad1b1d9953ef50e2ec71581ceaf02f5c`
+- 目录 SHA-256：`a5421a6ac6cd69cc3ded4bb5e0c464d56e8195218a78625eca43155cfaba9709`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -24974,7 +24974,7 @@
 - 票据前缀：`[intel-literature]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`b687f8260aa2beb87ce0f8948c537a456d5735d6c51db16859f07d2eb10e6337`
+- 提供方SHA-256：`64996835566c208cdf13a08ddd3626c9d37358d35a5cfb61537fd342e13c167a`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -25302,7 +25302,7 @@
     },
     "publication_number": {
       "type": "string",
-      "pattern": "^EP[0-9]{6,10}N[A-Z][0-9]$"
+      "pattern": "^EP[0-9]{6,10}N[A-Z]{1,3}[0-9]$"
     },
     "format": {
       "type": "string",
