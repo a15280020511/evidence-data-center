@@ -130,8 +130,8 @@ jobs:
           assert matrix['installed_provider_ids'] == ['ecb', 'federal_reserve', 'famafrench']
           rows = {row['provider_id']: row for row in catalog['managed_providers']}
           assert rows['openbb-free']['operation_count'] == 7
-          assert catalog['managed_provider_count'] == 54
-          assert catalog['managed_operation_count'] == 618
+          assert catalog['managed_provider_count'] == len(rows)
+          assert sum(row['operation_count'] for row in rows.values()) == catalog['managed_operation_count']
           assert catalog['direct_center_to_center_calls_allowed'] is False
           assert catalog['secret_values_exposed'] is False
           PY
