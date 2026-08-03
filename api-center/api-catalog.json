@@ -64,7 +64,7 @@
     "global-literature-libraries/provider-catalog.json",
     "global-knowledge-archives/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "73405642f4b6635aaed6bd860a2a5995d5c97c1881091c1832506be39d688278",
+  "managed_provider_catalog_sha256": "0ee32be643491b866a59fc9b00d9045b7e4bdbf2369edc4a65b350aa8d303c55",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 60,
@@ -31028,7 +31028,7 @@
       "description": "固定接入学位论文、教育研究、开放专著、国家目录、档案馆、博物馆、政府出版物、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据。",
       "enabled": true,
       "ticket_prefix": "[intel-knowledge]",
-      "catalog_policy": "仅开放9项固定只读操作和22个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "catalog_policy": "仅开放9项固定只读操作和20个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。",
       "operation_count": 9,
       "operations": [
@@ -31091,7 +31091,6 @@
               "source_id": {
                 "type": "string",
                 "enum": [
-                  "theses-fr",
                   "eric",
                   "ukri-gtr",
                   "nih-reporter",
@@ -31201,7 +31200,6 @@
                 "enum": [
                   "hal-oai",
                   "doab-oai",
-                  "oapen-oai",
                   "rijksmuseum-oai"
                 ]
               }
@@ -31241,7 +31239,6 @@
                 "enum": [
                   "hal-oai",
                   "doab-oai",
-                  "oapen-oai",
                   "rijksmuseum-oai"
                 ]
               },
@@ -31297,7 +31294,6 @@
                 "enum": [
                   "hal-oai",
                   "doab-oai",
-                  "oapen-oai",
                   "rijksmuseum-oai"
                 ]
               },
@@ -31438,7 +31434,7 @@
         }
       ],
       "limits": {
-        "source_count": 22,
+        "source_count": 20,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 90,
         "max_response_bytes": 15000000,
@@ -31463,7 +31459,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "f9833ce18407182e525eb26d0ff84d2fdb6b5a98e553ab56a287b0cf41d539a4",
+      "provider_sha256": "e65f7c045c71588225b75e83c060e6ad45829f1e9e6496e7d13b2c82ba987a58",
       "catalog_file": "global-knowledge-archives/provider-catalog.json"
     }
   ],
@@ -39804,5 +39800,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "67a0f940de0cb40074780afaac33d10816c682de5c5a8ed88cf6e8f4e8178eb2"
+  "catalog_sha256": "f33b129653c6dda4f9b412c527f9b3cd2376f0aa0adaea4af069cb09aa0aebb1"
 }

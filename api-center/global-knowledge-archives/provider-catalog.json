@@ -17,10 +17,10 @@
         "GOVINFO_API_KEY",
         "TROVE_API_KEY"
       ],
-      "catalog_policy": "仅开放9项固定只读操作和22个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "catalog_policy": "仅开放9项固定只读操作和20个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。",
       "limits": {
-        "source_count": 22,
+        "source_count": 20,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 90,
         "max_response_bytes": 15000000,
@@ -89,7 +89,11 @@
         {
           "operation_id": "knowledge-search",
           "description": "在一个固定REST来源执行一页文献、档案、研究项目或馆藏检索。",
-          "parameters": ["source_id", "query", "limit"],
+          "parameters": [
+            "source_id",
+            "query",
+            "limit"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
@@ -97,7 +101,6 @@
               "source_id": {
                 "type": "string",
                 "enum": [
-                  "theses-fr",
                   "eric",
                   "ukri-gtr",
                   "nih-reporter",
@@ -126,7 +129,10 @@
                 "default": 20
               }
             },
-            "required": ["source_id", "query"]
+            "required": [
+              "source_id",
+              "query"
+            ]
           },
           "result_contract": {
             "source": "fixed-source-registry",
@@ -143,7 +149,10 @@
         {
           "operation_id": "knowledge-record",
           "description": "从一个固定来源读取单条公开元数据记录或GovInfo包摘要。",
-          "parameters": ["source_id", "record_id"],
+          "parameters": [
+            "source_id",
+            "record_id"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
@@ -169,7 +178,10 @@
                 "pattern": "^[A-Za-z0-9._:/-]+$"
               }
             },
-            "required": ["source_id", "record_id"]
+            "required": [
+              "source_id",
+              "record_id"
+            ]
           },
           "result_contract": {
             "source": "fixed-source-registry",
@@ -186,17 +198,25 @@
         {
           "operation_id": "oai-identify",
           "description": "对固定开放仓储或博物馆OAI-PMH端点执行Identify。",
-          "parameters": ["source_id"],
+          "parameters": [
+            "source_id"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "source_id": {
                 "type": "string",
-                "enum": ["hal-oai", "doab-oai", "oapen-oai", "rijksmuseum-oai"]
+                "enum": [
+                  "hal-oai",
+                  "doab-oai",
+                  "rijksmuseum-oai"
+                ]
               }
             },
-            "required": ["source_id"]
+            "required": [
+              "source_id"
+            ]
           },
           "result_contract": {
             "source": "fixed-oai-registry",
@@ -213,14 +233,24 @@
         {
           "operation_id": "oai-list-records",
           "description": "从固定OAI-PMH来源读取首批记录；不接受或追随resumptionToken。",
-          "parameters": ["source_id", "metadata_prefix", "from_date", "until_date", "set"],
+          "parameters": [
+            "source_id",
+            "metadata_prefix",
+            "from_date",
+            "until_date",
+            "set"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "source_id": {
                 "type": "string",
-                "enum": ["hal-oai", "doab-oai", "oapen-oai", "rijksmuseum-oai"]
+                "enum": [
+                  "hal-oai",
+                  "doab-oai",
+                  "rijksmuseum-oai"
+                ]
               },
               "metadata_prefix": {
                 "type": "string",
@@ -240,7 +270,10 @@
                 "pattern": "^[A-Za-z0-9_.:/-]{1,200}$"
               }
             },
-            "required": ["source_id", "metadata_prefix"]
+            "required": [
+              "source_id",
+              "metadata_prefix"
+            ]
           },
           "result_contract": {
             "source": "fixed-oai-registry",
@@ -257,14 +290,22 @@
         {
           "operation_id": "oai-get-record",
           "description": "从固定OAI-PMH来源读取单条元数据记录。",
-          "parameters": ["source_id", "identifier", "metadata_prefix"],
+          "parameters": [
+            "source_id",
+            "identifier",
+            "metadata_prefix"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "source_id": {
                 "type": "string",
-                "enum": ["hal-oai", "doab-oai", "oapen-oai", "rijksmuseum-oai"]
+                "enum": [
+                  "hal-oai",
+                  "doab-oai",
+                  "rijksmuseum-oai"
+                ]
               },
               "identifier": {
                 "type": "string",
@@ -277,7 +318,11 @@
                 "default": "oai_dc"
               }
             },
-            "required": ["source_id", "identifier", "metadata_prefix"]
+            "required": [
+              "source_id",
+              "identifier",
+              "metadata_prefix"
+            ]
           },
           "result_contract": {
             "source": "fixed-oai-registry",
@@ -294,14 +339,21 @@
         {
           "operation_id": "sru-search",
           "description": "在德国国家图书馆固定SRU端点执行首批书目检索。",
-          "parameters": ["source_id", "query", "limit", "record_schema"],
+          "parameters": [
+            "source_id",
+            "query",
+            "limit",
+            "record_schema"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "source_id": {
                 "type": "string",
-                "enum": ["dnb-sru"]
+                "enum": [
+                  "dnb-sru"
+                ]
               },
               "query": {
                 "type": "string",
@@ -316,11 +368,18 @@
               },
               "record_schema": {
                 "type": "string",
-                "enum": ["MARC21-xml", "RDFxml", "oai_dc"],
+                "enum": [
+                  "MARC21-xml",
+                  "RDFxml",
+                  "oai_dc"
+                ],
                 "default": "MARC21-xml"
               }
             },
-            "required": ["source_id", "query"]
+            "required": [
+              "source_id",
+              "query"
+            ]
           },
           "result_contract": {
             "source": "dnb-sru",
@@ -337,21 +396,39 @@
         {
           "operation_id": "metadata-file-get",
           "description": "读取一个固定NBER工作论文元数据TSV文件；不读取受限全文。",
-          "parameters": ["source_id", "dataset"],
+          "parameters": [
+            "source_id",
+            "dataset"
+          ],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "source_id": {
                 "type": "string",
-                "enum": ["nber-metadata"]
+                "enum": [
+                  "nber-metadata"
+                ]
               },
               "dataset": {
                 "type": "string",
-                "enum": ["reference", "titles", "abstracts", "authors", "dates", "jel", "programs", "projects", "published"]
+                "enum": [
+                  "reference",
+                  "titles",
+                  "abstracts",
+                  "authors",
+                  "dates",
+                  "jel",
+                  "programs",
+                  "projects",
+                  "published"
+                ]
               }
             },
-            "required": ["source_id", "dataset"]
+            "required": [
+              "source_id",
+              "dataset"
+            ]
           },
           "result_contract": {
             "source": "nber-metadata",

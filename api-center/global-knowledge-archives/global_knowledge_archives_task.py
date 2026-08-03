@@ -133,10 +133,7 @@ def build_search(row: Mapping[str, Any], parameters: Mapping[str, Any]):
     body = None
     query: list[tuple[str, str]] = list(credential_query)
 
-    if source_id == "theses-fr":
-        url = "https://theses.fr/api/v1/recherche/"
-        query += [("q", query_text), ("debut", "0"), ("nombre", str(limit))]
-    elif source_id == "eric":
+    if source_id == "eric":
         url = "https://api.ies.ed.gov/eric/"
         query += [("search", query_text), ("format", "json"), ("start", "0"), ("rows", str(max(20, limit)))]
     elif source_id == "ukri-gtr":

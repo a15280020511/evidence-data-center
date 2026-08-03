@@ -5,7 +5,7 @@
 - 托管提供方：`60/60` 已启用
 - 托管操作总数：`665`
 - 已公开参数总数：`2356`
-- 目录 SHA-256：`67a0f940de0cb40074780afaac33d10816c682de5c5a8ed88cf6e8f4e8178eb2`
+- 目录 SHA-256：`f33b129653c6dda4f9b412c527f9b3cd2376f0aa0adaea4af069cb09aa0aebb1`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -25351,12 +25351,12 @@
 
 - 状态：`启用`
 - 说明：固定接入学位论文、教育研究、开放专著、国家目录、档案馆、博物馆、政府出版物、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据。
-- 目录策略：仅开放9项固定只读操作和22个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
+- 目录策略：仅开放9项固定只读操作和20个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
 - 执行策略：每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。
 - 票据前缀：`[intel-knowledge]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`f9833ce18407182e525eb26d0ff84d2fdb6b5a98e553ab56a287b0cf41d539a4`
+- 提供方SHA-256：`e65f7c045c71588225b75e83c060e6ad45829f1e9e6496e7d13b2c82ba987a58`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -25398,7 +25398,6 @@
     "source_id": {
       "type": "string",
       "enum": [
-        "theses-fr",
         "eric",
         "ukri-gtr",
         "nih-reporter",
@@ -25485,7 +25484,6 @@
       "enum": [
         "hal-oai",
         "doab-oai",
-        "oapen-oai",
         "rijksmuseum-oai"
       ]
     }
@@ -25510,7 +25508,6 @@
       "enum": [
         "hal-oai",
         "doab-oai",
-        "oapen-oai",
         "rijksmuseum-oai"
       ]
     },
@@ -25553,7 +25550,6 @@
       "enum": [
         "hal-oai",
         "doab-oai",
-        "oapen-oai",
         "rijksmuseum-oai"
       ]
     },
@@ -25660,7 +25656,7 @@
 
 ```json
 {
-  "source_count": 22,
+  "source_count": 20,
   "requests_per_ticket_max": 1,
   "timeout_seconds_max": 90,
   "max_response_bytes": 15000000,

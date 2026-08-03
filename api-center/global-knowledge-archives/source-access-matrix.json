@@ -1,26 +1,16 @@
 {
   "schema_version": "global-knowledge-archives-source-matrix-v1",
-  "active_source_count": 22,
+  "active_source_count": 20,
   "sources": [
-    {
-      "source_id": "theses-fr",
-      "name": "theses.fr",
-      "category": "doctoral-theses",
-      "protocol": "rest-search",
-      "base_url": "https://theses.fr/api/v1/recherche/",
-      "operations": ["knowledge-search"],
-      "credential_mode": "none",
-      "credential_env": "",
-      "license_policy": "French doctoral-thesis metadata; source rights and dissemination status must be retained.",
-      "cost": "free"
-    },
     {
       "source_id": "eric",
       "name": "ERIC",
       "category": "education-research",
       "protocol": "rest-search",
       "base_url": "https://api.ies.ed.gov/eric/",
-      "operations": ["knowledge-search"],
+      "operations": [
+        "knowledge-search"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Public education-research metadata and source-provided full-text links only.",
@@ -32,7 +22,10 @@
       "category": "research-projects-outcomes",
       "protocol": "rest-search-record",
       "base_url": "https://gtr.ukri.org",
-      "operations": ["knowledge-search", "knowledge-record"],
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Open Government Licence data; use moderate request rates.",
@@ -44,7 +37,9 @@
       "category": "research-grants-publications",
       "protocol": "rest-search-post",
       "base_url": "https://api.reporter.nih.gov/v2",
-      "operations": ["knowledge-search"],
+      "operations": [
+        "knowledge-search"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Public scientific award and publication metadata; no personal profiling.",
@@ -56,7 +51,10 @@
       "category": "clinical-trials",
       "protocol": "rest-search-record",
       "base_url": "https://clinicaltrials.gov/api/v2",
-      "operations": ["knowledge-search", "knowledge-record"],
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Public study-level records only; no patient-level data or medical inference about individuals.",
@@ -68,7 +66,9 @@
       "category": "earth-science-technical-reports",
       "protocol": "rest-search",
       "base_url": "https://pubs.usgs.gov/pubs-services/publication/",
-      "operations": ["knowledge-search"],
+      "operations": [
+        "knowledge-search"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Official USGS publication metadata and lawful document links; external publisher rights remain external.",
@@ -80,7 +80,10 @@
       "category": "regulatory-publications",
       "protocol": "rest-search-record",
       "base_url": "https://www.federalregister.gov/api/v1",
-      "operations": ["knowledge-search", "knowledge-record"],
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "FederalRegister.gov metadata is a discovery layer; authoritative legal reliance should use linked GovInfo editions.",
@@ -92,7 +95,10 @@
       "category": "museum-collections",
       "protocol": "rest-search-record",
       "base_url": "https://collectionapi.metmuseum.org/public/collection/v1",
-      "operations": ["knowledge-search", "knowledge-record"],
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Open Access/CC0 metadata and public-domain images only; preserve per-object rights fields.",
@@ -104,7 +110,10 @@
       "category": "museum-collections",
       "protocol": "rest-search-record",
       "base_url": "https://api.artic.edu/api/v1",
-      "operations": ["knowledge-search", "knowledge-record"],
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Public collection metadata; preserve is_public_domain, copyright and IIIF rights information.",
@@ -116,7 +125,10 @@
       "category": "national-cultural-aggregator",
       "protocol": "rest-search-record",
       "base_url": "https://api.digitalnz.org/v3",
-      "operations": ["knowledge-search", "knowledge-record"],
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Metadata rights vary by partner; preserve is_commercial_use, copyright, rights_url and source_url.",
@@ -128,11 +140,13 @@
       "category": "national-library-archives-australia",
       "protocol": "rest-search",
       "base_url": "https://api.trove.nla.gov.au/v3",
-      "operations": ["knowledge-search"],
-      "credential_mode": "optional_free_key",
+      "operations": [
+        "knowledge-search"
+      ],
+      "credential_mode": "required_free_key",
       "credential_env": "TROVE_API_KEY",
       "license_policy": "Metadata and digitized-item rights vary; preserve cultural-sensitivity and rights fields.",
-      "cost": "free; anonymous exploration 10 calls/minute, free key increases quota"
+      "cost": "free registration key required by the current production endpoint"
     },
     {
       "source_id": "google-books",
@@ -140,7 +154,10 @@
       "category": "global-books-catalog",
       "protocol": "rest-search-record",
       "base_url": "https://www.googleapis.com/books/v1",
-      "operations": ["knowledge-search", "knowledge-record"],
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
       "credential_mode": "required_free_key",
       "credential_env": "GOOGLE_API_KEY",
       "license_policy": "Book metadata, preview and access-status fields only; do not bypass viewability or download restrictions.",
@@ -152,7 +169,10 @@
       "category": "biodiversity-literature",
       "protocol": "rest-search-record",
       "base_url": "https://www.biodiversitylibrary.org/api3",
-      "operations": ["knowledge-search", "knowledge-record"],
+      "operations": [
+        "knowledge-search",
+        "knowledge-record"
+      ],
       "credential_mode": "required_free_key",
       "credential_env": "BHL_API_KEY",
       "license_policy": "Biodiversity publication metadata and explicitly exposed OCR/files; preserve item-level rights.",
@@ -164,7 +184,9 @@
       "category": "national-archives",
       "protocol": "rest-search",
       "base_url": "https://catalog.archives.gov/api/v2",
-      "operations": ["knowledge-search"],
+      "operations": [
+        "knowledge-search"
+      ],
       "credential_mode": "required_free_key",
       "credential_env": "NARA_CATALOG_API_KEY",
       "license_policy": "Public archival metadata and linked digital objects; preserve record and object rights statements.",
@@ -176,7 +198,9 @@
       "category": "museum-library-archives",
       "protocol": "rest-search",
       "base_url": "https://api.si.edu/openaccess/api/v1.0",
-      "operations": ["knowledge-search"],
+      "operations": [
+        "knowledge-search"
+      ],
       "credential_mode": "required_free_key",
       "credential_env": "SMITHSONIAN_API_KEY",
       "license_policy": "CC0 metadata/media only where designated; restricted objects return metadata without unauthorized media.",
@@ -188,7 +212,9 @@
       "category": "government-publications",
       "protocol": "rest-record",
       "base_url": "https://api.govinfo.gov",
-      "operations": ["knowledge-record"],
+      "operations": [
+        "knowledge-record"
+      ],
       "credential_mode": "required_free_key",
       "credential_env": "GOVINFO_API_KEY",
       "license_policy": "Authenticated official US government package metadata and lawful content links.",
@@ -200,7 +226,9 @@
       "category": "national-library-germany",
       "protocol": "sru",
       "base_url": "https://services.dnb.de/sru/dnb",
-      "operations": ["sru-search"],
+      "operations": [
+        "sru-search"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Free bibliographic metadata; preserve DNB attribution and record identifiers.",
@@ -212,7 +240,11 @@
       "category": "open-repository-france",
       "protocol": "oai-pmh",
       "base_url": "https://api.archives-ouvertes.fr/oai/hal/",
-      "operations": ["oai-identify", "oai-list-records", "oai-get-record"],
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Metadata harvesting under HAL terms; full text remains governed by record-level licenses.",
@@ -224,22 +256,14 @@
       "category": "open-access-books",
       "protocol": "oai-pmh",
       "base_url": "https://directory.doabooks.org/oai/request",
-      "operations": ["oai-identify", "oai-list-records", "oai-get-record"],
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Open-access book metadata; preserve book and chapter license information.",
-      "cost": "free"
-    },
-    {
-      "source_id": "oapen-oai",
-      "name": "OAPEN Library",
-      "category": "open-access-books",
-      "protocol": "oai-pmh",
-      "base_url": "https://library.oapen.org/oai/request",
-      "operations": ["oai-identify", "oai-list-records", "oai-get-record"],
-      "credential_mode": "none",
-      "credential_env": "",
-      "license_policy": "Peer-reviewed open-access book metadata and source-declared files; preserve per-title licenses.",
       "cost": "free"
     },
     {
@@ -248,7 +272,11 @@
       "category": "museum-collections",
       "protocol": "oai-pmh",
       "base_url": "https://data.rijksmuseum.nl/oai",
-      "operations": ["oai-identify", "oai-list-records", "oai-get-record"],
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Museum collection metadata only; preserve EDM/Dublin Core rights and identifiers.",
@@ -260,7 +288,9 @@
       "category": "economics-working-paper-metadata",
       "protocol": "fixed-metadata-files",
       "base_url": "https://data.nber.org/nber_paper_chapter_metadata/tsv",
-      "operations": ["metadata-file-get"],
+      "operations": [
+        "metadata-file-get"
+      ],
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Structured metadata only; do not bypass NBER working-paper subscription or author copyright restrictions.",
@@ -359,6 +389,14 @@
     {
       "source_id": "commercial-policy-and-research-indexes",
       "reason": "Policy Commons, Overton, Scopus, Web of Science, ProQuest, CNKI, Wanfang and similar services require licensed access."
+    },
+    {
+      "source_id": "theses-fr",
+      "reason": "The official service and API documentation were confirmed, but the HTTPS API endpoint failed a bounded 60-second production connect acceptance on 2026-08-03. Direct activation is deferred until the endpoint is reliably reachable from the execution platform."
+    },
+    {
+      "source_id": "oapen-oai",
+      "reason": "The documented OAI endpoint closed the connection without returning an Identify response during the bounded production acceptance on 2026-08-03. DOAB remains active for open-book discovery; OAPEN is deferred until a current stable endpoint is verified."
     }
   ],
   "governance": {
@@ -382,8 +420,26 @@
     "gpts_is_sole_cross_center_relay": true
   },
   "discovery": {
-    "valid_real_exa_tasks": [699, 702, 704, 706, 709, 714, 716, 718],
-    "valid_real_tavily_tasks": [700, 703, 705, 707, 710, 715, 717, 719],
+    "valid_real_exa_tasks": [
+      699,
+      702,
+      704,
+      706,
+      709,
+      714,
+      716,
+      718
+    ],
+    "valid_real_tavily_tasks": [
+      700,
+      703,
+      705,
+      707,
+      710,
+      715,
+      717,
+      719
+    ],
     "valid_real_search_task_count": 16,
     "rejected_without_upstream_call": "issues 683-698 used result limits above the control-plane maximum",
     "model_calls": 0,
