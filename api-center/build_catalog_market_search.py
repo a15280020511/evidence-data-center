@@ -112,7 +112,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "global-literature-libraries": 10,
     "global-knowledge-archives": 9,
     "global-knowledge-fabric": 9,
-    "baidu-ai-cloud": 41,
+    "baidu-ai-cloud": 3,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
