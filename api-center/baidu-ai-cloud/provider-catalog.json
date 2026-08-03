@@ -1,0 +1,188 @@
+{
+  "schema_version": "baidu-ai-cloud-provider-catalog-v4",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "baidu-ai-cloud",
+      "display_name": "百度AI网页搜索",
+      "description": "当前统一API Key已真实验证可用的百度公开网页搜索。",
+      "enabled": true,
+      "ticket_prefix": "[intel-baidu-ai]",
+      "required_secret_environment_variable": "BAIDU_AI_CLOUD_API_KEY",
+      "required_secret_environment_variables": [
+        "BAIDU_AI_CLOUD_API_KEY"
+      ],
+      "credential_matrix": {
+        "web-search": [
+          "BAIDU_AI_CLOUD_API_KEY"
+        ],
+        "local-governance": []
+      },
+      "catalog_policy": "只开放当前Key已实测通过的1项上游高价值能力和2项本地治理能力。",
+      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；零模型调用、零付费兜底。",
+      "official_origins": [
+        "https://qianfan.baidubce.com"
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 2000000,
+        "max_search_results": 20,
+        "fixed_api_hosts": [
+          "qianfan.baidubce.com"
+        ],
+        "fixed_paths": [
+          "/v2/ai_search/web_search"
+        ],
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "redirects_allowed": false,
+        "automatic_pagination_allowed": false,
+        "automatic_retries_allowed": false,
+        "background_monitoring_allowed": false,
+        "cloud_resource_management_allowed": false,
+        "paid_fallback_authorized": false,
+        "generative_model_chat_allowed": false,
+        "nlp_operations_allowed": false,
+        "ocr_operations_allowed": false,
+        "image_recognition_operations_allowed": false,
+        "face_or_biometric_operations_allowed": false,
+        "identity_document_ocr_allowed": false,
+        "speech_operations_allowed": false,
+        "image_or_video_generation_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false,
+        "direct_personal_identifiers_redacted": true
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取当前保留的百度能力、安全边界和操作参数，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "execution": {
+            "local": true,
+            "path_template": "",
+            "http_method": "LOCAL",
+            "credential_mode": "none",
+            "content_type": "LOCAL",
+            "official_origin": "local"
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "local",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": false
+          }
+        },
+        {
+          "operation_id": "quota-policy",
+          "description": "读取百度网页搜索免费额度与零付费策略，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "execution": {
+            "local": true,
+            "path_template": "",
+            "http_method": "LOCAL",
+            "credential_mode": "none",
+            "content_type": "LOCAL",
+            "official_origin": "local"
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "local",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": false
+          }
+        },
+        {
+          "operation_id": "web-search",
+          "description": "百度AI搜索V2：检索中国大陆公开网页并返回标题、摘要、网址和引用。",
+          "parameters": [
+            "query",
+            "top_k",
+            "edition",
+            "recency"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20,
+                "default": 10
+              },
+              "edition": {
+                "type": "string",
+                "enum": [
+                  "standard",
+                  "lite"
+                ],
+                "default": "standard"
+              },
+              "recency": {
+                "type": "string",
+                "enum": [
+                  "week",
+                  "month",
+                  "semiyear",
+                  "year"
+                ]
+              }
+            },
+            "maxProperties": 4,
+            "required": [
+              "query"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v2/ai_search/web_search",
+            "http_method": "POST",
+            "credential_mode": "unified-api-key-bearer",
+            "content_type": "application/json",
+            "official_origin": "https://qianfan.baidubce.com"
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "https://qianfan.baidubce.com",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "unified-api-key-bearer",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": true
+          }
+        }
+      ]
+    }
+  ]
+}

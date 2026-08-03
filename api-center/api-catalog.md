@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`61/61` 已启用
-- 托管操作总数：`674`
-- 已公开参数总数：`2376`
-- 目录 SHA-256：`de95ccf64f1f918ea601222515201874ab0b0e5554c3cb3b7716743ea80a6ac8`
+- 托管提供方：`62/62` 已启用
+- 托管操作总数：`677`
+- 已公开参数总数：`2380`
+- 目录 SHA-256：`0afcfc68c33e351fec59543a9421c469256ec68310f998538259c74ce2e71c80`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -78,6 +78,7 @@
 | 全球开放文献与资料库 | `global-literature-libraries` | 启用 | `[intel-literature]` | `10` | 否 |
 | 全球文献档案资料库第二波 | `global-knowledge-archives` | 启用 | `[intel-knowledge]` | `9` | 否 |
 | 全球知识织网第三波 | `global-knowledge-fabric` | 启用 | `[intel-knowledge-fabric]` | `9` | 否 |
+| 百度AI网页搜索 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `3` | 否 |
 
 ## 普通连接器
 
@@ -25992,6 +25993,131 @@
   "patient_level_data_allowed": false,
   "real_time_tracking_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## 百度AI网页搜索 (`baidu-ai-cloud`)
+
+- 状态：`启用`
+- 说明：当前统一API Key已真实验证可用的百度公开网页搜索。
+- 目录策略：只开放当前Key已实测通过的1项上游高价值能力和2项本地治理能力。
+- 执行策略：每张票据一个操作、最多一次固定HTTPS请求；零模型调用、零付费兜底。
+- 票据前缀：`[intel-baidu-ai]`
+- Secret环境变量名：`BAIDU_AI_CLOUD_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`99a10301319b992d2a9e0509dcbd41b8aaa64b9a3ea8423c1dfe01ced1d377b4`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取当前保留的百度能力、安全边界和操作参数，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `quota-policy` | 读取百度网页搜索免费额度与零付费策略，不访问上游。 | `无` |
+
+`quota-policy` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `web-search` | 百度AI搜索V2：检索中国大陆公开网页并返回标题、摘要、网址和引用。 | `query, top_k, edition, recency` |
+
+`web-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "top_k": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    },
+    "edition": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "lite"
+      ],
+      "default": "standard"
+    },
+    "recency": {
+      "type": "string",
+      "enum": [
+        "week",
+        "month",
+        "semiyear",
+        "year"
+      ]
+    }
+  },
+  "maxProperties": 4,
+  "required": [
+    "query"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 2000000,
+  "max_search_results": 20,
+  "fixed_api_hosts": [
+    "qianfan.baidubce.com"
+  ],
+  "fixed_paths": [
+    "/v2/ai_search/web_search"
+  ],
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "automatic_pagination_allowed": false,
+  "automatic_retries_allowed": false,
+  "background_monitoring_allowed": false,
+  "cloud_resource_management_allowed": false,
+  "paid_fallback_authorized": false,
+  "generative_model_chat_allowed": false,
+  "nlp_operations_allowed": false,
+  "ocr_operations_allowed": false,
+  "image_recognition_operations_allowed": false,
+  "face_or_biometric_operations_allowed": false,
+  "identity_document_ocr_allowed": false,
+  "speech_operations_allowed": false,
+  "image_or_video_generation_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "direct_personal_identifiers_redacted": true
 }
 ```
 
