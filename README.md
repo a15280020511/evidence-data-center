@@ -32,3 +32,10 @@ Connector status is classified as PRODUCTION / DEGRADED / BLOCKED / RETIRED. For
 ### WHO GHO OData
 
 情报中心新增免密、只读的 WHO Global Health Observatory OData Provider，固定开放 8 项受控操作并保留官方接口迁移监测。
+
+
+## 证据标准化能力层
+
+`api-center/evidence-standardization/` 提供8项零密钥本地能力：目录读取、证据记录规范化、内容指纹与近重复、来源谱系DAG、时间版本差异、STIX 2.1离线结构校验、GPTs传输清单和来源质量画像。该层不采集外部数据、不访问网络、不读取票据文件路径、不处理个人数据，也不执行模型调用。
+
+仓库根目录 `CENTER_CAPABILITY_OWNERSHIP.json` 是计算中心与情报中心的权威工具归属合同。

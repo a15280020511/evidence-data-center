@@ -51,6 +51,7 @@ PUBLIC_DATA_GEOSPATIAL_CATALOG = HERE / "public-data-geospatial/provider-catalog
 CLOUDFLARE_CATALOG = HERE / "cloudflare/provider-catalog.json"
 FRED_CATALOG = HERE / "fred/provider-catalog.json"
 HUGGINGFACE_CATALOG = HERE / "huggingface/provider-catalog.json"
+EVIDENCE_STANDARDIZATION_CATALOG = HERE / "evidence-standardization/provider-catalog.json"
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
     "serpapi": 4,
@@ -90,6 +91,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "cloudflare": 22,
     "fred": 25,
     "huggingface-hub": 11,
+    "evidence-standardization": 8,
 }
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
     *base.MANAGED_PROVIDER_CATALOG_PATHS,
@@ -129,6 +131,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     CLOUDFLARE_CATALOG,
     FRED_CATALOG,
     HUGGINGFACE_CATALOG,
+    EVIDENCE_STANDARDIZATION_CATALOG,
 )
 
 load_json = base.load_json
@@ -185,6 +188,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "cloudflare/provider-catalog.json",
         "fred/provider-catalog.json",
         "huggingface/provider-catalog.json",
+        "evidence-standardization/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (

@@ -53,15 +53,16 @@
     "public-data-geospatial/provider-catalog.json",
     "cloudflare/provider-catalog.json",
     "fred/provider-catalog.json",
-    "huggingface/provider-catalog.json"
+    "huggingface/provider-catalog.json",
+    "evidence-standardization/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "47ec93db3535ed923199e68b80c431a15f25d7448395bd48f3ea6be963d75d59",
+  "managed_provider_catalog_sha256": "7c2c2a8b4562b586796a85719dcc661fcfd26eed87d6fdbe806f40b51fc5c695",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 51,
-  "enabled_managed_provider_count": 51,
-  "managed_operation_count": 580,
-  "exposed_parameter_count": 2133,
+  "managed_provider_count": 52,
+  "enabled_managed_provider_count": 52,
+  "managed_operation_count": 588,
+  "exposed_parameter_count": 2142,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -110,6 +111,7 @@
     "cloudflare/provider-catalog.json",
     "fred/provider-catalog.json",
     "huggingface/provider-catalog.json",
+    "evidence-standardization/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -27531,6 +27533,317 @@
       "secret_value_exposed": false,
       "provider_sha256": "6be00a64b355317fc9cc44cda61c226f088e6409e2ef23245edcd7ef1e1cb0c0",
       "catalog_file": "huggingface/provider-catalog.json"
+    },
+    {
+      "provider_id": "evidence-standardization",
+      "display_name": "证据标准化、去重、谱系与传输清单",
+      "description": "对已采集的公开、非个人证据执行本地规范化、指纹去重、来源谱系、版本差异、STIX离线校验、来源质量画像和传输清单生成。",
+      "enabled": true,
+      "ticket_prefix": "[intel-evidence-standardize]",
+      "catalog_policy": "仅处理票据内已提供的公开、非个人结构化证据；不访问网络、不读取文件路径、不接受代码、不推断个人身份。",
+      "execution_policy": "每张票据执行一个固定本地操作；输入有界，输出包含哈希、状态和零网络零模型调用回执。",
+      "operation_count": 8,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地证据标准化能力目录，不访问外部网络。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "provider": "evidence-standardization",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "network_used": false,
+            "model_calls": 0,
+            "secret_used": false
+          },
+          "discovery_policy": {
+            "source": "repository-governed-local-capability"
+          }
+        },
+        {
+          "operation_id": "normalize-evidence-records",
+          "description": "将公开、非个人的来源记录规范化为统一证据记录并生成内容哈希和稳定记录ID。",
+          "parameter_names": [
+            "records"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "records"
+            ],
+            "properties": {
+              "records": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1000,
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "evidence-standardization",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "network_used": false,
+            "model_calls": 0,
+            "secret_used": false
+          },
+          "discovery_policy": {
+            "source": "repository-governed-local-capability"
+          }
+        },
+        {
+          "operation_id": "content-fingerprint",
+          "description": "生成SHA-256和64位SimHash，识别精确重复和受限近重复内容。",
+          "parameter_names": [
+            "near_duplicate_hamming_threshold",
+            "texts"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "texts"
+            ],
+            "properties": {
+              "texts": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1000,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200000
+                }
+              },
+              "near_duplicate_hamming_threshold": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 16
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "evidence-standardization",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "network_used": false,
+            "model_calls": 0,
+            "secret_used": false
+          },
+          "discovery_policy": {
+            "source": "repository-governed-local-capability"
+          }
+        },
+        {
+          "operation_id": "provenance-lineage",
+          "description": "验证来源、快照、处理和传输节点形成的有向无环谱系图。",
+          "parameter_names": [
+            "edges",
+            "nodes"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "nodes",
+              "edges"
+            ],
+            "properties": {
+              "nodes": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5000,
+                "items": {
+                  "type": "object"
+                }
+              },
+              "edges": {
+                "type": "array",
+                "maxItems": 20000,
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "evidence-standardization",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "network_used": false,
+            "model_calls": 0,
+            "secret_used": false
+          },
+          "discovery_policy": {
+            "source": "repository-governed-local-capability"
+          }
+        },
+        {
+          "operation_id": "timeline-version-diff",
+          "description": "按UTC时间排序公开文档版本并计算逐版本变更摘要。",
+          "parameter_names": [
+            "versions"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "versions"
+            ],
+            "properties": {
+              "versions": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 200,
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "evidence-standardization",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "network_used": false,
+            "model_calls": 0,
+            "secret_used": false
+          },
+          "discovery_policy": {
+            "source": "repository-governed-local-capability"
+          }
+        },
+        {
+          "operation_id": "stix-bundle-validate",
+          "description": "离线验证STIX 2.1 Bundle的对象身份、重复项和内部引用完整性。",
+          "parameter_names": [
+            "bundle"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "bundle"
+            ],
+            "properties": {
+              "bundle": {
+                "type": "object"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "evidence-standardization",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "network_used": false,
+            "model_calls": 0,
+            "secret_used": false
+          },
+          "discovery_policy": {
+            "source": "repository-governed-local-capability"
+          }
+        },
+        {
+          "operation_id": "transfer-package-manifest",
+          "description": "为GPTs证据中继生成公开、非个人文件清单和规范哈希。",
+          "parameter_names": [
+            "files"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "files"
+            ],
+            "properties": {
+              "files": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1000,
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "evidence-standardization",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "network_used": false,
+            "model_calls": 0,
+            "secret_used": false
+          },
+          "discovery_policy": {
+            "source": "repository-governed-local-capability"
+          }
+        },
+        {
+          "operation_id": "source-quality-profile",
+          "description": "按权威性、直接性、时效性、交叉印证和方法透明度形成来源质量画像。",
+          "parameter_names": [
+            "sources"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "sources"
+            ],
+            "properties": {
+              "sources": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1000,
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "evidence-standardization",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "network_used": false,
+            "model_calls": 0,
+            "secret_used": false
+          },
+          "discovery_policy": {
+            "source": "repository-governed-local-capability"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket": 0,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 10000000,
+        "records_max": 1000,
+        "graph_nodes_max": 5000,
+        "graph_edges_max": 20000,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_files_allowed": false,
+        "arbitrary_code_allowed": false,
+        "network_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "8e400600c569dcbc0f510453cd62b2adcb54f65371641e18ad2a2b65c8962bfc",
+      "catalog_file": "evidence-standardization/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -35870,5 +36183,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "abd5976cac2defd4ee81d4fad2fd26e13279a3770696ab0a23dca294f23cc725"
+  "catalog_sha256": "bdd62b7b6dd2b38d3f4d6f96cb56878078b5bf6c1302b2849e51f86e43373a01"
 }
