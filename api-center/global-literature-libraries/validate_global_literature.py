@@ -100,7 +100,7 @@ def validate_registry() -> dict:
         len(sources)
         == matrix["active_source_count"]
         == provider["limits"]["source_count"]
-        == 26
+        == 25
     )
     assert len(operations) == 10
     assert matrix["governance"]["fixed_sources_only"] is True
@@ -172,7 +172,7 @@ LIVE_CASES = {
         "literature-search",
         {"source_id": "library-of-congress", "query": "economic history", "limit": 2},
     ),
-    "fraser-oai": ("oai-identify", {"source_id": "fraser-oai"}),
+    "econstor-oai": ("oai-identify", {"source_id": "econstor-oai"}),
     "ndl-sru": (
         "sru-search",
         {"source_id": "ndl-sru", "query": "economics", "limit": 2, "record_schema": "dc"},

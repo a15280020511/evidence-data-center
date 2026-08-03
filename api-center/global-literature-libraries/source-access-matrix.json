@@ -1,1 +1,503 @@
-{"schema_version":"global-literature-source-matrix-v1","active_source_count":26,"sources":[{"source_id":"core","name":"CORE","category":"global-scholarly","protocol":"rest-search-record","base_url":"https://api.core.ac.uk/v3","operations":["literature-search","literature-record"],"credential_mode":"required_free_key","credential_env":"CORE_API_KEY","license_policy":"Metadata and explicitly open full text only; respect per-record rights.","cost":"free registration key"},{"source_id":"openaire","name":"OpenAIRE Graph","category":"global-scholarly","protocol":"rest-search-record","base_url":"https://api.openaire.eu/graph/v3","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"Public API terms and source-level rights.","cost":"free"},{"source_id":"semantic-scholar","name":"Semantic Scholar Academic Graph","category":"global-scholarly","protocol":"rest-search-record","base_url":"https://api.semanticscholar.org/graph/v1","operations":["literature-search","literature-record"],"credential_mode":"optional_free_key","credential_env":"SEMANTIC_SCHOLAR_API_KEY","license_policy":"Metadata and declared open-access PDF locations only.","cost":"free key optional/recommended"},{"source_id":"europe-pmc","name":"Europe PMC","category":"biomedical","protocol":"rest-search-record","base_url":"https://www.ebi.ac.uk/europepmc/webservices/rest","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"Metadata; full text only when source license permits reuse.","cost":"free"},{"source_id":"zenodo","name":"Zenodo","category":"open-repository","protocol":"rest-search-record","base_url":"https://zenodo.org/api","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"Public record metadata and file links; per-record license controls reuse.","cost":"free"},{"source_id":"osf","name":"Open Science Framework","category":"open-repository","protocol":"rest-search-record","base_url":"https://api.osf.io/v2","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"Public preprint/project metadata only.","cost":"free"},{"source_id":"figshare","name":"Figshare","category":"open-repository","protocol":"rest-search-record","base_url":"https://api.figshare.com/v2","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"Public metadata and source-provided file links; per-item license applies.","cost":"free"},{"source_id":"dryad","name":"Dryad","category":"research-data","protocol":"rest-search","base_url":"https://datadryad.org/api/v2","operations":["literature-search"],"credential_mode":"none","credential_env":"","license_policy":"Metadata and public dataset links; dataset files are governed by record terms.","cost":"free"},{"source_id":"econbiz","name":"EconBiz","category":"economics-business","protocol":"rest-search-record","base_url":"https://api.econbiz.de/v1","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"No large-scale copying; discovery and bounded metadata lookup only.","cost":"free"},{"source_id":"osti","name":"OSTI.GOV","category":"technical-reports","protocol":"rest-search-record","base_url":"https://www.osti.gov/api/v1","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"US government research metadata; linked content retains source rights.","cost":"free"},{"source_id":"nasa-ads","name":"NASA ADS","category":"astronomy-physics","protocol":"rest-search-record","base_url":"https://api.adsabs.harvard.edu/v1","operations":["literature-search","literature-record"],"credential_mode":"required_free_token","credential_env":"NASA_ADS_API_TOKEN","license_policy":"Bibliographic metadata and source links; publisher content rights remain external.","cost":"free account token"},{"source_id":"library-of-congress","name":"Library of Congress","category":"library-archives","protocol":"rest-search-record","base_url":"https://www.loc.gov","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"Catalog metadata and digitized-item links; rights vary by collection.","cost":"free"},{"source_id":"open-library","name":"Open Library","category":"books","protocol":"rest-search-record","base_url":"https://openlibrary.org","operations":["literature-search","literature-record"],"credential_mode":"none","credential_env":"","license_policy":"Low-volume discovery only; not a bulk/high-traffic backend.","cost":"free"},{"source_id":"europeana","name":"Europeana","category":"cultural-heritage","protocol":"rest-search-record","base_url":"https://api.europeana.eu","operations":["literature-search","literature-record"],"credential_mode":"required_free_key","credential_env":"EUROPEANA_API_KEY","license_policy":"Metadata and media rights statements must be preserved.","cost":"free registration key"},{"source_id":"dpla","name":"Digital Public Library of America","category":"library-archives","protocol":"rest-search-record","base_url":"https://api.dp.la/v2","operations":["literature-search","literature-record"],"credential_mode":"required_free_key","credential_env":"DPLA_API_KEY","license_policy":"Public metadata; source item rights vary.","cost":"free registration key"},{"source_id":"cinii","name":"CiNii Research","category":"regional-scholarly-japan","protocol":"opensearch","base_url":"https://cir.nii.ac.jp/opensearch","operations":["literature-search"],"credential_mode":"optional_free_app_id","credential_env":"CINII_APP_ID","license_policy":"Attribution and use-registration conditions apply; public metadata only.","cost":"free registration recommended"},{"source_id":"gallica","name":"Gallica / BnF","category":"digital-library-france","protocol":"sru","base_url":"https://gallica.bnf.fr/SRU","operations":["literature-search"],"credential_mode":"none","credential_env":"","license_policy":"Metadata discovery only; item reuse follows Gallica rights.","cost":"free"},{"source_id":"biorxiv","name":"bioRxiv","category":"preprints","protocol":"preprint-rest","base_url":"https://api.biorxiv.org/details/biorxiv","operations":["preprint-feed"],"credential_mode":"none","credential_env":"","license_policy":"Preprint metadata and source links; manuscript license varies.","cost":"free"},{"source_id":"medrxiv","name":"medRxiv","category":"preprints","protocol":"preprint-rest","base_url":"https://api.biorxiv.org/details/medrxiv","operations":["preprint-feed"],"credential_mode":"none","credential_env":"","license_policy":"Preprint metadata and source links; manuscript license varies.","cost":"free"},{"source_id":"doaj-oai","name":"DOAJ OAI-PMH","category":"open-journals","protocol":"oai-pmh","base_url":"https://doaj.org/oai.article","operations":["oai-identify","oai-list-records","oai-get-record"],"credential_mode":"optional_free_key","credential_env":"DOAJ_API_KEY","license_policy":"Article and journal metadata; preserve article-level license.","cost":"free key optional/premium freshness"},{"source_id":"fraser-oai","name":"FRASER","category":"economic-policy-history","protocol":"oai-pmh","base_url":"https://fraser.stlouisfed.org/oai","operations":["oai-identify","oai-list-records","oai-get-record"],"credential_mode":"none","credential_env":"","license_policy":"Economic history and policy metadata; item rights remain attached.","cost":"free"},{"source_id":"econstor-oai","name":"EconStor","category":"economics-working-papers","protocol":"oai-pmh","base_url":"https://www.econstor.eu/oai/request","operations":["oai-identify","oai-list-records","oai-get-record"],"credential_mode":"none","credential_env":"","license_policy":"Metadata and source-declared open files only.","cost":"free"},{"source_id":"erara-oai","name":"e-rara","category":"historic-books","protocol":"oai-pmh","base_url":"https://www.e-rara.ch/oai","operations":["oai-identify","oai-list-records","oai-get-record"],"credential_mode":"none","credential_env":"","license_policy":"Metadata and source-provided digital copies; rights statement retained.","cost":"free"},{"source_id":"texas-history-oai","name":"Portal to Texas History","category":"digital-archives","protocol":"oai-pmh","base_url":"https://texashistory.unt.edu/oai/","operations":["oai-identify","oai-list-records","oai-get-record"],"credential_mode":"none","credential_env":"","license_policy":"Metadata and public manifests; item rights vary.","cost":"free"},{"source_id":"ndl-sru","name":"National Diet Library Search","category":"national-library-japan","protocol":"sru","base_url":"https://ndlsearch.ndl.go.jp/api/sru","operations":["sru-search"],"credential_mode":"none","credential_env":"","license_policy":"Only metadata approved for API distribution is returned.","cost":"free"},{"source_id":"epo-publication-server","name":"EPO European Publication Server","category":"patents","protocol":"epo-rest","base_url":"https://data.epo.org/publication-server/rest/v1.2","operations":["patent-publication-get"],"credential_mode":"none","credential_env":"","license_policy":"Authoritative EP publication documents; fair-use download limits apply.","cost":"free"}],"mapped_existing_sources":["OpenAlex","Crossref","DataCite","OpenCitations","Unpaywall","arXiv","PubMed/PMC","UN Digital Library","World Bank Documents","IMF","BIS","ADB","OECD","SEC EDGAR","Congress.gov","CourtListener","Internet Archive","NASA","OpenBB","global think-tank fixed catalog"],"not_enabled":[{"source_id":"repec-api","reason":"Courtesy API requires project-specific manual approval code and does not provide general search."},{"source_id":"repec-oai","reason":"Official endpoint is HTTP-only; production policy requires HTTPS."},{"source_id":"scielo-books-oai","reason":"Official OAI/OPDS endpoints documented as HTTP-only; pending secure relay/legal review."},{"source_id":"persee-oai","reason":"Official OAI endpoint is HTTP-only and full content access needs identified-user approval."},{"source_id":"jstage","reason":"Commercial use requires prior JST permission; retained as discovery candidate until usage status is resolved."},{"source_id":"patentsview","reason":"Service migration to USPTO Open Data Portal in 2026 requires current endpoint/key revalidation before production."},{"source_id":"la-referencia","reason":"Regional aggregator confirmed, but no stable official fixed API endpoint was verified in this round."},{"source_id":"overton","reason":"Commercial subscription/API authorization required."},{"source_id":"policy-commons","reason":"Institutional/commercial subscription generally required."},{"source_id":"economist-eiu","reason":"Licensed entitlement required; no free public corpus API."},{"source_id":"scopus","reason":"Commercial subscription."},{"source_id":"web-of-science","reason":"Commercial subscription."},{"source_id":"proquest","reason":"Commercial subscription."},{"source_id":"cnki","reason":"No verified free public API; paywall/login bypass prohibited."},{"source_id":"wanfang","reason":"No verified free public API; paywall/login bypass prohibited."}],"governance":{"fixed_sources_only":true,"arbitrary_urls_allowed":false,"arbitrary_hosts_allowed":false,"arbitrary_paths_allowed":false,"arbitrary_headers_allowed":false,"client_supplied_credentials_allowed":false,"requests_per_ticket_max":1,"automatic_pagination_allowed":false,"automatic_retry_allowed":false,"redirects_allowed":false,"write_operations_allowed":false,"paywall_bypass_allowed":false,"unauthorized_full_text_copying_allowed":false,"full_text_default":"metadata-and-declared-open-locations-only","gpts_is_sole_cross_center_relay":true},"discovery":{"model_calls":0,"secret_values_exposed":false,"exa":[652,656,658,661,664,666],"tavily":[654,657,660,662,665,667]}}
+{
+  "schema_version": "global-literature-source-matrix-v1",
+  "active_source_count": 25,
+  "sources": [
+    {
+      "source_id": "core",
+      "name": "CORE",
+      "category": "global-scholarly",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.core.ac.uk/v3",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "CORE_API_KEY",
+      "license_policy": "Metadata and explicitly open full text only; respect per-record rights.",
+      "cost": "free registration key"
+    },
+    {
+      "source_id": "openaire",
+      "name": "OpenAIRE Graph",
+      "category": "global-scholarly",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.openaire.eu/graph/v3",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public API terms and source-level rights.",
+      "cost": "free"
+    },
+    {
+      "source_id": "semantic-scholar",
+      "name": "Semantic Scholar Academic Graph",
+      "category": "global-scholarly",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.semanticscholar.org/graph/v1",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "optional_free_key",
+      "credential_env": "SEMANTIC_SCHOLAR_API_KEY",
+      "license_policy": "Metadata and declared open-access PDF locations only.",
+      "cost": "free key optional/recommended"
+    },
+    {
+      "source_id": "europe-pmc",
+      "name": "Europe PMC",
+      "category": "biomedical",
+      "protocol": "rest-search-record",
+      "base_url": "https://www.ebi.ac.uk/europepmc/webservices/rest",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Metadata; full text only when source license permits reuse.",
+      "cost": "free"
+    },
+    {
+      "source_id": "zenodo",
+      "name": "Zenodo",
+      "category": "open-repository",
+      "protocol": "rest-search-record",
+      "base_url": "https://zenodo.org/api",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public record metadata and file links; per-record license controls reuse.",
+      "cost": "free"
+    },
+    {
+      "source_id": "osf",
+      "name": "Open Science Framework",
+      "category": "open-repository",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.osf.io/v2",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public preprint/project metadata only.",
+      "cost": "free"
+    },
+    {
+      "source_id": "figshare",
+      "name": "Figshare",
+      "category": "open-repository",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.figshare.com/v2",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public metadata and source-provided file links; per-item license applies.",
+      "cost": "free"
+    },
+    {
+      "source_id": "dryad",
+      "name": "Dryad",
+      "category": "research-data",
+      "protocol": "rest-search",
+      "base_url": "https://datadryad.org/api/v2",
+      "operations": [
+        "literature-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Metadata and public dataset links; dataset files are governed by record terms.",
+      "cost": "free"
+    },
+    {
+      "source_id": "econbiz",
+      "name": "EconBiz",
+      "category": "economics-business",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.econbiz.de/v1",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "No large-scale copying; discovery and bounded metadata lookup only.",
+      "cost": "free"
+    },
+    {
+      "source_id": "osti",
+      "name": "OSTI.GOV",
+      "category": "technical-reports",
+      "protocol": "rest-search-record",
+      "base_url": "https://www.osti.gov/api/v1",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "US government research metadata; linked content retains source rights.",
+      "cost": "free"
+    },
+    {
+      "source_id": "nasa-ads",
+      "name": "NASA ADS",
+      "category": "astronomy-physics",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.adsabs.harvard.edu/v1",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "required_free_token",
+      "credential_env": "NASA_ADS_API_TOKEN",
+      "license_policy": "Bibliographic metadata and source links; publisher content rights remain external.",
+      "cost": "free account token"
+    },
+    {
+      "source_id": "library-of-congress",
+      "name": "Library of Congress",
+      "category": "library-archives",
+      "protocol": "rest-search-record",
+      "base_url": "https://www.loc.gov",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Catalog metadata and digitized-item links; rights vary by collection.",
+      "cost": "free"
+    },
+    {
+      "source_id": "open-library",
+      "name": "Open Library",
+      "category": "books",
+      "protocol": "rest-search-record",
+      "base_url": "https://openlibrary.org",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Low-volume discovery only; not a bulk/high-traffic backend.",
+      "cost": "free"
+    },
+    {
+      "source_id": "europeana",
+      "name": "Europeana",
+      "category": "cultural-heritage",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.europeana.eu",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "EUROPEANA_API_KEY",
+      "license_policy": "Metadata and media rights statements must be preserved.",
+      "cost": "free registration key"
+    },
+    {
+      "source_id": "dpla",
+      "name": "Digital Public Library of America",
+      "category": "library-archives",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.dp.la/v2",
+      "operations": [
+        "literature-search",
+        "literature-record"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "DPLA_API_KEY",
+      "license_policy": "Public metadata; source item rights vary.",
+      "cost": "free registration key"
+    },
+    {
+      "source_id": "cinii",
+      "name": "CiNii Research",
+      "category": "regional-scholarly-japan",
+      "protocol": "opensearch",
+      "base_url": "https://cir.nii.ac.jp/opensearch",
+      "operations": [
+        "literature-search"
+      ],
+      "credential_mode": "optional_free_app_id",
+      "credential_env": "CINII_APP_ID",
+      "license_policy": "Attribution and use-registration conditions apply; public metadata only.",
+      "cost": "free registration recommended"
+    },
+    {
+      "source_id": "gallica",
+      "name": "Gallica / BnF",
+      "category": "digital-library-france",
+      "protocol": "sru",
+      "base_url": "https://gallica.bnf.fr/SRU",
+      "operations": [
+        "literature-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Metadata discovery only; item reuse follows Gallica rights.",
+      "cost": "free"
+    },
+    {
+      "source_id": "biorxiv",
+      "name": "bioRxiv",
+      "category": "preprints",
+      "protocol": "preprint-rest",
+      "base_url": "https://api.biorxiv.org/details/biorxiv",
+      "operations": [
+        "preprint-feed"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Preprint metadata and source links; manuscript license varies.",
+      "cost": "free"
+    },
+    {
+      "source_id": "medrxiv",
+      "name": "medRxiv",
+      "category": "preprints",
+      "protocol": "preprint-rest",
+      "base_url": "https://api.biorxiv.org/details/medrxiv",
+      "operations": [
+        "preprint-feed"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Preprint metadata and source links; manuscript license varies.",
+      "cost": "free"
+    },
+    {
+      "source_id": "doaj-oai",
+      "name": "DOAJ OAI-PMH",
+      "category": "open-journals",
+      "protocol": "oai-pmh",
+      "base_url": "https://doaj.org/oai.article",
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
+      "credential_mode": "optional_free_key",
+      "credential_env": "DOAJ_API_KEY",
+      "license_policy": "Article and journal metadata; preserve article-level license.",
+      "cost": "free key optional/premium freshness"
+    },
+    {
+      "source_id": "econstor-oai",
+      "name": "EconStor",
+      "category": "economics-working-papers",
+      "protocol": "oai-pmh",
+      "base_url": "https://www.econstor.eu/oai/request",
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Metadata and source-declared open files only.",
+      "cost": "free"
+    },
+    {
+      "source_id": "erara-oai",
+      "name": "e-rara",
+      "category": "historic-books",
+      "protocol": "oai-pmh",
+      "base_url": "https://www.e-rara.ch/oai",
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Metadata and source-provided digital copies; rights statement retained.",
+      "cost": "free"
+    },
+    {
+      "source_id": "texas-history-oai",
+      "name": "Portal to Texas History",
+      "category": "digital-archives",
+      "protocol": "oai-pmh",
+      "base_url": "https://texashistory.unt.edu/oai/",
+      "operations": [
+        "oai-identify",
+        "oai-list-records",
+        "oai-get-record"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Metadata and public manifests; item rights vary.",
+      "cost": "free"
+    },
+    {
+      "source_id": "ndl-sru",
+      "name": "National Diet Library Search",
+      "category": "national-library-japan",
+      "protocol": "sru",
+      "base_url": "https://ndlsearch.ndl.go.jp/api/sru",
+      "operations": [
+        "sru-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Only metadata approved for API distribution is returned.",
+      "cost": "free"
+    },
+    {
+      "source_id": "epo-publication-server",
+      "name": "EPO European Publication Server",
+      "category": "patents",
+      "protocol": "epo-rest",
+      "base_url": "https://data.epo.org/publication-server/rest/v1.2",
+      "operations": [
+        "patent-publication-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Authoritative EP publication documents; fair-use download limits apply.",
+      "cost": "free"
+    }
+  ],
+  "mapped_existing_sources": [
+    "OpenAlex",
+    "Crossref",
+    "DataCite",
+    "OpenCitations",
+    "Unpaywall",
+    "arXiv",
+    "PubMed/PMC",
+    "UN Digital Library",
+    "World Bank Documents",
+    "IMF",
+    "BIS",
+    "ADB",
+    "OECD",
+    "SEC EDGAR",
+    "Congress.gov",
+    "CourtListener",
+    "Internet Archive",
+    "NASA",
+    "OpenBB",
+    "global think-tank fixed catalog"
+  ],
+  "not_enabled": [
+    {
+      "source_id": "repec-api",
+      "reason": "Courtesy API requires project-specific manual approval code and does not provide general search."
+    },
+    {
+      "source_id": "repec-oai",
+      "reason": "Official endpoint is HTTP-only; production policy requires HTTPS."
+    },
+    {
+      "source_id": "scielo-books-oai",
+      "reason": "Official OAI/OPDS endpoints documented as HTTP-only; pending secure relay/legal review."
+    },
+    {
+      "source_id": "persee-oai",
+      "reason": "Official OAI endpoint is HTTP-only and full content access needs identified-user approval."
+    },
+    {
+      "source_id": "jstage",
+      "reason": "Commercial use requires prior JST permission; retained as discovery candidate until usage status is resolved."
+    },
+    {
+      "source_id": "patentsview",
+      "reason": "Service migration to USPTO Open Data Portal in 2026 requires current endpoint/key revalidation before production."
+    },
+    {
+      "source_id": "la-referencia",
+      "reason": "Regional aggregator confirmed, but no stable official fixed API endpoint was verified in this round."
+    },
+    {
+      "source_id": "overton",
+      "reason": "Commercial subscription/API authorization required."
+    },
+    {
+      "source_id": "policy-commons",
+      "reason": "Institutional/commercial subscription generally required."
+    },
+    {
+      "source_id": "economist-eiu",
+      "reason": "Licensed entitlement required; no free public corpus API."
+    },
+    {
+      "source_id": "scopus",
+      "reason": "Commercial subscription."
+    },
+    {
+      "source_id": "web-of-science",
+      "reason": "Commercial subscription."
+    },
+    {
+      "source_id": "proquest",
+      "reason": "Commercial subscription."
+    },
+    {
+      "source_id": "cnki",
+      "reason": "No verified free public API; paywall/login bypass prohibited."
+    },
+    {
+      "source_id": "wanfang",
+      "reason": "No verified free public API; paywall/login bypass prohibited."
+    },
+    {
+      "source_id": "fraser-oai",
+      "reason": "Official HTTPS OAI endpoint timed out during a bounded 60-second live acceptance on 2026-08-03. Official FRASER terms require an API key, but a current verifiable OAI-PMH key-injection contract was not documented. Coverage remains available indirectly through DPLA; direct activation is deferred until the official authentication contract is confirmed."
+    }
+  ],
+  "governance": {
+    "fixed_sources_only": true,
+    "arbitrary_urls_allowed": false,
+    "arbitrary_hosts_allowed": false,
+    "arbitrary_paths_allowed": false,
+    "arbitrary_headers_allowed": false,
+    "client_supplied_credentials_allowed": false,
+    "requests_per_ticket_max": 1,
+    "automatic_pagination_allowed": false,
+    "automatic_retry_allowed": false,
+    "redirects_allowed": false,
+    "write_operations_allowed": false,
+    "paywall_bypass_allowed": false,
+    "unauthorized_full_text_copying_allowed": false,
+    "full_text_default": "metadata-and-declared-open-locations-only",
+    "gpts_is_sole_cross_center_relay": true
+  },
+  "discovery": {
+    "model_calls": 0,
+    "secret_values_exposed": false,
+    "exa": [
+      652,
+      656,
+      658,
+      661,
+      664,
+      666
+    ],
+    "tavily": [
+      654,
+      657,
+      660,
+      662,
+      665,
+      667
+    ]
+  }
+}

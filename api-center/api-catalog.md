@@ -5,7 +5,7 @@
 - 托管提供方：`59/59` 已启用
 - 托管操作总数：`656`
 - 已公开参数总数：`2336`
-- 目录 SHA-256：`a5421a6ac6cd69cc3ded4bb5e0c464d56e8195218a78625eca43155cfaba9709`
+- 目录 SHA-256：`8c4e01214202b0dcc18ffb10d1a9c19e4462f335c8336d53b76f5b7ff364a147`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -24969,12 +24969,12 @@
 
 - 状态：`启用`
 - 说明：固定接入全球学术聚合、经济政策灰色文献、研究仓储、医学工程资料、预印本、国家图书馆、文化遗产与欧洲专利公开文献。
-- 目录策略：仅开放10项固定只读操作和26个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
+- 目录策略：仅开放10项固定只读操作和25个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
 - 执行策略：每票最多一次上游请求；只取首批结果；不自动追随分页或resumptionToken；Key仅后端注入；保留来源权利字段与响应哈希。
 - 票据前缀：`[intel-literature]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`64996835566c208cdf13a08ddd3626c9d37358d35a5cfb61537fd342e13c167a`
+- 提供方SHA-256：`0aa88d2bb597e7fee8012bb93bd3ad0f0dafe597927525b89f6c692ca0b3fc21`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -25148,7 +25148,6 @@
       "type": "string",
       "enum": [
         "doaj-oai",
-        "fraser-oai",
         "econstor-oai",
         "erara-oai",
         "texas-history-oai"
@@ -25174,7 +25173,6 @@
       "type": "string",
       "enum": [
         "doaj-oai",
-        "fraser-oai",
         "econstor-oai",
         "erara-oai",
         "texas-history-oai"
@@ -25218,7 +25216,6 @@
       "type": "string",
       "enum": [
         "doaj-oai",
-        "fraser-oai",
         "econstor-oai",
         "erara-oai",
         "texas-history-oai"
@@ -25327,7 +25324,7 @@
 
 ```json
 {
-  "source_count": 26,
+  "source_count": 25,
   "requests_per_ticket_max": 1,
   "timeout_seconds_max": 90,
   "max_response_bytes": 15000000,

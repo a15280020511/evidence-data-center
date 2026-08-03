@@ -63,7 +63,7 @@
     "gnews/provider-catalog.json",
     "global-literature-libraries/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "b9013746f7a76a797afcd08370c4c82c4734588fdf299558aacb454fe75551fc",
+  "managed_provider_catalog_sha256": "ee2919b4eb270e552a27f9967b168ed09bb197a92e8b600cbe3e48c46cf10d2f",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 59,
@@ -30522,7 +30522,7 @@
       "description": "固定接入全球学术聚合、经济政策灰色文献、研究仓储、医学工程资料、预印本、国家图书馆、文化遗产与欧洲专利公开文献。",
       "enabled": true,
       "ticket_prefix": "[intel-literature]",
-      "catalog_policy": "仅开放10项固定只读操作和26个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "catalog_policy": "仅开放10项固定只读操作和25个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动追随分页或resumptionToken；Key仅后端注入；保留来源权利字段与响应哈希。",
       "operation_count": 10,
       "operations": [
@@ -30754,7 +30754,6 @@
                 "type": "string",
                 "enum": [
                   "doaj-oai",
-                  "fraser-oai",
                   "econstor-oai",
                   "erara-oai",
                   "texas-history-oai"
@@ -30795,7 +30794,6 @@
                 "type": "string",
                 "enum": [
                   "doaj-oai",
-                  "fraser-oai",
                   "econstor-oai",
                   "erara-oai",
                   "texas-history-oai"
@@ -30852,7 +30850,6 @@
                 "type": "string",
                 "enum": [
                   "doaj-oai",
-                  "fraser-oai",
                   "econstor-oai",
                   "erara-oai",
                   "texas-history-oai"
@@ -30996,7 +30993,7 @@
         }
       ],
       "limits": {
-        "source_count": 26,
+        "source_count": 25,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 90,
         "max_response_bytes": 15000000,
@@ -31020,7 +31017,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "64996835566c208cdf13a08ddd3626c9d37358d35a5cfb61537fd342e13c167a",
+      "provider_sha256": "0aa88d2bb597e7fee8012bb93bd3ad0f0dafe597927525b89f6c692ca0b3fc21",
       "catalog_file": "global-literature-libraries/provider-catalog.json"
     }
   ],
@@ -39361,5 +39358,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "a5421a6ac6cd69cc3ded4bb5e0c464d56e8195218a78625eca43155cfaba9709"
+  "catalog_sha256": "8c4e01214202b0dcc18ffb10d1a9c19e4462f335c8336d53b76f5b7ff364a147"
 }
