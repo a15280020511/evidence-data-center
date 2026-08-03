@@ -1,4 +1,4 @@
-# bootstrap-trigger: 2026-08-03-r5
+# bootstrap-trigger: 2026-08-03-r6
 name: Bootstrap Public Health and OSM Providers
 
 on:
@@ -7,16 +7,12 @@ on:
       - feat/public-health-osm-providers
     paths:
       - ".github/workflows/bootstrap-public-health-osm.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/bootstrap-public-health-osm.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: bootstrap-public-health-osm-r5
+  group: bootstrap-public-health-osm-r6
   cancel-in-progress: true
 
 jobs:
@@ -58,10 +54,10 @@ jobs:
           python api-center/openstreetmap/tests/test_openstreetmap_task.py
           python api-center/tests/test_api_catalog.py
           git diff --check
-      - name: Commit installation
+      - name: Commit provider code and catalogs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add api-center .github/workflows/nih-public-health-api-ticket.yml .github/workflows/nih-public-health-provider-validate.yml .github/workflows/openstreetmap-api-ticket.yml .github/workflows/openstreetmap-provider-validate.yml
+          git add api-center
           git commit -m "feat: add public health and OpenStreetMap providers"
           git push origin HEAD:feat/public-health-osm-providers
