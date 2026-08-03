@@ -34,6 +34,16 @@ domain-benchmarks/v1/control/
 - ontology-crosswalk-library
 - regime-event-library
 
+## 受控同步入口
+
+仓库所有者可以创建或重新打开以下前缀的 Issue：
+
+```text
+[sync-hf-domain-benchmark]
+```
+
+工作流会先完成确定性验证，再连接私有 Hugging Face Dataset，并在 Issue 中返回数据集、远端根目录、Bundle SHA256 和非敏感状态。非仓库所有者或其他 Issue 标题不能触发同步。
+
 ## 边界
 
 - Hugging Face 仓库必须是私有 Dataset；
