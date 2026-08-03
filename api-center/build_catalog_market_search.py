@@ -63,7 +63,7 @@ GLOBAL_KNOWLEDGE_ARCHIVES_CATALOG = HERE / "global-knowledge-archives/provider-c
 GLOBAL_KNOWLEDGE_FABRIC_CATALOG = HERE / "global-knowledge-fabric/provider-catalog.json"
 BAIDU_AI_CLOUD_CATALOG = HERE / "baidu-ai-cloud/provider-catalog.json"
 OPEN_SOFTWARE_SECURITY_KNOWLEDGE_CATALOG = HERE / "open-software-security-knowledge/provider-catalog.json"
-OPEN_SOFTWARE_SECURITY_KNOWLEDGE_CATALOG = HERE / "open-software-security-knowledge/provider-catalog.json"
+GOOGLE_PUBLIC_INTELLIGENCE_CATALOG = HERE / "google-public-intelligence/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -116,6 +116,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "global-knowledge-fabric": 9,
     "baidu-ai-cloud": 4,
     "open-software-security-knowledge": 11,
+    "google-public-intelligence": 9,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -168,6 +169,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     GLOBAL_KNOWLEDGE_FABRIC_CATALOG,
     BAIDU_AI_CLOUD_CATALOG,
     OPEN_SOFTWARE_SECURITY_KNOWLEDGE_CATALOG,
+    GOOGLE_PUBLIC_INTELLIGENCE_CATALOG,
 )
 
 load_json = base.load_json
@@ -236,6 +238,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "global-knowledge-fabric/provider-catalog.json",
         "baidu-ai-cloud/provider-catalog.json",
         "open-software-security-knowledge/provider-catalog.json",
+        "google-public-intelligence/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (
