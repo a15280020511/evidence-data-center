@@ -174,6 +174,45 @@ jobs:
               unittest.main()
           PYTEST
 
+      - name: Harden future residue validation without retaining removed names
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path('.github/workflows/market-search-provider-validate.yml')
+          text = path.read_text(encoding='utf-8')
+          pattern = re.compile(
+              r"          if git grep -nEi 'serpapi\|google-search\|google_news\|google-scholar\|SERPAPI_API_KEY'.*?          fi\n",
+              re.S,
+          )
+          replacement = '''          python - <<'PYSCAN'
+          from pathlib import Path
+
+          removed_terms = (
+              "ser" + "papi",
+              "google-" + "search",
+              "google_" + "news",
+              "google-" + "scholar",
+              "SERPAPI_" + "API_KEY",
+          )
+          for candidate in Path('.').rglob('*'):
+              if not candidate.is_file() or '.git' in candidate.parts:
+                  continue
+              try:
+                  content = candidate.read_text(encoding='utf-8')
+              except (UnicodeDecodeError, OSError):
+                  continue
+              if any(term.casefold() in content.casefold() for term in removed_terms):
+                  raise SystemExit(f"removed search integration residue: {candidate}")
+          PYSCAN
+'''
+          updated, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit('unable to replace self-matching residue check')
+          path.write_text(updated, encoding='utf-8')
+          PY
+
       - name: Regenerate authoritative catalogs
         run: |
           python api-center/build_catalog_market_search.py \
