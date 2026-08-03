@@ -76,6 +76,7 @@ EXPECTED_OPERATION_COUNTS = {
     "gnews": 3,
     "global-literature-libraries": 10,
     "global-knowledge-archives": 9,
+    "global-knowledge-fabric": 9,
 }
 
 

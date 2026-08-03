@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`60/60` 已启用
-- 托管操作总数：`665`
-- 已公开参数总数：`2356`
-- 目录 SHA-256：`f33b129653c6dda4f9b412c527f9b3cd2376f0aa0adaea4af069cb09aa0aebb1`
+- 托管提供方：`61/61` 已启用
+- 托管操作总数：`674`
+- 已公开参数总数：`2376`
+- 目录 SHA-256：`de95ccf64f1f918ea601222515201874ab0b0e5554c3cb3b7716743ea80a6ac8`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -77,6 +77,7 @@
 | GNews 全球新闻情报 | `gnews` | 启用 | `[intel-gnews]` | `3` | 否 |
 | 全球开放文献与资料库 | `global-literature-libraries` | 启用 | `[intel-literature]` | `10` | 否 |
 | 全球文献档案资料库第二波 | `global-knowledge-archives` | 启用 | `[intel-knowledge]` | `9` | 否 |
+| 全球知识织网第三波 | `global-knowledge-fabric` | 启用 | `[intel-knowledge-fabric]` | `9` | 否 |
 
 ## 普通连接器
 
@@ -25668,6 +25669,321 @@
   "arbitrary_headers_allowed": false,
   "client_supplied_credentials_allowed": false,
   "dynamic_providers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "paywall_bypass_allowed": false,
+  "unauthorized_full_text_copying_allowed": false,
+  "personal_profiling_allowed": false,
+  "patient_level_data_allowed": false,
+  "real_time_tracking_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## 全球知识织网第三波 (`global-knowledge-fabric`)
+
+- 状态：`启用`
+- 说明：固定接入科研机构与作者标识、计算机科学书目、研究对象关系、科研数据集、政府资助与法规、欧盟出版物、生命科学知识和技术标准。
+- 目录策略：仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。
+- 执行策略：每票最多一次上游请求；只取首批结果；不自动翻页、不使用cursor、不自动重试、不跟随重定向；凭证仅后端注入；保留来源权利和响应哈希。
+- 票据前缀：`[intel-knowledge-fabric]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`f237e8794b12cf3aa8ccc907e0a190e6528565273dddb308fac8ecf38228282c`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取第三波全球知识织网能力目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `source-access-matrix` | 读取来源、凭证、费用、权利和暂缓原因矩阵。 | `无` |
+
+`source-access-matrix` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `entity-search` | 检索科研机构、研究者或作者实体。 | `source_id, query, limit` |
+
+`entity-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "ror",
+        "orcid",
+        "dblp-author"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "required": [
+    "source_id",
+    "query"
+  ]
+}
+```
+
+| `scholarly-search` | 检索计算机科学文献或学术场馆。 | `source_id, query, limit` |
+
+`scholarly-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "dblp-publication",
+        "dblp-venue"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "required": [
+    "source_id",
+    "query"
+  ]
+}
+```
+
+| `dataset-search` | 检索公开科研数据集或机器学习数据集。 | `source_id, query, limit` |
+
+`dataset-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "harvard-dataverse",
+        "openml"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "required": [
+    "source_id",
+    "query"
+  ]
+}
+```
+
+| `government-search` | 检索政府资助、法规、数据目录或欧盟出版物。 | `source_id, query, limit` |
+
+`government-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "grants-gov",
+        "regulations-gov",
+        "data-gov",
+        "eu-cellar"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "required": [
+    "source_id",
+    "query"
+  ]
+}
+```
+
+| `science-search` | 检索结构生物学、蛋白质或药物发现知识。 | `source_id, query, limit` |
+
+`science-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "rcsb-pdb",
+        "uniprot",
+        "chembl"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "required": [
+    "source_id",
+    "query"
+  ]
+}
+```
+
+| `record-get` | 读取一个固定来源的单条公开记录。 | `source_id, record_id` |
+
+`record-get` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "ror",
+        "orcid",
+        "harvard-dataverse",
+        "openml",
+        "grants-gov",
+        "regulations-gov",
+        "data-gov",
+        "rcsb-pdb",
+        "uniprot",
+        "chembl"
+      ]
+    },
+    "record_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    }
+  },
+  "required": [
+    "source_id",
+    "record_id"
+  ]
+}
+```
+
+| `standards-search` | 检索IETF标准、RFC和Internet-Draft过程元数据。 | `source_id, query, limit` |
+
+`standards-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "enum": [
+        "ietf-datatracker"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 20
+    }
+  },
+  "required": [
+    "source_id",
+    "query"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "source_count": 15,
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 75,
+  "max_response_bytes": 5000000,
+  "automatic_pagination_allowed": false,
+  "automatic_retry_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "dynamic_providers_allowed": false,
+  "arbitrary_sparql_allowed": false,
   "redirects_allowed": false,
   "write_operations_allowed": false,
   "paywall_bypass_allowed": false,
