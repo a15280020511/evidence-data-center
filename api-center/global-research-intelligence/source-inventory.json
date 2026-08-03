@@ -1,0 +1,255 @@
+{
+  "schema_version": "global-research-source-inventory-v1",
+  "reviewed_at": "2026-08-03",
+  "scope": "User-proposed China and global data, publication, policy, financial, legal and geospatial sources",
+  "principles": [
+    "Prefer official APIs and repositories over third-party wrappers",
+    "Do not install analysis libraries as if they were data sources",
+    "Do not duplicate an existing managed provider or connector",
+    "Reject packages whose described capability cannot be verified",
+    "Keep every runtime operation read-only, bounded and host-allowlisted"
+  ],
+  "items": [
+    {
+      "requested_name": "arxiv",
+      "classification": "official research metadata and full-text links",
+      "decision": "integrate-new",
+      "implementation": "global-research-intelligence/search-arxiv and get-arxiv-entry"
+    },
+    {
+      "requested_name": "imf-publications-api",
+      "classification": "publication website, not a verified standalone Python package/API with the claimed name",
+      "decision": "map-existing",
+      "implementation": "existing imf provider plus existing web-retrieval provider for public IMF publication pages and PDFs"
+    },
+    {
+      "requested_name": "dbnomics",
+      "classification": "official macroeconomic data aggregation API",
+      "decision": "already-integrated",
+      "implementation": "dbnomics-search, dbnomics-dataset and dbnomics-series connectors"
+    },
+    {
+      "requested_name": "wbgapi",
+      "classification": "World Bank indicators client, not a report full-text interface",
+      "decision": "map-existing",
+      "implementation": "existing World Bank indicator connectors and worldbank-documents managed provider"
+    },
+    {
+      "requested_name": "un-digitallibrary",
+      "classification": "official UN Digital Library OAI-PMH metadata repository",
+      "decision": "integrate-new",
+      "implementation": "identify, list-records and get-record operations against digitallibrary.un.org/oai2d"
+    },
+    {
+      "requested_name": "pypdf",
+      "classification": "document parsing library, not a data source",
+      "decision": "do-not-duplicate",
+      "implementation": "existing LlamaParse and governed document retrieval paths; parsing remains a bounded evidence-processing role"
+    },
+    {
+      "requested_name": "mcp-feed-reader",
+      "classification": "generic feed client, not a source",
+      "decision": "replace-with-governed-source-registry",
+      "implementation": "local fixed think-tank source catalog plus existing Jina, Firecrawl and Browserless retrieval providers"
+    },
+    {
+      "requested_name": "pythemis",
+      "classification": "cryptographic toolkit",
+      "decision": "reject-description-false",
+      "implementation": "not installed; it does not provide maritime or port intelligence"
+    },
+    {
+      "requested_name": "traffic",
+      "classification": "air-traffic analysis library built around ADS-B/OpenSky data",
+      "decision": "map-existing-source",
+      "implementation": "existing opensky-network and hexdb-aviation providers; trajectory analysis belongs to the Compute Center"
+    },
+    {
+      "requested_name": "movingpandas",
+      "classification": "trajectory analysis library",
+      "decision": "compute-center-only",
+      "implementation": "not installed in the Intelligence Center"
+    },
+    {
+      "requested_name": "gaode-api",
+      "classification": "unverified wrapper name around AMap services",
+      "decision": "already-integrated-officially",
+      "implementation": "19 existing amap-* connectors using official AMap Web Service APIs"
+    },
+    {
+      "requested_name": "routingpy",
+      "classification": "multi-provider routing API client",
+      "decision": "do-not-duplicate",
+      "implementation": "existing AMap, Baidu and OSM connectors provide governed source access; route analysis belongs to the Compute Center"
+    },
+    {
+      "requested_name": "akshare",
+      "classification": "China financial and economic data wrapper",
+      "decision": "already-integrated",
+      "implementation": "existing akshare managed provider"
+    },
+    {
+      "requested_name": "tushare",
+      "classification": "China financial and macro data API",
+      "decision": "already-integrated",
+      "implementation": "existing tushare managed provider"
+    },
+    {
+      "requested_name": "cn-stock-sans",
+      "classification": "package or project could not be verified as described",
+      "decision": "reject-unverified",
+      "implementation": "not installed; official exchange announcements and company filings should be used instead"
+    },
+    {
+      "requested_name": "chinesecalendar",
+      "classification": "calendar utility",
+      "decision": "compute-or-orchestration-utility",
+      "implementation": "not treated as an Intelligence Center data source"
+    },
+    {
+      "requested_name": "baostock",
+      "classification": "A-share historical market and fundamental data",
+      "decision": "already-integrated",
+      "implementation": "existing baostock managed provider"
+    },
+    {
+      "requested_name": "openbb",
+      "classification": "data-provider aggregation framework, not a primary source",
+      "decision": "do-not-install-monolith",
+      "implementation": "use existing direct governed providers; avoid dependency and source duplication"
+    },
+    {
+      "requested_name": "pyeia",
+      "classification": "client wrapper for the EIA API",
+      "decision": "already-integrated-officially",
+      "implementation": "existing eia managed provider"
+    },
+    {
+      "requested_name": "nasdaq-data-link",
+      "classification": "official financial and economic dataset API",
+      "decision": "integrate-new",
+      "implementation": "search-nasdaq-data-link and get-nasdaq-dataset operations"
+    },
+    {
+      "requested_name": "ccpi",
+      "classification": "package or index wrapper could not be verified as described",
+      "decision": "reject-unverified",
+      "implementation": "use existing EIA, IMF, World Bank, FRED, OECD and market-data providers"
+    },
+    {
+      "requested_name": "yfinance",
+      "classification": "unofficial Yahoo Finance scraper/client",
+      "decision": "not-promoted-to-official-source",
+      "implementation": "existing governed market providers are preferred; no new dependency added"
+    },
+    {
+      "requested_name": "edgartools",
+      "classification": "third-party SEC EDGAR client and parser",
+      "decision": "replace-with-official-api",
+      "implementation": "new direct SEC submissions, company facts and XBRL frame operations"
+    },
+    {
+      "requested_name": "sec-api",
+      "classification": "commercial third-party SEC data service",
+      "decision": "replace-with-official-api",
+      "implementation": "new direct data.sec.gov operations; no commercial dependency"
+    },
+    {
+      "requested_name": "finnhub-py",
+      "classification": "official Finnhub Python client/API",
+      "decision": "integrate-new-direct-api",
+      "implementation": "company-news, transcripts-list and transcript operations"
+    },
+    {
+      "requested_name": "chinageomap",
+      "classification": "static geospatial package whose claimed official status and completeness were not verified",
+      "decision": "do-not-promote",
+      "implementation": "use existing Earth Engine, Overture Maps, public-data-geospatial and official boundary sources"
+    },
+    {
+      "requested_name": "ee",
+      "classification": "Google Earth Engine client",
+      "decision": "already-integrated",
+      "implementation": "existing earth-engine managed provider"
+    },
+    {
+      "requested_name": "osmnx",
+      "classification": "OpenStreetMap acquisition and network-analysis library",
+      "decision": "split-role-existing-source",
+      "implementation": "existing osm-* connectors for collection; graph analysis belongs to the Compute Center"
+    },
+    {
+      "requested_name": "geopandas",
+      "classification": "geospatial analysis library",
+      "decision": "compute-center-only",
+      "implementation": "not installed as an Intelligence Center source"
+    },
+    {
+      "requested_name": "sentinelsat",
+      "classification": "legacy Sentinel client",
+      "decision": "replace-with-current-official-service",
+      "implementation": "existing copernicus-cdse managed provider"
+    },
+    {
+      "requested_name": "govtrack",
+      "classification": "third-party US legislative project",
+      "decision": "replace-with-official-api",
+      "implementation": "new Congress.gov v3 bill, hearing and CRS report operations"
+    },
+    {
+      "requested_name": "courtlistener",
+      "classification": "Free Law Project legal search and opinion API",
+      "decision": "integrate-new",
+      "implementation": "CourtListener v4 search and opinion operations"
+    },
+    {
+      "requested_name": "pybliometrics",
+      "classification": "Scopus and ScienceDirect API wrapper",
+      "decision": "integrate-new-direct-api-conditional",
+      "implementation": "Scopus search and abstract operations; requires Elsevier API access and may require institutional subscription or InstToken"
+    },
+    {
+      "requested_name": "think-tank RSS sources",
+      "classification": "official public research sites, not one universal API",
+      "decision": "integrate-governed-registry",
+      "implementation": "fixed source catalog for Brookings, PIIE, CSIS, RAND, CFR, CASS, DRC, NIFD and other public research institutions; retrieval remains through existing allowlisted web providers"
+    }
+  ],
+  "summary": {
+    "new_direct_source_families": [
+      "arXiv",
+      "UN Digital Library OAI-PMH",
+      "SEC EDGAR official APIs",
+      "Congress.gov v3",
+      "CourtListener v4",
+      "Nasdaq Data Link",
+      "Finnhub",
+      "Scopus/Elsevier conditional access"
+    ],
+    "existing_source_families_reused": [
+      "IMF",
+      "World Bank Documents and indicators",
+      "DBnomics",
+      "AKShare",
+      "Tushare",
+      "BaoStock",
+      "EIA",
+      "Earth Engine",
+      "Copernicus CDSE",
+      "OpenSky",
+      "AMap",
+      "OSM",
+      "LlamaParse",
+      "governed web retrieval"
+    ],
+    "analysis_or_utility_packages_not_installed_as_sources": [
+      "PyThemis",
+      "MovingPandas",
+      "GeoPandas",
+      "OSMnx analysis functions",
+      "routingpy",
+      "chinesecalendar",
+      "OpenBB monolith"
+    ]
+  }
+}
