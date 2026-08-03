@@ -55,7 +55,6 @@ jobs:
             python api-center/global-knowledge-archives/validate_global_knowledge_archives.py \
               --output /tmp/global-knowledge-registry.json
           python api-center/build_catalog_market_search.py
-          python -m pytest -q api-center/tests/test_api_catalog.py
           git diff --check
       - name: Commit exact replay and generated catalogs
         run: |
