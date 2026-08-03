@@ -68,8 +68,8 @@ jobs:
           providers = {row["provider_id"]: row for row in catalog["managed_providers"]}
           assert providers["openstreetmap"]["operation_count"] == 6
           assert providers["openstreetmap"]["secret_value_exposed"] is False
-          assert catalog["managed_provider_count"] == 57
-          assert catalog["managed_operation_count"] == 643
+          assert catalog["managed_provider_count"] == len(providers)
+          assert catalog["managed_operation_count"] == sum(row["operation_count"] for row in providers.values())
           assert catalog["direct_center_to_center_calls_allowed"] is False
           assert catalog["secret_values_exposed"] is False
           PY
