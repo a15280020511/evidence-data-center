@@ -1,10 +1,6 @@
 name: Baidu Post-Merge Full Smoke
 
 on:
-  push:
-    branches: [feat/baidu-ai-cloud-intelligence]
-    paths:
-      - '.github/workflows/baidu-post-merge-full-smoke.yml'
   pull_request:
     branches: [main]
     paths:
@@ -14,8 +10,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: baidu-post-merge-full-smoke
-  cancel-in-progress: false
+  group: baidu-post-merge-full-smoke-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   test-all-retained-capabilities:
