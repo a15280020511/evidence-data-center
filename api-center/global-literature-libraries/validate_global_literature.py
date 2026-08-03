@@ -100,7 +100,7 @@ def validate_registry() -> dict:
         len(sources)
         == matrix["active_source_count"]
         == provider["limits"]["source_count"]
-        == 25
+        == 26
     )
     assert len(operations) == 10
     assert matrix["governance"]["fixed_sources_only"] is True
@@ -110,6 +110,10 @@ def validate_registry() -> dict:
     assert provider["limits"]["requests_per_ticket_max"] == 1
     assert provider["limits"]["write_operations_allowed"] is False
     assert provider["limits"]["unauthorized_full_text_copying_allowed"] is False
+    base_source = next(row for row in sources if row["source_id"] == "base")
+    assert base_source["credential_mode"] == "none"
+    assert base_source["credential_env"] == ""
+    assert base_source["access_control"] == "ip_allowlist_required"
 
     checked = []
     for source in sources:
