@@ -19,6 +19,7 @@ from global_literature_task import (
 DUMMY_SECRETS = {
     "CORE_API_KEY": "fixture-core-key",
     "SEMANTIC_SCHOLAR_API_KEY": "fixture-semantic-key",
+    "BASE_API_KEY": "fixture-base-key",
     "NASA_ADS_API_TOKEN": "fixture-ads-token",
     "EUROPEANA_API_KEY": "fixture-europeana-key",
     "DPLA_API_KEY": "fixture-dpla-key",
@@ -111,9 +112,9 @@ def validate_registry() -> dict:
     assert provider["limits"]["write_operations_allowed"] is False
     assert provider["limits"]["unauthorized_full_text_copying_allowed"] is False
     base_source = next(row for row in sources if row["source_id"] == "base")
-    assert base_source["credential_mode"] == "none"
-    assert base_source["credential_env"] == ""
-    assert base_source["access_control"] == "ip_allowlist_required"
+    assert base_source["credential_mode"] == "required_free_key"
+    assert base_source["credential_env"] == "BASE_API_KEY"
+    assert "access_control" not in base_source
 
     checked = []
     for source in sources:

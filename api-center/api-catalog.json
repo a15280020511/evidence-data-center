@@ -67,7 +67,7 @@
     "baidu-ai-cloud/provider-catalog.json",
     "open-software-security-knowledge/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "21092a8d3854b706764c6aa650b593ba2c7d75e998a5b9418e2f9f9967b7812c",
+  "managed_provider_catalog_sha256": "dd215d5105580900d7301c37eae52224c3242f40fec80884e63c7cb62edbc2a5",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 63,
@@ -31026,7 +31026,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "417213d4b0f22fbda64be9ae1a5eba5a4c2c4fd974e278a5e0e2028b1c64d4ed",
+      "provider_sha256": "a72c3943e6f7946560e20a48cb95409092e928adf5dc438426dedc9ac0db188d",
       "catalog_file": "global-literature-libraries/provider-catalog.json"
     },
     {
@@ -41010,5 +41010,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "d8e58c5957a7175ec42432b5ac87b415675671a943222fa81c26318b95eedddc"
+  "catalog_sha256": "d17752063dba42dcaf93c7385d7beb5d1841ffb9c1f90c3850289105f0afef49"
 }

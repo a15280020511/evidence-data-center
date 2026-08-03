@@ -87,6 +87,8 @@ def credentials_for(row: Mapping[str, Any]) -> tuple[dict[str, str], list[tuple[
         headers["Authorization"] = f"Bearer {value}"
     elif source_id == "semantic-scholar":
         headers["x-api-key"] = value
+    elif source_id == "base":
+        query.append(("apikey", value))
     elif source_id == "nasa-ads":
         headers["Authorization"] = f"Bearer {value}"
     elif source_id == "europeana":
