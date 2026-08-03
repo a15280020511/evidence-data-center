@@ -142,6 +142,10 @@ def build_search(row: Mapping[str, Any], parameters: Mapping[str, Any]):
     elif source_id == "openaire":
         url = "https://api.openaire.eu/graph/v3/research-products"
         query += [("search", query_text), ("page", "1"), ("pageSize", str(limit))]
+    elif source_id == "base":
+        url = "https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi"
+        headers["Accept"] = "application/json, application/xml;q=0.8, text/xml;q=0.8"
+        query += [("func", "PerformSearch"), ("format", "json"), ("query", query_text), ("hits", str(limit)), ("offset", "0"), ("boost", "oa")]
     elif source_id == "semantic-scholar":
         url = "https://api.semanticscholar.org/graph/v1/paper/search"
         fields = "paperId,title,abstract,year,authors,externalIds,url,openAccessPdf,citationCount,publicationTypes"

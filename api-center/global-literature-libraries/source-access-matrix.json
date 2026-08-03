@@ -1,6 +1,6 @@
 {
   "schema_version": "global-literature-source-matrix-v1",
-  "active_source_count": 25,
+  "active_source_count": 26,
   "sources": [
     {
       "source_id": "core",
@@ -46,6 +46,22 @@
       "credential_env": "SEMANTIC_SCHOLAR_API_KEY",
       "license_policy": "Metadata and declared open-access PDF locations only.",
       "cost": "free key optional/recommended"
+    },
+    {
+      "source_id": "base",
+      "name": "BASE (Bielefeld Academic Search Engine)",
+      "category": "global-scholarly",
+      "protocol": "rest-search",
+      "base_url": "https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi",
+      "operations": [
+        "literature-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "access_control": "ip_allowlist_required",
+      "access_note": "BASE does not issue an API key for this interface. The execution platform public egress IP must be approved by BASE before live requests will succeed.",
+      "license_policy": "Metadata discovery and source-provided links only; non-commercial BASE access terms and record-level rights apply.",
+      "cost": "free after BASE IP approval"
     },
     {
       "source_id": "europe-pmc",
