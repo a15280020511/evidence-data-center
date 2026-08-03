@@ -1,0 +1,240 @@
+name: Validate Global Knowledge Archives
+
+on:
+  pull_request:
+    paths:
+      - 'api-center/global-knowledge-archives/**'
+      - 'api-center/managed_provider_runtime.py'
+      - 'api-center/build_catalog_market_search.py'
+      - 'api-center/api-catalog.json'
+      - 'api-center/api-catalog.md'
+      - 'api-center/tests/test_api_catalog.py'
+      - '.github/workflows/global-knowledge-archives-*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'api-center/global-knowledge-archives/**'
+      - 'api-center/managed_provider_runtime.py'
+      - 'api-center/build_catalog_market_search.py'
+      - 'api-center/api-catalog.json'
+      - 'api-center/api-catalog.md'
+      - 'api-center/tests/test_api_catalog.py'
+      - '.github/workflows/global-knowledge-archives-*.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-global-knowledge-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  registry-and-builders:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            api-center/requirements.txt
+            api-center/global-knowledge-archives/requirements.txt
+      - name: Install fixed dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/global-knowledge-archives/requirements.txt
+          python -m pip check
+      - name: Compile and validate every fixed builder
+        run: |
+          python -m py_compile \
+            api-center/managed_provider_runtime.py \
+            api-center/global-knowledge-archives/global_knowledge_archives_task.py \
+            api-center/global-knowledge-archives/validate_global_knowledge_archives.py
+          mkdir -p global-knowledge-validation
+          PYTHONPATH=api-center/global-knowledge-archives:api-center \
+            python api-center/global-knowledge-archives/validate_global_knowledge_archives.py \
+              --output global-knowledge-validation/registry.json
+      - name: Verify registry and aggregate catalog boundary
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          receipt=json.loads(Path('global-knowledge-validation/registry.json').read_text())
+          provider=json.loads(Path('api-center/global-knowledge-archives/provider-catalog.json').read_text())['providers'][0]
+          matrix=json.loads(Path('api-center/global-knowledge-archives/source-access-matrix.json').read_text())
+          catalog=json.loads(Path('api-center/api-catalog.json').read_text())
+          assert receipt['status']=='PASS'
+          assert receipt['source_count']==22
+          assert receipt['operation_count']==9
+          assert receipt['network_used'] is False
+          assert receipt['model_calls']==0
+          assert receipt['secret_values_exposed'] is False
+          assert provider['limits']['requests_per_ticket_max']==1
+          assert provider['limits']['arbitrary_urls_allowed'] is False
+          assert provider['limits']['automatic_pagination_allowed'] is False
+          assert provider['limits']['paywall_bypass_allowed'] is False
+          assert provider['limits']['patient_level_data_allowed'] is False
+          assert len(matrix['not_enabled']) >= 12
+          rows={row['provider_id']:row for row in catalog['managed_providers']}
+          assert rows['global-knowledge-archives']['operation_count']==9
+          assert catalog['managed_provider_count']==len(rows)
+          assert catalog['managed_operation_count']==sum(row['operation_count'] for row in rows.values())
+          assert catalog['direct_center_to_center_calls_allowed'] is False
+          assert catalog['secret_values_exposed'] is False
+          PY
+          git diff --check
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: global-knowledge-registry-${{ github.run_id }}
+          path: global-knowledge-validation/
+          if-no-files-found: error
+          retention-days: 30
+
+  live-no-key-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        source:
+          - theses-fr
+          - eric
+          - ukri-gtr
+          - nih-reporter
+          - clinicaltrials-gov
+          - usgs-publications
+          - federal-register
+          - met-museum
+          - art-institute-chicago
+          - digitalnz
+          - trove
+          - dnb-sru
+          - hal-oai
+          - doab-oai
+          - oapen-oai
+          - rijksmuseum-oai
+          - nber-metadata
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            api-center/requirements.txt
+            api-center/global-knowledge-archives/requirements.txt
+      - name: Install fixed dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/global-knowledge-archives/requirements.txt
+          python -m pip check
+      - name: Execute one real bounded upstream request
+        env:
+          SOURCE_ID: ${{ matrix.source }}
+        run: |
+          mkdir -p global-knowledge-live
+          PYTHONPATH=api-center/global-knowledge-archives:api-center \
+            python api-center/global-knowledge-archives/validate_global_knowledge_archives.py \
+              --live-source "$SOURCE_ID" \
+              --output "global-knowledge-live/$SOURCE_ID.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          source=os.environ['SOURCE_ID']
+          row=json.loads((Path('global-knowledge-live')/f'{source}.json').read_text())
+          assert row['status']=='PASS'
+          assert row['source_id']==source
+          assert row['network_used'] is True
+          assert row['request_count']==1
+          assert row['model_calls']==0
+          assert row['secret_values_exposed'] is False
+          assert 200 <= row['http_status'] < 300
+          assert row['response_bytes'] > 0
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: global-knowledge-live-${{ matrix.source }}-${{ github.run_id }}
+          path: global-knowledge-live/
+          if-no-files-found: warn
+          retention-days: 30
+
+  live-free-key-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        source:
+          - google-books
+          - bhl
+          - nara
+          - smithsonian
+          - govinfo
+    env:
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      BHL_API_KEY: ${{ secrets.BHL_API_KEY }}
+      NARA_CATALOG_API_KEY: ${{ secrets.NARA_CATALOG_API_KEY }}
+      SMITHSONIAN_API_KEY: ${{ secrets.SMITHSONIAN_API_KEY }}
+      GOVINFO_API_KEY: ${{ secrets.GOVINFO_API_KEY }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            api-center/requirements.txt
+            api-center/global-knowledge-archives/requirements.txt
+      - name: Install fixed dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/global-knowledge-archives/requirements.txt
+          python -m pip check
+      - name: Execute configured free-key source or record explicit skip
+        env:
+          SOURCE_ID: ${{ matrix.source }}
+        run: |
+          mkdir -p global-knowledge-key-live
+          PYTHONPATH=api-center/global-knowledge-archives:api-center \
+            python api-center/global-knowledge-archives/validate_global_knowledge_archives.py \
+              --live-key-source "$SOURCE_ID" \
+              --output "global-knowledge-key-live/$SOURCE_ID.json"
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          source=os.environ['SOURCE_ID']
+          row=json.loads((Path('global-knowledge-key-live')/f'{source}.json').read_text())
+          assert row['status'] in {'PASS','SKIP_NOT_CONFIGURED'}
+          assert row['source_id']==source
+          assert row['model_calls']==0
+          assert row['secret_values_exposed'] is False
+          if row['status']=='PASS':
+              assert row['network_used'] is True
+              assert row['request_count']==1
+              assert 200 <= row['http_status'] < 300
+              assert row['response_bytes'] > 0
+          else:
+              assert row['network_used'] is False
+              assert row['request_count']==0
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: global-knowledge-key-${{ matrix.source }}-${{ github.run_id }}
+          path: global-knowledge-key-live/
+          if-no-files-found: warn
+          retention-days: 30
