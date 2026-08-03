@@ -37,14 +37,14 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import textwrap
 
           source = Path('.github/workflows/tmp-remove-google-search.yml').read_text(encoding='utf-8')
           start_marker = "          python - <<'PY'\n"
           end_marker = "\n          PY\n\n      - name: Regenerate authoritative catalogs"
           start = source.index(start_marker) + len(start_marker)
           end = source.index(end_marker, start)
-          script = textwrap.dedent(source[start:end])
+          lines = source[start:end].splitlines()
+          script = "\n".join(line[10:] if line.startswith("          ") else line for line in lines) + "\n"
           Path('/tmp/remove_google_search.py').write_text(script, encoding='utf-8')
           PY
           python /tmp/remove_google_search.py
