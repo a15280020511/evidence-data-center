@@ -63,6 +63,7 @@ GLOBAL_KNOWLEDGE_ARCHIVES_CATALOG = HERE / "global-knowledge-archives/provider-c
 GLOBAL_KNOWLEDGE_FABRIC_CATALOG = HERE / "global-knowledge-fabric/provider-catalog.json"
 BAIDU_AI_CLOUD_CATALOG = HERE / "baidu-ai-cloud/provider-catalog.json"
 OPEN_SOFTWARE_SECURITY_KNOWLEDGE_CATALOG = HERE / "open-software-security-knowledge/provider-catalog.json"
+OPEN_SOFTWARE_SECURITY_KNOWLEDGE_CATALOG = HERE / "open-software-security-knowledge/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
