@@ -1,0 +1,277 @@
+{
+  "schema_version": "domain-benchmark-library-requirements-v1",
+  "storage_contract": {
+    "provider": "huggingface",
+    "repo_type": "dataset",
+    "private_required": true,
+    "path_prefix": "domain-benchmarks/v1",
+    "authoritative_storage_owner": "evidence-data-center",
+    "runtime_consumption": "gpts-mediated immutable snapshot",
+    "compute_runtime_network_allowed": false,
+    "direct_center_to_center_connection_allowed": false,
+    "raw_secrets_in_records_allowed": false,
+    "personal_data_default_allowed": false
+  },
+  "required_asset_libraries": [
+    {
+      "id": "sample-library",
+      "purpose": "Immutable observed, administrative, survey, experimental, historical, proxy or synthetic sample snapshots with provenance and license."
+    },
+    {
+      "id": "factor-library",
+      "purpose": "Versioned factor and indicator definitions mapped to fixed audited implementations, required inputs, publication lags and leakage risks."
+    },
+    {
+      "id": "domain-rule-snapshot-library",
+      "purpose": "Time-bounded external policy, tax, trading, regulatory and operating rule parameters with source hashes and effective dates."
+    },
+    {
+      "id": "baseline-library",
+      "purpose": "Simple, reproducible comparison methods that every complex model must beat out of sample."
+    },
+    {
+      "id": "metric-threshold-library",
+      "purpose": "Domain-specific warning, blocking and promotion thresholds for accuracy, calibration, robustness and operational loss."
+    },
+    {
+      "id": "outcome-feedback-library",
+      "purpose": "Append-only realized outcomes linked to prior prediction, model, data and rule snapshot hashes for shadow evaluation and recalibration."
+    },
+    {
+      "id": "ontology-crosswalk-library",
+      "purpose": "Versioned geographic, industry, unit, calendar, security, organization and variable code crosswalks."
+    },
+    {
+      "id": "regime-event-library",
+      "purpose": "Declared structural breaks, policy changes, crises, holidays and market regimes used for blocked evaluation and stress testing."
+    }
+  ],
+  "required_evidence_per_benchmark": [
+    "numerical_truth_or_oracle_where_available",
+    "parameter_recovery_where_calibratable",
+    "immutable_frozen_real_sample",
+    "simple_baseline_comparison",
+    "out_of_sample_or_blocked_validation",
+    "boundary_and_adversarial_cases",
+    "data_provenance_and_license",
+    "point_in_time_and_publication_lag_controls",
+    "missingness_and_bias_documentation",
+    "drift_and_revalidation_policy",
+    "shadow_outcome_feedback_for_high_stakes_use"
+  ],
+  "required_record_fields": [
+    "benchmark_id",
+    "version",
+    "domain",
+    "title",
+    "decision_use",
+    "status",
+    "data_snapshot",
+    "variable_dictionary",
+    "split_policy",
+    "baselines",
+    "metrics",
+    "acceptance",
+    "known_limitations",
+    "license",
+    "review_due_at"
+  ],
+  "domains": [
+    {
+      "id": "commercial-footfall",
+      "priority": "P1",
+      "required_datasets": [
+        "daily_or_hourly_footfall",
+        "sales_and_conversion",
+        "tenant_and_floor_layout",
+        "trade_area_population_and_employment",
+        "transport_accessibility",
+        "weather_holidays_events",
+        "competitor_and_cannibalization_context"
+      ],
+      "required_baselines": [
+        "seasonal_naive",
+        "recent_window_mean",
+        "simple_linear_or_poisson_baseline"
+      ],
+      "required_metrics": [
+        "MAE",
+        "MASE",
+        "sMAPE",
+        "prediction_interval_coverage",
+        "break_even_error",
+        "direction_accuracy"
+      ]
+    },
+    {
+      "id": "finance-investment",
+      "priority": "P1",
+      "required_datasets": [
+        "point_in_time_prices_and_corporate_actions",
+        "point_in_time_fundamentals_with_publication_dates",
+        "historical_constituents_and_industry_codes",
+        "suspension_price_limit_and_delisting_events",
+        "transaction_cost_and_liquidity_proxies",
+        "risk_free_and_benchmark_series"
+      ],
+      "required_baselines": [
+        "equal_weight",
+        "market_benchmark",
+        "industry_neutral_baseline",
+        "historical_volatility_or_quantile_risk"
+      ],
+      "required_metrics": [
+        "net_return_after_costs",
+        "Sharpe",
+        "Sortino",
+        "maximum_drawdown",
+        "IC",
+        "rank_IC",
+        "turnover",
+        "PBO",
+        "capacity_and_liquidity"
+      ]
+    },
+    {
+      "id": "public-policy",
+      "priority": "P2",
+      "required_datasets": [
+        "treatment_timing_and_eligibility",
+        "outcome_panel",
+        "covariates_and_exposure",
+        "geographic_and_administrative_crosswalks",
+        "policy_rule_snapshots"
+      ],
+      "required_baselines": [
+        "before_after",
+        "two_way_fixed_effects",
+        "simple_matched_or_weighted_comparison"
+      ],
+      "required_metrics": [
+        "pretrend",
+        "placebo",
+        "effect_recovery",
+        "sensitivity",
+        "heterogeneity",
+        "spillover"
+      ]
+    },
+    {
+      "id": "social-behavior",
+      "priority": "P3",
+      "required_datasets": [
+        "population_or_survey_distributions",
+        "behavioral_transition_observations",
+        "network_or_group_structure",
+        "intervention_and_outcome_records"
+      ],
+      "required_baselines": [
+        "static_population_share",
+        "independent_agent_baseline",
+        "simple_markov_baseline"
+      ],
+      "required_metrics": [
+        "parameter_recovery",
+        "population_share_error",
+        "mechanism_sensitivity",
+        "multi_seed_stability",
+        "non_identifiability"
+      ]
+    },
+    {
+      "id": "information-diffusion",
+      "priority": "P3",
+      "required_datasets": [
+        "timestamped_cascade_or_adoption_events",
+        "network_edges_or_exposure_proxies",
+        "content_or_intervention_labels",
+        "observation_window_and_censoring"
+      ],
+      "required_baselines": [
+        "historical_reach",
+        "independent_cascade_baseline",
+        "degree_only_baseline"
+      ],
+      "required_metrics": [
+        "reach_error",
+        "time_to_reach",
+        "network_sensitivity",
+        "multi_seed_stability"
+      ]
+    },
+    {
+      "id": "crisis-warning",
+      "priority": "P2",
+      "required_datasets": [
+        "timestamped_signals",
+        "event_onset_and_resolution_labels",
+        "false_alarm_and_missed_event_costs",
+        "regime_and_drift_annotations"
+      ],
+      "required_baselines": [
+        "historical_base_rate",
+        "fixed_threshold",
+        "simple_logistic_baseline"
+      ],
+      "required_metrics": [
+        "Brier",
+        "ECE",
+        "PR_AUC",
+        "false_positive",
+        "false_negative",
+        "lead_time",
+        "threshold_loss",
+        "drift"
+      ]
+    },
+    {
+      "id": "resource-optimization",
+      "priority": "P2",
+      "required_datasets": [
+        "demand_and_capacity",
+        "network_or_assignment_structure",
+        "hard_constraints",
+        "cost_and_service_parameters",
+        "historical_human_or_greedy_solution"
+      ],
+      "required_baselines": [
+        "current_manual_plan",
+        "greedy_heuristic",
+        "simple_linear_relaxation"
+      ],
+      "required_metrics": [
+        "feasibility",
+        "constraint_residual",
+        "objective_improvement",
+        "optimality_gap",
+        "infeasibility_diagnosis",
+        "stress_robustness"
+      ]
+    },
+    {
+      "id": "china-real-world",
+      "priority": "P1",
+      "required_datasets": [
+        "china_population_and_administrative_crosswalks",
+        "commercial_and_enterprise_indicators",
+        "geospatial_and_transport_context",
+        "finance_and_macro_series",
+        "policy_and_regulatory_snapshots",
+        "urban_services_and_environmental_indicators"
+      ],
+      "required_baselines": [
+        "official_published_aggregate",
+        "simple_historical_baseline",
+        "cross_source_consistency_baseline"
+      ],
+      "required_metrics": [
+        "source_consistency",
+        "coverage",
+        "timeliness",
+        "revision_stability",
+        "geographic_consistency",
+        "decision_loss"
+      ]
+    }
+  ]
+}

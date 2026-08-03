@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "domain-benchmark-manifest-v1",
+  "title": "Domain Benchmark Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "benchmark_id",
+    "version",
+    "domain",
+    "title",
+    "decision_use",
+    "status",
+    "data_snapshot",
+    "variable_dictionary",
+    "split_policy",
+    "baselines",
+    "metrics",
+    "acceptance",
+    "known_limitations",
+    "license",
+    "review_due_at"
+  ],
+  "properties": {
+    "benchmark_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{2,127}$"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "domain": {
+      "enum": [
+        "commercial-footfall",
+        "finance-investment",
+        "public-policy",
+        "social-behavior",
+        "information-diffusion",
+        "crisis-warning",
+        "resource-optimization",
+        "china-real-world"
+      ]
+    },
+    "title": {"type": "string", "minLength": 3, "maxLength": 240},
+    "decision_use": {"type": "string", "minLength": 3, "maxLength": 1000},
+    "status": {"enum": ["data-pending", "draft", "controlled-preview", "production", "decision-grade", "retired"]},
+    "data_snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["snapshot_id", "repo_path", "freeze_date", "time_range", "geographic_scope", "files", "point_in_time", "contains_personal_data"],
+      "properties": {
+        "snapshot_id": {"type": "string", "minLength": 3, "maxLength": 160},
+        "repo_path": {"type": "string", "minLength": 3, "maxLength": 500},
+        "freeze_date": {"type": "string", "format": "date"},
+        "time_range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": {"type": ["string", "null"], "maxLength": 40},
+            "end": {"type": ["string", "null"], "maxLength": 40}
+          }
+        },
+        "geographic_scope": {"type": "array", "minItems": 1, "maxItems": 200, "items": {"type": "string", "maxLength": 120}},
+        "population": {"type": "string", "maxLength": 1000},
+        "sampling_method": {"type": "string", "maxLength": 2000},
+        "point_in_time": {"type": "boolean"},
+        "publication_lag_documented": {"type": "boolean"},
+        "contains_personal_data": {"const": false},
+        "files": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 500,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "sha256", "bytes", "media_type"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1, "maxLength": 500},
+              "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+              "bytes": {"type": "integer", "minimum": 0},
+              "media_type": {"type": "string", "maxLength": 120},
+              "rows": {"type": ["integer", "null"], "minimum": 0}
+            }
+          }
+        }
+      }
+    },
+    "variable_dictionary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "units_and_codes_versioned"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 500},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "units_and_codes_versioned": {"type": "boolean"}
+      }
+    },
+    "split_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "train", "calibration", "test", "leakage_controls"],
+      "properties": {
+        "method": {"enum": ["temporal", "group", "spatial", "nested", "fixed_holdout"]},
+        "train": {"type": "string", "maxLength": 500},
+        "calibration": {"type": "string", "maxLength": 500},
+        "test": {"type": "string", "maxLength": 500},
+        "shadow": {"type": ["string", "null"], "maxLength": 500},
+        "leakage_controls": {"type": "array", "minItems": 1, "maxItems": 100, "items": {"type": "string", "maxLength": 500}}
+      }
+    },
+    "baselines": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["baseline_id", "implementation_id", "version"],
+        "properties": {
+          "baseline_id": {"type": "string", "minLength": 3, "maxLength": 160},
+          "implementation_id": {"type": "string", "minLength": 3, "maxLength": 160},
+          "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"}
+        }
+      }
+    },
+    "factor_ids": {"type": "array", "maxItems": 500, "uniqueItems": true, "items": {"type": "string", "maxLength": 160}},
+    "rule_snapshot_ids": {"type": "array", "maxItems": 200, "uniqueItems": true, "items": {"type": "string", "maxLength": 160}},
+    "metrics": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["metric_id", "direction", "warning_threshold", "blocking_threshold"],
+        "properties": {
+          "metric_id": {"type": "string", "minLength": 1, "maxLength": 160},
+          "direction": {"enum": ["higher_is_better", "lower_is_better", "target_range"]},
+          "warning_threshold": {"type": ["number", "array", "null"]},
+          "blocking_threshold": {"type": ["number", "array", "null"]},
+          "unit": {"type": ["string", "null"], "maxLength": 80}
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required_checks", "promotion_requires_shadow_feedback"],
+      "properties": {
+        "required_checks": {"type": "array", "minItems": 1, "maxItems": 200, "items": {"type": "string", "maxLength": 300}},
+        "promotion_requires_shadow_feedback": {"type": "boolean"},
+        "minimum_feedback_samples": {"type": "integer", "minimum": 0}
+      }
+    },
+    "known_limitations": {"type": "array", "minItems": 1, "maxItems": 100, "items": {"type": "string", "maxLength": 1000}},
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "redistribution_allowed", "commercial_use_allowed", "source_terms_recorded"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 200},
+        "redistribution_allowed": {"type": "boolean"},
+        "commercial_use_allowed": {"type": "boolean"},
+        "source_terms_recorded": {"type": "boolean"}
+      }
+    },
+    "review_due_at": {"type": "string", "format": "date"}
+  }
+}
