@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`61/61` 已启用
-- 托管操作总数：`674`
-- 已公开参数总数：`2376`
-- 目录 SHA-256：`de95ccf64f1f918ea601222515201874ab0b0e5554c3cb3b7716743ea80a6ac8`
+- 托管提供方：`62/62` 已启用
+- 托管操作总数：`715`
+- 已公开参数总数：`2469`
+- 目录 SHA-256：`7c77b70ef4cc5727027848fb350dd9fc7cef2e978048cbbcf6f77102c3edd338`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -78,6 +78,7 @@
 | 全球开放文献与资料库 | `global-literature-libraries` | 启用 | `[intel-literature]` | `10` | 否 |
 | 全球文献档案资料库第二波 | `global-knowledge-archives` | 启用 | `[intel-knowledge]` | `9` | 否 |
 | 全球知识织网第三波 | `global-knowledge-fabric` | 启用 | `[intel-knowledge-fabric]` | `9` | 否 |
+| 百度智能云免费情报能力 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `41` | 否 |
 
 ## 普通连接器
 
@@ -25992,6 +25993,1380 @@
   "patient_level_data_allowed": false,
   "real_time_tracking_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## 百度智能云免费情报能力 (`baidu-ai-cloud`)
+
+- 状态：`启用`
+- 说明：统一API Key访问受控百度搜索、研究、NLP、公共文档OCR和非生物图像识别。
+- 目录策略：开放41项有明确免费额度且适合情报中心的受控只读能力。
+- 执行策略：每票据一个操作和一次固定HTTPS请求；高成本操作必须确认免费额度，禁止付费兜底。
+- 票据前缀：`[intel-baidu-ai]`
+- Secret环境变量名：`BAIDU_AI_CLOUD_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`edf3f1e2e82496d10835a65facbebe6029940d80596c93fbbcaa9f398ca226d5`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地百度智能云安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `quota-policy` | 读取本地免费额度、重置周期和付费风险策略，不访问上游。 | `无` |
+
+`quota-policy` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `web-search` | 百度AI搜索V2，返回实时公开网页摘要，不生成模型答案。 | `query, top_k, edition, recency` |
+
+`web-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "top_k": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    },
+    "edition": {
+      "type": "string",
+      "enum": [
+        "standard",
+        "lite"
+      ],
+      "default": "standard"
+    },
+    "recency": {
+      "type": "string",
+      "enum": [
+        "week",
+        "month",
+        "semiyear",
+        "year"
+      ]
+    }
+  },
+  "maxProperties": 4,
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `intelligent-search` | 智能搜索生成：实时检索并由指定模型总结，要求确认搜索和模型免费额度。 | `query, model, top_k, instruction, free_quota_confirmed, paid_fallback_authorized` |
+
+`intelligent-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "top_k": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    },
+    "instruction": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "free_quota_confirmed": {
+      "const": true
+    },
+    "paid_fallback_authorized": {
+      "const": false
+    }
+  },
+  "maxProperties": 6,
+  "required": [
+    "query",
+    "model",
+    "free_quota_confirmed",
+    "paid_fallback_authorized"
+  ]
+}
+```
+
+| `deep-search` | 深度搜索：拆分复杂问题并多次检索总结；最多3个子查询。 | `query, model, top_k, instruction, free_quota_confirmed, paid_fallback_authorized, max_search_query_num` |
+
+`deep-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "top_k": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    },
+    "instruction": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "free_quota_confirmed": {
+      "const": true
+    },
+    "paid_fallback_authorized": {
+      "const": false
+    },
+    "max_search_query_num": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "default": 3
+    }
+  },
+  "maxProperties": 7,
+  "required": [
+    "query",
+    "model",
+    "free_quota_confirmed",
+    "paid_fallback_authorized"
+  ]
+}
+```
+
+| `web-summary` | 智能搜索生成高性能版：一次实时搜索总结，要求确认每日免费额度。 | `query, top_k, instruction, free_quota_confirmed, paid_fallback_authorized` |
+
+`web-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "top_k": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 5
+    },
+    "instruction": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "free_quota_confirmed": {
+      "const": true
+    },
+    "paid_fallback_authorized": {
+      "const": false
+    }
+  },
+  "maxProperties": 5,
+  "required": [
+    "query",
+    "free_quota_confirmed",
+    "paid_fallback_authorized"
+  ]
+}
+```
+
+| `deep-research-lite` | 深度研究Agent轻量版首轮：只发起一次研究并返回SSE事件。 | `query, free_quota_confirmed, paid_fallback_authorized` |
+
+`deep-research-lite` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "free_quota_confirmed": {
+      "const": true
+    },
+    "paid_fallback_authorized": {
+      "const": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "query",
+    "free_quota_confirmed",
+    "paid_fallback_authorized"
+  ]
+}
+```
+
+| `nlp-lexer` | 中文词法分析。 | `text` |
+
+`nlp-lexer` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-sentiment` | 情感倾向分析。 | `text` |
+
+`nlp-sentiment` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-article-tags` | 文章标签提取。 | `title, content` |
+
+`nlp-article-tags` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60000
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "title",
+    "content"
+  ]
+}
+```
+
+| `nlp-article-classify` | 文章分类。 | `title, content` |
+
+`nlp-article-classify` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60000
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "title",
+    "content"
+  ]
+}
+```
+
+| `nlp-entity-analysis` | 实体识别与百科关联。 | `text` |
+
+`nlp-entity-analysis` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-short-similarity` | 短文本相似度。 | `text_1, text_2` |
+
+`nlp-short-similarity` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text_1": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "text_2": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "text_1",
+    "text_2"
+  ]
+}
+```
+
+| `nlp-dialogue-emotion` | 对话情绪识别。 | `text` |
+
+`nlp-dialogue-emotion` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-comment-opinion` | 评论观点抽取。 | `text, type` |
+
+`nlp-comment-opinion` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10240
+    },
+    "type": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 13
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-text-correction` | 文本纠错。 | `text` |
+
+`nlp-text-correction` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-text-correction-advanced` | 文本纠错高级版。 | `text` |
+
+`nlp-text-correction-advanced` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-keyword-extraction` | 关键词提取。 | `text, num` |
+
+`nlp-keyword-extraction` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "num": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 5
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-information-extraction` | 文本信息提取。 | `text, query` |
+
+`nlp-information-extraction` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-news-summary` | 新闻摘要。 | `content, max_summary_len` |
+
+`nlp-news-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60000
+    },
+    "max_summary_len": {
+      "type": "integer",
+      "minimum": 50,
+      "maximum": 1000,
+      "default": 300
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "content"
+  ]
+}
+```
+
+| `nlp-address` | 地址识别与结构化。 | `text` |
+
+`nlp-address` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "text"
+  ]
+}
+```
+
+| `nlp-article-title` | 文章标题生成。 | `doc` |
+
+`nlp-article-title` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "doc": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "doc"
+  ]
+}
+```
+
+| `ocr-general-basic` | 通用文字识别标准版。 | `image_base64, language_type, detect_direction` |
+
+`ocr-general-basic` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-general` | 通用文字识别标准含位置版。 | `image_base64, language_type, detect_direction` |
+
+`ocr-general` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-accurate-basic` | 通用文字识别高精度版。 | `image_base64, language_type, detect_direction` |
+
+`ocr-accurate-basic` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-accurate` | 通用文字识别高精度含位置版。 | `image_base64, language_type, detect_direction` |
+
+`ocr-accurate` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-office` | 办公文档版面、表格、印章识别。 | `image_base64, language_type, detect_direction, layout_analysis, recg_tables, recog_seal` |
+
+`ocr-office` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    },
+    "layout_analysis": {
+      "type": "boolean",
+      "default": true
+    },
+    "recg_tables": {
+      "type": "boolean",
+      "default": true
+    },
+    "recog_seal": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 6,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-webimage` | 复杂网络图片文字识别。 | `image_base64, language_type, detect_direction` |
+
+`ocr-webimage` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-webimage-location` | 复杂网络图片文字识别含位置。 | `image_base64, language_type, detect_direction` |
+
+`ocr-webimage-location` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-handwriting` | 手写文字识别。 | `image_base64, language_type, detect_direction` |
+
+`ocr-handwriting` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-table-v2` | 表格文字识别V2。 | `image_base64, language_type, detect_direction` |
+
+`ocr-table-v2` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-seal` | 印章文字与位置识别。 | `image_base64, language_type, detect_direction` |
+
+`ocr-seal` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-numbers` | 数字识别。 | `image_base64, language_type, detect_direction` |
+
+`ocr-numbers` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `ocr-qrcode` | 二维码与条形码识别。 | `image_base64, language_type, detect_direction` |
+
+`ocr-qrcode` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    },
+    "language_type": {
+      "type": "string",
+      "enum": [
+        "CHN_ENG",
+        "ENG",
+        "JAP",
+        "KOR",
+        "FRE",
+        "SPA",
+        "POR",
+        "GER",
+        "ITA",
+        "RUS"
+      ],
+      "default": "CHN_ENG"
+    },
+    "detect_direction": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `image-general-scene` | 通用物体与场景识别。 | `image_base64` |
+
+`image-general-scene` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `image-object-detect` | 图像单主体位置检测。 | `image_base64` |
+
+`image-object-detect` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `image-animal` | 动物识别。 | `image_base64` |
+
+`image-animal` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `image-plant` | 植物识别。 | `image_base64` |
+
+`image-plant` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `image-logo` | 品牌Logo识别，仅检索。 | `image_base64` |
+
+`image-logo` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `image-landmark` | 地标识别。 | `image_base64` |
+
+`image-landmark` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+| `image-vehicle-detect` | 车辆检测与计数。 | `image_base64` |
+
+`image-vehicle-detect` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "image_base64": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 8000000
+    }
+  },
+  "maxProperties": 1,
+  "required": [
+    "image_base64"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "timeout_seconds_max": 180,
+  "max_response_bytes": 10000000,
+  "max_search_results": 20,
+  "max_deep_search_queries": 3,
+  "max_text_characters": 60000,
+  "max_image_base64_characters": 8000000,
+  "fixed_api_hosts": [
+    "qianfan.baidubce.com",
+    "aip.baidubce.com"
+  ],
+  "fixed_paths": [
+    "/v2/ai_search/web_search",
+    "/v2/ai_search/chat/completions",
+    "/v2/ai_search/chat/completions",
+    "/v2/ai_search/web_summary",
+    "/v2/agent/deepresearch/run",
+    "/rpc/2.0/nlp/v1/lexer",
+    "/rpc/2.0/nlp/v1/sentiment_classify",
+    "/rpc/2.0/nlp/v1/keyword",
+    "/rpc/2.0/nlp/v1/topic",
+    "/rpc/2.0/nlp/v1/entity_analysis",
+    "/rpc/2.0/nlp/v2/simnet",
+    "/rpc/2.0/nlp/v1/emotion",
+    "/rpc/2.0/nlp/v2/comment_tag",
+    "/rpc/2.0/nlp/v1/ecnet",
+    "/rpc/2.0/nlp/v2/text_correction",
+    "/rpc/2.0/nlp/v1/txt_keywords_extraction",
+    "/rpc/2.0/nlp/v1/txt_monet",
+    "/rpc/2.0/nlp/v1/news_summary",
+    "/rpc/2.0/nlp/v1/address",
+    "/rpc/2.0/nlp/v1/titlepredictor",
+    "/rest/2.0/ocr/v1/general_basic",
+    "/rest/2.0/ocr/v1/general",
+    "/rest/2.0/ocr/v1/accurate_basic",
+    "/rest/2.0/ocr/v1/accurate",
+    "/rest/2.0/ocr/v1/doc_analysis_office",
+    "/rest/2.0/ocr/v1/webimage",
+    "/rest/2.0/ocr/v1/webimage_loc",
+    "/rest/2.0/ocr/v1/handwriting",
+    "/rest/2.0/ocr/v1/table",
+    "/rest/2.0/ocr/v1/seal",
+    "/rest/2.0/ocr/v1/numbers",
+    "/rest/2.0/ocr/v1/qrcode",
+    "/rest/2.0/image-classify/v2/advanced_general",
+    "/rest/2.0/image-classify/v1/object_detect",
+    "/rest/2.0/image-classify/v1/animal",
+    "/rest/2.0/image-classify/v1/plant",
+    "/rest/2.0/image-classify/v2/logo",
+    "/rest/2.0/image-classify/v1/landmark",
+    "/rest/2.0/image-classify/v1/vehicle_detect"
+  ],
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "automatic_pagination_allowed": false,
+  "automatic_retries_allowed": false,
+  "background_monitoring_allowed": false,
+  "cloud_resource_management_allowed": false,
+  "paid_fallback_authorized": false,
+  "face_or_biometric_operations_allowed": false,
+  "identity_document_ocr_allowed": false,
+  "speech_operations_allowed": false,
+  "image_or_video_generation_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "direct_personal_identifiers_redacted": true
 }
 ```
 
