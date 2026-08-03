@@ -1,4 +1,4 @@
-# bootstrap-trigger: 2026-08-03-r4
+# bootstrap-trigger: 2026-08-03-r5
 name: Bootstrap Public Health and OSM Providers
 
 on:
@@ -16,8 +16,8 @@ permissions:
   contents: write
 
 concurrency:
-  group: bootstrap-public-health-osm
-  cancel-in-progress: false
+  group: bootstrap-public-health-osm-r5
+  cancel-in-progress: true
 
 jobs:
   install-and-register:
