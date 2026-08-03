@@ -70,7 +70,7 @@ jobs:
           matrix=json.loads(Path('api-center/global-knowledge-fabric/source-access-matrix.json').read_text())
           catalog=json.loads(Path('api-center/api-catalog.json').read_text())
           assert receipt['status']=='PASS'
-          assert receipt['source_count']==16
+          assert receipt['source_count']==15
           assert receipt['operation_count']==9
           assert receipt['network_used'] is False
           assert receipt['model_calls']==0
@@ -108,11 +108,9 @@ jobs:
           - dblp-publication
           - dblp-author
           - dblp-venue
-          - crossref-events
           - harvard-dataverse
           - openml
           - grants-gov
-          - data-gov
           - eu-cellar
           - rcsb-pdb
           - uniprot
@@ -175,9 +173,11 @@ jobs:
         source:
           - orcid
           - regulations-gov
+          - data-gov
     env:
       ORCID_PUBLIC_API_TOKEN: ${{ secrets.ORCID_PUBLIC_API_TOKEN }}
       REGULATIONS_GOV_API_KEY: ${{ secrets.REGULATIONS_GOV_API_KEY }}
+      DATA_GOV_API_KEY: ${{ secrets.DATA_GOV_API_KEY }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
