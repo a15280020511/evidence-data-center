@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""Bounded Baidu AI Cloud free-quota intelligence execution."""
+"""Bounded execution for the currently verified Baidu AI web-search capability."""
 from __future__ import annotations
 
-import base64
-import binascii
 import json
 import os
 import re
@@ -32,7 +30,7 @@ CATALOG_PATH = HERE / "provider-catalog.json"
 QUOTA_POLICY_PATH = HERE / "free-quota-policy.json"
 
 QIANFAN_ORIGIN = "https://qianfan.baidubce.com"
-AIP_ORIGIN = "https://aip.baidubce.com"
+WEB_SEARCH_PATH = "/v2/ai_search/web_search"
 API_KEY_ENV = "BAIDU_AI_CLOUD_API_KEY"
 
 PHONE_RE = re.compile(r"(?<!\d)1[3-9]\d{9}(?!\d)")
@@ -46,45 +44,6 @@ PERSONAL_KEY_RE = re.compile(
     r"email|phone|mobile|id.?card|bank.?card|passport)",
     re.I,
 )
-
-LOCAL_OPERATIONS = {"catalog-capabilities", "quota-policy"}
-SEARCH_OPERATIONS = {
-    "web-search",
-    "intelligent-search",
-    "deep-search",
-    "web-summary",
-    "deep-research-lite",
-}
-GATED_FREE_QUOTA_OPERATIONS = {
-    "intelligent-search",
-    "deep-search",
-    "web-summary",
-    "deep-research-lite",
-}
-OCR_OPERATIONS = {
-    "ocr-general-basic",
-    "ocr-general",
-    "ocr-accurate-basic",
-    "ocr-accurate",
-    "ocr-office",
-    "ocr-webimage",
-    "ocr-webimage-location",
-    "ocr-handwriting",
-    "ocr-table-v2",
-    "ocr-seal",
-    "ocr-numbers",
-    "ocr-qrcode",
-}
-IMAGE_OPERATIONS = {
-    "image-general-scene",
-    "image-object-detect",
-    "image-animal",
-    "image-plant",
-    "image-logo",
-    "image-landmark",
-    "image-vehicle-detect",
-}
-FORM_OPERATIONS = OCR_OPERATIONS | IMAGE_OPERATIONS
 
 
 class BaiduAICloudError(RuntimeError):
@@ -207,57 +166,11 @@ def _check_http(response: requests.Response, payload: Any | None = None) -> None
             )
 
 
-def _validate_base64_image(value: Any) -> str:
-    text = str(value or "").strip()
-    if len(text) > 8_000_000:
-        raise ValueError("image_base64 exceeds 8000000 characters")
-    if text.startswith("data:") or "," in text[:128]:
-        raise ValueError("image_base64 must not include a data URL prefix")
-    try:
-        raw = base64.b64decode(text, validate=True)
-    except (binascii.Error, ValueError) as exc:
-        raise ValueError("image_base64 must be valid base64") from exc
-    if not 12 <= len(raw) <= 6_000_000:
-        raise ValueError("decoded image must contain 12 to 6000000 bytes")
-    return text
-
-
-def _bool_text(value: Any) -> str:
-    return "true" if bool(value) else "false"
-
-
 def _operation_row(operation: str) -> Mapping[str, Any]:
     row = operation_map(CATALOG_PATH).get(operation)
     if row is None:
-        raise ValueError(f"unsupported Baidu AI Cloud operation: {operation}")
+        raise ValueError(f"unsupported Baidu operation: {operation}")
     return row
-
-
-def _origin_and_path(operation: str) -> tuple[str, str]:
-    row = _operation_row(operation)
-    execution = row.get("execution") or {}
-    origin = str(execution.get("official_origin") or "")
-    path = str(execution.get("path_template") or "")
-    if origin not in {QIANFAN_ORIGIN, AIP_ORIGIN}:
-        raise ValueError("provider catalog origin is not an approved Baidu host")
-    if not path.startswith("/") or "://" in path or ".." in path:
-        raise ValueError("provider catalog path is invalid")
-    return origin, path
-
-
-def _assert_free_quota_guard(operation: str, parameters: Mapping[str, Any]) -> None:
-    if operation not in GATED_FREE_QUOTA_OPERATIONS:
-        return
-    if parameters.get("free_quota_confirmed") is not True:
-        raise BaiduAICloudError(
-            "BAIDU_FREE_QUOTA_NOT_CONFIRMED",
-            "free_quota_confirmed must be true",
-        )
-    if parameters.get("paid_fallback_authorized") is not False:
-        raise BaiduAICloudError(
-            "BAIDU_PAID_FALLBACK_REJECTED",
-            "paid fallback is not authorized",
-        )
 
 
 def _web_search_body(parameters: Mapping[str, Any]) -> dict[str, Any]:
@@ -283,230 +196,63 @@ def _web_search_body(parameters: Mapping[str, Any]) -> dict[str, Any]:
     return body
 
 
-def _intelligent_search_body(
-    operation: str,
-    parameters: Mapping[str, Any],
-) -> dict[str, Any]:
-    _assert_free_quota_guard(operation, parameters)
-    query = str(parameters.get("query") or "").strip()
-    model = str(parameters.get("model") or "").strip()
-    if not query or not model:
-        raise ValueError("query and model must not be empty")
-    top_k = bounded_int(
-        parameters.get("top_k"),
-        default=10,
-        minimum=1,
-        maximum=20,
-        name="top_k",
-    )
-    body: dict[str, Any] = {
-        "messages": [{"content": query, "role": "user"}],
-        "model": model,
-        "stream": False,
-        "search_source": "baidu_search_v2",
-        "resource_type_filter": [{"type": "web", "top_k": top_k}],
-        "enable_followup_query": False,
-        "enable_corner_markers": True,
-        "enable_deep_search": operation == "deep-search",
-    }
-    instruction = str(parameters.get("instruction") or "").strip()
-    if instruction:
-        body["instruction"] = instruction
-    if operation == "deep-search":
-        body["max_search_query_num"] = bounded_int(
-            parameters.get("max_search_query_num"),
-            default=3,
-            minimum=1,
-            maximum=3,
-            name="max_search_query_num",
-        )
-    return body
-
-
-def _web_summary_body(parameters: Mapping[str, Any]) -> dict[str, Any]:
-    _assert_free_quota_guard("web-summary", parameters)
-    query = str(parameters.get("query") or "").strip()
-    if not query:
-        raise ValueError("query must not be empty")
-    top_k = bounded_int(
-        parameters.get("top_k"),
-        default=5,
-        minimum=1,
-        maximum=20,
-        name="top_k",
-    )
-    return {
-        "instruction": str(
-            parameters.get("instruction")
-            or "仅依据公开检索结果总结，明确列出引用，不补造事实。"
-        ),
-        "messages": [{"content": query, "role": "user"}],
-        "stream": False,
-        "resource_type_filter": [{"type": "web", "top_k": top_k}],
-    }
-
-
-def _deep_research_body(parameters: Mapping[str, Any]) -> dict[str, Any]:
-    _assert_free_quota_guard("deep-research-lite", parameters)
-    query = str(parameters.get("query") or "").strip()
-    if not query:
-        raise ValueError("query must not be empty")
-    return {"query": query, "version": "lite"}
-
-
-def _json_body(operation: str, parameters: Mapping[str, Any]) -> dict[str, Any]:
-    if operation == "web-search":
-        return _web_search_body(parameters)
-    if operation in {"intelligent-search", "deep-search"}:
-        return _intelligent_search_body(operation, parameters)
-    if operation == "web-summary":
-        return _web_summary_body(parameters)
-    if operation == "deep-research-lite":
-        return _deep_research_body(parameters)
-    body = dict(parameters)
-    for key, value in body.items():
-        if isinstance(value, str) and not value.strip():
-            raise ValueError(f"{key} must not be empty")
-    return body
-
-
-def _form_body(parameters: Mapping[str, Any]) -> dict[str, str]:
-    image = _validate_base64_image(parameters.get("image_base64"))
-    body: dict[str, str] = {"image": image}
-    for key, value in parameters.items():
-        if key == "image_base64" or value in (None, ""):
-            continue
-        body[key] = _bool_text(value) if isinstance(value, bool) else str(value)
-    return body
-
-
-def _parse_sse(
-    response: requests.Response,
-    *,
-    max_bytes: int,
-    max_events: int = 400,
-) -> dict[str, Any]:
-    _check_http(response)
-    events: list[Any] = []
-    total = 0
-    for line in response.iter_lines(decode_unicode=False):
-        if not line:
-            continue
-        total += len(line)
-        if total > max_bytes:
-            raise BaiduAICloudError(
-                "BAIDU_RESPONSE_TOO_LARGE",
-                "SSE response exceeded max_response_bytes",
-            )
-        if not line.startswith(b"data:"):
-            continue
-        data = line[5:].strip()
-        if not data or data == b"[DONE]":
-            continue
-        try:
-            event = json.loads(data.decode("utf-8"))
-        except (UnicodeDecodeError, json.JSONDecodeError):
-            event = {"raw": data.decode("utf-8", errors="replace")[:4000]}
-        events.append(event)
-        if len(events) >= max_events:
-            break
-    return {
-        "events": events,
-        "event_count": len(events),
-        "response_bytes": total,
-        "completed_in_single_request": any(
-            isinstance(item, Mapping) and str(item.get("status") or "") == "done"
-            for item in events
-        ),
-        "interrupt_returned": any(
-            isinstance(item, Mapping) and str(item.get("status") or "") == "interrupt"
-            for item in events
-        ),
-    }
-
-
-def _post(
-    operation: str,
+def _post_web_search(
     parameters: Mapping[str, Any],
     *,
     timeout: int,
     max_bytes: int,
 ) -> tuple[Mapping[str, Any], dict[str, Any]]:
-    origin, path = _origin_and_path(operation)
+    row = _operation_row("web-search")
+    execution = row.get("execution") or {}
+    if execution.get("official_origin") != QIANFAN_ORIGIN:
+        raise ValueError("provider catalog origin is not approved")
+    if execution.get("path_template") != WEB_SEARCH_PATH:
+        raise ValueError("provider catalog path is not approved")
     key = _secret()
-    headers = {
-        "Accept": "application/json, text/event-stream",
-        "Authorization": f"Bearer {key}",
-        "Content-Type": (
-            "application/x-www-form-urlencoded"
-            if operation in FORM_OPERATIONS
-            else "application/json"
-        ),
-        "User-Agent": "evidence-intelligence-center-baidu-ai/2",
-    }
-    kwargs: dict[str, Any] = {
-        "headers": headers,
-        "timeout": timeout,
-        "allow_redirects": False,
-    }
-    if operation in FORM_OPERATIONS:
-        kwargs["data"] = _form_body(parameters)
-    else:
-        kwargs["json"] = _json_body(operation, parameters)
-    if operation == "deep-research-lite":
-        kwargs["stream"] = True
     try:
-        response = requests.post(origin + path, **kwargs)
+        response = requests.post(
+            QIANFAN_ORIGIN + WEB_SEARCH_PATH,
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+                "User-Agent": "evidence-intelligence-center-baidu-search/3",
+            },
+            json=_web_search_body(parameters),
+            timeout=timeout,
+            allow_redirects=False,
+        )
     except requests.RequestException as exc:
         raise BaiduAICloudError(
             "BAIDU_CONNECTION_FAILED",
             type(exc).__name__,
             retryable=True,
         ) from exc
-
-    if operation == "deep-research-lite":
-        payload: Mapping[str, Any] = _parse_sse(
-            response,
-            max_bytes=max_bytes,
+    decoded = _decode_json(response, max_bytes=max_bytes)
+    _check_http(response, decoded)
+    if not isinstance(decoded, Mapping):
+        raise BaiduAICloudError(
+            "BAIDU_RESULT_INVALID",
+            "upstream response must be a JSON object",
         )
-        response_bytes = int(payload.get("response_bytes") or 0)
-    else:
-        decoded = _decode_json(response, max_bytes=max_bytes)
-        _check_http(response, decoded)
-        if not isinstance(decoded, Mapping):
-            raise BaiduAICloudError(
-                "BAIDU_RESULT_INVALID",
-                "upstream response must be a JSON object",
-            )
-        payload = decoded
-        response_bytes = len(response.content)
-
-    return payload, {
-        "request_origin": origin.removeprefix("https://"),
-        "request_path": path,
+    return decoded, {
+        "request_origin": "qianfan.baidubce.com",
+        "request_path": WEB_SEARCH_PATH,
         "http_method": "POST",
         "credential_mode": "unified-api-key-bearer-backend-only",
         "credential_environment_variable": API_KEY_ENV,
         "http_status": response.status_code,
-        "response_bytes": response_bytes,
+        "response_bytes": len(response.content),
         "requests_per_ticket": 1,
         "upstream_called": True,
-        "free_quota_guard_required": operation in GATED_FREE_QUOTA_OPERATIONS,
         "paid_fallback_authorized": False,
         "secret_values_exposed": False,
     }
 
 
-def _truncate_top_level(payload: Mapping[str, Any], max_rows: int) -> Mapping[str, Any]:
+def _truncate(payload: Mapping[str, Any], max_rows: int) -> Mapping[str, Any]:
     result = dict(payload)
-    for key in (
-        "references",
-        "items",
-        "results",
-        "words_result",
-        "result",
-        "events",
-    ):
+    for key in ("references", "items", "results"):
         value = result.get(key)
         if isinstance(value, list) and len(value) > max_rows:
             result[key] = value[:max_rows]
@@ -517,33 +263,29 @@ def _truncate_top_level(payload: Mapping[str, Any], max_rows: int) -> Mapping[st
 def execute(ticket_path: Path, output_dir: Path) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     ticket = load_json(ticket_path)
-    validate_ticket(
-        ticket,
-        schema_path=SCHEMA_PATH,
-        catalog_path=CATALOG_PATH,
-    )
+    validate_ticket(ticket, schema_path=SCHEMA_PATH, catalog_path=CATALOG_PATH)
     operation = str(ticket["operation"])
     parameters = dict(ticket.get("parameters") or {})
     acceptance = dict(ticket["acceptance"])
     timeout = bounded_int(
         acceptance.get("timeout_seconds"),
-        default=60,
+        default=30,
         minimum=5,
-        maximum=180,
+        maximum=90,
         name="timeout_seconds",
     )
     max_bytes = bounded_int(
         acceptance.get("max_response_bytes"),
-        default=5_000_000,
+        default=500000,
         minimum=1024,
-        maximum=10_000_000,
+        maximum=2000000,
         name="max_response_bytes",
     )
     max_rows = bounded_int(
         acceptance.get("max_rows"),
-        default=100,
+        default=20,
         minimum=1,
-        maximum=1000,
+        maximum=100,
         name="max_rows",
     )
     started_at = utc_now()
@@ -553,7 +295,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
     failure: Mapping[str, Any] | None = None
     metadata: dict[str, Any] = {
         "upstream_called": False,
-        "fixed_hosts": ["qianfan.baidubce.com", "aip.baidubce.com"],
+        "fixed_hosts": ["qianfan.baidubce.com"],
         "secret_values_exposed": False,
         "direct_personal_identifiers_redacted": True,
         "one_business_operation_per_ticket": True,
@@ -582,21 +324,20 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
                     "direct_personal_identifiers_redacted": False,
                 }
             )
-        else:
-            payload, request_metadata = _post(
-                operation,
+        elif operation == "web-search":
+            payload, request_metadata = _post_web_search(
                 parameters,
                 timeout=timeout,
                 max_bytes=max_bytes,
             )
             metadata.update(request_metadata)
-            if operation in {"intelligent-search", "deep-search", "web-summary", "deep-research-lite"}:
-                metadata["model_calls"] = 1
             snapshot = {
                 "provider": "baidu-ai-cloud",
                 "operation": operation,
-                "data": _redact(_truncate_top_level(payload, max_rows)),
+                "data": _redact(_truncate(payload, max_rows)),
             }
+        else:
+            raise ValueError(f"unsupported Baidu operation: {operation}")
         status = "INTEL_BAIDU_AI_COMPLETED"
     except Exception as exc:
         message = str(exc)
@@ -629,7 +370,7 @@ if __name__ == "__main__":
             ticket_prefix="[intel-baidu-ai]",
             schema_path=SCHEMA_PATH,
             catalog_path=CATALOG_PATH,
-            status_schema="baidu-ai-cloud-ticket-status-v2",
-            display_name="百度智能云免费情报能力",
+            status_schema="baidu-ai-cloud-ticket-status-v3",
+            display_name="百度AI网页搜索",
         )
     )
