@@ -1,0 +1,125 @@
+{
+  "schema_version": "google-public-intelligence-quota-policy-v1",
+  "policy": {
+    "free_only": true,
+    "paid_fallback_authorized": false,
+    "console_quota_is_authoritative": true,
+    "automatic_retry_allowed": false,
+    "automatic_pagination_allowed": false,
+    "requests_per_ticket_max": 1,
+    "service_permanence_guaranteed": false,
+    "deprecation_monitoring_required": true
+  },
+  "services": [
+    {
+      "service": "YouTube Data API v3",
+      "service_name": "youtube.googleapis.com",
+      "use_cases": [
+        "公开视频检索",
+        "频道和视频画像",
+        "发布时间线",
+        "公开观看量、点赞量和评论量",
+        "公开视频舆情与传播线索"
+      ],
+      "current_free_contract": "项目配额制；Google Cloud控制台配额为最终口径。官方文档当前列出search.list独立日配额及其他方法的默认日配额。",
+      "reset_policy": "日配额按美国太平洋时间午夜重置；具体桶和数值以控制台为准。",
+      "stability": "high",
+      "lifecycle_notes": "核心YouTube开发接口，版本和字段会演进；不能保证永久不变。",
+      "fallback": "配额耗尽或接口退役时停止调用，不切换付费或非官方抓取。",
+      "official_docs": [
+        "https://developers.google.com/youtube/v3/getting-started",
+        "https://developers.google.com/youtube/v3/revision_history"
+      ]
+    },
+    {
+      "service": "Google Books API",
+      "service_name": "books.googleapis.com",
+      "use_cases": [
+        "书名、作者、出版社和ISBN检索",
+        "图书版本和出版信息核验",
+        "主题分类和简介发现",
+        "公开预览与访问状态识别"
+      ],
+      "current_free_contract": "公开数据使用API Key和项目配额；不访问个人书架或购买数据。",
+      "reset_policy": "配额和重置周期以Google Cloud控制台为准。",
+      "stability": "medium-high",
+      "lifecycle_notes": "长期存在的公共图书目录API，但文档和字段可能调整；不能保证永久不变。",
+      "fallback": "故障时使用Open Library、Library of Congress等现有资料库，不绕过图书访问限制。",
+      "official_docs": [
+        "https://developers.google.com/books/docs/v1/using",
+        "https://developers.google.com/books/docs/v1/reference/volumes/list"
+      ]
+    },
+    {
+      "service": "Fact Check Tools API",
+      "service_name": "factchecktools.googleapis.com",
+      "use_cases": [
+        "查询已发布事实核查",
+        "识别说法、核查机构和评级",
+        "事件与谣言核验线索",
+        "多语种事实核查来源发现"
+      ],
+      "current_free_contract": "Claim Search使用API Key和项目配额；本仓库不开放ClaimReview写入接口。",
+      "reset_policy": "配额和重置周期以Google Cloud控制台为准。",
+      "stability": "medium",
+      "lifecycle_notes": "官方只读服务仍在运行，但端点版本为v1alpha1且文档更新频率较低，生命周期风险高于YouTube和CrUX。",
+      "fallback": "不可用时只返回未核验状态，并继续使用公开核查机构原始页面和搜索引擎。",
+      "official_docs": [
+        "https://developers.google.com/fact-check/tools/api/"
+      ]
+    },
+    {
+      "service": "PageSpeed Insights API v5",
+      "service_name": "pagespeedonline.googleapis.com",
+      "use_cases": [
+        "网站性能审计",
+        "SEO、无障碍和最佳实践检查",
+        "竞争对手和政府网站技术画像",
+        "页面改版前后实验室指标对比"
+      ],
+      "current_free_contract": "低频可不带Key，自动化建议使用Key；配额以控制台为准。",
+      "reset_policy": "配额和重置周期以Google Cloud控制台为准。",
+      "stability": "medium-high",
+      "lifecycle_notes": "v5为当前版本，但Lighthouse会独立升级并可能改变响应字段；PageSpeed中的CrUX实地数据正在逐步退出，应以独立CrUX API为准。",
+      "fallback": "只保留Lighthouse实验室审计；真实用户指标由CrUX接口承担。",
+      "official_docs": [
+        "https://developers.google.com/speed/docs/insights/v5/get-started",
+        "https://developers.google.com/speed/docs/insights/release_notes"
+      ]
+    },
+    {
+      "service": "Chrome UX Report API",
+      "service_name": "chromeuxreport.googleapis.com",
+      "use_cases": [
+        "网站真实用户体验基线",
+        "LCP、INP、CLS等核心Web指标",
+        "页面或域名的历史性能趋势",
+        "PageSpeed实验室结果的现实校验"
+      ],
+      "current_free_contract": "CrUX当前和历史接口共享每项目每分钟150次免费查询，不能付费扩容。",
+      "reset_policy": "分钟级限流；历史数据通常每周更新，具体可用性和更新时间无SLA。",
+      "stability": "high",
+      "lifecycle_notes": "Chrome核心Web指标基础设施的重要公开接口；数据覆盖依赖流量和资格，不能保证每个网站都有记录，也不能保证永久不变。",
+      "fallback": "无数据时返回NO_ELIGIBLE_CRUX_DATA，不将缺失误判为网站性能差。",
+      "official_docs": [
+        "https://developer.chrome.com/docs/crux/api",
+        "https://developer.chrome.com/docs/crux/history-api"
+      ]
+    }
+  ],
+  "governance": {
+    "one_key": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
+    "api_restrictions_required": [
+      "YouTube Data API v3",
+      "Books API",
+      "Fact Check Tools API",
+      "PageSpeed Insights API",
+      "Chrome UX Report API"
+    ],
+    "custom_search_api_allowed": false,
+    "oauth_private_data_allowed": false,
+    "write_operations_allowed": false,
+    "public_https_targets_only": true,
+    "client_supplied_api_key_allowed": false
+  }
+}

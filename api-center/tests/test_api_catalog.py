@@ -79,6 +79,7 @@ EXPECTED_OPERATION_COUNTS = {
     "global-knowledge-fabric": 9,
     "baidu-ai-cloud": 4,
     "open-software-security-knowledge": 11,
+    "google-public-intelligence": 9,
 }
 
 
@@ -160,6 +161,7 @@ class ApiCatalogTests(unittest.TestCase):
             "llamaparse": "LLAMA_CLOUD_API_KEY",
             "cloudflare": "CLOUDFLARE_API_TOKEN",
             "fred": "FRED_API_KEY",
+            "google-public-intelligence": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
         }
         for provider_id, secret_name in expected_secret_names.items():
             self.assertEqual(

@@ -10,7 +10,7 @@
       "ticket_prefix": "[intel-knowledge]",
       "required_secret_environment_variable": "",
       "optional_secret_environment_variables": [
-        "GOOGLE_API_KEY",
+        "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
         "BHL_API_KEY"
       ],
       "catalog_policy": "仅开放9项固定只读操作和16个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",

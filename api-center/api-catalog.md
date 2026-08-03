@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`63/63` 已启用
-- 托管操作总数：`689`
-- 已公开参数总数：`2419`
-- 目录 SHA-256：`d7a29cbdec979484a0561dcd29238c2897b4862d56267c46d845a65a7bc24235`
+- 托管提供方：`64/64` 已启用
+- 托管操作总数：`698`
+- 已公开参数总数：`2448`
+- 目录 SHA-256：`100b328e8a7cd9b14ce3e5809c13e450addbe119ddea781619f9c331af3bf10b`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -80,6 +80,7 @@
 | 全球知识织网第三波 | `global-knowledge-fabric` | 启用 | `[intel-knowledge-fabric]` | `9` | 否 |
 | 百度AI搜索与模型摘要 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `4` | 否 |
 | 全球开源软件、安全与开放标准知识层 | `open-software-security-knowledge` | 启用 | `[intel-software-security]` | `11` | 否 |
+| Google公开情报 | `google-public-intelligence` | 启用 | `[intel-google-public]` | `9` | 否 |
 
 ## 普通连接器
 
@@ -25360,7 +25361,7 @@
 - 票据前缀：`[intel-knowledge]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`014bfec6d7bdadb9543c627942e5846557f67a8c5246ad99ad123bffac71f4a3`
+- 提供方SHA-256：`eee324982647c9bcfa40c380c8204dcd2548c820ef23e9280c6e901e31274999`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -26652,6 +26653,434 @@
   "personal_profiling_allowed": false,
   "real_time_tracking_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## Google公开情报 (`google-public-intelligence`)
+
+- 状态：`启用`
+- 说明：使用统一Google API Key访问YouTube公开视频元数据、事实核查、PageSpeed实验室审计和Chrome真实用户体验数据；Google Books继续由全球资料库提供并迁移到同一Key。
+- 目录策略：只开放固定官方HTTPS端点和公开、非个人、只读数据；不访问私人YouTube或Google账户数据。
+- 执行策略：每张票据一个操作、最多一次上游请求；禁止自动翻页、自动重试、重定向、写操作和客户端提供凭据。
+- 票据前缀：`[intel-google-public]`
+- Secret环境变量名：`GOOGLE_PUBLIC_INTELLIGENCE_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`7da9a7a859e0a366711a1a8f4d803d17aeb570db36f4c444d3ec1d8c42df30ca`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取当前Google公开情报能力、固定端点和安全边界，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `quota-policy` | 读取五项Google API的免费配额、稳定性和失效处置策略，不访问上游。 | `无` |
+
+`quota-policy` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `youtube-search-videos` | 按关键词、频道、地区和语言检索公开视频，只返回首批视频元数据。 | `query, max_results, channel_id, region_code, relevance_language, published_after, order` |
+
+`youtube-search-videos` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "max_results": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 25,
+      "default": 10
+    },
+    "channel_id": {
+      "type": "string",
+      "pattern": "^UC[A-Za-z0-9_-]{20,30}$"
+    },
+    "region_code": {
+      "type": "string",
+      "pattern": "^[A-Z]{2}$"
+    },
+    "relevance_language": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$"
+    },
+    "published_after": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "order": {
+      "type": "string",
+      "enum": [
+        "date",
+        "rating",
+        "relevance",
+        "title",
+        "videoCount",
+        "viewCount"
+      ],
+      "default": "relevance"
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "maxProperties": 7
+}
+```
+
+| `youtube-video` | 读取一个公开视频的标题、频道、发布时间、时长和公开统计数据。 | `video_id` |
+
+`youtube-video` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "video_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{11}$"
+    }
+  },
+  "required": [
+    "video_id"
+  ],
+  "maxProperties": 1
+}
+```
+
+| `youtube-channel` | 按频道ID、Handle或旧用户名读取公开频道资料和公开统计。 | `channel_id, handle, username` |
+
+`youtube-channel` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "channel_id": {
+      "type": "string",
+      "pattern": "^UC[A-Za-z0-9_-]{20,30}$"
+    },
+    "handle": {
+      "type": "string",
+      "pattern": "^@[A-Za-z0-9._-]{3,30}$"
+    },
+    "username": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._-]{1,100}$"
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "channel_id"
+      ]
+    },
+    {
+      "required": [
+        "handle"
+      ]
+    },
+    {
+      "required": [
+        "username"
+      ]
+    }
+  ],
+  "maxProperties": 1
+}
+```
+
+| `factcheck-search` | 查询Google Fact Check Explorer收录的事实核查结论和来源。 | `query, language_code, page_size, max_age_days, review_publisher_site` |
+
+`factcheck-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "language_code": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$"
+    },
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    },
+    "max_age_days": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3650
+    },
+    "review_publisher_site": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9.-]{1,253}$"
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "maxProperties": 5
+}
+```
+
+| `pagespeed-analyze` | 对一个公开HTTPS页面执行一次PageSpeed/Lighthouse审计并返回压缩后的性能、SEO和可访问性摘要。 | `url, strategy, categories, locale` |
+
+`pagespeed-analyze` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "strategy": {
+      "type": "string",
+      "enum": [
+        "mobile",
+        "desktop"
+      ],
+      "default": "mobile"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "performance",
+          "accessibility",
+          "best-practices",
+          "seo"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "default": [
+        "performance"
+      ]
+    },
+    "locale": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$"
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "maxProperties": 4
+}
+```
+
+| `crux-query` | 查询一个公开HTTPS来源或页面最近28天的真实Chrome用户体验指标。 | `origin, url, form_factor, metrics` |
+
+`crux-query` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "origin": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "form_factor": {
+      "type": "string",
+      "enum": [
+        "PHONE",
+        "DESKTOP",
+        "TABLET"
+      ]
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "largest_contentful_paint",
+          "interaction_to_next_paint",
+          "cumulative_layout_shift",
+          "first_contentful_paint",
+          "experimental_time_to_first_byte",
+          "round_trip_time",
+          "form_factors"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "origin"
+      ],
+      "not": {
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "required": [
+        "url"
+      ],
+      "not": {
+        "required": [
+          "origin"
+        ]
+      }
+    }
+  ],
+  "maxProperties": 3
+}
+```
+
+| `crux-history-query` | 查询一个公开HTTPS来源或页面的CrUX历史真实用户体验时间序列。 | `origin, url, form_factor, metrics, collection_period_count` |
+
+`crux-history-query` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "origin": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 2048
+    },
+    "form_factor": {
+      "type": "string",
+      "enum": [
+        "PHONE",
+        "DESKTOP",
+        "TABLET"
+      ]
+    },
+    "metrics": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "largest_contentful_paint",
+          "interaction_to_next_paint",
+          "cumulative_layout_shift",
+          "first_contentful_paint",
+          "experimental_time_to_first_byte",
+          "round_trip_time",
+          "form_factors"
+        ]
+      },
+      "minItems": 1,
+      "maxItems": 7,
+      "uniqueItems": true
+    },
+    "collection_period_count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 40,
+      "default": 25
+    }
+  },
+  "oneOf": [
+    {
+      "required": [
+        "origin"
+      ],
+      "not": {
+        "required": [
+          "url"
+        ]
+      }
+    },
+    {
+      "required": [
+        "url"
+      ],
+      "not": {
+        "required": [
+          "origin"
+        ]
+      }
+    }
+  ],
+  "maxProperties": 4
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 2000000,
+  "automatic_pagination_allowed": false,
+  "automatic_retries_allowed": false,
+  "redirects_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "write_operations_allowed": false,
+  "oauth_user_data_allowed": false,
+  "private_account_data_allowed": false,
+  "paid_fallback_authorized": false,
+  "secret_values_exposed": false,
+  "direct_personal_identifiers_redacted": true,
+  "public_https_targets_only": true
 }
 ```
 

@@ -145,7 +145,7 @@
         "knowledge-record"
       ],
       "credential_mode": "required_free_key",
-      "credential_env": "GOOGLE_API_KEY",
+      "credential_env": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
       "license_policy": "Book metadata, preview and access-status fields only; do not bypass viewability or download restrictions.",
       "cost": "free public-data API key"
     },

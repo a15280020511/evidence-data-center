@@ -17,7 +17,7 @@ from global_knowledge_archives_task import (
 )
 
 DUMMY_SECRETS = {
-    "GOOGLE_API_KEY": "fixture-google-key",
+    "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY": "fixture-google-key",
     "BHL_API_KEY": "fixture-bhl-key",
 }
 
@@ -75,7 +75,7 @@ def validate_registry() -> dict:
     assert provider["limits"]["unauthorized_full_text_copying_allowed"] is False
     keyed_sources = {row["source_id"] for row in sources if row["credential_mode"] == "required_free_key"}
     assert keyed_sources == {"google-books", "bhl"}
-    assert provider["optional_secret_environment_variables"] == ["GOOGLE_API_KEY", "BHL_API_KEY"]
+    assert provider["optional_secret_environment_variables"] == ["GOOGLE_PUBLIC_INTELLIGENCE_API_KEY", "BHL_API_KEY"]
     assert not ({"trove", "nara", "smithsonian", "govinfo"} & {row["source_id"] for row in sources})
 
     checked = []
@@ -131,7 +131,7 @@ LIVE_CASES = {
 }
 
 KEY_CASES = {
-    "google-books": ("GOOGLE_API_KEY", "knowledge-record", {"source_id": "google-books", "record_id": "zyTCAlFPjgYC"}),
+    "google-books": ("GOOGLE_PUBLIC_INTELLIGENCE_API_KEY", "knowledge-record", {"source_id": "google-books", "record_id": "zyTCAlFPjgYC"}),
     "bhl": ("BHL_API_KEY", "knowledge-search", {"source_id": "bhl", "query": "orchids", "limit": 2}),
 }
 
