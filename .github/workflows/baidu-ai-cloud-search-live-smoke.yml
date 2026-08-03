@@ -81,13 +81,19 @@ jobs:
 
           root = Path('baidu-live-artifacts')
           diagnostics = json.loads((root / 'diagnostics.json').read_text(encoding='utf-8'))
+          metadata = diagnostics['metadata']
+          snapshot = json.loads((root / 'snapshot.json').read_text(encoding='utf-8'))
           assert diagnostics['status'] == 'INTEL_BAIDU_AI_COMPLETED', diagnostics
-          assert diagnostics['upstream_called'] is True, diagnostics
           assert diagnostics['model_calls'] == 0, diagnostics
-          assert diagnostics['http_status'] == 200, diagnostics
-          assert diagnostics['requests_per_ticket'] == 1, diagnostics
-          assert diagnostics['paid_fallback_authorized'] is False, diagnostics
           assert diagnostics['secret_values_exposed'] is False, diagnostics
+          assert metadata['upstream_called'] is True, metadata
+          assert metadata['model_calls'] == 0, metadata
+          assert metadata['http_status'] == 200, metadata
+          assert metadata['requests_per_ticket'] == 1, metadata
+          assert metadata['paid_fallback_authorized'] is False, metadata
+          assert metadata['secret_values_exposed'] is False, metadata
+          assert snapshot['operation'] == 'web-search', snapshot
+          assert len(snapshot['data'].get('references') or []) >= 1, snapshot
           secret = os.environ['BAIDU_AI_CLOUD_API_KEY']
           for path in root.rglob('*'):
               if path.is_file():
