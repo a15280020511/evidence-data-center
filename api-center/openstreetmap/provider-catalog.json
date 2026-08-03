@@ -1,0 +1,392 @@
+{
+  "schema_version": "openstreetmap-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "openstreetmap",
+      "display_name": "OpenStreetMap / Overpass / Nominatim",
+      "description": "统一接入 OSM 对象读取、Nominatim 单次地理编码与受控模板化 Overpass 空间查询。",
+      "enabled": true,
+      "ticket_prefix": "[intel-osm]",
+      "required_secret_environment_variable": "",
+      "optional_secret_environment_variable": "NOMINATIM_EMAIL",
+      "catalog_policy": "开放6项固定免密只读操作；禁止任意URL、任意主机、原始Overpass QL、批量Nominatim、自动补全、爬取和写入。",
+      "execution_policy": "每张票据最多一次固定HTTPS请求，Provider全局并发1。Nominatim使用明确User-Agent并限制每票最多10条；Overpass只由白名单字段生成QL，半径和边界框严格受限。",
+      "official_documentation": "https://wiki.openstreetmap.org/wiki/API_v0.6",
+      "official_origins": [
+        "https://api.openstreetmap.org",
+        "https://nominatim.openstreetmap.org",
+        "https://overpass-api.de"
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "fixed_api_hosts": [
+          "api.openstreetmap.org",
+          "nominatim.openstreetmap.org",
+          "overpass-api.de"
+        ],
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "raw_overpass_ql_allowed": false,
+        "nominatim_autocomplete_allowed": false,
+        "nominatim_bulk_geocoding_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "authentication_required": false,
+        "automatic_pagination_allowed": false,
+        "whole_database_download_allowed": false,
+        "nominatim_results_per_ticket_max": 10,
+        "overpass_result_elements_max": 200,
+        "overpass_radius_m_max": 5000,
+        "overpass_bbox_span_degrees_max": 2.0
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 OpenStreetMap 能力与使用政策，不访问上游.",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "openstreetmap",
+            "official_origin": "LOCAL",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "osm-object",
+          "description": "按固定对象类型和ID读取一个 OSM node、way 或 relation。",
+          "parameters": [
+            "object_type",
+            "object_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "object_type": {
+                "type": "string",
+                "enum": [
+                  "node",
+                  "way",
+                  "relation"
+                ]
+              },
+              "object_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 999999999999
+              }
+            },
+            "required": [
+              "object_type",
+              "object_id"
+            ]
+          },
+          "result_contract": {
+            "provider": "openstreetmap",
+            "official_origin": "https://api.openstreetmap.org/api/0.6",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "nominatim-search",
+          "description": "使用 Nominatim 对单个自然语言地点进行地理编码；禁止自动补全和批量地理编码。",
+          "parameters": [
+            "query",
+            "limit",
+            "countrycodes",
+            "language",
+            "addressdetails",
+            "extratags",
+            "namedetails"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 300
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "default": 5
+              },
+              "countrycodes": {
+                "type": "string",
+                "pattern": "^[a-z]{2}(,[a-z]{2}){0,9}$"
+              },
+              "language": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 40,
+                "pattern": "^[A-Za-z-]+(,[A-Za-z-]+)*$"
+              },
+              "addressdetails": {
+                "type": "boolean",
+                "default": true
+              },
+              "extratags": {
+                "type": "boolean",
+                "default": false
+              },
+              "namedetails": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "openstreetmap",
+            "official_origin": "https://nominatim.openstreetmap.org/search",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "nominatim-reverse",
+          "description": "使用 Nominatim 对单个坐标进行反向地理编码。",
+          "parameters": [
+            "lat",
+            "lon",
+            "zoom",
+            "language",
+            "addressdetails",
+            "extratags",
+            "namedetails"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lon": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "zoom": {
+                "type": "integer",
+                "minimum": 3,
+                "maximum": 18,
+                "default": 18
+              },
+              "language": {
+                "type": "string",
+                "minLength": 2,
+                "maxLength": 40,
+                "pattern": "^[A-Za-z-]+(,[A-Za-z-]+)*$"
+              },
+              "addressdetails": {
+                "type": "boolean",
+                "default": true
+              },
+              "extratags": {
+                "type": "boolean",
+                "default": false
+              },
+              "namedetails": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "required": [
+              "lat",
+              "lon"
+            ]
+          },
+          "result_contract": {
+            "provider": "openstreetmap",
+            "official_origin": "https://nominatim.openstreetmap.org/reverse",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "overpass-nearby",
+          "description": "使用模板化 Overpass QL 查询坐标附近的 OSM 要素；不接受原始QL。",
+          "parameters": [
+            "lat",
+            "lon",
+            "radius_m",
+            "tag_key",
+            "tag_value",
+            "element_type",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lat": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "lon": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "radius_m": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5000,
+                "default": 500
+              },
+              "tag_key": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_:.-]{1,64}$"
+              },
+              "tag_value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9_ :./()&+,'-]+$"
+              },
+              "element_type": {
+                "type": "string",
+                "enum": [
+                  "node",
+                  "way",
+                  "relation",
+                  "all"
+                ],
+                "default": "all"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 100
+              }
+            },
+            "required": [
+              "lat",
+              "lon",
+              "tag_key"
+            ]
+          },
+          "result_contract": {
+            "provider": "openstreetmap",
+            "official_origin": "https://overpass-api.de/api/interpreter",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "none",
+            "query_mode": "template_only"
+          }
+        },
+        {
+          "operation_id": "overpass-bbox",
+          "description": "使用模板化 Overpass QL 查询小范围边界框内的 OSM 要素；不接受原始QL。",
+          "parameters": [
+            "south",
+            "west",
+            "north",
+            "east",
+            "tag_key",
+            "tag_value",
+            "element_type",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "south": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "west": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "north": {
+                "type": "number",
+                "minimum": -90,
+                "maximum": 90
+              },
+              "east": {
+                "type": "number",
+                "minimum": -180,
+                "maximum": 180
+              },
+              "tag_key": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_:.-]{1,64}$"
+              },
+              "tag_value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9_ :./()&+,'-]+$"
+              },
+              "element_type": {
+                "type": "string",
+                "enum": [
+                  "node",
+                  "way",
+                  "relation",
+                  "all"
+                ],
+                "default": "all"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 100
+              }
+            },
+            "required": [
+              "south",
+              "west",
+              "north",
+              "east",
+              "tag_key"
+            ]
+          },
+          "result_contract": {
+            "provider": "openstreetmap",
+            "official_origin": "https://overpass-api.de/api/interpreter",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "none",
+            "query_mode": "template_only"
+          }
+        }
+      ]
+    }
+  ]
+}
