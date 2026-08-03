@@ -16,17 +16,24 @@ on:
       - "api-center/huggingface/tests/test_domain_benchmark_store.py"
       - "api-center/huggingface/requirements.txt"
       - ".github/workflows/hf-domain-benchmark-library.yml"
+  issues:
+    types: [opened, reopened]
   workflow_dispatch:
 
 permissions:
   contents: read
+  issues: write
 
 concurrency:
-  group: hf-domain-benchmark-library-${{ github.ref }}
+  group: hf-domain-benchmark-library-${{ github.event_name }}-${{ github.ref }}-${{ github.event.issue.number }}
   cancel-in-progress: false
 
 jobs:
   validate-control-plane:
+    if: >-
+      github.event_name != 'issues' ||
+      (github.actor == github.repository_owner &&
+       startsWith(github.event.issue.title, '[sync-hf-domain-benchmark]'))
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -74,11 +81,20 @@ jobs:
           retention-days: 30
 
   sync-private-library:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: >-
+      always() &&
+      needs.validate-control-plane.result == 'success' &&
+      ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+       github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'issues' &&
+        github.actor == github.repository_owner &&
+        startsWith(github.event.issue.title, '[sync-hf-domain-benchmark]')))
     needs: [validate-control-plane]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
       HF_TOKEN: ${{ secrets.HF_TOKEN }}
       HF_DOMAIN_BENCHMARK_DATASET_REPO: ${{ vars.HF_DOMAIN_BENCHMARK_DATASET_REPO }}
       HF_CLOUDFLARE_DATASET_REPO: ${{ vars.HF_CLOUDFLARE_DATASET_REPO }}
@@ -104,14 +120,23 @@ jobs:
           python -m pip check
 
       - name: Synchronize private domain benchmark control plane
+        id: sync
+        continue-on-error: true
         run: |
           set -euo pipefail
           test -n "$HF_TOKEN"
           python api-center/huggingface/domain_benchmark_store.py sync --output-dir hf-domain-benchmark-receipt
 
       - name: Render connection receipt
+        if: always()
         run: |
-          python api-center/huggingface/domain_benchmark_store.py render --output-dir hf-domain-benchmark-receipt | tee -a "$GITHUB_STEP_SUMMARY"
+          python api-center/huggingface/domain_benchmark_store.py render --output-dir hf-domain-benchmark-receipt > hf-domain-benchmark-comment.md || true
+          cat hf-domain-benchmark-comment.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish issue connection receipt
+        if: always() && github.event_name == 'issues'
+        run: |
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@hf-domain-benchmark-comment.md
 
       - name: Upload connection evidence
         if: always()
@@ -121,3 +146,7 @@ jobs:
           path: hf-domain-benchmark-receipt/
           if-no-files-found: error
           retention-days: 90
+
+      - name: Mark synchronization failure
+        if: always() && steps.sync.outcome != 'success'
+        run: exit 1
