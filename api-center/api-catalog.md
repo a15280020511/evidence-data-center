@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`52/52` 已启用
-- 托管操作总数：`588`
-- 已公开参数总数：`2142`
-- 目录 SHA-256：`bdd62b7b6dd2b38d3f4d6f96cb56878078b5bf6c1302b2849e51f86e43373a01`
+- 托管提供方：`53/53` 已启用
+- 托管操作总数：`611`
+- 已公开参数总数：`2202`
+- 目录 SHA-256：`61dc846f7080d316afa49671cfd76ce37eb6dd2ccc607891fed9d67e6febfab3`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -69,6 +69,7 @@
 | FRED 官方经济与金融时间序列 | `fred` | 启用 | `[intel-fred]` | `25` | 否 |
 | Hugging Face Hub 公共模型与数据情报 | `huggingface-hub` | 启用 | `[intel-huggingface]` | `11` | 否 |
 | 证据标准化、去重、谱系与传输清单 | `evidence-standardization` | 启用 | `[intel-evidence-standardize]` | `8` | 否 |
+| 全球研报、政策、法律与公司文本情报 | `global-research-intelligence` | 启用 | `[intel-global-research]` | `23` | 否 |
 
 ## 普通连接器
 
@@ -22796,6 +22797,762 @@
   "arbitrary_code_allowed": false,
   "network_allowed": false,
   "personal_data_allowed": false,
+  "secret_values_exposed": false
+}
+```
+
+## 全球研报、政策、法律与公司文本情报 (`global-research-intelligence`)
+
+- 状态：`启用`
+- 说明：直接访问固定官方研究、出版、立法、司法、公司披露和金融文本 API，并提供经核验的中国及全球高价值来源清单。
+- 目录策略：优先官方 API；每张票据仅执行一个固定只读操作；禁止任意 URL、任意主机、任意路径、自动翻页、批量下载、写入、交易和密钥回显。
+- 执行策略：所有请求由固定操作构造器生成。需要凭证的操作仅从后端环境读取对应密钥；SEC 操作要求仓库变量 SEC_USER_AGENT 标识调用方。
+- 票据前缀：`[intel-global-research]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`6725f2703d87d7ae7a6d87a7e8398aaa34cacc8787812e797f916b8ce612451a`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `source-inventory` | 读取用户提出的工具和数据源逐项核验、去重、替代与归属清单。 | `无` |
+
+`source-inventory` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `think-tank-source-catalog` | 读取固定全球及中国智库、研究机构、政策报告来源目录，供现有网页/PDF读取 Provider 使用。 | `region, topic` |
+
+`think-tank-source-catalog` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "region": {
+      "type": "string",
+      "enum": [
+        "all",
+        "china",
+        "global",
+        "north-america",
+        "europe",
+        "asia"
+      ]
+    },
+    "topic": {
+      "type": "string",
+      "enum": [
+        "all",
+        "macro",
+        "trade",
+        "finance",
+        "technology",
+        "industry",
+        "policy",
+        "security"
+      ]
+    }
+  }
+}
+```
+
+| `search-arxiv` | 按受限检索式查询 arXiv 元数据、摘要、作者和 PDF 链接。 | `query, start, max_results, sort_by, sort_order` |
+
+`search-arxiv` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    },
+    "max_results": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "sort_by": {
+      "type": "string",
+      "enum": [
+        "relevance",
+        "lastUpdatedDate",
+        "submittedDate"
+      ]
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "ascending",
+        "descending"
+      ]
+    }
+  }
+}
+```
+
+| `get-arxiv-entry` | 按 arXiv ID 读取单篇或少量论文元数据、摘要和 PDF 链接。 | `ids` |
+
+`get-arxiv-entry` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ids"
+  ],
+  "properties": {
+    "ids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9.\\/-]{1,40}$"
+      }
+    }
+  }
+}
+```
+
+| `identify-un-digital-library` | 读取联合国数字图书馆 OAI-PMH 仓库身份和能力信息。 | `无` |
+
+`identify-un-digital-library` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `list-un-digital-library-records` | 按 OAI-PMH 规范分批读取联合国数字图书馆公开元数据。 | `metadata_prefix, set, from, until, resumption_token` |
+
+`list-un-digital-library-records` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "metadata_prefix": {
+      "type": "string",
+      "enum": [
+        "oai_dc",
+        "marcxml"
+      ]
+    },
+    "set": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "from": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "until": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "resumption_token": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    }
+  }
+}
+```
+
+| `get-un-digital-library-record` | 按 OAI 标识符读取联合国数字图书馆单条公开元数据。 | `identifier, metadata_prefix` |
+
+`get-un-digital-library-record` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "identifier"
+  ],
+  "properties": {
+    "identifier": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 300
+    },
+    "metadata_prefix": {
+      "type": "string",
+      "enum": [
+        "oai_dc",
+        "marcxml"
+      ]
+    }
+  }
+}
+```
+
+| `get-sec-submissions` | 按十位 CIK 读取 SEC 官方公司申报历史和最新文件元数据。 | `cik` |
+
+`get-sec-submissions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cik"
+  ],
+  "properties": {
+    "cik": {
+      "type": "string",
+      "pattern": "^[0-9]{1,10}$"
+    }
+  }
+}
+```
+
+| `get-sec-company-facts` | 按十位 CIK 读取 SEC 官方 XBRL 公司全部事实数据。 | `cik` |
+
+`get-sec-company-facts` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "cik"
+  ],
+  "properties": {
+    "cik": {
+      "type": "string",
+      "pattern": "^[0-9]{1,10}$"
+    }
+  }
+}
+```
+
+| `get-sec-xbrl-frame` | 读取 SEC 官方 XBRL 跨公司财务事实截面。 | `taxonomy, tag, unit, period` |
+
+`get-sec-xbrl-frame` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "taxonomy",
+    "tag",
+    "unit",
+    "period"
+  ],
+  "properties": {
+    "taxonomy": {
+      "type": "string",
+      "enum": [
+        "us-gaap",
+        "dei",
+        "ifrs-full"
+      ]
+    },
+    "tag": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9]{1,99}$"
+    },
+    "unit": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9-]{1,40}$"
+    },
+    "period": {
+      "type": "string",
+      "pattern": "^CY[0-9]{4}(Q[1-4])?I?$"
+    }
+  }
+}
+```
+
+| `list-congress-bills` | 读取 Congress.gov v3 法案列表，可按届次、类型和更新时间范围约束。 | `congress, bill_type, from_datetime, to_datetime, limit, offset` |
+
+`list-congress-bills` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "congress": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+    },
+    "bill_type": {
+      "type": "string",
+      "enum": [
+        "hr",
+        "s",
+        "hjres",
+        "sjres",
+        "hconres",
+        "sconres",
+        "hres",
+        "sres"
+      ]
+    },
+    "from_datetime": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "to_datetime": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  }
+}
+```
+
+| `list-congress-hearings` | 读取 Congress.gov v3 听证会列表。 | `congress, chamber, limit, offset` |
+
+`list-congress-hearings` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "congress": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200
+    },
+    "chamber": {
+      "type": "string",
+      "enum": [
+        "house",
+        "senate"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000
+    }
+  }
+}
+```
+
+| `get-congress-crs-report` | 按 CRS 报告编号读取 Congress.gov 官方国会研究处报告元数据。 | `report_number` |
+
+`get-congress-crs-report` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "report_number"
+  ],
+  "properties": {
+    "report_number": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{1,4}[0-9-]{1,20}$"
+    }
+  }
+}
+```
+
+| `search-courtlistener` | 通过 CourtListener v4 搜索判例、案卷、法官和口头辩论资料。 | `query, type, order_by, page` |
+
+`search-courtlistener` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "o",
+        "r",
+        "p",
+        "oa"
+      ]
+    },
+    "order_by": {
+      "type": "string",
+      "enum": [
+        "score desc",
+        "dateFiled desc",
+        "dateFiled asc"
+      ]
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  }
+}
+```
+
+| `get-courtlistener-opinion` | 按数字 ID 读取 CourtListener v4 单份公开司法意见。 | `opinion_id` |
+
+`get-courtlistener-opinion` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "opinion_id"
+  ],
+  "properties": {
+    "opinion_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999999999
+    }
+  }
+}
+```
+
+| `search-nasdaq-data-link` | 搜索 Nasdaq Data Link 数据集目录。 | `query, page, per_page` |
+
+`search-nasdaq-data-link` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "per_page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  }
+}
+```
+
+| `get-nasdaq-dataset` | 按数据库代码和数据集代码读取 Nasdaq Data Link 时间序列数据。 | `database_code, dataset_code, start_date, end_date, rows, order, collapse, transform` |
+
+`get-nasdaq-dataset` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "database_code",
+    "dataset_code"
+  ],
+  "properties": {
+    "database_code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{1,30}$"
+    },
+    "dataset_code": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+    },
+    "start_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "rows": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ]
+    },
+    "collapse": {
+      "type": "string",
+      "enum": [
+        "none",
+        "daily",
+        "weekly",
+        "monthly",
+        "quarterly",
+        "annual"
+      ]
+    },
+    "transform": {
+      "type": "string",
+      "enum": [
+        "none",
+        "diff",
+        "rdiff",
+        "rdiff_from",
+        "cumul",
+        "normalize"
+      ]
+    }
+  }
+}
+```
+
+| `finnhub-company-news` | 按股票代码和日期范围读取 Finnhub 公司新闻。 | `symbol, from, to` |
+
+`finnhub-company-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "symbol",
+    "from",
+    "to"
+  ],
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9.:-]{1,30}$"
+    },
+    "from": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "to": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    }
+  }
+}
+```
+
+| `finnhub-transcripts-list` | 读取公司财报电话会议文本目录。 | `symbol` |
+
+`finnhub-transcripts-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "symbol"
+  ],
+  "properties": {
+    "symbol": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9.:-]{1,30}$"
+    }
+  }
+}
+```
+
+| `finnhub-transcript` | 按文本 ID 读取财报电话会议原文。 | `transcript_id` |
+
+`finnhub-transcript` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "transcript_id"
+  ],
+  "properties": {
+    "transcript_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{1,120}$"
+    }
+  }
+}
+```
+
+| `scopus-search` | 通过 Elsevier Scopus Search API 检索论文、作者、机构和主题元数据。 | `query, start, count, sort, view` |
+
+`scopus-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "query"
+  ],
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "start": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5000
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "-coverDate",
+        "coverDate",
+        "relevancy",
+        "-citedby-count"
+      ]
+    },
+    "view": {
+      "type": "string",
+      "enum": [
+        "STANDARD",
+        "COMPLETE"
+      ]
+    }
+  }
+}
+```
+
+| `scopus-abstract` | 按 Scopus EID 读取论文摘要与书目信息。 | `eid, view` |
+
+`scopus-abstract` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "eid"
+  ],
+  "properties": {
+    "eid": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{3,80}$"
+    },
+    "view": {
+      "type": "string",
+      "enum": [
+        "META",
+        "META_ABS",
+        "FULL"
+      ]
+    }
+  }
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "records_per_ticket_max": 100,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "fixed_api_hosts": [
+    "export.arxiv.org",
+    "digitallibrary.un.org",
+    "data.sec.gov",
+    "api.congress.gov",
+    "www.courtlistener.com",
+    "data.nasdaq.com",
+    "finnhub.io",
+    "api.elsevier.com"
+  ],
+  "credential_environment_variables": {
+    "sec": "SEC_USER_AGENT",
+    "congress": "CONGRESS_API_KEY",
+    "courtlistener": "COURTLISTENER_API_TOKEN",
+    "nasdaq": "NASDAQ_DATA_LINK_API_KEY",
+    "finnhub": "FINNHUB_API_KEY",
+    "scopus": "SCOPUS_API_KEY",
+    "scopus_insttoken_optional": "SCOPUS_INST_TOKEN"
+  },
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "document_body_bulk_download_allowed": false,
+  "write_operations_allowed": false,
+  "trading_or_order_execution_allowed": false,
+  "personal_data_targeting_allowed": false,
   "secret_values_exposed": false
 }
 ```

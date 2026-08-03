@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/a15280020511/evidence-data-center/api-center/global-research-intelligence/ticket.schema.json",
+  "title": "Global research intelligence ticket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "provider",
+    "operation",
+    "parameters",
+    "data_policy",
+    "acceptance"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$"
+    },
+    "provider": {
+      "const": "global-research-intelligence"
+    },
+    "operation": {
+      "type": "string",
+      "enum": [
+        "catalog-capabilities",
+        "source-inventory",
+        "think-tank-source-catalog",
+        "search-arxiv",
+        "get-arxiv-entry",
+        "identify-un-digital-library",
+        "list-un-digital-library-records",
+        "get-un-digital-library-record",
+        "get-sec-submissions",
+        "get-sec-company-facts",
+        "get-sec-xbrl-frame",
+        "list-congress-bills",
+        "list-congress-hearings",
+        "get-congress-crs-report",
+        "search-courtlistener",
+        "get-courtlistener-opinion",
+        "search-nasdaq-data-link",
+        "get-nasdaq-dataset",
+        "finnhub-company-news",
+        "finnhub-transcripts-list",
+        "finnhub-transcript",
+        "scopus-search",
+        "scopus-abstract"
+      ]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "parameters": {
+      "type": "object",
+      "maxProperties": 12
+    },
+    "data_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification",
+        "contains_personal_data"
+      ],
+      "properties": {
+        "classification": {
+          "const": "public"
+        },
+        "contains_personal_data": {
+          "const": false
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeout_seconds",
+        "max_response_bytes"
+      ],
+      "properties": {
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 120
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 20000000
+        }
+      }
+    }
+  }
+}

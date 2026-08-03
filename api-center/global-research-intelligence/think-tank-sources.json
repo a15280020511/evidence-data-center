@@ -1,0 +1,213 @@
+{
+  "schema_version": "think-tank-source-catalog-v1",
+  "updated_at": "2026-08-03",
+  "policy": {
+    "catalog_only": true,
+    "arbitrary_url_runtime_allowed": false,
+    "retrieval_route": "Use existing allowlisted Jina Reader, Exa, Tavily, Firecrawl, Browserless or LlamaParse providers after GPTs selects an approved source.",
+    "public_documents_only": true,
+    "copyright_policy": "Store metadata, short extracts and source links unless full-text redistribution is expressly allowed."
+  },
+  "sources": [
+    {
+      "id": "cass",
+      "name": "中国社会科学院",
+      "region": "china",
+      "topics": ["macro", "finance", "industry", "policy", "security"],
+      "homepage": "https://www.cass.cn/",
+      "source_type": "official-national-academy",
+      "search_strategy": "site search and institute publication pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "drc",
+      "name": "国务院发展研究中心",
+      "region": "china",
+      "topics": ["macro", "trade", "industry", "policy"],
+      "homepage": "https://www.drc.gov.cn/",
+      "source_type": "official-government-think-tank",
+      "search_strategy": "official research and policy publication pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "nifd",
+      "name": "国家金融与发展实验室",
+      "region": "china",
+      "topics": ["macro", "finance", "policy"],
+      "homepage": "https://www.nifd.cn/",
+      "source_type": "national-think-tank",
+      "search_strategy": "research report and China leverage-ratio publication pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "caict",
+      "name": "中国信息通信研究院",
+      "region": "china",
+      "topics": ["technology", "industry", "policy", "security"],
+      "homepage": "https://www.caict.ac.cn/",
+      "source_type": "official-research-institute",
+      "search_strategy": "white papers, research reports and policy interpretation pages",
+      "pdf_policy": "public white papers only"
+    },
+    {
+      "id": "cciee",
+      "name": "中国国际经济交流中心",
+      "region": "china",
+      "topics": ["macro", "trade", "finance", "policy"],
+      "homepage": "https://www.cciee.org.cn/",
+      "source_type": "national-economic-think-tank",
+      "search_strategy": "research, forum and policy publication pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "cf40",
+      "name": "中国金融四十人论坛",
+      "region": "china",
+      "topics": ["macro", "finance", "policy"],
+      "homepage": "https://www.cf40.org.cn/",
+      "source_type": "independent-financial-think-tank-platform",
+      "search_strategy": "research, policy papers and event report pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "brookings",
+      "name": "Brookings Institution",
+      "region": "north-america",
+      "topics": ["macro", "trade", "technology", "policy", "security"],
+      "homepage": "https://www.brookings.edu/",
+      "source_type": "independent-think-tank",
+      "search_strategy": "site search constrained to China and report/publication content",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "piie",
+      "name": "Peterson Institute for International Economics",
+      "region": "north-america",
+      "topics": ["macro", "trade", "finance", "policy"],
+      "homepage": "https://www.piie.com/",
+      "source_type": "independent-economic-think-tank",
+      "search_strategy": "research publications, policy briefs and China topic pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "csis",
+      "name": "Center for Strategic and International Studies",
+      "region": "north-america",
+      "topics": ["trade", "technology", "industry", "policy", "security"],
+      "homepage": "https://www.csis.org/",
+      "source_type": "independent-policy-think-tank",
+      "search_strategy": "China, economics, technology and security program publications",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "rand",
+      "name": "RAND Corporation",
+      "region": "north-america",
+      "topics": ["macro", "technology", "industry", "policy", "security"],
+      "homepage": "https://www.rand.org/",
+      "source_type": "nonprofit-research-organization",
+      "search_strategy": "research reports and China topic pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "cfr",
+      "name": "Council on Foreign Relations",
+      "region": "north-america",
+      "topics": ["trade", "finance", "policy", "security"],
+      "homepage": "https://www.cfr.org/",
+      "source_type": "independent-policy-organization",
+      "search_strategy": "China, economics and geopolitics backgrounders and reports",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "bruegel",
+      "name": "Bruegel",
+      "region": "europe",
+      "topics": ["macro", "trade", "finance", "technology", "policy"],
+      "homepage": "https://www.bruegel.org/",
+      "source_type": "independent-economic-think-tank",
+      "search_strategy": "publications and China/EU economic relations pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "chatham-house",
+      "name": "Chatham House",
+      "region": "europe",
+      "topics": ["trade", "technology", "policy", "security"],
+      "homepage": "https://www.chathamhouse.org/",
+      "source_type": "independent-policy-institute",
+      "search_strategy": "China, Asia-Pacific, economics and security research pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "merics",
+      "name": "Mercator Institute for China Studies",
+      "region": "europe",
+      "topics": ["macro", "trade", "technology", "industry", "policy", "security"],
+      "homepage": "https://merics.org/",
+      "source_type": "china-specialist-think-tank",
+      "search_strategy": "China Monitor, reports and analysis pages",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "oecd",
+      "name": "Organisation for Economic Co-operation and Development",
+      "region": "global",
+      "topics": ["macro", "trade", "finance", "industry", "policy"],
+      "homepage": "https://www.oecd.org/",
+      "source_type": "intergovernmental-organization",
+      "search_strategy": "China economic surveys, policy papers and country reports",
+      "pdf_policy": "public reports and metadata; respect access restrictions"
+    },
+    {
+      "id": "imf",
+      "name": "International Monetary Fund",
+      "region": "global",
+      "topics": ["macro", "finance", "policy"],
+      "homepage": "https://www.imf.org/",
+      "source_type": "international-financial-institution",
+      "search_strategy": "Article IV, working papers, country reports and departmental papers",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "world-bank",
+      "name": "World Bank Documents & Reports",
+      "region": "global",
+      "topics": ["macro", "trade", "finance", "industry", "policy"],
+      "homepage": "https://documents.worldbank.org/",
+      "source_type": "international-development-institution",
+      "search_strategy": "use existing worldbank-documents provider",
+      "pdf_policy": "metadata and official public document links"
+    },
+    {
+      "id": "adb",
+      "name": "Asian Development Bank",
+      "region": "asia",
+      "topics": ["macro", "trade", "finance", "industry", "policy"],
+      "homepage": "https://www.adb.org/",
+      "source_type": "regional-development-bank",
+      "search_strategy": "publications, country diagnostics and Asian Development Outlook",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "bis",
+      "name": "Bank for International Settlements",
+      "region": "global",
+      "topics": ["macro", "finance", "policy"],
+      "homepage": "https://www.bis.org/",
+      "source_type": "international-financial-institution",
+      "search_strategy": "working papers, annual reports and committee publications",
+      "pdf_policy": "public reports only"
+    },
+    {
+      "id": "unctad",
+      "name": "UN Trade and Development",
+      "region": "global",
+      "topics": ["trade", "finance", "industry", "policy"],
+      "homepage": "https://unctad.org/",
+      "source_type": "un-organization",
+      "search_strategy": "World Investment Report, trade and development reports",
+      "pdf_policy": "public reports only"
+    }
+  ]
+}
