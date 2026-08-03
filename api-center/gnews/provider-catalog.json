@@ -1,0 +1,294 @@
+{
+  "schema_version": "gnews-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "gnews",
+      "display_name": "GNews 全球新闻情报",
+      "description": "通过 GNews 官方 REST API读取全球新闻搜索结果和基于 Google News 排名的头条；固定只读、单请求、受限分页，不抓取文章正文。",
+      "enabled": true,
+      "ticket_prefix": "[intel-gnews]",
+      "required_secret_environment_variable": "GNEWS_API_KEY",
+      "catalog_policy": "固定开放3项能力：本地目录、关键词新闻检索、分类头条。API Key仅后端注入X-Api-Key；免费套餐按100次/日、每次最多10篇、12小时延迟、30天历史和仅开发测试用途建模。",
+      "execution_policy": "每张票据最多一次固定HTTPS GET；不接受客户端凭据、任意URL、任意路径、任意请求头、自动翻页、自动重试、后台轮询、写操作或文章正文二次抓取。",
+      "official_documentation": "https://docs.gnews.io/",
+      "official_origin": "https://gnews.io/api/v4",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 10000000,
+        "max_articles_per_request": 10,
+        "max_page": 100,
+        "max_date_range_days": 30,
+        "free_plan_requests_per_day": 100,
+        "free_plan_delay_hours": 12,
+        "free_plan_historical_days": 30,
+        "free_plan_noncommercial_development_testing_only": true,
+        "commercial_use_requires_paid_plan": true,
+        "full_content_plan_dependent": true,
+        "fixed_api_host": "gnews.io",
+        "fixed_paths": [
+          "/api/v4/search",
+          "/api/v4/top-headlines"
+        ],
+        "arbitrary_urls_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "redirects_allowed": false,
+        "automatic_pagination_allowed": false,
+        "background_monitoring_allowed": false,
+        "article_body_fetching_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 GNews 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "execution": {
+            "local": true,
+            "path_template": "",
+            "http_method": "LOCAL"
+          },
+          "result_contract": {
+            "provider": "gnews",
+            "official_origin": "https://gnews.io/api/v4",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "automatic_pagination": false,
+            "article_body_fetching": false
+          }
+        },
+        {
+          "operation_id": "search-news",
+          "description": "按关键词检索全球新闻，支持语言、国家、字段、日期、排序和单页过滤。",
+          "parameters": [
+            "q",
+            "lang",
+            "country",
+            "max",
+            "in",
+            "nullable",
+            "from",
+            "to",
+            "sortby",
+            "page",
+            "truncate"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "lang": {
+                "type": "string",
+                "pattern": "^[a-z]{2}$"
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[a-z]{2}$"
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "default": 10
+              },
+              "in": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "title",
+                    "description",
+                    "content"
+                  ]
+                }
+              },
+              "nullable": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "description",
+                    "content",
+                    "image"
+                  ]
+                }
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "sortby": {
+                "type": "string",
+                "enum": [
+                  "publishedAt",
+                  "relevance"
+                ],
+                "default": "publishedAt"
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 1
+              },
+              "truncate": {
+                "const": "content"
+              }
+            },
+            "required": [
+              "q"
+            ],
+            "maxProperties": 11
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/v4/search",
+            "http_method": "GET"
+          },
+          "result_contract": {
+            "provider": "gnews",
+            "official_origin": "https://gnews.io/api/v4/search",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "x-api-key-header-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true
+          }
+        },
+        {
+          "operation_id": "top-headlines",
+          "description": "读取基于 Google News 排名的头条，可按分类、关键词、语言、国家和日期过滤。",
+          "parameters": [
+            "category",
+            "q",
+            "lang",
+            "country",
+            "max",
+            "nullable",
+            "from",
+            "to",
+            "page",
+            "truncate"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "category": {
+                "type": "string",
+                "enum": [
+                  "general",
+                  "world",
+                  "nation",
+                  "business",
+                  "technology",
+                  "entertainment",
+                  "sports",
+                  "science",
+                  "health"
+                ],
+                "default": "general"
+              },
+              "q": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "lang": {
+                "type": "string",
+                "pattern": "^[a-z]{2}$"
+              },
+              "country": {
+                "type": "string",
+                "pattern": "^[a-z]{2}$"
+              },
+              "max": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "default": 10
+              },
+              "nullable": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "description",
+                    "content",
+                    "image"
+                  ]
+                }
+              },
+              "from": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "to": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 1
+              },
+              "truncate": {
+                "const": "content"
+              }
+            },
+            "maxProperties": 10
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/api/v4/top-headlines",
+            "http_method": "GET"
+          },
+          "result_contract": {
+            "provider": "gnews",
+            "official_origin": "https://gnews.io/api/v4/top-headlines",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "x-api-key-header-backend-only",
+            "automatic_pagination": false,
+            "article_body_fetching": false,
+            "billable_or_quota_counted": true
+          }
+        }
+      ]
+    }
+  ]
+}

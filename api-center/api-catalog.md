@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`57/57` 已启用
-- 托管操作总数：`643`
-- 已公开参数总数：`2290`
-- 目录 SHA-256：`592f64620528fbc6fa7f5a3e7e2574d53c1346426a707341c44a01cdf6de70be`
+- 托管提供方：`58/58` 已启用
+- 托管操作总数：`646`
+- 已公开参数总数：`2311`
+- 目录 SHA-256：`46f5b495352edd227a246e5e60cd17e31b914c35536fdbbfd2110bce46d306b0`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -74,6 +74,7 @@
 | 全球开放聚合数据层 | `open-data-aggregators` | 启用 | `[intel-open-data]` | `13` | 否 |
 | NIH/NCBI/FDA 公共卫生与生物医学数据 | `nih-public-health` | 启用 | `[intel-nih-health]` | `6` | 否 |
 | OpenStreetMap / Overpass / Nominatim | `openstreetmap` | 启用 | `[intel-osm]` | `6` | 否 |
+| GNews 全球新闻情报 | `gnews` | 启用 | `[intel-gnews]` | `3` | 否 |
 
 ## 普通连接器
 
@@ -24730,6 +24731,236 @@
   "overpass_result_elements_max": 200,
   "overpass_radius_m_max": 5000,
   "overpass_bbox_span_degrees_max": 2.0
+}
+```
+
+## GNews 全球新闻情报 (`gnews`)
+
+- 状态：`启用`
+- 说明：通过 GNews 官方 REST API读取全球新闻搜索结果和基于 Google News 排名的头条；固定只读、单请求、受限分页，不抓取文章正文。
+- 目录策略：固定开放3项能力：本地目录、关键词新闻检索、分类头条。API Key仅后端注入X-Api-Key；免费套餐按100次/日、每次最多10篇、12小时延迟、30天历史和仅开发测试用途建模。
+- 执行策略：每张票据最多一次固定HTTPS GET；不接受客户端凭据、任意URL、任意路径、任意请求头、自动翻页、自动重试、后台轮询、写操作或文章正文二次抓取。
+- 票据前缀：`[intel-gnews]`
+- Secret环境变量名：`GNEWS_API_KEY`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`f0a2f1ec6641043689fb10cfefdfe8d042e1a49983ec5714cdbea4a2a4702d07`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 GNews 安全能力目录，不访问上游。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {},
+  "maxProperties": 0
+}
+```
+
+| `search-news` | 按关键词检索全球新闻，支持语言、国家、字段、日期、排序和单页过滤。 | `q, lang, country, max, in, nullable, from, to, sortby, page, truncate` |
+
+`search-news` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "q": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "lang": {
+      "type": "string",
+      "pattern": "^[a-z]{2}$"
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[a-z]{2}$"
+    },
+    "max": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 10
+    },
+    "in": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "title",
+          "description",
+          "content"
+        ]
+      }
+    },
+    "nullable": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "description",
+          "content",
+          "image"
+        ]
+      }
+    },
+    "from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sortby": {
+      "type": "string",
+      "enum": [
+        "publishedAt",
+        "relevance"
+      ],
+      "default": "publishedAt"
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "truncate": {
+      "const": "content"
+    }
+  },
+  "required": [
+    "q"
+  ],
+  "maxProperties": 11
+}
+```
+
+| `top-headlines` | 读取基于 Google News 排名的头条，可按分类、关键词、语言、国家和日期过滤。 | `category, q, lang, country, max, nullable, from, to, page, truncate` |
+
+`top-headlines` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "type": "string",
+      "enum": [
+        "general",
+        "world",
+        "nation",
+        "business",
+        "technology",
+        "entertainment",
+        "sports",
+        "science",
+        "health"
+      ],
+      "default": "general"
+    },
+    "q": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "lang": {
+      "type": "string",
+      "pattern": "^[a-z]{2}$"
+    },
+    "country": {
+      "type": "string",
+      "pattern": "^[a-z]{2}$"
+    },
+    "max": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 10
+    },
+    "nullable": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "description",
+          "content",
+          "image"
+        ]
+      }
+    },
+    "from": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "to": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "truncate": {
+      "const": "content"
+    }
+  },
+  "maxProperties": 10
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 10000000,
+  "max_articles_per_request": 10,
+  "max_page": 100,
+  "max_date_range_days": 30,
+  "free_plan_requests_per_day": 100,
+  "free_plan_delay_hours": 12,
+  "free_plan_historical_days": 30,
+  "free_plan_noncommercial_development_testing_only": true,
+  "commercial_use_requires_paid_plan": true,
+  "full_content_plan_dependent": true,
+  "fixed_api_host": "gnews.io",
+  "fixed_paths": [
+    "/api/v4/search",
+    "/api/v4/top-headlines"
+  ],
+  "arbitrary_urls_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "automatic_pagination_allowed": false,
+  "background_monitoring_allowed": false,
+  "article_body_fetching_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 

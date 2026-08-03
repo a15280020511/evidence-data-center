@@ -57,6 +57,7 @@ OPENBB_FREE_CATALOG = HERE / "openbb-free/provider-catalog.json"
 OPEN_DATA_AGGREGATORS_CATALOG = HERE / "open-data-aggregators/provider-catalog.json"
 NIH_PUBLIC_HEALTH_CATALOG = HERE / "nih-public-health/provider-catalog.json"
 OPENSTREETMAP_CATALOG = HERE / "openstreetmap/provider-catalog.json"
+GNEWS_CATALOG = HERE / "gnews/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -103,6 +104,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "open-data-aggregators": 13,
     "nih-public-health": 6,
     "openstreetmap": 6,
+    "gnews": 3,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -149,6 +151,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     OPEN_DATA_AGGREGATORS_CATALOG,
     NIH_PUBLIC_HEALTH_CATALOG,
     OPENSTREETMAP_CATALOG,
+    GNEWS_CATALOG,
 )
 
 load_json = base.load_json
@@ -211,6 +214,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "open-data-aggregators/provider-catalog.json",
         "nih-public-health/provider-catalog.json",
         "openstreetmap/provider-catalog.json",
+        "gnews/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (
