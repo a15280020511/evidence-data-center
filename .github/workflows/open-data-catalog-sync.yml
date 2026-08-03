@@ -27,7 +27,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Patch catalog registry and extensible contracts
+      - name: Patch catalog registry and contracts
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -47,11 +47,6 @@ jobs:
           text=text.replace('catalog["enabled_managed_provider_count"], 54','catalog["enabled_managed_provider_count"], 55')
           text=text.replace('catalog["managed_operation_count"], 618','catalog["managed_operation_count"], 631')
           path.write_text(text)
-
-          path=Path('.github/workflows/openbb-free-validate.yml')
-          text=path.read_text()
-          text=text.replace("          assert catalog['managed_provider_count'] == 54\n          assert catalog['managed_operation_count'] == 618\n","          assert catalog['managed_provider_count'] == len(rows)\n          assert sum(row['operation_count'] for row in rows.values()) == catalog['managed_operation_count']\n")
-          path.write_text(text)
           PY
       - name: Rebuild authoritative catalogs
         run: |
@@ -59,11 +54,14 @@ jobs:
           python api-center/build_catalog_market_search.py
           python -m unittest discover -s api-center/tests -p 'test_*.py'
           git diff --check
-      - name: Remove one-time workflow and commit
+      - name: Commit non-workflow generated contracts
         run: |
-          rm .github/workflows/open-data-catalog-sync.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
+          git add api-center/build_catalog_market_search.py api-center/tests/test_api_catalog.py api-center/api-catalog.json api-center/api-catalog.md
+          if git diff --cached --quiet; then
+            echo 'Catalog contracts already synchronized'
+            exit 0
+          fi
           git commit -m 'feat: register open data aggregators in authoritative catalog'
           git push origin HEAD:feat/open-data-aggregators-20260803
