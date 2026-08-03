@@ -12,6 +12,7 @@
       "optional_secret_environment_variables": [
         "CORE_API_KEY",
         "SEMANTIC_SCHOLAR_API_KEY",
+        "BASE_API_KEY",
         "NASA_ADS_API_TOKEN",
         "EUROPEANA_API_KEY",
         "DPLA_API_KEY",

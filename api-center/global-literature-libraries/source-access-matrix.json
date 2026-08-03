@@ -56,12 +56,11 @@
       "operations": [
         "literature-search"
       ],
-      "credential_mode": "none",
-      "credential_env": "",
-      "access_control": "ip_allowlist_required",
-      "access_note": "BASE does not issue an API key for this interface. The execution platform public egress IP must be approved by BASE before live requests will succeed.",
+      "credential_mode": "required_free_key",
+      "credential_env": "BASE_API_KEY",
       "license_policy": "Metadata discovery and source-provided links only; non-commercial BASE access terms and record-level rights apply.",
-      "cost": "free after BASE IP approval"
+      "cost": "free registration key",
+      "access_note": "BASE HTTP Interface authenticates with the query parameter apikey. Store the issued key only in the BASE_API_KEY backend secret."
     },
     {
       "source_id": "europe-pmc",
