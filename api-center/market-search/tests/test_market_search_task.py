@@ -31,10 +31,10 @@ class FakeResponse:
         return self.raw[:amount]
 
 
-def ticket(operation: str, parameters: dict) -> dict:
+def ticket(provider: str, operation: str, parameters: dict) -> dict:
     return {
-        "task_id": f"test-tickflow-{operation}",
-        "provider": "tickflow",
+        "task_id": f"test-{provider}-{operation}",
+        "provider": provider,
         "operation": operation,
         "objective": "deterministic validation",
         "parameters": parameters,
@@ -47,29 +47,21 @@ class MarketSearchTaskTests(unittest.TestCase):
     def test_catalog_contract(self):
         catalog = MODULE.load_json(ROOT / "provider-catalog.json")
         providers = {row["provider_id"]: row for row in catalog["providers"]}
-        self.assertEqual(set(providers), {"tickflow"})
+        self.assertEqual(set(providers), {"tickflow", "serpapi"})
         self.assertEqual(providers["tickflow"]["required_secret_environment_variable"], "TICKFLOW_API_KEY")
+        self.assertEqual(providers["serpapi"]["required_secret_environment_variable"], "SERPAPI_API_KEY")
         self.assertEqual(len(providers["tickflow"]["operations"]), 5)
+        self.assertEqual(len(providers["serpapi"]["operations"]), 4)
 
-    def test_rejects_removed_provider(self):
-        removed = ticket("quotes", {"symbols": ["600000.SH"]})
-        removed["provider"] = "ser" + "papi"
-        with self.assertRaises(ValueError):
-            MODULE.validate_ticket(removed)
+    def test_rejects_cross_provider_operation(self):
+        with self.assertRaisesRegex(ValueError, "not available"):
+            MODULE.validate_ticket(ticket("tickflow", "google-search", {"query": "x"}))
 
-    def test_prepare_requires_tickflow_prefix(self):
+    def test_prepare_requires_provider_prefix(self):
         with tempfile.TemporaryDirectory() as tmp:
             event = Path(tmp) / "event.json"
             out = Path(tmp) / "out"
-            event.write_text(
-                json.dumps({
-                    "issue": {
-                        "title": "[api-removed] wrong",
-                        "body": json.dumps(ticket("quotes", {"symbols": ["600000.SH"]})),
-                    }
-                }),
-                encoding="utf-8",
-            )
+            event.write_text(json.dumps({"issue": {"title": "[api-serpapi] wrong", "body": json.dumps(ticket("tickflow", "quotes", {"symbols": ["600000.SH"]}))}}), encoding="utf-8")
             self.assertEqual(MODULE.prepare(event, out), 1)
             status = MODULE.load_json(out / "ticket-status.json")
             self.assertFalse(status["accepted"])
@@ -83,36 +75,44 @@ class MarketSearchTaskTests(unittest.TestCase):
             captured["key"] = request.headers.get("X-api-key")
             return FakeResponse({"data": [{"symbol": "600000.SH", "last_price": 10.0}]})
 
-        with patch.dict(os.environ, {"TICKFLOW_API_KEY": "tickflow-secret"}, clear=False), patch.object(
-            MODULE.urllib.request,
-            "urlopen",
-            side_effect=fake_urlopen,
-        ):
-            data, metadata, secret_name = MODULE.tickflow_query(
-                "quotes",
-                {"symbols": ["600000.SH"]},
-                30,
-                1000000,
-            )
+        with patch.dict(os.environ, {"TICKFLOW_API_KEY": "tickflow-secret"}, clear=False), patch.object(MODULE.urllib.request, "urlopen", side_effect=fake_urlopen):
+            data, metadata, secret_name = MODULE.tickflow_query("quotes", {"symbols": ["600000.SH"]}, 30, 1000000)
         self.assertEqual(secret_name, "TICKFLOW_API_KEY")
         self.assertEqual(captured["key"], "tickflow-secret")
         self.assertTrue(captured["url"].startswith("https://api.tickflow.org/v1/quotes?"))
         self.assertNotIn("tickflow-secret", json.dumps(data))
         self.assertEqual(metadata["request_path"], "/v1/quotes")
 
-    def test_execute_missing_tickflow_secret_is_structured_failure(self):
+    def test_serpapi_scrubs_key_and_fixes_engine(self):
+        captured = {}
+
+        def fake_urlopen(request, timeout):
+            captured["url"] = request.full_url
+            return FakeResponse({
+                "search_metadata": {"status": "Success"},
+                "organic_results": [{"title": "example", "serpapi_link": "https://serpapi.com/search?api_key=serp-secret"}],
+            })
+
+        with patch.dict(os.environ, {"SERPAPI_API_KEY": "serp-secret"}, clear=False), patch.object(MODULE.urllib.request, "urlopen", side_effect=fake_urlopen):
+            data, metadata, secret_name = MODULE.serpapi_query("google-search", {"query": "OpenAI", "gl": "us"}, 30, 1000000)
+        query = captured["url"]
+        self.assertIn("engine=google", query)
+        self.assertIn("api_key=serp-secret", query)
+        self.assertIn("async=false", query)
+        self.assertNotIn("serp-secret", json.dumps(data))
+        self.assertEqual(secret_name, "SERPAPI_API_KEY")
+        self.assertNotIn("query", metadata)
+
+    def test_execute_missing_secret_is_structured_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             ticket_path = root / "ticket.json"
-            ticket_path.write_text(
-                json.dumps(ticket("quotes", {"symbols": ["600000.SH"]})),
-                encoding="utf-8",
-            )
+            ticket_path.write_text(json.dumps(ticket("serpapi", "google-news", {"query": "markets"})), encoding="utf-8")
             with patch.dict(os.environ, {}, clear=True):
                 self.assertEqual(MODULE.execute(ticket_path, root), 1)
             status = MODULE.load_json(root / "execution-status.json")
             self.assertEqual(status["status"], "API_MARKET_SEARCH_FAILED")
-            self.assertIn("TICKFLOW_API_KEY", status["failure"]["message"])
+            self.assertIn("SERPAPI_API_KEY", status["failure"]["message"])
             self.assertFalse(status["secret_values_exposed"])
 
 
