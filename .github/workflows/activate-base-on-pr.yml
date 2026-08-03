@@ -23,7 +23,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Apply BASE patch
-        run: python .github/scripts/activate_base_patch.py
+        run: |
+          python .github/scripts/activate_base_patch.py
+          git checkout -- .github/workflows/global-literature-validate.yml
       - name: Install pinned dependencies
         run: |
           python -m pip install --disable-pip-version-check --no-input \
@@ -61,13 +63,11 @@ jobs:
           assert catalog['secret_values_exposed'] is False
           PY
           git diff --check
-      - name: Remove temporary automation and commit
+      - name: Commit validated code and catalog changes
         run: |
           rm -f \
             .base-activation-trigger \
-            .github/scripts/activate_base_patch.py \
-            .github/workflows/activate-base-on-pr.yml \
-            .github/workflows/activate-base-scholarly-index.yml
+            .github/scripts/activate_base_patch.py
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
