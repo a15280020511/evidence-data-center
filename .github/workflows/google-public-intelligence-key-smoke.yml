@@ -1,0 +1,284 @@
+name: Google Public Intelligence Key Smoke
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/google-public-intelligence-key-smoke.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: google-public-intelligence-key-smoke-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  test-five-google-apis:
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      GOOGLE_PUBLIC_INTELLIGENCE_API_KEY: ${{ secrets.GOOGLE_PUBLIC_INTELLIGENCE_API_KEY }}
+    steps:
+      - name: Checkout test branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          persist-credentials: false
+
+      - name: Test five official Google read-only APIs
+        id: smoke
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from __future__ import annotations
+
+          import json
+          import os
+          import sys
+          import time
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+          from pathlib import Path
+          from typing import Any
+
+          key = os.environ.get('GOOGLE_PUBLIC_INTELLIGENCE_API_KEY', '').strip()
+          output = Path('google-public-intelligence-smoke')
+          output.mkdir(parents=True, exist_ok=True)
+
+          summary: dict[str, Any] = {
+              'schema_version': 'google-public-intelligence-key-smoke-v1',
+              'secret_name': 'GOOGLE_PUBLIC_INTELLIGENCE_API_KEY',
+              'secret_configured': bool(key),
+              'automatic_retries': 0,
+              'requests_per_api': 1,
+              'tests': {},
+          }
+
+          def scrub(value: Any) -> Any:
+              if isinstance(value, str):
+                  return value.replace(key, '[REDACTED]') if key else value
+              if isinstance(value, list):
+                  return [scrub(item) for item in value]
+              if isinstance(value, dict):
+                  return {str(k): scrub(v) for k, v in value.items()}
+              return value
+
+          def decode_json(raw: bytes) -> Any:
+              if len(raw) > 20_000_000:
+                  raise ValueError('response exceeded 20 MB test limit')
+              return json.loads(raw.decode('utf-8'))
+
+          def google_error(payload: Any, fallback_status: int, fallback_message: str) -> dict[str, Any]:
+              if isinstance(payload, dict) and isinstance(payload.get('error'), dict):
+                  error = payload['error']
+                  reasons = []
+                  for row in error.get('errors') or []:
+                      if isinstance(row, dict) and row.get('reason'):
+                          reasons.append(str(row['reason']))
+                  details = []
+                  for row in error.get('details') or []:
+                      if isinstance(row, dict) and row.get('reason'):
+                          details.append(str(row['reason']))
+                  return scrub({
+                      'http_status': int(error.get('code') or fallback_status),
+                      'status': str(error.get('status') or ''),
+                      'message': str(error.get('message') or fallback_message)[:500],
+                      'reasons': sorted(set(reasons + details)),
+                  })
+              return scrub({
+                  'http_status': fallback_status,
+                  'status': '',
+                  'message': fallback_message[:500],
+                  'reasons': [],
+              })
+
+          def call(
+              name: str,
+              *,
+              method: str,
+              endpoint: str,
+              parameters: dict[str, Any] | None = None,
+              body: dict[str, Any] | None = None,
+              timeout: int = 120,
+          ) -> tuple[Any | None, dict[str, Any]]:
+              params = dict(parameters or {})
+              params['key'] = key
+              request_url = endpoint + '?' + urllib.parse.urlencode(params, doseq=True)
+              data = None
+              headers = {'Accept': 'application/json', 'User-Agent': 'evidence-data-center-google-smoke/1'}
+              if body is not None:
+                  data = json.dumps(body, ensure_ascii=False).encode('utf-8')
+                  headers['Content-Type'] = 'application/json'
+              request = urllib.request.Request(request_url, data=data, headers=headers, method=method)
+              started = time.perf_counter()
+              try:
+                  with urllib.request.urlopen(request, timeout=timeout) as response:
+                      raw = response.read(20_000_001)
+                      payload = decode_json(raw)
+                      return payload, {
+                          'status': 'PASS',
+                          'http_status': int(response.status),
+                          'duration_ms': round((time.perf_counter() - started) * 1000),
+                          'response_bytes': len(raw),
+                      }
+              except urllib.error.HTTPError as exc:
+                  raw = exc.read(2_000_000)
+                  try:
+                      payload = decode_json(raw)
+                  except Exception:
+                      payload = None
+                  return None, {
+                      'status': 'FAIL',
+                      'duration_ms': round((time.perf_counter() - started) * 1000),
+                      'error': google_error(payload, int(exc.code), str(exc.reason)),
+                  }
+              except Exception as exc:
+                  return None, scrub({
+                      'status': 'FAIL',
+                      'duration_ms': round((time.perf_counter() - started) * 1000),
+                      'error': {
+                          'http_status': 0,
+                          'status': type(exc).__name__,
+                          'message': str(exc)[:500],
+                          'reasons': [],
+                      },
+                  })
+
+          if not key:
+              summary['all_passed'] = False
+              summary['failure'] = 'GOOGLE_PUBLIC_INTELLIGENCE_API_KEY is missing or empty'
+          else:
+              payload, result = call(
+                  'youtube-data-v3',
+                  method='GET',
+                  endpoint='https://www.googleapis.com/youtube/v3/search',
+                  parameters={
+                      'part': 'snippet',
+                      'q': '福州',
+                      'type': 'video',
+                      'maxResults': 1,
+                  },
+              )
+              if result['status'] == 'PASS':
+                  valid = isinstance(payload, dict) and payload.get('kind') == 'youtube#searchListResponse' and isinstance(payload.get('items'), list)
+                  result['response_contract_valid'] = valid
+                  result['result_count'] = len(payload.get('items') or []) if isinstance(payload, dict) else 0
+                  if not valid:
+                      result['status'] = 'FAIL'
+                      result['error'] = {'status': 'INVALID_RESPONSE', 'message': 'YouTube response contract mismatch'}
+              summary['tests']['youtube-data-api-v3'] = result
+
+              payload, result = call(
+                  'books',
+                  method='GET',
+                  endpoint='https://www.googleapis.com/books/v1/volumes',
+                  parameters={
+                      'q': '福州',
+                      'maxResults': 1,
+                      'projection': 'lite',
+                  },
+              )
+              if result['status'] == 'PASS':
+                  valid = isinstance(payload, dict) and payload.get('kind') == 'books#volumes'
+                  result['response_contract_valid'] = valid
+                  result['total_items'] = int(payload.get('totalItems') or 0) if isinstance(payload, dict) else 0
+                  result['result_count'] = len(payload.get('items') or []) if isinstance(payload, dict) else 0
+                  if not valid:
+                      result['status'] = 'FAIL'
+                      result['error'] = {'status': 'INVALID_RESPONSE', 'message': 'Books response contract mismatch'}
+              summary['tests']['books-api'] = result
+
+              payload, result = call(
+                  'fact-check-tools',
+                  method='GET',
+                  endpoint='https://factchecktools.googleapis.com/v1alpha1/claims:search',
+                  parameters={
+                      'query': 'climate change',
+                      'languageCode': 'en',
+                      'pageSize': 1,
+                  },
+              )
+              if result['status'] == 'PASS':
+                  valid = isinstance(payload, dict) and (not payload or isinstance(payload.get('claims', []), list))
+                  result['response_contract_valid'] = valid
+                  result['result_count'] = len(payload.get('claims') or []) if isinstance(payload, dict) else 0
+                  if not valid:
+                      result['status'] = 'FAIL'
+                      result['error'] = {'status': 'INVALID_RESPONSE', 'message': 'Fact Check response contract mismatch'}
+              summary['tests']['fact-check-tools-api'] = result
+
+              payload, result = call(
+                  'pagespeed-insights',
+                  method='GET',
+                  endpoint='https://pagespeedonline.googleapis.com/pagespeedonline/v5/runPagespeed',
+                  parameters={
+                      'url': 'https://web.dev/',
+                      'strategy': 'mobile',
+                      'category': 'performance',
+                  },
+                  timeout=180,
+              )
+              if result['status'] == 'PASS':
+                  lighthouse = payload.get('lighthouseResult') if isinstance(payload, dict) else None
+                  valid = isinstance(lighthouse, dict) and isinstance(lighthouse.get('categories'), dict)
+                  result['response_contract_valid'] = valid
+                  if valid:
+                      performance = (lighthouse.get('categories') or {}).get('performance') or {}
+                      score = performance.get('score')
+                      result['performance_score'] = score if isinstance(score, (int, float)) else None
+                  else:
+                      result['status'] = 'FAIL'
+                      result['error'] = {'status': 'INVALID_RESPONSE', 'message': 'PageSpeed response contract mismatch'}
+              summary['tests']['pagespeed-insights-api'] = result
+
+              payload, result = call(
+                  'chrome-ux-report',
+                  method='POST',
+                  endpoint='https://chromeuxreport.googleapis.com/v1/records:queryRecord',
+                  body={
+                      'origin': 'https://web.dev',
+                      'formFactor': 'PHONE',
+                      'metrics': ['largest_contentful_paint'],
+                  },
+              )
+              if result['status'] == 'PASS':
+                  record = payload.get('record') if isinstance(payload, dict) else None
+                  metrics = record.get('metrics') if isinstance(record, dict) else None
+                  valid = isinstance(metrics, dict) and 'largest_contentful_paint' in metrics
+                  result['response_contract_valid'] = valid
+                  result['metric_count'] = len(metrics or {}) if isinstance(metrics, dict) else 0
+                  if not valid:
+                      result['status'] = 'FAIL'
+                      result['error'] = {'status': 'INVALID_RESPONSE', 'message': 'CrUX response contract mismatch'}
+              summary['tests']['chrome-ux-report-api'] = result
+
+              summary['all_passed'] = all(row.get('status') == 'PASS' for row in summary['tests'].values())
+
+          summary = scrub(summary)
+          encoded = json.dumps(summary, ensure_ascii=False, indent=2) + '\n'
+          if key and key in encoded:
+              raise SystemExit('secret appeared in generated summary')
+          (output / 'summary.json').write_text(encoded, encoding='utf-8')
+          print(json.dumps(summary, ensure_ascii=False))
+          raise SystemExit(0 if summary.get('all_passed') else 1)
+          PY
+
+      - name: Upload bounded test evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: google-public-intelligence-key-smoke-${{ github.run_id }}
+          path: google-public-intelligence-smoke/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Enforce all five APIs passed
+        if: always()
+        run: |
+          test "${{ steps.smoke.outcome }}" = "success"
