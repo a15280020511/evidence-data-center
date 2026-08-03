@@ -67,13 +67,13 @@
     "baidu-ai-cloud/provider-catalog.json",
     "open-software-security-knowledge/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "84344d13760dd4fd991cde3646f9123900974075d0699031a6b894d82dc09153",
+  "managed_provider_catalog_sha256": "d31d167d263943ba1ac5879fb679ac25a32597e026365826eae203128c79859f",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 62,
-  "enabled_managed_provider_count": 62,
-  "managed_operation_count": 684,
-  "exposed_parameter_count": 2396,
+  "managed_provider_count": 63,
+  "enabled_managed_provider_count": 63,
+  "managed_operation_count": 689,
+  "exposed_parameter_count": 2419,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -5918,6 +5918,254 @@
       "required_repository_variable": "",
       "secret_value_exposed": false,
       "provider_sha256": "36b2bb448fe84eb74a83051deafaa1514f290d6d89c13588d3e6d3ba4c72c671",
+      "catalog_file": "market-search/provider-catalog.json"
+    },
+    {
+      "provider_id": "serpapi",
+      "display_name": "SerpAPI 搜索结果 API",
+      "description": "通过 SerpAPI 官方同步接口读取结构化 Google 网页、Google News 和 Google Scholar 搜索结果。",
+      "enabled": true,
+      "ticket_prefix": "[api-serpapi]",
+      "catalog_policy": "只暴露固定的 Google、Google News 和 Google Scholar 同步 JSON 搜索；禁止异步任务、搜索归档、HTML 输出、任意引擎、任意端点和任意请求头。",
+      "execution_policy": "SERPAPI_API_KEY 仅在后端 api_key 查询参数注入且不会写入日志或 Artifact；每张票据执行一次同步搜索，固定 JSON 输出并限制分页、地区、语言和响应体积。",
+      "operation_count": 4,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取 SerpAPI 本地安全能力目录，不访问上游且不需要密钥。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          }
+        },
+        {
+          "operation_id": "google-search",
+          "description": "执行同步 Google 网页搜索并返回结构化 JSON 结果。",
+          "parameter_names": [
+            "query",
+            "location",
+            "gl",
+            "hl",
+            "start",
+            "device",
+            "safe",
+            "time_range"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "location": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "gl": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2}$"
+              },
+              "hl": {
+                "type": "string",
+                "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+                "minLength": 2,
+                "maxLength": 5
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 90,
+                "multipleOf": 10
+              },
+              "device": {
+                "type": "string",
+                "enum": [
+                  "desktop",
+                  "tablet",
+                  "mobile"
+                ]
+              },
+              "safe": {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "off"
+                ]
+              },
+              "time_range": {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "serpapi",
+            "official_endpoint": "https://serpapi.com/search?engine=google",
+            "http_method": "GET",
+            "read_only": true,
+            "output": "json"
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://serpapi.com/search-api"
+          }
+        },
+        {
+          "operation_id": "google-news",
+          "description": "执行同步 Google News 搜索并返回结构化 JSON 结果。",
+          "parameter_names": [
+            "query",
+            "gl",
+            "hl",
+            "sort_by_date",
+            "start",
+            "time_range"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "gl": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{2}$"
+              },
+              "hl": {
+                "type": "string",
+                "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+                "minLength": 2,
+                "maxLength": 5
+              },
+              "sort_by_date": {
+                "type": "boolean"
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 90,
+                "multipleOf": 10
+              },
+              "time_range": {
+                "type": "string",
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "serpapi",
+            "official_endpoint": "https://serpapi.com/search?engine=google_news",
+            "http_method": "GET",
+            "read_only": true,
+            "output": "json"
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://serpapi.com/google-news-api"
+          }
+        },
+        {
+          "operation_id": "google-scholar",
+          "description": "执行同步 Google Scholar 文献搜索并返回结构化 JSON 结果。",
+          "parameter_names": [
+            "query",
+            "hl",
+            "start",
+            "year_low",
+            "year_high",
+            "sort_by_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "hl": {
+                "type": "string",
+                "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
+                "minLength": 2,
+                "maxLength": 5
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 90,
+                "multipleOf": 10
+              },
+              "year_low": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "year_high": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "sort_by_date": {
+                "type": "boolean"
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "serpapi",
+            "official_endpoint": "https://serpapi.com/search?engine=google_scholar",
+            "http_method": "GET",
+            "read_only": true,
+            "output": "json"
+          },
+          "discovery_policy": {
+            "source": "official-documentation",
+            "documentation_url": "https://serpapi.com/google-scholar-api"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 3000000,
+        "result_offset_max": 90,
+        "async_allowed": false,
+        "html_output_allowed": false,
+        "arbitrary_engine_allowed": false
+      },
+      "required_secret_environment_variable_name": "SERPAPI_API_KEY",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "76d40e7ea071c4d19a624b64430d831ca87801b8e750f5f3ee3839ada48c8e5d",
       "catalog_file": "market-search/provider-catalog.json"
     },
     {
@@ -31642,13 +31890,13 @@
     },
     {
       "provider_id": "baidu-ai-cloud",
-      "display_name": "百度AI网页搜索",
-      "description": "当前统一API Key已真实验证可用的百度公开网页搜索。",
+      "display_name": "百度AI搜索与模型摘要",
+      "description": "当前统一API Key已真实验证可用的百度公开网页搜索与模型搜索摘要。",
       "enabled": true,
       "ticket_prefix": "[intel-baidu-ai]",
-      "catalog_policy": "只开放当前Key已实测通过的1项上游高价值能力和2项本地治理能力。",
-      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；零模型调用、零付费兜底。",
-      "operation_count": 3,
+      "catalog_policy": "只开放当前Key已实测通过的2项上游高价值能力和2项本地治理能力。",
+      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；网页搜索为零模型调用，模型摘要固定记1次模型调用；禁止重试和付费兜底。",
+      "operation_count": 4,
       "operations": [
         {
           "operation_id": "catalog-capabilities",
@@ -31746,6 +31994,50 @@
             "secret_values_exposed": false,
             "direct_personal_identifiers_redacted": true
           }
+        },
+        {
+          "operation_id": "web-summary",
+          "description": "百度智能搜索生成高性能版：实时检索公开网页，由模型生成摘要并返回引用。",
+          "parameter_names": [
+            "query",
+            "top_k",
+            "instruction"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "default": 3
+              },
+              "instruction": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "maxProperties": 3,
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "https://qianfan.baidubce.com",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "unified-api-key-bearer",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": true
+          }
         }
       ],
       "limits": {
@@ -31759,7 +32051,8 @@
           "qianfan.baidubce.com"
         ],
         "fixed_paths": [
-          "/v2/ai_search/web_search"
+          "/v2/ai_search/web_search",
+          "/v2/ai_search/web_summary"
         ],
         "arbitrary_urls_allowed": false,
         "arbitrary_hosts_allowed": false,
@@ -31773,6 +32066,8 @@
         "cloud_resource_management_allowed": false,
         "paid_fallback_authorized": false,
         "generative_model_chat_allowed": false,
+        "generative_search_summary_allowed": true,
+        "model_calls_per_web_summary": 1,
         "nlp_operations_allowed": false,
         "ocr_operations_allowed": false,
         "image_recognition_operations_allowed": false,
@@ -31788,7 +32083,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "99a10301319b992d2a9e0509dcbd41b8aaa64b9a3ea8423c1dfe01ced1d377b4",
+      "provider_sha256": "d483bb189798fe298038d9f4a468895aedfde5819ebb7a8e946886f42386f570",
       "catalog_file": "baidu-ai-cloud/provider-catalog.json"
     },
     {
@@ -40762,5 +41057,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "7c7e00711dd7c837b7c5e5cd6f881cfa662ce370572e97cca5a0a863d98e26c3"
+  "catalog_sha256": "d7a29cbdec979484a0561dcd29238c2897b4862d56267c46d845a65a7bc24235"
 }

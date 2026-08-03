@@ -76,6 +76,8 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "firecrawl": 4,
             "browserless": 8,
             "tickflow": 5,
+            "serpapi": 4,
+            "baidu-ai-cloud": 4,
             "tushare": 20,
             "baostock": 20,
             "eodhd": 25,
@@ -214,8 +216,12 @@ class CapabilityMaximizationTests(unittest.TestCase):
             row["provider_id"]: row for row in market["providers"]
         }
         tickflow_limits = market_providers["tickflow"]["limits"]
+        serpapi_limits = market_providers["serpapi"]["limits"]
         self.assertFalse(tickflow_limits["write_or_trade_allowed"])
         self.assertFalse(tickflow_limits["websocket_allowed"])
+        self.assertFalse(serpapi_limits["async_allowed"])
+        self.assertFalse(serpapi_limits["html_output_allowed"])
+        self.assertFalse(serpapi_limits["arbitrary_engine_allowed"])
 
         tushare = json.loads(
             (ROOT / "tushare/provider-catalog.json").read_text(encoding="utf-8")

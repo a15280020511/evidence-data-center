@@ -8,6 +8,7 @@ on:
       - 'api-center/api-catalog.json'
       - 'api-center/api-catalog.md'
       - 'api-center/tests/test_api_catalog.py'
+      - 'api-center/tests/test_capability_maximization.py'
       - '.github/workflows/baidu-ai-cloud-*.yml'
   push:
     branches: [main]
@@ -17,6 +18,7 @@ on:
       - 'api-center/api-catalog.json'
       - 'api-center/api-catalog.md'
       - 'api-center/tests/test_api_catalog.py'
+      - 'api-center/tests/test_capability_maximization.py'
       - '.github/workflows/baidu-ai-cloud-*.yml'
   workflow_dispatch:
 
@@ -62,7 +64,7 @@ jobs:
           PYTHONPATH=api-center python -m unittest discover \
             -s api-center/baidu-ai-cloud/tests \
             -p 'test_*.py'
-      - name: Validate search-only safety contract
+      - name: Validate bounded search and model-summary contract
         run: |
           python - <<'PY'
           import json
@@ -73,14 +75,16 @@ jobs:
           operation_ids={row['operation_id'] for row in provider['operations']}
           assert provider['provider_id']=='baidu-ai-cloud'
           assert provider['enabled'] is True
-          assert operation_ids=={'catalog-capabilities','quota-policy','web-search'}
-          assert len(provider['operations'])==3
+          assert operation_ids=={'catalog-capabilities','quota-policy','web-search','web-summary'}
+          assert len(provider['operations'])==4
           limits=provider['limits']
           assert limits['requests_per_ticket_max']==1
           assert limits['fixed_api_hosts']==['qianfan.baidubce.com']
-          assert limits['fixed_paths']==['/v2/ai_search/web_search']
+          assert limits['fixed_paths']==['/v2/ai_search/web_search','/v2/ai_search/web_summary']
           assert limits['paid_fallback_authorized'] is False
           assert limits['generative_model_chat_allowed'] is False
+          assert limits['generative_search_summary_allowed'] is True
+          assert limits['model_calls_per_web_summary']==1
           assert limits['nlp_operations_allowed'] is False
           assert limits['ocr_operations_allowed'] is False
           assert limits['image_recognition_operations_allowed'] is False
@@ -91,6 +95,8 @@ jobs:
           assert limits['secret_values_exposed'] is False
           assert quota['policy']['free_only'] is True
           assert quota['policy']['paid_fallback_authorized'] is False
+          families={row['family']:row for row in quota['families']}
+          assert families['baidu-ai-search']['operations']==['web-search','web-summary']
           PY
           git diff --check
       - name: Generate authoritative aggregate catalog artifact
@@ -105,7 +111,7 @@ jobs:
 
           catalog=json.loads(Path('baidu-ai-catalog-artifact/api-catalog.json').read_text())
           rows={row['provider_id']:row for row in catalog['managed_providers']}
-          assert rows['baidu-ai-cloud']['operation_count']==3
+          assert rows['baidu-ai-cloud']['operation_count']==4
           assert rows['baidu-ai-cloud']['secret_value_exposed'] is False
           assert catalog['managed_provider_count']==len(rows)
           assert catalog['managed_operation_count']==sum(row['operation_count'] for row in rows.values())

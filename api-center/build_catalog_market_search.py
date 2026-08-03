@@ -67,6 +67,7 @@ OPEN_SOFTWARE_SECURITY_KNOWLEDGE_CATALOG = HERE / "open-software-security-knowle
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
+    "serpapi": 4,
     "tushare": 20,
     "baostock": 20,
     "eodhd": 25,
@@ -113,7 +114,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "global-literature-libraries": 10,
     "global-knowledge-archives": 9,
     "global-knowledge-fabric": 9,
-    "baidu-ai-cloud": 3,
+    "baidu-ai-cloud": 4,
     "open-software-security-knowledge": 11,
 }
 

@@ -46,7 +46,7 @@ class BaiduAICloudTaskTests(unittest.TestCase):
             },
         }
 
-    def test_catalog_registers_only_three_verified_operations(self):
+    def test_catalog_registers_four_verified_operations(self):
         module.validate_ticket(
             self.ticket(),
             schema_path=module.SCHEMA_PATH,
@@ -58,12 +58,12 @@ class BaiduAICloudTaskTests(unittest.TestCase):
         }
         self.assertEqual(
             operation_ids,
-            {"catalog-capabilities", "quota-policy", "web-search"},
+            {"catalog-capabilities", "quota-policy", "web-search", "web-summary"},
         )
-        self.assertEqual(len(provider["operations"]), 3)
+        self.assertEqual(len(provider["operations"]), 4)
         limits = provider["limits"]
         self.assertEqual(limits["fixed_api_hosts"], ["qianfan.baidubce.com"])
-        self.assertEqual(limits["fixed_paths"], ["/v2/ai_search/web_search"])
+        self.assertEqual(limits["fixed_paths"], ["/v2/ai_search/web_search", "/v2/ai_search/web_summary"])
         self.assertFalse(limits["paid_fallback_authorized"])
         self.assertFalse(limits["generative_model_chat_allowed"])
         self.assertFalse(limits["nlp_operations_allowed"])
@@ -116,6 +116,42 @@ class BaiduAICloudTaskTests(unittest.TestCase):
         redacted = module._redact(payload)
         self.assertIn("[REDACTED_PHONE]", redacted["references"][0]["content"])
         self.assertIn("[REDACTED_EMAIL]", redacted["references"][0]["content"])
+
+
+    def test_web_summary_uses_fixed_endpoint_and_counts_one_model_call(self):
+        captured = {}
+
+        def fake_post(url, **kwargs):
+            captured["url"] = url
+            captured.update(kwargs)
+            return FakeResponse(
+                {
+                    "request_id": "r-summary",
+                    "choices": [{"message": {"role": "assistant", "content": "公开资料摘要"}}],
+                    "references": [{"title": "来源", "url": "https://example.com/source"}],
+                }
+            )
+
+        with mock.patch.dict(
+            os.environ,
+            {module.API_KEY_ENV: "backend-unified-key"},
+            clear=True,
+        ), mock.patch.object(module.requests, "post", side_effect=fake_post):
+            payload, metadata = module._post_web_summary(
+                {"query": "福建经济数据", "top_k": 3},
+                timeout=20,
+                max_bytes=500000,
+            )
+        self.assertEqual(
+            captured["url"],
+            "https://qianfan.baidubce.com/v2/ai_search/web_summary",
+        )
+        self.assertEqual(captured["headers"]["Authorization"], "Bearer backend-unified-key")
+        self.assertFalse(captured["allow_redirects"])
+        self.assertFalse(captured["json"]["stream"])
+        self.assertEqual(metadata["requests_per_ticket"], 1)
+        self.assertEqual(metadata["model_calls"], 1)
+        self.assertIn("choices", payload)
 
     def test_local_operations_need_no_network_or_secret(self):
         for operation in ("catalog-capabilities", "quota-policy"):

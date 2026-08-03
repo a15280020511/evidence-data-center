@@ -34,6 +34,7 @@ EXPECTED_OPERATION_COUNTS = {
     "firecrawl": 4,
     "browserless": 8,
     "tickflow": 5,
+    "serpapi": 4,
     "tushare": 20,
     "baostock": 20,
     "eodhd": 25,
@@ -76,7 +77,7 @@ EXPECTED_OPERATION_COUNTS = {
     "global-literature-libraries": 10,
     "global-knowledge-archives": 9,
     "global-knowledge-fabric": 9,
-    "baidu-ai-cloud": 3,
+    "baidu-ai-cloud": 4,
     "open-software-security-knowledge": 11,
 }
 
@@ -138,6 +139,7 @@ class ApiCatalogTests(unittest.TestCase):
             "firecrawl": "FIRECRAWL_API_KEY",
             "browserless": "BROWSERLESS_TOKEN",
             "tickflow": "TICKFLOW_API_KEY",
+            "serpapi": "SERPAPI_API_KEY",
             "tushare": "TUSHARE_API_TOKEN",
             "eodhd": "EODHD_API_TOKEN",
             "east-asia-econ": "EAST_ASIA_ECON_API_KEY",

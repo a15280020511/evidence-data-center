@@ -1,28 +1,29 @@
 {
   "schema_version": "baidu-ai-cloud-free-quota-policy-v2",
-  "reviewed_at": "2026-08-03",
+  "reviewed_at": "2026-08-04",
   "policy": {
     "free_only": true,
     "paid_fallback_authorized": false,
     "remaining_quota_api_available": false,
-    "operator_action": "仅调用已实测通过的百度网页搜索；百度控制台不得启用按量后付费。",
+    "operator_action": "仅调用已实测通过的百度网页搜索和智能搜索生成；百度控制台不得启用按量后付费。",
     "quota_exhaustion_behavior": "立即失败，不重试、不切换模型或其他付费接口。"
   },
   "families": [
     {
       "family": "baidu-ai-search",
       "operations": [
-        "web-search"
+        "web-search",
+        "web-summary"
       ],
-      "quota": "使用百度账户当前网页搜索免费额度；官方页面口径可能调整，以控制台为最终依据。",
+      "quota": "使用百度账户当前网页搜索与智能搜索生成免费额度；官方页面口径可能调整，以控制台为最终依据。",
       "reset": "daily_or_control_plane_defined",
       "verified_with_current_key": true
     }
   ],
   "excluded": [
     {
-      "family": "intelligent-search-deep-search-web-summary-deep-research",
-      "reason": "当前Key未完成免费且可用的真实验收，并存在模型或按次计费风险。"
+      "family": "deep-search-deep-research-and-arbitrary-model-search",
+      "reason": "未完成免费且可用的真实验收，或可能产生多次搜索及额外模型费用。"
     },
     {
       "family": "nlp-ocr-image-recognition",
