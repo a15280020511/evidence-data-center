@@ -213,6 +213,12 @@
       "classification": "official public research sites, not one universal API",
       "decision": "integrate-governed-registry",
       "implementation": "fixed source catalog for Brookings, PIIE, CSIS, RAND, CFR, CASS, DRC, NIFD and other public research institutions; retrieval remains through existing allowlisted web providers"
+    },
+    {
+      "requested_name": "global-literature-libraries",
+      "classification": "governed global open literature, repository, library, archive and patent aggregation layer",
+      "decision": "integrate-new",
+      "implementation": "26 fixed HTTPS sources through 10 bounded read-only operations; existing OpenAlex, Crossref, arXiv, PubMed, Internet Archive and institutional providers are mapped rather than duplicated"
     }
   ],
   "summary": {
