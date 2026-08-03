@@ -70,7 +70,7 @@ jobs:
           matrix=json.loads(Path('api-center/global-literature-libraries/source-access-matrix.json').read_text())
           catalog=json.loads(Path('api-center/api-catalog.json').read_text())
           assert receipt['status']=='PASS'
-          assert receipt['source_count']==26
+          assert receipt['source_count']==25
           assert receipt['operation_count']==10
           assert receipt['network_used'] is False
           assert receipt['model_calls']==0
@@ -79,6 +79,7 @@ jobs:
           assert provider['limits']['automatic_pagination_allowed'] is False
           assert provider['limits']['paywall_bypass_allowed'] is False
           assert len(matrix['not_enabled']) >= 10
+          assert any(row['source_id']=='fraser-oai' for row in matrix['not_enabled'])
           rows={row['provider_id']:row for row in catalog['managed_providers']}
           assert rows['global-literature-libraries']['operation_count']==10
           assert catalog['managed_provider_count']==len(rows)
@@ -107,7 +108,7 @@ jobs:
           - econbiz
           - osti
           - library-of-congress
-          - fraser-oai
+          - econstor-oai
           - ndl-sru
           - epo-publication-server
     steps:
