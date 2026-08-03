@@ -67,7 +67,6 @@ OPEN_SOFTWARE_SECURITY_KNOWLEDGE_CATALOG = HERE / "open-software-security-knowle
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
-    "serpapi": 4,
     "tushare": 20,
     "baostock": 20,
     "eodhd": 25,

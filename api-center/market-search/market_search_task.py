@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded, read-only TickFlow and SerpAPI execution control plane."""
+"""Bounded, read-only TickFlow execution control plane."""
 from __future__ import annotations
 
 import argparse
@@ -21,16 +21,13 @@ HERE = Path(__file__).resolve().parent
 SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
 TICKFLOW_API_KEY_ENV = "TICKFLOW_API_KEY"
-SERPAPI_API_KEY_ENV = "SERPAPI_API_KEY"
 PROVIDER_OPERATIONS = {
     "tickflow": {"catalog-capabilities", "quotes", "klines", "intraday-klines", "instruments"},
-    "serpapi": {"catalog-capabilities", "google-search", "google-news", "google-scholar"},
 }
 SYMBOL_RE = re.compile(r"^[A-Za-z0-9._-]{3,32}$")
 PERIODS = {"1m", "5m", "10m", "15m", "30m", "60m", "1d", "1w", "1M", "1Q", "1Y"}
 INTRADAY_PERIODS = {"1m", "5m", "10m", "15m", "30m", "60m"}
 ADJUSTMENTS = {"forward", "backward", "forward_additive", "backward_additive", "none"}
-TIME_RANGES = {"day": "d", "week": "w", "month": "m", "year": "y"}
 
 
 def utc_now() -> str:
@@ -99,7 +96,9 @@ def validate_ticket(ticket: Mapping[str, Any]) -> None:
 
 
 def expected_prefix(provider: str) -> str:
-    return "[api-tickflow]" if provider == "tickflow" else "[api-serpapi]"
+    if provider != "tickflow":
+        raise ValueError(f"unsupported provider: {provider}")
+    return "[api-tickflow]"
 
 
 def prepare(event_path: Path, output_dir: Path) -> int:
@@ -159,13 +158,6 @@ def required_text(value: Any, name: str, maximum: int) -> str:
     return text
 
 
-def optional_code(value: Any, name: str) -> str:
-    text = str(value or "").strip().lower()
-    if text and (len(text) != 2 or not text.isalpha()):
-        raise ValueError(f"{name} must be a two-letter code")
-    return text
-
-
 def symbols(value: Any, *, maximum: int) -> list[str]:
     if not isinstance(value, list) or not 1 <= len(value) <= maximum:
         raise ValueError(f"symbols must contain 1 to {maximum} values")
@@ -180,12 +172,13 @@ def symbols(value: Any, *, maximum: int) -> list[str]:
 
 
 def provider_key(provider: str) -> tuple[str, str]:
-    name = TICKFLOW_API_KEY_ENV if provider == "tickflow" else SERPAPI_API_KEY_ENV
+    if provider != "tickflow":
+        raise ValueError(f"unsupported provider: {provider}")
+    name = TICKFLOW_API_KEY_ENV
     key = str(os.getenv(name) or "").strip()
     if not key:
         raise RuntimeError(f"missing repository Secret {name}")
     return name, key
-
 
 def scrub(value: Any, secrets: list[str]) -> Any:
     if isinstance(value, Mapping):
@@ -299,68 +292,6 @@ def tickflow_query(operation: str, parameters: Mapping[str, Any], timeout: int, 
     return scrub(payload, [key]), metadata, TICKFLOW_API_KEY_ENV
 
 
-def serpapi_query(operation: str, parameters: Mapping[str, Any], timeout: int, max_bytes: int) -> tuple[Any, dict[str, Any], str]:
-    _, key = provider_key("serpapi")
-    query_text = required_text(parameters.get("query"), "query", 1000)
-    engines = {"google-search": "google", "google-news": "google_news", "google-scholar": "google_scholar"}
-    query: dict[str, Any] = {
-        "engine": engines[operation],
-        "q": query_text,
-        "api_key": key,
-        "output": "json",
-        "async": "false",
-    }
-    hl = optional_code(parameters.get("hl"), "hl")
-    if hl:
-        query["hl"] = hl
-    if parameters.get("start") is not None:
-        query["start"] = bounded_int(parameters["start"], default=0, minimum=0, maximum=90, name="start")
-    if operation == "google-search":
-        location = str(parameters.get("location") or "").strip()
-        if location:
-            if len(location) > 200:
-                raise ValueError("location is too long")
-            query["location"] = location
-        gl = optional_code(parameters.get("gl"), "gl")
-        if gl:
-            query["gl"] = gl
-        device = str(parameters.get("device") or "desktop")
-        safe = str(parameters.get("safe") or "active")
-        if device not in {"desktop", "tablet", "mobile"}:
-            raise ValueError("device is not allowed")
-        if safe not in {"active", "off"}:
-            raise ValueError("safe is not allowed")
-        query["device"] = device
-        query["safe"] = safe
-        time_range = str(parameters.get("time_range") or "")
-        if time_range:
-            query["tbs"] = f"qdr:{TIME_RANGES[time_range]}"
-    elif operation == "google-news":
-        gl = optional_code(parameters.get("gl"), "gl")
-        if gl:
-            query["gl"] = gl
-        if bool(parameters.get("sort_by_date", False)):
-            query["so"] = "1"
-        time_range = str(parameters.get("time_range") or "")
-        if time_range:
-            query["q"] = f"{query_text} when:1{TIME_RANGES[time_range]}"
-    elif operation == "google-scholar":
-        for source, target in (("year_low", "as_ylo"), ("year_high", "as_yhi")):
-            if parameters.get(source) is not None:
-                query[target] = bounded_int(parameters[source], default=1900, minimum=1900, maximum=2100, name=source)
-        if "as_ylo" in query and "as_yhi" in query and query["as_ylo"] > query["as_yhi"]:
-            raise ValueError("year_low must not exceed year_high")
-        if bool(parameters.get("sort_by_date", False)):
-            query["scisbd"] = "1"
-    payload, metadata = get_json("https://serpapi.com/search", query, {}, timeout=timeout, max_bytes=max_bytes)
-    if payload.get("error"):
-        raise RuntimeError(f"SerpAPI business failure: {str(payload['error'])[:500]}")
-    search_metadata = payload.get("search_metadata")
-    if isinstance(search_metadata, Mapping) and str(search_metadata.get("status") or "").casefold() == "error":
-        raise RuntimeError("SerpAPI search_metadata.status=Error")
-    return scrub(payload, [key]), metadata, SERPAPI_API_KEY_ENV
-
-
 def execute(ticket_path: Path, output_dir: Path) -> int:
     output_dir.mkdir(parents=True, exist_ok=True)
     ticket = load_json(ticket_path)
@@ -385,7 +316,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         elif provider == "tickflow":
             data, metadata, credential_secret_name = tickflow_query(operation, parameters, timeout, max_bytes)
         else:
-            data, metadata, credential_secret_name = serpapi_query(operation, parameters, timeout, max_bytes)
+            raise ValueError(f"unsupported provider: {provider}")
         status = "API_MARKET_SEARCH_COMPLETED"
         write_json(output_dir / "result.json", data)
     except (ValueError, RuntimeError) as exc:
