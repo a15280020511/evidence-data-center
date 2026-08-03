@@ -1,0 +1,167 @@
+name: Activate BASE scholarly index
+
+on:
+  push:
+    branches:
+      - feat/activate-base-scholarly-index
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-validate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/activate-base-scholarly-index
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Apply structured BASE activation patch
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.')
+          matrix_path = root / 'api-center/global-literature-libraries/source-access-matrix.json'
+          provider_path = root / 'api-center/global-literature-libraries/provider-catalog.json'
+          task_path = root / 'api-center/global-literature-libraries/global_literature_task.py'
+          validator_path = root / 'api-center/global-literature-libraries/validate_global_literature.py'
+          validate_workflow_path = root / '.github/workflows/global-literature-validate.yml'
+          docs_path = root / 'api-center/global-literature-libraries/SCHOLARLY_INDEX_ACCESS.md'
+
+          matrix = json.loads(matrix_path.read_text(encoding='utf-8'))
+          sources = [row for row in matrix['sources'] if row.get('source_id') != 'base']
+          base_row = {
+              'source_id': 'base',
+              'name': 'BASE (Bielefeld Academic Search Engine)',
+              'category': 'global-scholarly',
+              'protocol': 'rest-search',
+              'base_url': 'https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi',
+              'operations': ['literature-search'],
+              'credential_mode': 'none',
+              'credential_env': '',
+              'access_control': 'ip_allowlist_required',
+              'access_note': 'BASE does not issue an API key for this interface. The execution platform public egress IP must be approved by BASE before live requests will succeed.',
+              'license_policy': 'Metadata discovery and source-provided links only; non-commercial BASE access terms and record-level rights apply.',
+              'cost': 'free after BASE IP approval'
+          }
+          insert_at = next((i + 1 for i, row in enumerate(sources) if row.get('source_id') == 'semantic-scholar'), 0)
+          sources.insert(insert_at, base_row)
+          matrix['sources'] = sources
+          matrix['active_source_count'] = len(sources)
+          for row in matrix.get('not_enabled', []):
+              if row.get('source_id') == 'base-oai':
+                  row['reason'] = 'The HTTP-only, IP-restricted BASE OAI harvesting endpoint remains disabled. The separate HTTPS BASE Search API is enabled as source_id base and still requires BASE approval of the execution egress IP.'
+          matrix_path.write_text(json.dumps(matrix, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          provider_doc = json.loads(provider_path.read_text(encoding='utf-8'))
+          provider = provider_doc['providers'][0]
+          provider['description'] = '固定接入BASE、Semantic Scholar等全球学术聚合、经济政策灰色文献、研究仓储、医学工程资料、预印本、国家图书馆、文化遗产与欧洲专利公开文献。'
+          provider['catalog_policy'] = '仅开放10项固定只读操作和26个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。'
+          provider['limits']['source_count'] = 26
+          search_op = next(row for row in provider['operations'] if row['operation_id'] == 'literature-search')
+          enum = search_op['parameter_schema']['properties']['source_id']['enum']
+          enum = [value for value in enum if value != 'base']
+          idx = enum.index('semantic-scholar') + 1 if 'semantic-scholar' in enum else 0
+          enum.insert(idx, 'base')
+          search_op['parameter_schema']['properties']['source_id']['enum'] = enum
+          provider_path.write_text(json.dumps(provider_doc, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          task = task_path.read_text(encoding='utf-8')
+          marker = '    elif source_id == "semantic-scholar":\n'
+          block = (
+              '    elif source_id == "base":\n'
+              '        url = "https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi"\n'
+              '        headers["Accept"] = "application/json, application/xml;q=0.8, text/xml;q=0.8"\n'
+              '        query += [("func", "PerformSearch"), ("format", "json"), ("query", query_text), ("hits", str(limit)), ("offset", "0"), ("boost", "oa")]\n'
+          )
+          if block not in task:
+              if task.count(marker) != 1:
+                  raise RuntimeError('semantic-scholar search marker is not unique')
+              task = task.replace(marker, block + marker, 1)
+          task_path.write_text(task, encoding='utf-8')
+
+          validator = validator_path.read_text(encoding='utf-8')
+          validator = validator.replace('        == 25\n', '        == 26\n', 1)
+          assertion_marker = '    assert provider["limits"]["unauthorized_full_text_copying_allowed"] is False\n'
+          assertion_block = (
+              assertion_marker
+              + '    base_source = next(row for row in sources if row["source_id"] == "base")\n'
+              + '    assert base_source["credential_mode"] == "none"\n'
+              + '    assert base_source["credential_env"] == ""\n'
+              + '    assert base_source["access_control"] == "ip_allowlist_required"\n'
+          )
+          if 'base_source = next(' not in validator:
+              if validator.count(assertion_marker) != 1:
+                  raise RuntimeError('validator assertion marker is not unique')
+              validator = validator.replace(assertion_marker, assertion_block, 1)
+          validator_path.write_text(validator, encoding='utf-8')
+
+          validate_workflow = validate_workflow_path.read_text(encoding='utf-8')
+          validate_workflow = validate_workflow.replace("assert receipt['source_count']==25", "assert receipt['source_count']==26")
+          validate_workflow_path.write_text(validate_workflow, encoding='utf-8')
+
+          docs_path.write_text(
+              '# Scholarly index access configuration\n\n'
+              'The three requested scholarly indexes are registered as follows.\n\n'
+              '| Source | GitHub configuration name | Access mode |\n'
+              '|---|---|---|\n'
+              '| OpenAlex | `OPENALEX_API_KEY` | Required free API key; stored as an Actions secret. |\n'
+              '| Semantic Scholar | `SEMANTIC_SCHOLAR_API_KEY` | Free API key; stored as an Actions secret. Anonymous access remains possible at lower limits. |\n'
+              '| BASE | No API key | BASE approves the caller public egress IP. The HTTPS Search API is registered, while the HTTP-only OAI harvesting endpoint remains disabled. |\n\n'
+              'BASE live execution will fail closed until BASE has approved a stable public egress IP used by the execution platform. Do not create a fake `BASE_API_KEY` secret.\n',
+              encoding='utf-8'
+          )
+          PY
+      - name: Install pinned validation dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/global-literature-libraries/requirements.txt
+          python -m pip check
+      - name: Regenerate authoritative catalog and validate
+        run: |
+          python -m py_compile \
+            api-center/managed_provider_runtime.py \
+            api-center/global-literature-libraries/global_literature_task.py \
+            api-center/global-literature-libraries/validate_global_literature.py
+          mkdir -p /tmp/base-activation-validation
+          PYTHONPATH=api-center/global-literature-libraries:api-center \
+            python api-center/global-literature-libraries/validate_global_literature.py \
+              --output /tmp/base-activation-validation/registry.json
+          python api-center/build_catalog_market_search.py
+          python -m pytest -q api-center/tests/test_api_catalog.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          matrix=json.loads(Path('api-center/global-literature-libraries/source-access-matrix.json').read_text())
+          provider=json.loads(Path('api-center/global-literature-libraries/provider-catalog.json').read_text())['providers'][0]
+          catalog=json.loads(Path('api-center/api-catalog.json').read_text())
+          base=next(row for row in matrix['sources'] if row['source_id']=='base')
+          assert matrix['active_source_count']==26==len(matrix['sources'])
+          assert provider['limits']['source_count']==26
+          assert base['base_url'].startswith('https://api.base-search.net/')
+          assert base['credential_mode']=='none'
+          assert base['access_control']=='ip_allowlist_required'
+          assert 'base' in next(row for row in provider['operations'] if row['operation_id']=='literature-search')['parameter_schema']['properties']['source_id']['enum']
+          rows={row['provider_id']:row for row in catalog['managed_providers']}
+          assert rows['global-literature-libraries']['operation_count']==10
+          assert catalog['managed_provider_count']==63
+          assert catalog['managed_operation_count']==688
+          assert catalog['secret_values_exposed'] is False
+          PY
+          git diff --check
+      - name: Remove one-time patch workflow and commit result
+        run: |
+          rm .github/workflows/activate-base-scholarly-index.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "feat: activate BASE scholarly index"
+          git push origin HEAD:feat/activate-base-scholarly-index
