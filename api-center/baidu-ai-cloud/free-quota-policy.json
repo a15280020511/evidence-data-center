@@ -1,0 +1,76 @@
+{
+  "schema_version": "baidu-ai-cloud-free-quota-policy-v1",
+  "reviewed_at": "2026-08-03",
+  "policy": {
+    "free_only": true,
+    "paid_fallback_authorized": false,
+    "remaining_quota_api_available": false,
+    "operator_action": "关闭或不启用按量后付费；执行高成本或一次性额度操作前核对控制台剩余额度。",
+    "quota_exhaustion_behavior": "不自动重试或切换接口；若控制台启用后付费，上游仍可能计费。"
+  },
+  "families": [
+    {
+      "family": "baidu-ai-search",
+      "quota": "最新总价页为每日共享免费池；端点页另载每月1500次按天发放，采用更保守口径。",
+      "reset": "daily",
+      "notes": "智能搜索生成需额外模型额度；深搜索仓库限制最多3个子查询。"
+    },
+    {
+      "family": "deep-research-agent",
+      "quota": "Lite免费50次",
+      "reset": "one_time_or_unspecified"
+    },
+    {
+      "family": "nlp-personal",
+      "quota": "不同API为总量10、200、500或50万次",
+      "reset": "one_time_365_days"
+    },
+    {
+      "family": "nlp-enterprise",
+      "quota": "部分接口为每日5万或50万次",
+      "reset": "daily_during_365_day_validity"
+    },
+    {
+      "family": "ocr-monthly",
+      "quota": "个人通常500或1000次/月；企业通常1000或2000次/月",
+      "reset": "natural_month"
+    },
+    {
+      "family": "ocr-one-time",
+      "quota": "个人通常500次；企业通常1000次",
+      "reset": "one_time_or_unspecified"
+    },
+    {
+      "family": "image-recognition",
+      "quota": "多数能力为累计赠送1000至10000次，企业更多",
+      "reset": "one_time_12_months_or_unspecified"
+    },
+    {
+      "family": "new-user-model-tokens",
+      "quota": "指定模型各100万tokens",
+      "reset": "one_time_3_months"
+    }
+  ],
+  "excluded": [
+    {
+      "family": "face-and-biometric",
+      "reason": "高敏感生物识别。"
+    },
+    {
+      "family": "identity-and-financial-document-ocr",
+      "reason": "直接身份和金融标识。"
+    },
+    {
+      "family": "speech-and-voice",
+      "reason": "声纹、隐私及异步长任务风险。"
+    },
+    {
+      "family": "image-video-generation",
+      "reason": "生成内容且可能产生模型费用。"
+    },
+    {
+      "family": "write-and-cloud-management",
+      "reason": "不属于只读公开情报。"
+    }
+  ]
+}

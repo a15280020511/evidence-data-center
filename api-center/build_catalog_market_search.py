@@ -61,6 +61,7 @@ GNEWS_CATALOG = HERE / "gnews/provider-catalog.json"
 GLOBAL_LITERATURE_LIBRARIES_CATALOG = HERE / "global-literature-libraries/provider-catalog.json"
 GLOBAL_KNOWLEDGE_ARCHIVES_CATALOG = HERE / "global-knowledge-archives/provider-catalog.json"
 GLOBAL_KNOWLEDGE_FABRIC_CATALOG = HERE / "global-knowledge-fabric/provider-catalog.json"
+BAIDU_AI_CLOUD_CATALOG = HERE / "baidu-ai-cloud/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -111,6 +112,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "global-literature-libraries": 10,
     "global-knowledge-archives": 9,
     "global-knowledge-fabric": 9,
+    "baidu-ai-cloud": 41,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -161,6 +163,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     GLOBAL_LITERATURE_LIBRARIES_CATALOG,
     GLOBAL_KNOWLEDGE_ARCHIVES_CATALOG,
     GLOBAL_KNOWLEDGE_FABRIC_CATALOG,
+    BAIDU_AI_CLOUD_CATALOG,
 )
 
 load_json = base.load_json
