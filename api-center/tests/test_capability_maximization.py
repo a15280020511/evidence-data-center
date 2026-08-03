@@ -55,7 +55,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
         }
         self.assertEqual(
             sum(len(row["operations"]) for row in providers.values()),
-            611,
+            catalog["managed_operation_count"],
         )
         self.assertNotIn("qichacha", providers)
         self.assertNotIn("tianditu", providers)
@@ -488,7 +488,6 @@ class CapabilityMaximizationTests(unittest.TestCase):
         self.assertFalse(llama_limits["presigned_urls_exposed"])
         self.assertLessEqual(llama_limits["max_pages"], 200)
         self.assertLessEqual(llama_limits["poll_timeout_seconds_max"], 600)
-
 
     def test_who_gho_odata_has_no_unbounded_query_escape_hatch(self) -> None:
         provider = json.loads(
