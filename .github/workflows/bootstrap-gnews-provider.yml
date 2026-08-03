@@ -14,10 +14,6 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: bootstrap-gnews-provider
-  cancel-in-progress: false
-
 jobs:
   patch-and-validate:
     runs-on: ubuntu-24.04
