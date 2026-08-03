@@ -54,15 +54,16 @@
     "cloudflare/provider-catalog.json",
     "fred/provider-catalog.json",
     "huggingface/provider-catalog.json",
-    "evidence-standardization/provider-catalog.json"
+    "evidence-standardization/provider-catalog.json",
+    "global-research-intelligence/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "7c2c2a8b4562b586796a85719dcc661fcfd26eed87d6fdbe806f40b51fc5c695",
+  "managed_provider_catalog_sha256": "14150e36927ca1b5ff8a2393ffe19f7451d5f696114d68fbba64c0991b7fcdd3",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 52,
-  "enabled_managed_provider_count": 52,
-  "managed_operation_count": 588,
-  "exposed_parameter_count": 2142,
+  "managed_provider_count": 53,
+  "enabled_managed_provider_count": 53,
+  "managed_operation_count": 611,
+  "exposed_parameter_count": 2202,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -112,6 +113,7 @@
     "fred/provider-catalog.json",
     "huggingface/provider-catalog.json",
     "evidence-standardization/provider-catalog.json",
+    "global-research-intelligence/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -27844,6 +27846,935 @@
       "secret_value_exposed": false,
       "provider_sha256": "8e400600c569dcbc0f510453cd62b2adcb54f65371641e18ad2a2b65c8962bfc",
       "catalog_file": "evidence-standardization/provider-catalog.json"
+    },
+    {
+      "provider_id": "global-research-intelligence",
+      "display_name": "全球研报、政策、法律与公司文本情报",
+      "description": "直接访问固定官方研究、出版、立法、司法、公司披露和金融文本 API，并提供经核验的中国及全球高价值来源清单。",
+      "enabled": true,
+      "ticket_prefix": "[intel-global-research]",
+      "catalog_policy": "优先官方 API；每张票据仅执行一个固定只读操作；禁止任意 URL、任意主机、任意路径、自动翻页、批量下载、写入、交易和密钥回显。",
+      "execution_policy": "所有请求由固定操作构造器生成。需要凭证的操作仅从后端环境读取对应密钥；SEC 操作要求仓库变量 SEC_USER_AGENT 标识调用方。",
+      "operation_count": 23,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地安全能力目录，不访问上游。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "source-inventory",
+          "description": "读取用户提出的工具和数据源逐项核验、去重、替代与归属清单。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "think-tank-source-catalog",
+          "description": "读取固定全球及中国智库、研究机构、政策报告来源目录，供现有网页/PDF读取 Provider 使用。",
+          "parameter_names": [
+            "region",
+            "topic"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "region": {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "china",
+                  "global",
+                  "north-america",
+                  "europe",
+                  "asia"
+                ]
+              },
+              "topic": {
+                "type": "string",
+                "enum": [
+                  "all",
+                  "macro",
+                  "trade",
+                  "finance",
+                  "technology",
+                  "industry",
+                  "policy",
+                  "security"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "search-arxiv",
+          "description": "按受限检索式查询 arXiv 元数据、摘要、作者和 PDF 链接。",
+          "parameter_names": [
+            "query",
+            "start",
+            "max_results",
+            "sort_by",
+            "sort_order"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              },
+              "max_results": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "sort_by": {
+                "type": "string",
+                "enum": [
+                  "relevance",
+                  "lastUpdatedDate",
+                  "submittedDate"
+                ]
+              },
+              "sort_order": {
+                "type": "string",
+                "enum": [
+                  "ascending",
+                  "descending"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://export.arxiv.org/api/query",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-arxiv-entry",
+          "description": "按 arXiv ID 读取单篇或少量论文元数据、摘要和 PDF 链接。",
+          "parameter_names": [
+            "ids"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ids"
+            ],
+            "properties": {
+              "ids": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9.\\/-]{1,40}$"
+                }
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://export.arxiv.org/api/query",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "identify-un-digital-library",
+          "description": "读取联合国数字图书馆 OAI-PMH 仓库身份和能力信息。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "official_endpoint": "https://digitallibrary.un.org/oai2d",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "list-un-digital-library-records",
+          "description": "按 OAI-PMH 规范分批读取联合国数字图书馆公开元数据。",
+          "parameter_names": [
+            "metadata_prefix",
+            "set",
+            "from",
+            "until",
+            "resumption_token"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "metadata_prefix": {
+                "type": "string",
+                "enum": [
+                  "oai_dc",
+                  "marcxml"
+                ]
+              },
+              "set": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "from": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "until": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "resumption_token": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://digitallibrary.un.org/oai2d",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-un-digital-library-record",
+          "description": "按 OAI 标识符读取联合国数字图书馆单条公开元数据。",
+          "parameter_names": [
+            "identifier",
+            "metadata_prefix"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "identifier"
+            ],
+            "properties": {
+              "identifier": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 300
+              },
+              "metadata_prefix": {
+                "type": "string",
+                "enum": [
+                  "oai_dc",
+                  "marcxml"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://digitallibrary.un.org/oai2d",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "get-sec-submissions",
+          "description": "按十位 CIK 读取 SEC 官方公司申报历史和最新文件元数据。",
+          "parameter_names": [
+            "cik"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "cik"
+            ],
+            "properties": {
+              "cik": {
+                "type": "string",
+                "pattern": "^[0-9]{1,10}$"
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://data.sec.gov/submissions/CIK##########.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "SEC_USER_AGENT"
+          }
+        },
+        {
+          "operation_id": "get-sec-company-facts",
+          "description": "按十位 CIK 读取 SEC 官方 XBRL 公司全部事实数据。",
+          "parameter_names": [
+            "cik"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "cik"
+            ],
+            "properties": {
+              "cik": {
+                "type": "string",
+                "pattern": "^[0-9]{1,10}$"
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://data.sec.gov/api/xbrl/companyfacts/CIK##########.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "SEC_USER_AGENT"
+          }
+        },
+        {
+          "operation_id": "get-sec-xbrl-frame",
+          "description": "读取 SEC 官方 XBRL 跨公司财务事实截面。",
+          "parameter_names": [
+            "taxonomy",
+            "tag",
+            "unit",
+            "period"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "taxonomy",
+              "tag",
+              "unit",
+              "period"
+            ],
+            "properties": {
+              "taxonomy": {
+                "type": "string",
+                "enum": [
+                  "us-gaap",
+                  "dei",
+                  "ifrs-full"
+                ]
+              },
+              "tag": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9]{1,99}$"
+              },
+              "unit": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9-]{1,40}$"
+              },
+              "period": {
+                "type": "string",
+                "pattern": "^CY[0-9]{4}(Q[1-4])?I?$"
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://data.sec.gov/api/xbrl/frames/{taxonomy}/{tag}/{unit}/{period}.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "SEC_USER_AGENT"
+          }
+        },
+        {
+          "operation_id": "list-congress-bills",
+          "description": "读取 Congress.gov v3 法案列表，可按届次、类型和更新时间范围约束。",
+          "parameter_names": [
+            "congress",
+            "bill_type",
+            "from_datetime",
+            "to_datetime",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "congress": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "bill_type": {
+                "type": "string",
+                "enum": [
+                  "hr",
+                  "s",
+                  "hjres",
+                  "sjres",
+                  "hconres",
+                  "sconres",
+                  "hres",
+                  "sres"
+                ]
+              },
+              "from_datetime": {
+                "type": "string",
+                "maxLength": 40
+              },
+              "to_datetime": {
+                "type": "string",
+                "maxLength": 40
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.congress.gov/v3/bill",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "CONGRESS_API_KEY"
+          }
+        },
+        {
+          "operation_id": "list-congress-hearings",
+          "description": "读取 Congress.gov v3 听证会列表。",
+          "parameter_names": [
+            "congress",
+            "chamber",
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "congress": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200
+              },
+              "chamber": {
+                "type": "string",
+                "enum": [
+                  "house",
+                  "senate"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.congress.gov/v3/hearing",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "CONGRESS_API_KEY"
+          }
+        },
+        {
+          "operation_id": "get-congress-crs-report",
+          "description": "按 CRS 报告编号读取 Congress.gov 官方国会研究处报告元数据。",
+          "parameter_names": [
+            "report_number"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "report_number"
+            ],
+            "properties": {
+              "report_number": {
+                "type": "string",
+                "pattern": "^[A-Za-z]{1,4}[0-9-]{1,20}$"
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.congress.gov/v3/crsreport/{reportNumber}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "CONGRESS_API_KEY"
+          }
+        },
+        {
+          "operation_id": "search-courtlistener",
+          "description": "通过 CourtListener v4 搜索判例、案卷、法官和口头辩论资料。",
+          "parameter_names": [
+            "query",
+            "type",
+            "order_by",
+            "page"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "o",
+                  "r",
+                  "p",
+                  "oa"
+                ]
+              },
+              "order_by": {
+                "type": "string",
+                "enum": [
+                  "score desc",
+                  "dateFiled desc",
+                  "dateFiled asc"
+                ]
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://www.courtlistener.com/api/rest/v4/search/",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "COURTLISTENER_API_TOKEN"
+          }
+        },
+        {
+          "operation_id": "get-courtlistener-opinion",
+          "description": "按数字 ID 读取 CourtListener v4 单份公开司法意见。",
+          "parameter_names": [
+            "opinion_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "opinion_id"
+            ],
+            "properties": {
+              "opinion_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 999999999
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://www.courtlistener.com/api/rest/v4/opinions/{id}/",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "COURTLISTENER_API_TOKEN"
+          }
+        },
+        {
+          "operation_id": "search-nasdaq-data-link",
+          "description": "搜索 Nasdaq Data Link 数据集目录。",
+          "parameter_names": [
+            "query",
+            "page",
+            "per_page"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "per_page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://data.nasdaq.com/api/v3/datasets.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "NASDAQ_DATA_LINK_API_KEY"
+          }
+        },
+        {
+          "operation_id": "get-nasdaq-dataset",
+          "description": "按数据库代码和数据集代码读取 Nasdaq Data Link 时间序列数据。",
+          "parameter_names": [
+            "database_code",
+            "dataset_code",
+            "start_date",
+            "end_date",
+            "rows",
+            "order",
+            "collapse",
+            "transform"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "database_code",
+              "dataset_code"
+            ],
+            "properties": {
+              "database_code": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]{1,30}$"
+              },
+              "dataset_code": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+              },
+              "start_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "end_date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "rows": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10000
+              },
+              "order": {
+                "type": "string",
+                "enum": [
+                  "asc",
+                  "desc"
+                ]
+              },
+              "collapse": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "daily",
+                  "weekly",
+                  "monthly",
+                  "quarterly",
+                  "annual"
+                ]
+              },
+              "transform": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "diff",
+                  "rdiff",
+                  "rdiff_from",
+                  "cumul",
+                  "normalize"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://data.nasdaq.com/api/v3/datasets/{database}/{dataset}.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "NASDAQ_DATA_LINK_API_KEY"
+          }
+        },
+        {
+          "operation_id": "finnhub-company-news",
+          "description": "按股票代码和日期范围读取 Finnhub 公司新闻。",
+          "parameter_names": [
+            "symbol",
+            "from",
+            "to"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "symbol",
+              "from",
+              "to"
+            ],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9.:-]{1,30}$"
+              },
+              "from": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              },
+              "to": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://finnhub.io/api/v1/company-news",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "FINNHUB_API_KEY"
+          }
+        },
+        {
+          "operation_id": "finnhub-transcripts-list",
+          "description": "读取公司财报电话会议文本目录。",
+          "parameter_names": [
+            "symbol"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "symbol"
+            ],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9.:-]{1,30}$"
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://finnhub.io/api/v1/stock/transcripts/list",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "FINNHUB_API_KEY",
+            "plan_note": "full transcript access may require a paid plan"
+          }
+        },
+        {
+          "operation_id": "finnhub-transcript",
+          "description": "按文本 ID 读取财报电话会议原文。",
+          "parameter_names": [
+            "transcript_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "transcript_id"
+            ],
+            "properties": {
+              "transcript_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:-]{1,120}$"
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://finnhub.io/api/v1/stock/transcripts",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "FINNHUB_API_KEY",
+            "plan_note": "full transcript access may require a paid plan"
+          }
+        },
+        {
+          "operation_id": "scopus-search",
+          "description": "通过 Elsevier Scopus Search API 检索论文、作者、机构和主题元数据。",
+          "parameter_names": [
+            "query",
+            "start",
+            "count",
+            "sort",
+            "view"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "query"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              },
+              "start": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5000
+              },
+              "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "-coverDate",
+                  "coverDate",
+                  "relevancy",
+                  "-citedby-count"
+                ]
+              },
+              "view": {
+                "type": "string",
+                "enum": [
+                  "STANDARD",
+                  "COMPLETE"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.elsevier.com/content/search/scopus",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "SCOPUS_API_KEY",
+            "access_note": "some fields require institutional subscription or InstToken"
+          }
+        },
+        {
+          "operation_id": "scopus-abstract",
+          "description": "按 Scopus EID 读取论文摘要与书目信息。",
+          "parameter_names": [
+            "eid",
+            "view"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "eid"
+            ],
+            "properties": {
+              "eid": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._:-]{3,80}$"
+              },
+              "view": {
+                "type": "string",
+                "enum": [
+                  "META",
+                  "META_ABS",
+                  "FULL"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://api.elsevier.com/content/abstract/eid/{eid}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "SCOPUS_API_KEY",
+            "access_note": "FULL access normally requires institutional subscription or InstToken"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "records_per_ticket_max": 100,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "fixed_api_hosts": [
+          "export.arxiv.org",
+          "digitallibrary.un.org",
+          "data.sec.gov",
+          "api.congress.gov",
+          "www.courtlistener.com",
+          "data.nasdaq.com",
+          "finnhub.io",
+          "api.elsevier.com"
+        ],
+        "credential_environment_variables": {
+          "sec": "SEC_USER_AGENT",
+          "congress": "CONGRESS_API_KEY",
+          "courtlistener": "COURTLISTENER_API_TOKEN",
+          "nasdaq": "NASDAQ_DATA_LINK_API_KEY",
+          "finnhub": "FINNHUB_API_KEY",
+          "scopus": "SCOPUS_API_KEY",
+          "scopus_insttoken_optional": "SCOPUS_INST_TOKEN"
+        },
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "document_body_bulk_download_allowed": false,
+        "write_operations_allowed": false,
+        "trading_or_order_execution_allowed": false,
+        "personal_data_targeting_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "6725f2703d87d7ae7a6d87a7e8398aaa34cacc8787812e797f916b8ce612451a",
+      "catalog_file": "global-research-intelligence/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -36183,5 +37114,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "bdd62b7b6dd2b38d3f4d6f96cb56878078b5bf6c1302b2849e51f86e43373a01"
+  "catalog_sha256": "61dc846f7080d316afa49671cfd76ce37eb6dd2ccc607891fed9d67e6febfab3"
 }
