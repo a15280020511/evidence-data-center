@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`54/54` 已启用
-- 托管操作总数：`618`
-- 已公开参数总数：`2211`
-- 目录 SHA-256：`ff08e99a12a74de2056bcd4db2a2fc55a54a9a7bd387c896956551b5fd5e81e7`
+- 托管提供方：`55/55` 已启用
+- 托管操作总数：`631`
+- 已公开参数总数：`2237`
+- 目录 SHA-256：`18bba239749627bb61fdc455e2d4665d3e9c724cb0e42ebd36d0d583998c12fe`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -71,6 +71,7 @@
 | 证据标准化、去重、谱系与传输清单 | `evidence-standardization` | 启用 | `[intel-evidence-standardize]` | `8` | 否 |
 | 全球研报、政策、法律与公司文本情报 | `global-research-intelligence` | 启用 | `[intel-global-research]` | `23` | 否 |
 | OpenBB 免费官方数据补充层 | `openbb-free` | 启用 | `[intel-openbb-free]` | `7` | 否 |
+| 全球开放聚合数据层 | `open-data-aggregators` | 启用 | `[intel-open-data]` | `13` | 否 |
 
 ## 普通连接器
 
@@ -23760,6 +23761,370 @@
     "markets.newyorkfed.org",
     "mba.tuck.dartmouth.edu"
   ]
+}
+```
+
+## 全球开放聚合数据层 (`open-data-aggregators`)
+
+- 状态：`启用`
+- 说明：固定接入GLEIF、GDELT、Eurostat SDMX、Mobility Database、OpenAlex、DataCite、OpenCitations、Unpaywall、USAspending、Transitland和China Data Portal。
+- 目录策略：仅开放13项固定只读操作；禁止任意URL、主机、路径、Header、客户端Key、自动翻页、重试、写入、交易、个人画像和实时人员/车辆追踪。
+- 执行策略：每票最多一次上游调用；固定端点、超时和响应上限；Key仅后端注入；China Data Portal强制标记二级聚合源。
+- 票据前缀：`[intel-open-data]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`451b944b19cbecff679199bd6a0a7768860edd12e285d9c86a67718ae0b713a5`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地能力目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `source-access-matrix` | 读取来源费用、Key和许可证矩阵。 | `无` |
+
+`source-access-matrix` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `gleif-search` | 搜索全球法律实体。 | `query, limit` |
+
+`gleif-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `gdelt-search` | 搜索全球新闻事件。 | `query, limit, timespan` |
+
+`gdelt-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 250
+    },
+    "timespan": {
+      "type": "string",
+      "pattern": "^[0-9]{1,4}(min|h|d|w|m)$"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `sdmx-eurostat-data` | 读取固定Eurostat SDMX数据集。 | `dataflow, key, start_period, end_period` |
+
+`sdmx-eurostat-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataflow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,80}$"
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.+-]{1,300}$"
+    },
+    "start_period": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "end_period": {
+      "type": "string",
+      "maxLength": 20
+    }
+  },
+  "required": [
+    "dataflow",
+    "key"
+  ]
+}
+```
+
+| `mobility-search` | 搜索全球GTFS/GTFS-RT/GBFS Feed。 | `query, limit` |
+
+`mobility-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `openalex-search` | 搜索开放学术知识图谱。 | `query, limit` |
+
+`openalex-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `datacite-search` | 搜索DOI和研究数据元数据。 | `query, limit` |
+
+`datacite-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `opencitations-citations` | 读取DOI引用关系。 | `doi` |
+
+`opencitations-citations` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "doi": {
+      "type": "string",
+      "pattern": "^10\\.[0-9]{4,9}/\\S{1,240}$"
+    }
+  },
+  "required": [
+    "doi"
+  ]
+}
+```
+
+| `unpaywall-get` | 读取合法开放获取位置。 | `doi` |
+
+`unpaywall-get` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "doi": {
+      "type": "string",
+      "pattern": "^10\\.[0-9]{4,9}/\\S{1,240}$"
+    }
+  },
+  "required": [
+    "doi"
+  ]
+}
+```
+
+| `usaspending-search` | 搜索美国联邦合同、补助和支出。 | `keyword, start_date, end_date, limit` |
+
+`usaspending-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "keyword": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "keyword",
+    "start_date",
+    "end_date"
+  ]
+}
+```
+
+| `transitland-search` | 搜索Transitland交通Feed。 | `query, spec, limit` |
+
+`transitland-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "spec": {
+      "type": "string",
+      "enum": [
+        "gtfs",
+        "gtfs-rt",
+        "gbfs",
+        "mds"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `china-data-get` | 读取China Data Portal固定slug数据集。 | `dataset, format` |
+
+`china-data-get` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,100}$"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "json",
+        "csv"
+      ]
+    }
+  },
+  "required": [
+    "dataset"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 5000000,
+  "automatic_pagination_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "trading_allowed": false,
+  "personal_profiling_allowed": false,
+  "real_time_tracking_allowed": false,
+  "secret_values_exposed": false
 }
 ```
 

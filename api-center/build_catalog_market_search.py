@@ -54,6 +54,7 @@ HUGGINGFACE_CATALOG = HERE / "huggingface/provider-catalog.json"
 EVIDENCE_STANDARDIZATION_CATALOG = HERE / "evidence-standardization/provider-catalog.json"
 GLOBAL_RESEARCH_INTELLIGENCE_CATALOG = HERE / "global-research-intelligence/provider-catalog.json"
 OPENBB_FREE_CATALOG = HERE / "openbb-free/provider-catalog.json"
+OPEN_DATA_AGGREGATORS_CATALOG = HERE / "open-data-aggregators/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -97,6 +98,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "evidence-standardization": 8,
     "global-research-intelligence": 23,
     "openbb-free": 7,
+    "open-data-aggregators": 13,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -140,6 +142,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     EVIDENCE_STANDARDIZATION_CATALOG,
     GLOBAL_RESEARCH_INTELLIGENCE_CATALOG,
     OPENBB_FREE_CATALOG,
+    OPEN_DATA_AGGREGATORS_CATALOG,
 )
 
 load_json = base.load_json
@@ -199,6 +202,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "evidence-standardization/provider-catalog.json",
         "global-research-intelligence/provider-catalog.json",
         "openbb-free/provider-catalog.json",
+        "open-data-aggregators/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (
