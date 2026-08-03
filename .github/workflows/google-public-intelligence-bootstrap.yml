@@ -1,8 +1,7 @@
 name: Google Public Intelligence Bootstrap
 
 on:
-  push:
-    branches: [feat/google-public-intelligence]
+  pull_request:
     paths:
       - '.bootstrap/apply_google_public_intelligence.py'
       - '.github/workflows/google-public-intelligence-bootstrap.yml'
@@ -16,6 +15,7 @@ concurrency:
 
 jobs:
   apply:
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -40,7 +40,7 @@ jobs:
         run: |
           python -m py_compile api-center/google-public-intelligence/google_public_intelligence_task.py
           PYTHONPATH=api-center/google-public-intelligence:api-center python -m unittest discover -s api-center/google-public-intelligence/tests -p 'test_*.py' -v
-          python -m unittest api-center/tests/test_api_catalog.py -v
+          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
           git diff --check
       - name: Commit generated integration
         run: |
