@@ -231,6 +231,12 @@
       "classification": "third-wave governed entity, scholarly-relations, dataset, government-regulation, scientific and standards knowledge layer",
       "decision": "integrate-new",
       "implementation": "16 fixed HTTPS sources through 9 bounded read-only operations; existing Wikidata, scholarly, legal, international-organization and first/second-wave sources are mapped rather than duplicated"
+    },
+    {
+      "requested_name": "open-software-security-knowledge",
+      "classification": "fourth-wave governed source-code archive, package ecosystem, dependency, license, defensive vulnerability and open-standards metadata layer",
+      "decision": "integrate-new",
+      "implementation": "18 fixed HTTPS sources through 11 bounded read-only operations; GitHub, Hugging Face and IETF capabilities are mapped rather than duplicated; package download, code execution, exploit retrieval and writes remain prohibited"
     }
   ],
   "summary": {

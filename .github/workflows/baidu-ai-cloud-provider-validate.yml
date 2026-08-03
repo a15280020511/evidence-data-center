@@ -107,9 +107,10 @@ jobs:
           rows={row['provider_id']:row for row in catalog['managed_providers']}
           assert rows['baidu-ai-cloud']['operation_count']==3
           assert rows['baidu-ai-cloud']['secret_value_exposed'] is False
-          assert catalog['managed_provider_count']==62
-          assert catalog['managed_operation_count']==677
+          assert catalog['managed_provider_count']==len(rows)
           assert catalog['managed_operation_count']==sum(row['operation_count'] for row in rows.values())
+          assert catalog['direct_center_to_center_calls_allowed'] is False
+          assert catalog['secret_values_exposed'] is False
           PY
       - name: Upload generated catalog
         if: always()
