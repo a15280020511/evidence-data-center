@@ -56,13 +56,11 @@ jobs:
               --output /tmp/global-knowledge-registry.json
           python api-center/build_catalog_market_search.py
           git diff --check
-      - name: Commit exact replay and generated catalogs
+      - name: Commit business files and generated catalogs
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add \
-            .github/workflows/global-knowledge-archives-ticket.yml \
-            .github/workflows/global-knowledge-archives-validate.yml \
             api-center/global-knowledge-archives/global_knowledge_archives_task.py \
             api-center/global-knowledge-archives/provider-catalog.json \
             api-center/global-knowledge-archives/source-access-matrix.json \
