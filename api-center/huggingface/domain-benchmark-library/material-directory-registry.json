@@ -1,0 +1,34 @@
+{
+  "schema_version": "domain-benchmark-material-directory-registry-v1",
+  "status": "structure-complete-data-pending",
+  "additional_asset_libraries": [
+    {"id":"source-catalog-library","purpose":"Source endpoints, issuing organizations, access methods, update cadence, geographic and temporal coverage, and collection status."},
+    {"id":"data-dictionary-library","purpose":"Variable names, meanings, units, codes, missing-value semantics, transformations, publication lags and revisions."},
+    {"id":"license-provenance-library","purpose":"License, redistribution, commercial-use, attribution, lawful-basis, source citation and immutable provenance records."},
+    {"id":"benchmark-manifest-library","purpose":"Versioned benchmark manifests linking snapshots, factors, rules, baselines, thresholds, splits, limitations and acceptance evidence."}
+  ],
+  "domain_material_directories": [
+    {"id":"sources","purpose":"Future source catalogs and collection plans; no raw secrets."},
+    {"id":"snapshots","purpose":"Immutable observed or approved synthetic data snapshots with file hashes."},
+    {"id":"variable-dictionaries","purpose":"Versioned variable definitions, units, codes, time semantics and missingness."},
+    {"id":"factors","purpose":"Evidence-backed domain factor definitions and publication-lag controls."},
+    {"id":"rule-snapshots","purpose":"Effective-dated legal, policy, tax, trading, regulatory and operating parameters."},
+    {"id":"baselines","purpose":"Simple reproducible comparison methods and their evidence."},
+    {"id":"metric-thresholds","purpose":"Warning, blocking and promotion thresholds with domain evidence."},
+    {"id":"regime-events","purpose":"Structural breaks, crises, policy changes, holidays, weather and market regimes."},
+    {"id":"crosswalks","purpose":"Administrative, industry, security, organization, unit, currency, calendar and variable mappings."},
+    {"id":"outcome-feedback","purpose":"Append-only realized outcomes linked to prior predictions and hashes."},
+    {"id":"licenses-provenance","purpose":"License, scope, attribution, collection time and source provenance."},
+    {"id":"manifests","purpose":"Benchmark manifests, split policies, file hashes, limitations and acceptance status."}
+  ],
+  "policies": {
+    "private_dataset_required": true,
+    "append_only_versions": true,
+    "immutable_hash_required": true,
+    "contains_personal_data_default": false,
+    "raw_secrets_allowed": false,
+    "compute_runtime_network_allowed": false,
+    "direct_center_connection_allowed": false,
+    "selection_and_transfer_owner": "gpts-usage-center"
+  }
+}
