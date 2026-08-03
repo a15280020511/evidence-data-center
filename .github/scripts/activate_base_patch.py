@@ -74,7 +74,10 @@ def patch_provider() -> None:
 
 def patch_task() -> None:
     text = TASK_PATH.read_text(encoding="utf-8")
-    marker = '    elif source_id == "semantic-scholar":\n'
+    marker = (
+        '    elif source_id == "semantic-scholar":\n'
+        '        url = "https://api.semanticscholar.org/graph/v1/paper/search"\n'
+    )
     block = (
         '    elif source_id == "base":\n'
         '        url = "https://api.base-search.net/cgi-bin/BaseHttpSearchInterface.fcgi"\n'
@@ -83,7 +86,7 @@ def patch_task() -> None:
     )
     if block not in text:
         if marker not in text:
-            raise RuntimeError("semantic-scholar search marker is missing")
+            raise RuntimeError("Semantic Scholar search endpoint marker is missing")
         text = text.replace(marker, block + marker, 1)
     TASK_PATH.write_text(text, encoding="utf-8")
 
