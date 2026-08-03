@@ -1,0 +1,355 @@
+{
+  "schema_version": "nih-public-health-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "nih-public-health",
+      "display_name": "NIH/NCBI/FDA 公共卫生与生物医学数据",
+      "description": "统一接入 PubMed（NCBI E-utilities）、openFDA、MedlinePlus 与 NIH Clinical Tables 的公开只读检索能力。",
+      "enabled": true,
+      "ticket_prefix": "[intel-nih-health]",
+      "required_secret_environment_variable": "",
+      "optional_secret_environment_variable": "NCBI_API_KEY,OPENFDA_API_KEY",
+      "catalog_policy": "开放6项固定只读操作。NCBI与openFDA默认免Key，Key仅用于官方额度提升；MedlinePlus与Clinical Tables免Key。禁止任意URL、端点、数据库、请求头和写操作。",
+      "execution_policy": "每张票据最多一次固定HTTPS请求；不跟随重定向，不自动翻页，不自动重试。PubMed Fetch最多50个PMID，所有结果受超时和响应体积限制。",
+      "official_documentation": "https://www.ncbi.nlm.nih.gov/books/NBK25501/",
+      "official_origins": [
+        "https://eutils.ncbi.nlm.nih.gov",
+        "https://api.fda.gov",
+        "https://wsearch.nlm.nih.gov",
+        "https://clinicaltables.nlm.nih.gov"
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 20000000,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "fixed_api_hosts": [
+          "eutils.ncbi.nlm.nih.gov",
+          "api.fda.gov",
+          "wsearch.nlm.nih.gov",
+          "clinicaltables.nlm.nih.gov"
+        ],
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_allowed": false,
+        "secret_values_exposed": false,
+        "authentication_required": false,
+        "optional_api_keys": [
+          "NCBI_API_KEY",
+          "OPENFDA_API_KEY"
+        ],
+        "automatic_pagination_allowed": false,
+        "whole_database_download_allowed": false,
+        "pubmed_pmids_per_fetch_max": 50,
+        "openfda_records_per_request_max": 100
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地公共卫生与生物医学能力目录，不访问上游.",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "nih-public-health",
+            "official_origin": "LOCAL",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "optional"
+          }
+        },
+        {
+          "operation_id": "pubmed-search",
+          "description": "通过 NCBI E-utilities 的 PubMed ESearch 搜索 PMID。",
+          "parameters": [
+            "query",
+            "retmax",
+            "retstart",
+            "sort",
+            "datetype",
+            "mindate",
+            "maxdate"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "retmax": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 200,
+                "default": 20
+              },
+              "retstart": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000,
+                "default": 0
+              },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "relevance",
+                  "pub_date",
+                  "first_author",
+                  "journal"
+                ],
+                "default": "relevance"
+              },
+              "datetype": {
+                "type": "string",
+                "enum": [
+                  "pdat",
+                  "edat",
+                  "mdat"
+                ]
+              },
+              "mindate": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(/[0-9]{2}(/[0-9]{2})?)?$"
+              },
+              "maxdate": {
+                "type": "string",
+                "pattern": "^[0-9]{4}(/[0-9]{2}(/[0-9]{2})?)?$"
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "nih-public-health",
+            "official_origin": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional_api_key"
+          }
+        },
+        {
+          "operation_id": "pubmed-fetch",
+          "description": "通过 NCBI E-utilities 的 PubMed EFetch 按 PMID 获取 MEDLINE/PubMed XML。",
+          "parameters": [
+            "pmids",
+            "rettype"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "pmids": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 50,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[0-9]{1,12}$"
+                }
+              },
+              "rettype": {
+                "type": "string",
+                "enum": [
+                  "abstract",
+                  "medline"
+                ],
+                "default": "abstract"
+              }
+            },
+            "required": [
+              "pmids"
+            ]
+          },
+          "result_contract": {
+            "provider": "nih-public-health",
+            "official_origin": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional_api_key",
+            "format": "xml"
+          }
+        },
+        {
+          "operation_id": "openfda-query",
+          "description": "查询 openFDA 固定数据集；不接受任意端点或任意查询参数。",
+          "parameters": [
+            "dataset",
+            "search",
+            "limit",
+            "skip",
+            "count"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dataset": {
+                "type": "string",
+                "enum": [
+                  "drug-event",
+                  "drug-label",
+                  "drug-enforcement",
+                  "device-event",
+                  "device-recall",
+                  "food-enforcement"
+                ]
+              },
+              "search": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 20
+              },
+              "skip": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 25000,
+                "default": 0
+              },
+              "count": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.]+$"
+              }
+            },
+            "required": [
+              "dataset"
+            ]
+          },
+          "result_contract": {
+            "provider": "nih-public-health",
+            "official_origin": "https://api.fda.gov",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional_api_key"
+          }
+        },
+        {
+          "operation_id": "medlineplus-search",
+          "description": "搜索 MedlinePlus 健康主题、疾病、药物和健康教育内容。",
+          "parameters": [
+            "query",
+            "retmax",
+            "retstart",
+            "language"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "retmax": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 10
+              },
+              "retstart": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000,
+                "default": 0
+              },
+              "language": {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "es"
+                ],
+                "default": "en"
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "nih-public-health",
+            "official_origin": "https://wsearch.nlm.nih.gov/ws/query",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "format": "xml"
+          }
+        },
+        {
+          "operation_id": "clinical-tables-search",
+          "description": "搜索 NIH Clinical Tables 固定临床术语表。",
+          "parameters": [
+            "dataset",
+            "terms",
+            "max_list",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dataset": {
+                "type": "string",
+                "enum": [
+                  "conditions",
+                  "icd10cm",
+                  "rxterms",
+                  "loinc"
+                ]
+              },
+              "terms": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "max_list": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 20
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 7500,
+                "default": 0
+              }
+            },
+            "required": [
+              "dataset",
+              "terms"
+            ]
+          },
+          "result_contract": {
+            "provider": "nih-public-health",
+            "official_origin": "https://clinicaltables.nlm.nih.gov/api",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ]
+    }
+  ]
+}

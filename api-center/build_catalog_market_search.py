@@ -55,6 +55,8 @@ EVIDENCE_STANDARDIZATION_CATALOG = HERE / "evidence-standardization/provider-cat
 GLOBAL_RESEARCH_INTELLIGENCE_CATALOG = HERE / "global-research-intelligence/provider-catalog.json"
 OPENBB_FREE_CATALOG = HERE / "openbb-free/provider-catalog.json"
 OPEN_DATA_AGGREGATORS_CATALOG = HERE / "open-data-aggregators/provider-catalog.json"
+NIH_PUBLIC_HEALTH_CATALOG = HERE / "nih-public-health/provider-catalog.json"
+OPENSTREETMAP_CATALOG = HERE / "openstreetmap/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -99,6 +101,8 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "global-research-intelligence": 23,
     "openbb-free": 7,
     "open-data-aggregators": 13,
+    "nih-public-health": 6,
+    "openstreetmap": 6,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -143,6 +147,8 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     GLOBAL_RESEARCH_INTELLIGENCE_CATALOG,
     OPENBB_FREE_CATALOG,
     OPEN_DATA_AGGREGATORS_CATALOG,
+    NIH_PUBLIC_HEALTH_CATALOG,
+    OPENSTREETMAP_CATALOG,
 )
 
 load_json = base.load_json
@@ -203,6 +209,8 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "global-research-intelligence/provider-catalog.json",
         "openbb-free/provider-catalog.json",
         "open-data-aggregators/provider-catalog.json",
+        "nih-public-health/provider-catalog.json",
+        "openstreetmap/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (

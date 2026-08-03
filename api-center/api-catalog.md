@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
-- 托管提供方：`55/55` 已启用
-- 托管操作总数：`631`
-- 已公开参数总数：`2237`
-- 目录 SHA-256：`18bba239749627bb61fdc455e2d4665d3e9c724cb0e42ebd36d0d583998c12fe`
+- 托管提供方：`57/57` 已启用
+- 托管操作总数：`643`
+- 已公开参数总数：`2290`
+- 目录 SHA-256：`592f64620528fbc6fa7f5a3e7e2574d53c1346426a707341c44a01cdf6de70be`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -72,6 +72,8 @@
 | 全球研报、政策、法律与公司文本情报 | `global-research-intelligence` | 启用 | `[intel-global-research]` | `23` | 否 |
 | OpenBB 免费官方数据补充层 | `openbb-free` | 启用 | `[intel-openbb-free]` | `7` | 否 |
 | 全球开放聚合数据层 | `open-data-aggregators` | 启用 | `[intel-open-data]` | `13` | 否 |
+| NIH/NCBI/FDA 公共卫生与生物医学数据 | `nih-public-health` | 启用 | `[intel-nih-health]` | `6` | 否 |
+| OpenStreetMap / Overpass / Nominatim | `openstreetmap` | 启用 | `[intel-osm]` | `6` | 否 |
 
 ## 普通连接器
 
@@ -24125,6 +24127,609 @@
   "personal_profiling_allowed": false,
   "real_time_tracking_allowed": false,
   "secret_values_exposed": false
+}
+```
+
+## NIH/NCBI/FDA 公共卫生与生物医学数据 (`nih-public-health`)
+
+- 状态：`启用`
+- 说明：统一接入 PubMed（NCBI E-utilities）、openFDA、MedlinePlus 与 NIH Clinical Tables 的公开只读检索能力。
+- 目录策略：开放6项固定只读操作。NCBI与openFDA默认免Key，Key仅用于官方额度提升；MedlinePlus与Clinical Tables免Key。禁止任意URL、端点、数据库、请求头和写操作。
+- 执行策略：每张票据最多一次固定HTTPS请求；不跟随重定向，不自动翻页，不自动重试。PubMed Fetch最多50个PMID，所有结果受超时和响应体积限制。
+- 票据前缀：`[intel-nih-health]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`77e5e508c1ac47de47a58b3a9efee04a4e84c3cbbc5bb8a1d939175c0a2d0f97`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地公共卫生与生物医学能力目录，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `pubmed-search` | 通过 NCBI E-utilities 的 PubMed ESearch 搜索 PMID。 | `query, retmax, retstart, sort, datetype, mindate, maxdate` |
+
+`pubmed-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "retmax": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 20
+    },
+    "retstart": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100000,
+      "default": 0
+    },
+    "sort": {
+      "type": "string",
+      "enum": [
+        "relevance",
+        "pub_date",
+        "first_author",
+        "journal"
+      ],
+      "default": "relevance"
+    },
+    "datetype": {
+      "type": "string",
+      "enum": [
+        "pdat",
+        "edat",
+        "mdat"
+      ]
+    },
+    "mindate": {
+      "type": "string",
+      "pattern": "^[0-9]{4}(/[0-9]{2}(/[0-9]{2})?)?$"
+    },
+    "maxdate": {
+      "type": "string",
+      "pattern": "^[0-9]{4}(/[0-9]{2}(/[0-9]{2})?)?$"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `pubmed-fetch` | 通过 NCBI E-utilities 的 PubMed EFetch 按 PMID 获取 MEDLINE/PubMed XML。 | `pmids, rettype` |
+
+`pubmed-fetch` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "pmids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]{1,12}$"
+      }
+    },
+    "rettype": {
+      "type": "string",
+      "enum": [
+        "abstract",
+        "medline"
+      ],
+      "default": "abstract"
+    }
+  },
+  "required": [
+    "pmids"
+  ]
+}
+```
+
+| `openfda-query` | 查询 openFDA 固定数据集；不接受任意端点或任意查询参数。 | `dataset, search, limit, skip, count` |
+
+`openfda-query` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string",
+      "enum": [
+        "drug-event",
+        "drug-label",
+        "drug-enforcement",
+        "device-event",
+        "device-recall",
+        "food-enforcement"
+      ]
+    },
+    "search": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    },
+    "skip": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 25000,
+      "default": 0
+    },
+    "count": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.]+$"
+    }
+  },
+  "required": [
+    "dataset"
+  ]
+}
+```
+
+| `medlineplus-search` | 搜索 MedlinePlus 健康主题、疾病、药物和健康教育内容。 | `query, retmax, retstart, language` |
+
+`medlineplus-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "retmax": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50,
+      "default": 10
+    },
+    "retstart": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 1000,
+      "default": 0
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "es"
+      ],
+      "default": "en"
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `clinical-tables-search` | 搜索 NIH Clinical Tables 固定临床术语表。 | `dataset, terms, max_list, offset` |
+
+`clinical-tables-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset": {
+      "type": "string",
+      "enum": [
+        "conditions",
+        "icd10cm",
+        "rxterms",
+        "loinc"
+      ]
+    },
+    "terms": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "max_list": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7500,
+      "default": 0
+    }
+  },
+  "required": [
+    "dataset",
+    "terms"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_hosts": [
+    "eutils.ncbi.nlm.nih.gov",
+    "api.fda.gov",
+    "wsearch.nlm.nih.gov",
+    "clinicaltables.nlm.nih.gov"
+  ],
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": false,
+  "optional_api_keys": [
+    "NCBI_API_KEY",
+    "OPENFDA_API_KEY"
+  ],
+  "automatic_pagination_allowed": false,
+  "whole_database_download_allowed": false,
+  "pubmed_pmids_per_fetch_max": 50,
+  "openfda_records_per_request_max": 100
+}
+```
+
+## OpenStreetMap / Overpass / Nominatim (`openstreetmap`)
+
+- 状态：`启用`
+- 说明：统一接入 OSM 对象读取、Nominatim 单次地理编码与受控模板化 Overpass 空间查询。
+- 目录策略：开放6项固定免密只读操作；禁止任意URL、任意主机、原始Overpass QL、批量Nominatim、自动补全、爬取和写入。
+- 执行策略：每张票据最多一次固定HTTPS请求，Provider全局并发1。Nominatim使用明确User-Agent并限制每票最多10条；Overpass只由白名单字段生成QL，半径和边界框严格受限。
+- 票据前缀：`[intel-osm]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`098b5b9562d9a0cf2901c212d739727b87cf08aa25a32a601bae5a5ae246a12b`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地 OpenStreetMap 能力与使用政策，不访问上游. | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `osm-object` | 按固定对象类型和ID读取一个 OSM node、way 或 relation。 | `object_type, object_id` |
+
+`osm-object` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "object_type": {
+      "type": "string",
+      "enum": [
+        "node",
+        "way",
+        "relation"
+      ]
+    },
+    "object_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999999999999
+    }
+  },
+  "required": [
+    "object_type",
+    "object_id"
+  ]
+}
+```
+
+| `nominatim-search` | 使用 Nominatim 对单个自然语言地点进行地理编码；禁止自动补全和批量地理编码。 | `query, limit, countrycodes, language, addressdetails, extratags, namedetails` |
+
+`nominatim-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 300
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 5
+    },
+    "countrycodes": {
+      "type": "string",
+      "pattern": "^[a-z]{2}(,[a-z]{2}){0,9}$"
+    },
+    "language": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 40,
+      "pattern": "^[A-Za-z-]+(,[A-Za-z-]+)*$"
+    },
+    "addressdetails": {
+      "type": "boolean",
+      "default": true
+    },
+    "extratags": {
+      "type": "boolean",
+      "default": false
+    },
+    "namedetails": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `nominatim-reverse` | 使用 Nominatim 对单个坐标进行反向地理编码。 | `lat, lon, zoom, language, addressdetails, extratags, namedetails` |
+
+`nominatim-reverse` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lat": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lon": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "zoom": {
+      "type": "integer",
+      "minimum": 3,
+      "maximum": 18,
+      "default": 18
+    },
+    "language": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 40,
+      "pattern": "^[A-Za-z-]+(,[A-Za-z-]+)*$"
+    },
+    "addressdetails": {
+      "type": "boolean",
+      "default": true
+    },
+    "extratags": {
+      "type": "boolean",
+      "default": false
+    },
+    "namedetails": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "lat",
+    "lon"
+  ]
+}
+```
+
+| `overpass-nearby` | 使用模板化 Overpass QL 查询坐标附近的 OSM 要素；不接受原始QL。 | `lat, lon, radius_m, tag_key, tag_value, element_type, limit` |
+
+`overpass-nearby` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lat": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "lon": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "radius_m": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5000,
+      "default": 500
+    },
+    "tag_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_:.-]{1,64}$"
+    },
+    "tag_value": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9_ :./()&+,'-]+$"
+    },
+    "element_type": {
+      "type": "string",
+      "enum": [
+        "node",
+        "way",
+        "relation",
+        "all"
+      ],
+      "default": "all"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 100
+    }
+  },
+  "required": [
+    "lat",
+    "lon",
+    "tag_key"
+  ]
+}
+```
+
+| `overpass-bbox` | 使用模板化 Overpass QL 查询小范围边界框内的 OSM 要素；不接受原始QL。 | `south, west, north, east, tag_key, tag_value, element_type, limit` |
+
+`overpass-bbox` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "south": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "west": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "north": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "east": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "tag_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_:.-]{1,64}$"
+    },
+    "tag_value": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "pattern": "^[A-Za-z0-9_ :./()&+,'-]+$"
+    },
+    "element_type": {
+      "type": "string",
+      "enum": [
+        "node",
+        "way",
+        "relation",
+        "all"
+      ],
+      "default": "all"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 100
+    }
+  },
+  "required": [
+    "south",
+    "west",
+    "north",
+    "east",
+    "tag_key"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "fixed_api_hosts": [
+    "api.openstreetmap.org",
+    "nominatim.openstreetmap.org",
+    "overpass-api.de"
+  ],
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "raw_overpass_ql_allowed": false,
+  "nominatim_autocomplete_allowed": false,
+  "nominatim_bulk_geocoding_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "personal_data_allowed": false,
+  "secret_values_exposed": false,
+  "authentication_required": false,
+  "automatic_pagination_allowed": false,
+  "whole_database_download_allowed": false,
+  "nominatim_results_per_ticket_max": 10,
+  "overpass_result_elements_max": 200,
+  "overpass_radius_m_max": 5000,
+  "overpass_bbox_span_degrees_max": 2.0
 }
 ```
 
