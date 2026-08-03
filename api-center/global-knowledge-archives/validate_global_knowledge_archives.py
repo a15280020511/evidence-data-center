@@ -19,10 +19,6 @@ from global_knowledge_archives_task import (
 DUMMY_SECRETS = {
     "GOOGLE_API_KEY": "fixture-google-key",
     "BHL_API_KEY": "fixture-bhl-key",
-    "NARA_CATALOG_API_KEY": "fixture-nara-key",
-    "SMITHSONIAN_API_KEY": "fixture-smithsonian-key",
-    "GOVINFO_API_KEY": "fixture-govinfo-key",
-    "TROVE_API_KEY": "fixture-trove-key",
 }
 
 
@@ -42,7 +38,6 @@ def parameters_for(operation: str, source_id: str) -> dict:
             "digitalnz": "38022714",
             "google-books": "zyTCAlFPjgYC",
             "bhl": "125582",
-            "govinfo": "FR-2018-08-03",
         }
         return {"source_id": source_id, "record_id": record_ids[source_id]}
     if operation == "oai-identify":
@@ -68,7 +63,7 @@ def validate_registry() -> dict:
     sources = matrix["sources"]
     assert provider["provider_id"] == "global-knowledge-archives"
     assert provider["ticket_prefix"] == "[intel-knowledge]"
-    assert len(sources) == matrix["active_source_count"] == provider["limits"]["source_count"] == 20
+    assert len(sources) == matrix["active_source_count"] == provider["limits"]["source_count"] == 16
     assert len(operations) == 9
     assert matrix["governance"]["fixed_sources_only"] is True
     assert matrix["governance"]["arbitrary_urls_allowed"] is False
@@ -78,6 +73,10 @@ def validate_registry() -> dict:
     assert provider["limits"]["requests_per_ticket_max"] == 1
     assert provider["limits"]["write_operations_allowed"] is False
     assert provider["limits"]["unauthorized_full_text_copying_allowed"] is False
+    keyed_sources = {row["source_id"] for row in sources if row["credential_mode"] == "required_free_key"}
+    assert keyed_sources == {"google-books", "bhl"}
+    assert provider["optional_secret_environment_variables"] == ["GOOGLE_API_KEY", "BHL_API_KEY"]
+    assert not ({"trove", "nara", "smithsonian", "govinfo"} & {row["source_id"] for row in sources})
 
     checked = []
     for source in sources:
@@ -132,12 +131,8 @@ LIVE_CASES = {
 }
 
 KEY_CASES = {
-    "trove": ("TROVE_API_KEY", "knowledge-search", {"source_id": "trove", "query": "economic history", "limit": 2}),
     "google-books": ("GOOGLE_API_KEY", "knowledge-search", {"source_id": "google-books", "query": "economic history", "limit": 2}),
     "bhl": ("BHL_API_KEY", "knowledge-search", {"source_id": "bhl", "query": "orchids", "limit": 2}),
-    "nara": ("NARA_CATALOG_API_KEY", "knowledge-search", {"source_id": "nara", "query": "constitution", "limit": 2}),
-    "smithsonian": ("SMITHSONIAN_API_KEY", "knowledge-search", {"source_id": "smithsonian", "query": "moon", "limit": 2}),
-    "govinfo": ("GOVINFO_API_KEY", "knowledge-record", {"source_id": "govinfo", "record_id": "FR-2018-08-03"}),
 }
 
 
