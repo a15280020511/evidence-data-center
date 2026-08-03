@@ -26,10 +26,6 @@ jobs:
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
       BHL_API_KEY: ${{ secrets.BHL_API_KEY }}
-      NARA_CATALOG_API_KEY: ${{ secrets.NARA_CATALOG_API_KEY }}
-      SMITHSONIAN_API_KEY: ${{ secrets.SMITHSONIAN_API_KEY }}
-      GOVINFO_API_KEY: ${{ secrets.GOVINFO_API_KEY }}
-      TROVE_API_KEY: ${{ secrets.TROVE_API_KEY }}
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
