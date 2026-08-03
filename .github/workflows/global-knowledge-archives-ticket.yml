@@ -24,7 +24,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      GOOGLE_PUBLIC_INTELLIGENCE_API_KEY: ${{ secrets.GOOGLE_PUBLIC_INTELLIGENCE_API_KEY }}
       BHL_API_KEY: ${{ secrets.BHL_API_KEY }}
     steps:
       - name: Checkout pinned source
