@@ -1,0 +1,164 @@
+name: Temporary Restore SerpAPI and Test Baidu Summary
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/tmp-restore-serpapi-test-baidu-summary.yml
+
+permissions:
+  contents: write
+
+jobs:
+  restore-and-test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      BAIDU_AI_CLOUD_API_KEY: ${{ secrets.BAIDU_AI_CLOUD_API_KEY }}
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/restore-serpapi-and-test-baidu-summary-20260804
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input -r api-center/market-search/requirements.txt
+          python -m pip install --disable-pip-version-check --no-input -r api-center/baidu-ai-cloud/requirements.txt
+          python -m pip check
+
+      - name: Restore SerpAPI non-workflow implementation
+        run: |
+          git checkout 3c2da4cfed63e7b7fe8f555c7a2d3bc5713e6f7a -- \
+            api-center/market-search/market_search_task.py \
+            api-center/market-search/provider-catalog.json \
+            api-center/market-search/ticket.schema.json \
+            api-center/market-search/tests/test_market_search_task.py \
+            api-center/build_catalog_market_search.py \
+            api-center/tests/test_api_catalog.py \
+            api-center/tests/test_capability_maximization.py
+          python api-center/build_catalog_market_search.py \
+            --json-output api-center/api-catalog.json \
+            --markdown-output api-center/api-catalog.md
+
+      - name: Verify only SerpAPI Google proxy is restored
+        run: |
+          set -euo pipefail
+          test -f .github/workflows/serpapi-api-ticket.yml
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          catalog = json.loads(Path('api-center/market-search/provider-catalog.json').read_text(encoding='utf-8'))
+          providers = {row['provider_id']: row for row in catalog['providers']}
+          assert set(providers) == {'tickflow', 'serpapi'}
+          assert {row['operation_id'] for row in providers['serpapi']['operations']} == {
+              'catalog-capabilities', 'google-search', 'google-news', 'google-scholar'
+          }
+          PY
+          if git grep -nEi 'customsearch\.googleapis\.com|GOOGLE_CSE_ID|GOOGLE_CUSTOM_SEARCH_API_KEY|GOOGLE_SEARCH_API_KEY' -- ':!api-center/market-search/**'; then
+            echo "standalone official Google search integration remains" >&2
+            exit 1
+          fi
+
+      - name: Run SerpAPI and catalog regressions
+        run: |
+          python -m py_compile api-center/market-search/market_search_task.py api-center/build_catalog_market_search.py
+          python -m unittest discover -s api-center/market-search/tests -v
+          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_capability_maximization.py' -v
+          git diff --check
+
+      - name: Test Baidu model search once
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          import requests
+
+          key = str(os.environ.get('BAIDU_AI_CLOUD_API_KEY') or '').strip()
+          if not key:
+              raise SystemExit('BAIDU_AI_CLOUD_API_KEY is missing')
+          url = 'https://qianfan.baidubce.com/v2/ai_search/web_summary'
+          body = {
+              'instruction': '仅基于公开网页生成简短事实摘要，并保留引用。',
+              'messages': [{'role': 'user', 'content': '百度智能云千帆AI搜索API有哪些主要能力？'}],
+              'stream': False,
+              'resource_type_filter': [{'type': 'web', 'top_k': 3}],
+              'enable_full_content': False,
+          }
+          response = requests.post(
+              url,
+              headers={
+                  'Accept': 'application/json',
+                  'Authorization': f'Bearer {key}',
+                  'Content-Type': 'application/json',
+                  'User-Agent': 'evidence-data-center-baidu-summary-verification/1',
+              },
+              json=body,
+              timeout=90,
+              allow_redirects=False,
+          )
+          raw = response.content
+          try:
+              payload = response.json()
+          except Exception as exc:
+              raise SystemExit(f'Baidu summary returned invalid JSON: HTTP {response.status_code}') from exc
+          if not 200 <= response.status_code < 300:
+              message = str(payload.get('message') or payload.get('error_msg') or payload.get('error') or '')[:500]
+              raise SystemExit(f'Baidu summary HTTP {response.status_code}: {message}')
+          code = payload.get('code')
+          if code not in (None, '', 0, '0', 200, '200'):
+              raise SystemExit(f'Baidu summary business error {code}: {str(payload.get("message") or "")[:500]}')
+          choices = payload.get('choices') if isinstance(payload, dict) else None
+          content = ''
+          if isinstance(choices, list) and choices:
+              first = choices[0] if isinstance(choices[0], dict) else {}
+              message = first.get('message') if isinstance(first.get('message'), dict) else {}
+              content = str(message.get('content') or '')
+          references = payload.get('references') if isinstance(payload, dict) else None
+          reference_count = len(references) if isinstance(references, list) else 0
+          if not content.strip():
+              raise SystemExit('Baidu summary response contained no generated content')
+          report = {
+              'status': 'PASS',
+              'endpoint': '/v2/ai_search/web_summary',
+              'http_status': response.status_code,
+              'response_bytes': len(raw),
+              'generated_content_present': True,
+              'generated_content_characters': len(content),
+              'reference_count': reference_count,
+              'requests': 1,
+              'automatic_retries': 0,
+              'model_calls': 1,
+              'secret_values_exposed': False,
+          }
+          Path('baidu-summary-verification.json').write_text(
+              json.dumps(report, ensure_ascii=False, indent=2) + '\n',
+              encoding='utf-8',
+          )
+          print(json.dumps(report, ensure_ascii=False))
+          PY
+
+      - name: Commit restored non-workflow files
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add api-center
+          git commit -m 'restore: SerpAPI Google proxy operations'
+          git push origin HEAD:fix/restore-serpapi-and-test-baidu-summary-20260804
+
+      - name: Upload Baidu model-search verification
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: baidu-web-summary-verification-${{ github.run_id }}
+          path: baidu-summary-verification.json
+          if-no-files-found: warn
+          retention-days: 30
