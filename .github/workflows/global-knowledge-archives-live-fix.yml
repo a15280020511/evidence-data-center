@@ -94,22 +94,6 @@ jobs:
               marker+'    "trove": ("TROVE_API_KEY", "knowledge-search", {"source_id": "trove", "query": "economic history", "limit": 2}),\n',
           )
           validator_path.write_text(validator,encoding='utf-8')
-
-          workflow_path=Path('.github/workflows/global-knowledge-archives-validate.yml')
-          workflow=workflow_path.read_text(encoding='utf-8')
-          workflow=workflow.replace("          assert receipt['source_count']==22\n", "          assert receipt['source_count']==20\n")
-          workflow=workflow.replace('          - theses-fr\n', '')
-          workflow=workflow.replace('          - trove\n', '')
-          workflow=workflow.replace('          - oapen-oai\n', '')
-          workflow=workflow.replace(
-              '        source:\n          - google-books\n',
-              '        source:\n          - trove\n          - google-books\n',
-          )
-          workflow=workflow.replace(
-              '      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}\n',
-              '      TROVE_API_KEY: ${{ secrets.TROVE_API_KEY }}\n      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}\n',
-          )
-          workflow_path.write_text(workflow,encoding='utf-8')
           PY
       - name: Rebuild catalog and validate repaired registry
         run: |
@@ -138,7 +122,7 @@ jobs:
           assert catalog['managed_operation_count']==665
           PY
           git diff --check
-      - name: Commit repaired contracts
+      - name: Commit repaired non-workflow contracts
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -147,7 +131,6 @@ jobs:
             api-center/global-knowledge-archives/provider-catalog.json \
             api-center/global-knowledge-archives/global_knowledge_archives_task.py \
             api-center/global-knowledge-archives/validate_global_knowledge_archives.py \
-            .github/workflows/global-knowledge-archives-validate.yml \
             api-center/api-catalog.json \
             api-center/api-catalog.md
           git commit -m 'fix: require Trove key and defer unstable endpoints'
