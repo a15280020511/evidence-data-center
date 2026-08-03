@@ -1,0 +1,38 @@
+name: Restore Software Security Wave4 Sources
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    if: github.head_ref == 'feat/open-software-security-knowledge-wave4-20260803'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/open-software-security-knowledge-wave4-20260803
+          persist-credentials: true
+          fetch-depth: 0
+      - name: Restore ordinary provider files from protected backup branch
+        run: |
+          git fetch origin backup/open-software-security-wave4-pre-sync
+          git checkout origin/backup/open-software-security-wave4-pre-sync -- api-center/open-software-security-knowledge
+          git diff --check
+      - name: Commit restored provider sources
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add api-center/open-software-security-knowledge
+          if git diff --cached --quiet; then
+            echo 'Provider sources already restored'
+            exit 0
+          fi
+          git commit -m 'feat: restore fourth-wave provider sources on latest main'
+          git push origin HEAD:feat/open-software-security-knowledge-wave4-20260803
