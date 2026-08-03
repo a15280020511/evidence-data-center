@@ -1,0 +1,340 @@
+{
+  "schema_version": "google-public-intelligence-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "providers": [
+    {
+      "provider_id": "google-public-intelligence",
+      "display_name": "Google公开情报",
+      "description": "使用统一Google API Key访问YouTube公开视频元数据、事实核查、PageSpeed实验室审计和Chrome真实用户体验数据；Google Books继续由全球资料库提供并迁移到同一Key。",
+      "enabled": true,
+      "ticket_prefix": "[intel-google-public]",
+      "required_secret_environment_variable": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
+      "required_secret_environment_variables": [
+        "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY"
+      ],
+      "catalog_policy": "只开放固定官方HTTPS端点和公开、非个人、只读数据；不访问私人YouTube或Google账户数据。",
+      "execution_policy": "每张票据一个操作、最多一次上游请求；禁止自动翻页、自动重试、重定向、写操作和客户端提供凭据。",
+      "official_origins": [
+        "https://www.googleapis.com",
+        "https://factchecktools.googleapis.com",
+        "https://pagespeedonline.googleapis.com",
+        "https://chromeuxreport.googleapis.com"
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "transient_retry_max": 0,
+        "timeout_seconds_max": 120,
+        "max_response_bytes": 2000000,
+        "automatic_pagination_allowed": false,
+        "automatic_retries_allowed": false,
+        "redirects_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "write_operations_allowed": false,
+        "oauth_user_data_allowed": false,
+        "private_account_data_allowed": false,
+        "paid_fallback_authorized": false,
+        "secret_values_exposed": false,
+        "direct_personal_identifiers_redacted": true,
+        "public_https_targets_only": true
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取当前Google公开情报能力、固定端点和安全边界，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "execution": {
+            "local": true,
+            "http_method": "LOCAL",
+            "credential_mode": "none",
+            "official_origin": "local"
+          },
+          "result_contract": {
+            "read_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 0
+          }
+        },
+        {
+          "operation_id": "quota-policy",
+          "description": "读取五项Google API的免费配额、稳定性和失效处置策略，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "execution": {
+            "local": true,
+            "http_method": "LOCAL",
+            "credential_mode": "none",
+            "official_origin": "local"
+          },
+          "result_contract": {
+            "read_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 0
+          }
+        },
+        {
+          "operation_id": "youtube-search-videos",
+          "description": "按关键词、频道、地区和语言检索公开视频，只返回首批视频元数据。",
+          "parameters": [
+            "query",
+            "max_results",
+            "channel_id",
+            "region_code",
+            "relevance_language",
+            "published_after",
+            "order"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {"type": "string", "minLength": 1, "maxLength": 256},
+              "max_results": {"type": "integer", "minimum": 1, "maximum": 25, "default": 10},
+              "channel_id": {"type": "string", "pattern": "^UC[A-Za-z0-9_-]{20,30}$"},
+              "region_code": {"type": "string", "pattern": "^[A-Z]{2}$"},
+              "relevance_language": {"type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$"},
+              "published_after": {"type": "string", "format": "date-time"},
+              "order": {"type": "string", "enum": ["date", "rating", "relevance", "title", "videoCount", "viewCount"], "default": "relevance"}
+            },
+            "required": ["query"],
+            "maxProperties": 7
+          },
+          "execution": {
+            "local": false,
+            "http_method": "GET",
+            "credential_mode": "api-key-query-backend-only",
+            "official_origin": "https://www.googleapis.com",
+            "path_template": "/youtube/v3/search"
+          },
+          "result_contract": {
+            "read_only": true,
+            "public_data_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 1
+          }
+        },
+        {
+          "operation_id": "youtube-video",
+          "description": "读取一个公开视频的标题、频道、发布时间、时长和公开统计数据。",
+          "parameters": ["video_id"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "video_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{11}$"}
+            },
+            "required": ["video_id"],
+            "maxProperties": 1
+          },
+          "execution": {
+            "local": false,
+            "http_method": "GET",
+            "credential_mode": "api-key-query-backend-only",
+            "official_origin": "https://www.googleapis.com",
+            "path_template": "/youtube/v3/videos"
+          },
+          "result_contract": {
+            "read_only": true,
+            "public_data_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 1
+          }
+        },
+        {
+          "operation_id": "youtube-channel",
+          "description": "按频道ID、Handle或旧用户名读取公开频道资料和公开统计。",
+          "parameters": ["channel_id", "handle", "username"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "channel_id": {"type": "string", "pattern": "^UC[A-Za-z0-9_-]{20,30}$"},
+              "handle": {"type": "string", "pattern": "^@[A-Za-z0-9._-]{3,30}$"},
+              "username": {"type": "string", "pattern": "^[A-Za-z0-9._-]{1,100}$"}
+            },
+            "oneOf": [
+              {"required": ["channel_id"]},
+              {"required": ["handle"]},
+              {"required": ["username"]}
+            ],
+            "maxProperties": 1
+          },
+          "execution": {
+            "local": false,
+            "http_method": "GET",
+            "credential_mode": "api-key-query-backend-only",
+            "official_origin": "https://www.googleapis.com",
+            "path_template": "/youtube/v3/channels"
+          },
+          "result_contract": {
+            "read_only": true,
+            "public_data_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 1
+          }
+        },
+        {
+          "operation_id": "factcheck-search",
+          "description": "查询Google Fact Check Explorer收录的事实核查结论和来源。",
+          "parameters": ["query", "language_code", "page_size", "max_age_days", "review_publisher_site"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {"type": "string", "minLength": 1, "maxLength": 500},
+              "language_code": {"type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$"},
+              "page_size": {"type": "integer", "minimum": 1, "maximum": 20, "default": 10},
+              "max_age_days": {"type": "integer", "minimum": 1, "maximum": 3650},
+              "review_publisher_site": {"type": "string", "pattern": "^[A-Za-z0-9.-]{1,253}$"}
+            },
+            "required": ["query"],
+            "maxProperties": 5
+          },
+          "execution": {
+            "local": false,
+            "http_method": "GET",
+            "credential_mode": "api-key-query-backend-only",
+            "official_origin": "https://factchecktools.googleapis.com",
+            "path_template": "/v1alpha1/claims:search"
+          },
+          "result_contract": {
+            "read_only": true,
+            "public_data_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 1
+          }
+        },
+        {
+          "operation_id": "pagespeed-analyze",
+          "description": "对一个公开HTTPS页面执行一次PageSpeed/Lighthouse审计并返回压缩后的性能、SEO和可访问性摘要。",
+          "parameters": ["url", "strategy", "categories", "locale"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "url": {"type": "string", "format": "uri", "maxLength": 2048},
+              "strategy": {"type": "string", "enum": ["mobile", "desktop"], "default": "mobile"},
+              "categories": {
+                "type": "array",
+                "items": {"type": "string", "enum": ["performance", "accessibility", "best-practices", "seo"]},
+                "minItems": 1,
+                "maxItems": 4,
+                "uniqueItems": true,
+                "default": ["performance"]
+              },
+              "locale": {"type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})?$"}
+            },
+            "required": ["url"],
+            "maxProperties": 4
+          },
+          "execution": {
+            "local": false,
+            "http_method": "GET",
+            "credential_mode": "api-key-query-backend-only",
+            "official_origin": "https://pagespeedonline.googleapis.com",
+            "path_template": "/pagespeedonline/v5/runPagespeed"
+          },
+          "result_contract": {
+            "read_only": true,
+            "public_https_target_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 1
+          }
+        },
+        {
+          "operation_id": "crux-query",
+          "description": "查询一个公开HTTPS来源或页面最近28天的真实Chrome用户体验指标。",
+          "parameters": ["origin", "url", "form_factor", "metrics"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "origin": {"type": "string", "format": "uri", "maxLength": 2048},
+              "url": {"type": "string", "format": "uri", "maxLength": 2048},
+              "form_factor": {"type": "string", "enum": ["PHONE", "DESKTOP", "TABLET"]},
+              "metrics": {
+                "type": "array",
+                "items": {"type": "string", "enum": ["largest_contentful_paint", "interaction_to_next_paint", "cumulative_layout_shift", "first_contentful_paint", "experimental_time_to_first_byte", "round_trip_time", "form_factors"]},
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true
+              }
+            },
+            "oneOf": [
+              {"required": ["origin"], "not": {"required": ["url"]}},
+              {"required": ["url"], "not": {"required": ["origin"]}}
+            ],
+            "maxProperties": 3
+          },
+          "execution": {
+            "local": false,
+            "http_method": "POST",
+            "credential_mode": "api-key-query-backend-only",
+            "official_origin": "https://chromeuxreport.googleapis.com",
+            "path_template": "/v1/records:queryRecord"
+          },
+          "result_contract": {
+            "read_only": true,
+            "public_https_target_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 1
+          }
+        },
+        {
+          "operation_id": "crux-history-query",
+          "description": "查询一个公开HTTPS来源或页面的CrUX历史真实用户体验时间序列。",
+          "parameters": ["origin", "url", "form_factor", "metrics", "collection_period_count"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "origin": {"type": "string", "format": "uri", "maxLength": 2048},
+              "url": {"type": "string", "format": "uri", "maxLength": 2048},
+              "form_factor": {"type": "string", "enum": ["PHONE", "DESKTOP", "TABLET"]},
+              "metrics": {
+                "type": "array",
+                "items": {"type": "string", "enum": ["largest_contentful_paint", "interaction_to_next_paint", "cumulative_layout_shift", "first_contentful_paint", "experimental_time_to_first_byte", "round_trip_time", "form_factors"]},
+                "minItems": 1,
+                "maxItems": 7,
+                "uniqueItems": true
+              },
+              "collection_period_count": {"type": "integer", "minimum": 1, "maximum": 40, "default": 25}
+            },
+            "oneOf": [
+              {"required": ["origin"], "not": {"required": ["url"]}},
+              {"required": ["url"], "not": {"required": ["origin"]}}
+            ],
+            "maxProperties": 4
+          },
+          "execution": {
+            "local": false,
+            "http_method": "POST",
+            "credential_mode": "api-key-query-backend-only",
+            "official_origin": "https://chromeuxreport.googleapis.com",
+            "path_template": "/v1/records:queryHistoryRecord"
+          },
+          "result_contract": {
+            "read_only": true,
+            "public_https_target_only": true,
+            "secret_values_exposed": false,
+            "requests_per_ticket_max": 1
+          }
+        }
+      ]
+    }
+  ]
+}
