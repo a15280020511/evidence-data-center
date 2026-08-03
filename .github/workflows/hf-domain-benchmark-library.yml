@@ -65,8 +65,11 @@ jobs:
           import json
           from pathlib import Path
           manifest = json.loads(Path('domain-benchmark-validation/bundle-manifest.json').read_text(encoding='utf-8'))
-          assert manifest['schema_version'] == 'domain-benchmark-control-bundle-v1'
-          assert manifest['file_count'] == 19
+          assert manifest['schema_version'] == 'domain-benchmark-control-bundle-v2'
+          assert manifest['file_count'] == 120
+          assert manifest['domain_count'] == 8
+          assert manifest['asset_library_count'] == 12
+          assert manifest['material_directories_per_domain'] == 12
           assert len(manifest['bundle_sha256']) == 64
           assert manifest['secret_values_exposed'] is False
           assert manifest['model_calls'] == 0
@@ -119,7 +122,7 @@ jobs:
           python -m pip install --disable-pip-version-check --no-input -r api-center/huggingface/requirements.txt
           python -m pip check
 
-      - name: Synchronize private domain benchmark control plane
+      - name: Synchronize private domain benchmark material library
         id: sync
         continue-on-error: true
         run: |
