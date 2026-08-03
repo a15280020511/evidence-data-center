@@ -53,6 +53,7 @@ FRED_CATALOG = HERE / "fred/provider-catalog.json"
 HUGGINGFACE_CATALOG = HERE / "huggingface/provider-catalog.json"
 EVIDENCE_STANDARDIZATION_CATALOG = HERE / "evidence-standardization/provider-catalog.json"
 GLOBAL_RESEARCH_INTELLIGENCE_CATALOG = HERE / "global-research-intelligence/provider-catalog.json"
+OPENBB_FREE_CATALOG = HERE / "openbb-free/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -95,6 +96,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "huggingface-hub": 11,
     "evidence-standardization": 8,
     "global-research-intelligence": 23,
+    "openbb-free": 7,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -137,6 +139,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     HUGGINGFACE_CATALOG,
     EVIDENCE_STANDARDIZATION_CATALOG,
     GLOBAL_RESEARCH_INTELLIGENCE_CATALOG,
+    OPENBB_FREE_CATALOG,
 )
 
 load_json = base.load_json
@@ -195,6 +198,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "huggingface/provider-catalog.json",
         "evidence-standardization/provider-catalog.json",
         "global-research-intelligence/provider-catalog.json",
+        "openbb-free/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (

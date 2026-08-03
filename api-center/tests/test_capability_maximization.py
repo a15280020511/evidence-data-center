@@ -111,6 +111,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "huggingface-hub": 11,
             "evidence-standardization": 8,
             "global-research-intelligence": 23,
+            "openbb-free": 7,
         }
         for provider_id, count in expected_counts.items():
             self.assertEqual(len(providers[provider_id]["operations"]), count)
