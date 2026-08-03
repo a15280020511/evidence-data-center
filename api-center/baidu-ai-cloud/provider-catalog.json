@@ -5,8 +5,8 @@
   "providers": [
     {
       "provider_id": "baidu-ai-cloud",
-      "display_name": "百度AI网页搜索",
-      "description": "当前统一API Key已真实验证可用的百度公开网页搜索。",
+      "display_name": "百度AI搜索与模型摘要",
+      "description": "当前统一API Key已真实验证可用的百度公开网页搜索与模型搜索摘要。",
       "enabled": true,
       "ticket_prefix": "[intel-baidu-ai]",
       "required_secret_environment_variable": "BAIDU_AI_CLOUD_API_KEY",
@@ -17,10 +17,13 @@
         "web-search": [
           "BAIDU_AI_CLOUD_API_KEY"
         ],
+        "web-summary": [
+          "BAIDU_AI_CLOUD_API_KEY"
+        ],
         "local-governance": []
       },
-      "catalog_policy": "只开放当前Key已实测通过的1项上游高价值能力和2项本地治理能力。",
-      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；零模型调用、零付费兜底。",
+      "catalog_policy": "只开放当前Key已实测通过的2项上游高价值能力和2项本地治理能力。",
+      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；网页搜索为零模型调用，模型摘要固定记1次模型调用；禁止重试和付费兜底。",
       "official_origins": [
         "https://qianfan.baidubce.com"
       ],
@@ -35,7 +38,8 @@
           "qianfan.baidubce.com"
         ],
         "fixed_paths": [
-          "/v2/ai_search/web_search"
+          "/v2/ai_search/web_search",
+          "/v2/ai_search/web_summary"
         ],
         "arbitrary_urls_allowed": false,
         "arbitrary_hosts_allowed": false,
@@ -49,6 +53,8 @@
         "cloud_resource_management_allowed": false,
         "paid_fallback_authorized": false,
         "generative_model_chat_allowed": false,
+        "generative_search_summary_allowed": true,
+        "model_calls_per_web_summary": 1,
         "nlp_operations_allowed": false,
         "ocr_operations_allowed": false,
         "image_recognition_operations_allowed": false,
@@ -167,6 +173,58 @@
           "execution": {
             "local": false,
             "path_template": "/v2/ai_search/web_search",
+            "http_method": "POST",
+            "credential_mode": "unified-api-key-bearer",
+            "content_type": "application/json",
+            "official_origin": "https://qianfan.baidubce.com"
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "https://qianfan.baidubce.com",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "unified-api-key-bearer",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": true
+          }
+        },
+        {
+          "operation_id": "web-summary",
+          "description": "百度智能搜索生成高性能版：实时检索公开网页，由模型生成摘要并返回引用。",
+          "parameters": [
+            "query",
+            "top_k",
+            "instruction"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "default": 3
+              },
+              "instruction": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "maxProperties": 3,
+            "required": [
+              "query"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v2/ai_search/web_summary",
             "http_method": "POST",
             "credential_mode": "unified-api-key-bearer",
             "content_type": "application/json",

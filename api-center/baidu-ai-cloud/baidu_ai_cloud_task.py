@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded execution for the currently verified Baidu AI web-search capability."""
+"""Bounded execution for verified Baidu web search and model-search summary."""
 from __future__ import annotations
 
 import json
@@ -31,6 +31,7 @@ QUOTA_POLICY_PATH = HERE / "free-quota-policy.json"
 
 QIANFAN_ORIGIN = "https://qianfan.baidubce.com"
 WEB_SEARCH_PATH = "/v2/ai_search/web_search"
+WEB_SUMMARY_PATH = "/v2/ai_search/web_summary"
 API_KEY_ENV = "BAIDU_AI_CLOUD_API_KEY"
 
 PHONE_RE = re.compile(r"(?<!\d)1[3-9]\d{9}(?!\d)")
@@ -250,6 +251,98 @@ def _post_web_search(
     }
 
 
+def _web_summary_body(parameters: Mapping[str, Any]) -> dict[str, Any]:
+    query = str(parameters.get("query") or "").strip()
+    if not query:
+        raise ValueError("query must not be empty")
+    top_k = bounded_int(
+        parameters.get("top_k"),
+        default=3,
+        minimum=1,
+        maximum=10,
+        name="top_k",
+    )
+    instruction = str(
+        parameters.get("instruction")
+        or "仅基于公开网页生成简明、可核验的事实摘要，并保留引用。"
+    ).strip()
+    if not instruction or len(instruction) > 4000:
+        raise ValueError("instruction must contain 1 to 4000 characters")
+    return {
+        "instruction": instruction,
+        "messages": [{"content": query, "role": "user"}],
+        "stream": False,
+        "resource_type_filter": [{"type": "web", "top_k": top_k}],
+        "enable_full_content": False,
+    }
+
+
+def _post_web_summary(
+    parameters: Mapping[str, Any],
+    *,
+    timeout: int,
+    max_bytes: int,
+) -> tuple[Mapping[str, Any], dict[str, Any]]:
+    row = _operation_row("web-summary")
+    execution = row.get("execution") or {}
+    if execution.get("official_origin") != QIANFAN_ORIGIN:
+        raise ValueError("provider catalog origin is not approved")
+    if execution.get("path_template") != WEB_SUMMARY_PATH:
+        raise ValueError("provider catalog path is not approved")
+    key = _secret()
+    try:
+        response = requests.post(
+            QIANFAN_ORIGIN + WEB_SUMMARY_PATH,
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {key}",
+                "Content-Type": "application/json",
+                "User-Agent": "evidence-intelligence-center-baidu-summary/1",
+            },
+            json=_web_summary_body(parameters),
+            timeout=timeout,
+            allow_redirects=False,
+        )
+    except requests.RequestException as exc:
+        raise BaiduAICloudError(
+            "BAIDU_CONNECTION_FAILED",
+            type(exc).__name__,
+            retryable=True,
+        ) from exc
+    decoded = _decode_json(response, max_bytes=max_bytes)
+    _check_http(response, decoded)
+    if not isinstance(decoded, Mapping):
+        raise BaiduAICloudError(
+            "BAIDU_RESULT_INVALID",
+            "upstream response must be a JSON object",
+        )
+    choices = decoded.get("choices")
+    content = ""
+    if isinstance(choices, list) and choices:
+        first = choices[0] if isinstance(choices[0], Mapping) else {}
+        message = first.get("message") if isinstance(first.get("message"), Mapping) else {}
+        content = str(message.get("content") or "")
+    if not content.strip():
+        raise BaiduAICloudError(
+            "BAIDU_RESULT_INVALID",
+            "model-search response contained no generated content",
+        )
+    return decoded, {
+        "request_origin": "qianfan.baidubce.com",
+        "request_path": WEB_SUMMARY_PATH,
+        "http_method": "POST",
+        "credential_mode": "unified-api-key-bearer-backend-only",
+        "credential_environment_variable": API_KEY_ENV,
+        "http_status": response.status_code,
+        "response_bytes": len(response.content),
+        "requests_per_ticket": 1,
+        "upstream_called": True,
+        "paid_fallback_authorized": False,
+        "model_calls": 1,
+        "secret_values_exposed": False,
+    }
+
+
 def _truncate(payload: Mapping[str, Any], max_rows: int) -> Mapping[str, Any]:
     result = dict(payload)
     for key in ("references", "items", "results"):
@@ -336,6 +429,18 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
                 "operation": operation,
                 "data": _redact(_truncate(payload, max_rows)),
             }
+        elif operation == "web-summary":
+            payload, request_metadata = _post_web_summary(
+                parameters,
+                timeout=timeout,
+                max_bytes=max_bytes,
+            )
+            metadata.update(request_metadata)
+            snapshot = {
+                "provider": "baidu-ai-cloud",
+                "operation": operation,
+                "data": _redact(_truncate(payload, max_rows)),
+            }
         else:
             raise ValueError(f"unsupported Baidu operation: {operation}")
         status = "INTEL_BAIDU_AI_COMPLETED"
@@ -371,6 +476,6 @@ if __name__ == "__main__":
             schema_path=SCHEMA_PATH,
             catalog_path=CATALOG_PATH,
             status_schema="baidu-ai-cloud-ticket-status-v3",
-            display_name="百度AI网页搜索",
+            display_name="百度AI搜索与模型摘要",
         )
     )

@@ -67,13 +67,13 @@
     "baidu-ai-cloud/provider-catalog.json",
     "open-software-security-knowledge/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "dd215d5105580900d7301c37eae52224c3242f40fec80884e63c7cb62edbc2a5",
+  "managed_provider_catalog_sha256": "d31d167d263943ba1ac5879fb679ac25a32597e026365826eae203128c79859f",
   "connector_count": 68,
   "enabled_connector_count": 68,
   "managed_provider_count": 63,
   "enabled_managed_provider_count": 63,
-  "managed_operation_count": 688,
-  "exposed_parameter_count": 2416,
+  "managed_operation_count": 689,
+  "exposed_parameter_count": 2419,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -31890,13 +31890,13 @@
     },
     {
       "provider_id": "baidu-ai-cloud",
-      "display_name": "百度AI网页搜索",
-      "description": "当前统一API Key已真实验证可用的百度公开网页搜索。",
+      "display_name": "百度AI搜索与模型摘要",
+      "description": "当前统一API Key已真实验证可用的百度公开网页搜索与模型搜索摘要。",
       "enabled": true,
       "ticket_prefix": "[intel-baidu-ai]",
-      "catalog_policy": "只开放当前Key已实测通过的1项上游高价值能力和2项本地治理能力。",
-      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；零模型调用、零付费兜底。",
-      "operation_count": 3,
+      "catalog_policy": "只开放当前Key已实测通过的2项上游高价值能力和2项本地治理能力。",
+      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；网页搜索为零模型调用，模型摘要固定记1次模型调用；禁止重试和付费兜底。",
+      "operation_count": 4,
       "operations": [
         {
           "operation_id": "catalog-capabilities",
@@ -31994,6 +31994,50 @@
             "secret_values_exposed": false,
             "direct_personal_identifiers_redacted": true
           }
+        },
+        {
+          "operation_id": "web-summary",
+          "description": "百度智能搜索生成高性能版：实时检索公开网页，由模型生成摘要并返回引用。",
+          "parameter_names": [
+            "query",
+            "top_k",
+            "instruction"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 10,
+                "default": 3
+              },
+              "instruction": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              }
+            },
+            "maxProperties": 3,
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "https://qianfan.baidubce.com",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "unified-api-key-bearer",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": true
+          }
         }
       ],
       "limits": {
@@ -32007,7 +32051,8 @@
           "qianfan.baidubce.com"
         ],
         "fixed_paths": [
-          "/v2/ai_search/web_search"
+          "/v2/ai_search/web_search",
+          "/v2/ai_search/web_summary"
         ],
         "arbitrary_urls_allowed": false,
         "arbitrary_hosts_allowed": false,
@@ -32021,6 +32066,8 @@
         "cloud_resource_management_allowed": false,
         "paid_fallback_authorized": false,
         "generative_model_chat_allowed": false,
+        "generative_search_summary_allowed": true,
+        "model_calls_per_web_summary": 1,
         "nlp_operations_allowed": false,
         "ocr_operations_allowed": false,
         "image_recognition_operations_allowed": false,
@@ -32036,7 +32083,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "99a10301319b992d2a9e0509dcbd41b8aaa64b9a3ea8423c1dfe01ced1d377b4",
+      "provider_sha256": "d483bb189798fe298038d9f4a468895aedfde5819ebb7a8e946886f42386f570",
       "catalog_file": "baidu-ai-cloud/provider-catalog.json"
     },
     {
@@ -41010,5 +41057,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "d17752063dba42dcaf93c7385d7beb5d1841ffb9c1f90c3850289105f0afef49"
+  "catalog_sha256": "d7a29cbdec979484a0561dcd29238c2897b4862d56267c46d845a65a7bc24235"
 }

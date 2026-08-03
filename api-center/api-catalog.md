@@ -3,9 +3,9 @@
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`68/68` 已启用
 - 托管提供方：`63/63` 已启用
-- 托管操作总数：`688`
-- 已公开参数总数：`2416`
-- 目录 SHA-256：`d17752063dba42dcaf93c7385d7beb5d1841ffb9c1f90c3850289105f0afef49`
+- 托管操作总数：`689`
+- 已公开参数总数：`2419`
+- 目录 SHA-256：`d7a29cbdec979484a0561dcd29238c2897b4862d56267c46d845a65a7bc24235`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -78,7 +78,7 @@
 | 全球开放文献与资料库 | `global-literature-libraries` | 启用 | `[intel-literature]` | `10` | 否 |
 | 全球文献档案资料库第二波 | `global-knowledge-archives` | 启用 | `[intel-knowledge]` | `9` | 否 |
 | 全球知识织网第三波 | `global-knowledge-fabric` | 启用 | `[intel-knowledge-fabric]` | `9` | 否 |
-| 百度AI网页搜索 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `3` | 否 |
+| 百度AI搜索与模型摘要 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `4` | 否 |
 | 全球开源软件、安全与开放标准知识层 | `open-software-security-knowledge` | 启用 | `[intel-software-security]` | `11` | 否 |
 
 ## 普通连接器
@@ -25994,16 +25994,16 @@
 }
 ```
 
-## 百度AI网页搜索 (`baidu-ai-cloud`)
+## 百度AI搜索与模型摘要 (`baidu-ai-cloud`)
 
 - 状态：`启用`
-- 说明：当前统一API Key已真实验证可用的百度公开网页搜索。
-- 目录策略：只开放当前Key已实测通过的1项上游高价值能力和2项本地治理能力。
-- 执行策略：每张票据一个操作、最多一次固定HTTPS请求；零模型调用、零付费兜底。
+- 说明：当前统一API Key已真实验证可用的百度公开网页搜索与模型搜索摘要。
+- 目录策略：只开放当前Key已实测通过的2项上游高价值能力和2项本地治理能力。
+- 执行策略：每张票据一个操作、最多一次固定HTTPS请求；网页搜索为零模型调用，模型摘要固定记1次模型调用；禁止重试和付费兜底。
 - 票据前缀：`[intel-baidu-ai]`
 - Secret环境变量名：`BAIDU_AI_CLOUD_API_KEY`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`99a10301319b992d2a9e0509dcbd41b8aaa64b9a3ea8423c1dfe01ced1d377b4`
+- 提供方SHA-256：`d483bb189798fe298038d9f4a468895aedfde5819ebb7a8e946886f42386f570`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -26078,6 +26078,39 @@
 }
 ```
 
+| `web-summary` | 百度智能搜索生成高性能版：实时检索公开网页，由模型生成摘要并返回引用。 | `query, top_k, instruction` |
+
+`web-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "top_k": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10,
+      "default": 3
+    },
+    "instruction": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    }
+  },
+  "maxProperties": 3,
+  "required": [
+    "query"
+  ]
+}
+```
+
 限制：
 
 ```json
@@ -26092,7 +26125,8 @@
     "qianfan.baidubce.com"
   ],
   "fixed_paths": [
-    "/v2/ai_search/web_search"
+    "/v2/ai_search/web_search",
+    "/v2/ai_search/web_summary"
   ],
   "arbitrary_urls_allowed": false,
   "arbitrary_hosts_allowed": false,
@@ -26106,6 +26140,8 @@
   "cloud_resource_management_allowed": false,
   "paid_fallback_authorized": false,
   "generative_model_chat_allowed": false,
+  "generative_search_summary_allowed": true,
+  "model_calls_per_web_summary": 1,
   "nlp_operations_allowed": false,
   "ocr_operations_allowed": false,
   "image_recognition_operations_allowed": false,
