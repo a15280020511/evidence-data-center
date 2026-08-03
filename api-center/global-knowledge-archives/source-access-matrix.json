@@ -1,6 +1,6 @@
 {
   "schema_version": "global-knowledge-archives-source-matrix-v1",
-  "active_source_count": 20,
+  "active_source_count": 16,
   "sources": [
     {
       "source_id": "eric",
@@ -86,7 +86,7 @@
       ],
       "credential_mode": "none",
       "credential_env": "",
-      "license_policy": "FederalRegister.gov metadata is a discovery layer; authoritative legal reliance should use linked GovInfo editions.",
+      "license_policy": "FederalRegister.gov metadata is a discovery layer; authoritative legal reliance should use the linked official publication edition.",
       "cost": "free"
     },
     {
@@ -135,20 +135,6 @@
       "cost": "free; API key no longer required for ordinary access"
     },
     {
-      "source_id": "trove",
-      "name": "Trove",
-      "category": "national-library-archives-australia",
-      "protocol": "rest-search",
-      "base_url": "https://api.trove.nla.gov.au/v3",
-      "operations": [
-        "knowledge-search"
-      ],
-      "credential_mode": "required_free_key",
-      "credential_env": "TROVE_API_KEY",
-      "license_policy": "Metadata and digitized-item rights vary; preserve cultural-sensitivity and rights fields.",
-      "cost": "free registration key required by the current production endpoint"
-    },
-    {
       "source_id": "google-books",
       "name": "Google Books",
       "category": "global-books-catalog",
@@ -177,48 +163,6 @@
       "credential_env": "BHL_API_KEY",
       "license_policy": "Biodiversity publication metadata and explicitly exposed OCR/files; preserve item-level rights.",
       "cost": "free registration key"
-    },
-    {
-      "source_id": "nara",
-      "name": "US National Archives Catalog",
-      "category": "national-archives",
-      "protocol": "rest-search",
-      "base_url": "https://catalog.archives.gov/api/v2",
-      "operations": [
-        "knowledge-search"
-      ],
-      "credential_mode": "required_free_key",
-      "credential_env": "NARA_CATALOG_API_KEY",
-      "license_policy": "Public archival metadata and linked digital objects; preserve record and object rights statements.",
-      "cost": "free API key; default quota documented by NARA"
-    },
-    {
-      "source_id": "smithsonian",
-      "name": "Smithsonian Open Access",
-      "category": "museum-library-archives",
-      "protocol": "rest-search",
-      "base_url": "https://api.si.edu/openaccess/api/v1.0",
-      "operations": [
-        "knowledge-search"
-      ],
-      "credential_mode": "required_free_key",
-      "credential_env": "SMITHSONIAN_API_KEY",
-      "license_policy": "CC0 metadata/media only where designated; restricted objects return metadata without unauthorized media.",
-      "cost": "free api.data.gov key"
-    },
-    {
-      "source_id": "govinfo",
-      "name": "GovInfo",
-      "category": "government-publications",
-      "protocol": "rest-record",
-      "base_url": "https://api.govinfo.gov",
-      "operations": [
-        "knowledge-record"
-      ],
-      "credential_mode": "required_free_key",
-      "credential_env": "GOVINFO_API_KEY",
-      "license_policy": "Authenticated official US government package metadata and lawful content links.",
-      "cost": "free api.data.gov key"
     },
     {
       "source_id": "dnb-sru",

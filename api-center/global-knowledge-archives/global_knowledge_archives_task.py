@@ -300,8 +300,8 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         "credential_names": [],
         "automatic_pagination_used": False,
         "automatic_retry_used": False,
-        "redirects_followed": false,
-        "secret_values_exposed": false,
+        "redirects_followed": False,
+        "secret_values_exposed": False,
         "model_calls": 0,
     }
     try:
