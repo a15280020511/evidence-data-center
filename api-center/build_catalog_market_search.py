@@ -59,6 +59,7 @@ NIH_PUBLIC_HEALTH_CATALOG = HERE / "nih-public-health/provider-catalog.json"
 OPENSTREETMAP_CATALOG = HERE / "openstreetmap/provider-catalog.json"
 GNEWS_CATALOG = HERE / "gnews/provider-catalog.json"
 GLOBAL_LITERATURE_LIBRARIES_CATALOG = HERE / "global-literature-libraries/provider-catalog.json"
+GLOBAL_KNOWLEDGE_ARCHIVES_CATALOG = HERE / "global-knowledge-archives/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -107,6 +108,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "openstreetmap": 6,
     "gnews": 3,
     "global-literature-libraries": 10,
+    "global-knowledge-archives": 9,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -155,6 +157,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     OPENSTREETMAP_CATALOG,
     GNEWS_CATALOG,
     GLOBAL_LITERATURE_LIBRARIES_CATALOG,
+    GLOBAL_KNOWLEDGE_ARCHIVES_CATALOG,
 )
 
 load_json = base.load_json
@@ -219,6 +222,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "openstreetmap/provider-catalog.json",
         "gnews/provider-catalog.json",
         "global-literature-libraries/provider-catalog.json",
+        "global-knowledge-archives/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (
