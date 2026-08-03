@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Initialize and verify the private Hugging Face domain benchmark library.
+"""Initialize and verify the private Hugging Face domain benchmark material library.
 
-This adapter belongs to the evidence center. It may use the network only inside the
-managed GitHub workflow. The compute center remains network-denied and consumes
-only GPTs-mediated immutable snapshots and hashes.
+This adapter belongs to the Intelligence Center. It may use the network only inside
+its managed GitHub workflow. The Compute Center remains network-denied and consumes
+only GPTs-mediated immutable snapshots, manifests, and hashes.
 """
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ HERE = Path(__file__).resolve().parent
 LIBRARY_SOURCE = HERE / "domain-benchmark-library"
 REQUIREMENTS_PATH = LIBRARY_SOURCE / "requirements.json"
 SCHEMA_PATH = LIBRARY_SOURCE / "manifest.schema.json"
+MATERIAL_DIRECTORY_PATH = LIBRARY_SOURCE / "material-directory-registry.json"
 HF_ORIGIN = "https://huggingface.co"
 HF_TOKEN_ENV = "HF_TOKEN"
 HF_REPO_ENV = "HF_DOMAIN_BENCHMARK_DATASET_REPO"
@@ -48,11 +49,29 @@ EXPECTED_ASSET_LIBRARIES = {
     "outcome-feedback-library",
     "ontology-crosswalk-library",
     "regime-event-library",
+    "source-catalog-library",
+    "data-dictionary-library",
+    "license-provenance-library",
+    "benchmark-manifest-library",
+}
+EXPECTED_MATERIAL_DIRECTORIES = {
+    "sources",
+    "snapshots",
+    "variable-dictionaries",
+    "factors",
+    "rule-snapshots",
+    "baselines",
+    "metric-thresholds",
+    "regime-events",
+    "crosswalks",
+    "outcome-feedback",
+    "licenses-provenance",
+    "manifests",
 }
 
 
 class DomainBenchmarkStoreError(RuntimeError):
-    """Raised when the benchmark library cannot be validated or synchronized."""
+    """Raised when the benchmark material library cannot be validated or synchronized."""
 
 
 def load_json(path: Path) -> Any:
@@ -87,6 +106,43 @@ def redact(message: str, token: str) -> str:
     return text.replace("\n", " ")[:1600]
 
 
+def _validate_material_directory_registry(document: Mapping[str, Any]) -> dict[str, Any]:
+    if document.get("schema_version") != "domain-benchmark-material-directory-registry-v1":
+        raise DomainBenchmarkStoreError("unsupported material directory registry schema")
+    additional = document.get("additional_asset_libraries")
+    directories = document.get("domain_material_directories")
+    policies = document.get("policies")
+    if not isinstance(additional, list) or not isinstance(directories, list) or not isinstance(policies, Mapping):
+        raise DomainBenchmarkStoreError("material directory registry is incomplete")
+    additional_ids = {str(row.get("id") or "") for row in additional if isinstance(row, Mapping)}
+    directory_ids = {str(row.get("id") or "") for row in directories if isinstance(row, Mapping)}
+    if additional_ids != {
+        "source-catalog-library",
+        "data-dictionary-library",
+        "license-provenance-library",
+        "benchmark-manifest-library",
+    }:
+        raise DomainBenchmarkStoreError("additional asset library registry is incomplete")
+    if directory_ids != EXPECTED_MATERIAL_DIRECTORIES:
+        raise DomainBenchmarkStoreError("domain material directory registry is incomplete")
+    required_policies = {
+        "private_dataset_required": True,
+        "append_only_versions": True,
+        "immutable_hash_required": True,
+        "raw_secrets_allowed": False,
+        "compute_runtime_network_allowed": False,
+        "direct_center_connection_allowed": False,
+    }
+    for key, expected in required_policies.items():
+        if policies.get(key) != expected:
+            raise DomainBenchmarkStoreError(f"invalid material directory policy: {key}")
+    return {
+        "additional_asset_libraries": additional,
+        "domain_material_directories": directories,
+        "material_directory_sha256": canonical_sha(document),
+    }
+
+
 def validate_requirements(document: Mapping[str, Any]) -> dict[str, Any]:
     if document.get("schema_version") != "domain-benchmark-library-requirements-v1":
         raise DomainBenchmarkStoreError("unsupported requirements schema")
@@ -117,12 +173,15 @@ def validate_requirements(document: Mapping[str, Any]) -> dict[str, Any]:
             if not isinstance(values, list) or not values or any(not isinstance(item, str) or not item for item in values):
                 raise DomainBenchmarkStoreError(f"invalid {field} for domain {row.get('id')}")
 
-    libraries = document.get("required_asset_libraries")
-    if not isinstance(libraries, list):
+    base_libraries = document.get("required_asset_libraries")
+    if not isinstance(base_libraries, list):
         raise DomainBenchmarkStoreError("required_asset_libraries must be a list")
-    library_ids = [str(row.get("id") or "") for row in libraries if isinstance(row, Mapping)]
-    if len(library_ids) != len(libraries) or set(library_ids) != EXPECTED_ASSET_LIBRARIES:
-        raise DomainBenchmarkStoreError("asset library registry is incomplete or duplicated")
+    base_ids = [str(row.get("id") or "") for row in base_libraries if isinstance(row, Mapping)]
+    material = _validate_material_directory_registry(load_json(MATERIAL_DIRECTORY_PATH))
+    combined = list(base_libraries) + list(material["additional_asset_libraries"])
+    combined_ids = [str(row.get("id") or "") for row in combined if isinstance(row, Mapping)]
+    if len(combined_ids) != len(combined) or set(combined_ids) != EXPECTED_ASSET_LIBRARIES or len(set(combined_ids)) != len(combined_ids):
+        raise DomainBenchmarkStoreError("combined asset library registry is incomplete or duplicated")
 
     evidence = document.get("required_evidence_per_benchmark")
     fields = document.get("required_record_fields")
@@ -134,8 +193,11 @@ def validate_requirements(document: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "schema_version": document["schema_version"],
         "domains": sorted(domain_ids),
-        "asset_libraries": sorted(library_ids),
+        "asset_libraries": sorted(combined_ids),
+        "asset_library_rows": combined,
+        "material_directories": material["domain_material_directories"],
         "requirements_sha256": canonical_sha(document),
+        "material_directory_sha256": material["material_directory_sha256"],
     }
 
 
@@ -149,12 +211,35 @@ def build_bundle(output_dir: Path) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
     shutil.copy2(REQUIREMENTS_PATH, output_dir / "requirements.json")
     shutil.copy2(SCHEMA_PATH, output_dir / "manifest.schema.json")
+    shutil.copy2(MATERIAL_DIRECTORY_PATH, output_dir / "material-directory-registry.json")
 
     domain_rows = []
     for domain in requirements["domains"]:
         domain_id = domain["id"]
+        material_rows = []
+        for material in validation["material_directories"]:
+            directory_id = material["id"]
+            relative = Path("domains") / domain_id / directory_id / "README.json"
+            write_json(
+                output_dir / relative,
+                {
+                    "schema_version": "domain-benchmark-material-directory-v1",
+                    "domain": domain_id,
+                    "directory_id": directory_id,
+                    "status": "data-pending",
+                    "purpose": material["purpose"],
+                    "storage_owner": "evidence-data-center",
+                    "selection_owner": "gpts-usage-center",
+                    "compute_runtime_network_allowed": False,
+                    "direct_center_connection": False,
+                    "immutable_snapshot_hash_required": True,
+                    "raw_secrets_allowed": False,
+                },
+            )
+            material_rows.append({"directory_id": directory_id, "status": "data-pending", "path": relative.as_posix()})
+
         domain_record = {
-            "schema_version": "domain-benchmark-domain-requirements-v1",
+            "schema_version": "domain-benchmark-domain-requirements-v2",
             "domain": domain_id,
             "priority": domain["priority"],
             "status": "data-pending",
@@ -162,6 +247,7 @@ def build_bundle(output_dir: Path) -> dict[str, Any]:
             "required_baselines": domain["required_baselines"],
             "required_metrics": domain["required_metrics"],
             "required_evidence": requirements["required_evidence_per_benchmark"],
+            "material_directories": material_rows,
             "manifest_schema": f"{REMOTE_ROOT}/manifest.schema.json",
             "runtime_contract": {
                 "storage_owner": "evidence-data-center",
@@ -178,46 +264,45 @@ def build_bundle(output_dir: Path) -> dict[str, Any]:
                 "priority": domain["priority"],
                 "status": "data-pending",
                 "requirements_path": relative.as_posix(),
+                "material_directory_count": len(material_rows),
             }
         )
 
     asset_rows = []
-    for library in requirements["required_asset_libraries"]:
+    for library in validation["asset_library_rows"]:
         library_id = library["id"]
         relative = Path("asset-libraries") / library_id / "README.json"
         write_json(
             output_dir / relative,
             {
-                "schema_version": "domain-benchmark-asset-library-v1",
+                "schema_version": "domain-benchmark-asset-library-v2",
                 "library_id": library_id,
                 "status": "data-pending",
                 "purpose": library["purpose"],
                 "append_only_versions": True,
                 "immutable_snapshot_hash_required": True,
                 "runtime_network_allowed": False,
+                "raw_secrets_allowed": False,
             },
         )
-        asset_rows.append(
-            {
-                "library_id": library_id,
-                "status": "data-pending",
-                "path": relative.as_posix(),
-            }
-        )
+        asset_rows.append({"library_id": library_id, "status": "data-pending", "path": relative.as_posix()})
 
     library_index = {
-        "schema_version": "domain-benchmark-library-index-v1",
+        "schema_version": "domain-benchmark-library-index-v2",
         "status": "initialized-data-pending",
         "provider": "huggingface",
         "repo_type": "dataset",
         "private_required": True,
         "remote_root": REMOTE_ROOT,
         "requirements_sha256": validation["requirements_sha256"],
+        "material_directory_sha256": validation["material_directory_sha256"],
         "manifest_schema_sha256": sha256_file(output_dir / "manifest.schema.json"),
         "domains": domain_rows,
         "asset_libraries": asset_rows,
+        "domain_material_directory_count": len(EXPECTED_MATERIAL_DIRECTORIES),
         "promotion_rule": "No domain benchmark may become production or decision-grade without frozen real data, baselines, sample-out evidence, adversarial checks and applicable shadow feedback.",
         "compute_runtime_network_allowed": False,
+        "direct_center_connection": False,
         "model_calls": 0,
     }
     write_json(output_dir / "library-index.json", library_index)
@@ -233,12 +318,15 @@ def build_bundle(output_dir: Path) -> dict[str, Any]:
                 }
             )
     bundle = {
-        "schema_version": "domain-benchmark-control-bundle-v1",
+        "schema_version": "domain-benchmark-control-bundle-v2",
         "generated_from": "evidence-data-center",
         "remote_root": REMOTE_ROOT,
         "files": files,
         "file_count": len(files),
         "bundle_sha256": canonical_sha(files),
+        "domain_count": len(EXPECTED_DOMAINS),
+        "asset_library_count": len(EXPECTED_ASSET_LIBRARIES),
+        "material_directories_per_domain": len(EXPECTED_MATERIAL_DIRECTORIES),
         "secret_values_exposed": False,
         "model_calls": 0,
     }
@@ -262,7 +350,7 @@ def resolve_repo_id(api: Any, token: str, override: str | None, fallback: str | 
     return repo_id, account
 
 
-def _remote_manifest(api: Any, repo_id: str, token: str) -> dict[str, Any] | None:
+def _remote_manifest(repo_id: str, token: str) -> dict[str, Any] | None:
     try:
         path = hf_hub_download(
             repo_id=repo_id,
@@ -290,7 +378,7 @@ def sync_library(
         endpoint=HF_ORIGIN,
         token=False,
         library_name="intelligence-center-domain-benchmark-store",
-        library_version="1",
+        library_version="2",
     )
     repo_id, account = resolve_repo_id(client, token, repo_override, fallback_repo)
     client.create_repo(repo_id=repo_id, repo_type="dataset", private=True, exist_ok=True, token=token)
@@ -301,7 +389,7 @@ def sync_library(
     with tempfile.TemporaryDirectory(prefix="domain-benchmark-library-") as temp:
         staging = Path(temp)
         local_bundle = build_bundle(staging)
-        remote_before = _remote_manifest(client, repo_id, token) if api is None else None
+        remote_before = _remote_manifest(repo_id, token) if api is None else None
         unchanged = bool(remote_before and remote_before.get("bundle_sha256") == local_bundle["bundle_sha256"])
         commit_oid = "unchanged"
         if not unchanged:
@@ -311,7 +399,7 @@ def sync_library(
                 folder_path=str(staging),
                 path_in_repo=REMOTE_ROOT,
                 token=token,
-                commit_message="initialize domain benchmark library control plane v1",
+                commit_message="expand domain benchmark material directories v2",
             )
             commit_oid = str(getattr(upload, "oid", "") or "")
 
@@ -322,12 +410,12 @@ def sync_library(
         if missing:
             raise DomainBenchmarkStoreError(f"remote benchmark control files missing: {missing[:10]}")
 
-        remote_after = _remote_manifest(client, repo_id, token) if api is None else local_bundle
+        remote_after = _remote_manifest(repo_id, token) if api is None else local_bundle
         if not remote_after or remote_after.get("bundle_sha256") != local_bundle["bundle_sha256"]:
             raise DomainBenchmarkStoreError("remote benchmark bundle hash mismatch")
 
     receipt = {
-        "schema_version": "hf-domain-benchmark-library-receipt-v1",
+        "schema_version": "hf-domain-benchmark-library-receipt-v2",
         "status": "HF_DOMAIN_BENCHMARK_LIBRARY_CONNECTED",
         "account": account,
         "repo_id": repo_id,
@@ -336,6 +424,9 @@ def sync_library(
         "remote_root": REMOTE_ROOT,
         "bundle_sha256": remote_after["bundle_sha256"],
         "file_count": remote_after["file_count"] + 1,
+        "domain_count": len(EXPECTED_DOMAINS),
+        "asset_library_count": len(EXPECTED_ASSET_LIBRARIES),
+        "material_directories_per_domain": len(EXPECTED_MATERIAL_DIRECTORIES),
         "commit_oid": commit_oid,
         "unchanged": unchanged,
         "domains": sorted(EXPECTED_DOMAINS),
@@ -361,6 +452,9 @@ def render_receipt(output_dir: Path) -> int:
     print(f"\n- Dataset: `{receipt.get('repo_id', '')}`")
     print(f"- Root: `{receipt.get('remote_root', '')}`")
     print(f"- Control files: `{receipt.get('file_count', 0)}`")
+    print(f"- Domains: `{receipt.get('domain_count', 0)}`")
+    print(f"- Asset libraries: `{receipt.get('asset_library_count', 0)}`")
+    print(f"- Material directories per domain: `{receipt.get('material_directories_per_domain', 0)}`")
     print(f"- Bundle SHA256: `{receipt.get('bundle_sha256', '')}`")
     print("- Private repository: `true`")
     print("- Compute runtime network used: `false`")
@@ -398,14 +492,18 @@ def main() -> int:
         )
         return 0
     except Exception as exc:
-        failure = {
-            "schema_version": "hf-domain-benchmark-library-receipt-v1",
-            "status": "HF_DOMAIN_BENCHMARK_LIBRARY_FAILED",
-            "failure": {"type": type(exc).__name__, "message": redact(str(exc), token)},
-            "secret_values_exposed": False,
-            "model_calls": 0,
-        }
-        write_json(output_dir / "hf-domain-benchmark-library-receipt.json", failure)
+        write_json(
+            output_dir / "hf-domain-benchmark-library-receipt.json",
+            {
+                "schema_version": "hf-domain-benchmark-library-receipt-v2",
+                "status": "HF_DOMAIN_BENCHMARK_LIBRARY_FAILED",
+                "failure": {"type": type(exc).__name__, "message": redact(str(exc), token)},
+                "compute_runtime_network_used": False,
+                "direct_center_connection": False,
+                "secret_values_exposed": False,
+                "model_calls": 0,
+            },
+        )
         return 1
 
 
