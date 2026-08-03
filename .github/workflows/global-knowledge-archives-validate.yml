@@ -85,7 +85,7 @@ jobs:
           assert any(row['source_id']=='oapen-oai' for row in matrix['not_enabled'])
           key_sources={row['source_id'] for row in matrix['sources'] if row['credential_mode']=='required_free_key'}
           assert key_sources=={'google-books','bhl'}
-          assert provider['optional_secret_environment_variables']==['GOOGLE_API_KEY','BHL_API_KEY']
+          assert provider['optional_secret_environment_variables']==['GOOGLE_PUBLIC_INTELLIGENCE_API_KEY','BHL_API_KEY']
           assert not ({'trove','nara','smithsonian','govinfo'} & {row['source_id'] for row in matrix['sources']})
           rows={row['provider_id']:row for row in catalog['managed_providers']}
           assert rows['global-knowledge-archives']['operation_count']==9
@@ -182,7 +182,7 @@ jobs:
           - google-books
           - bhl
     env:
-      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+      GOOGLE_PUBLIC_INTELLIGENCE_API_KEY: ${{ secrets.GOOGLE_PUBLIC_INTELLIGENCE_API_KEY }}
       BHL_API_KEY: ${{ secrets.BHL_API_KEY }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
