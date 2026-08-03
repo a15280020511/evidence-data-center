@@ -1,0 +1,169 @@
+name: One-shot Restore SerpAPI and Probe Baidu Model Search
+
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - .github/workflows/tmp-restore-serpapi-probe-baidu.yml
+
+permissions:
+  contents: write
+
+jobs:
+  restore-and-probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      BAIDU_AI_CLOUD_API_KEY: ${{ secrets.BAIDU_AI_CLOUD_API_KEY }}
+    steps:
+      - name: Checkout repair branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: fix/restore-serpapi-and-audit-baidu-search
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Install validation dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/market-search/requirements.txt \
+            -r api-center/baidu-ai-cloud/requirements.txt
+          python -m pip check
+
+      - name: Restore SerpAPI non-workflow implementation
+        run: |
+          git checkout 3c2da4cfed63e7b7fe8f555c7a2d3bc5713e6f7a -- \
+            api-center/api-catalog.json \
+            api-center/api-catalog.md \
+            api-center/build_catalog_market_search.py \
+            api-center/market-search/market_search_task.py \
+            api-center/market-search/provider-catalog.json \
+            api-center/market-search/tests/test_market_search_task.py \
+            api-center/market-search/ticket.schema.json \
+            api-center/tests/test_api_catalog.py \
+            api-center/tests/test_capability_maximization.py
+
+      - name: Rebuild and validate restored contracts
+        run: |
+          python api-center/build_catalog_market_search.py \
+            --json-output api-center/api-catalog.json \
+            --markdown-output api-center/api-catalog.md
+          python -m py_compile api-center/market-search/market_search_task.py api-center/build_catalog_market_search.py
+          python -m unittest discover -s api-center/market-search/tests -v
+          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
+          python -m unittest discover -s api-center/tests -p 'test_capability_maximization.py' -v
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          catalog = json.loads(Path('api-center/market-search/provider-catalog.json').read_text(encoding='utf-8'))
+          providers = {row['provider_id']: row for row in catalog['providers']}
+          assert set(providers) == {'tickflow', 'serpapi'}
+          assert {row['operation_id'] for row in providers['serpapi']['operations']} == {
+              'catalog-capabilities', 'google-search', 'google-news', 'google-scholar'
+          }
+          aggregate = json.loads(Path('api-center/api-catalog.json').read_text(encoding='utf-8'))
+          assert aggregate['managed_provider_count'] == 63
+          assert aggregate['managed_operation_count'] == 688
+          print(json.dumps({'status': 'PASS', 'providers': 63, 'operations': 688}))
+          PY
+          if git grep -nE 'customsearch\.googleapis\.com|GOOGLE_CUSTOM_SEARCH|PROGRAMMABLE_SEARCH' -- ':!.github/workflows/tmp-restore-serpapi-probe-baidu.yml'; then
+            echo "Standalone Google official search integration residue found" >&2
+            exit 1
+          fi
+          git diff --check
+
+      - name: Commit restored SerpAPI implementation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            api-center/api-catalog.json \
+            api-center/api-catalog.md \
+            api-center/build_catalog_market_search.py \
+            api-center/market-search/market_search_task.py \
+            api-center/market-search/provider-catalog.json \
+            api-center/market-search/tests/test_market_search_task.py \
+            api-center/market-search/ticket.schema.json \
+            api-center/tests/test_api_catalog.py \
+            api-center/tests/test_capability_maximization.py
+          git commit -m 'fix: restore SerpAPI Google search capabilities'
+          git push origin HEAD:fix/restore-serpapi-and-audit-baidu-search
+
+      - name: Probe Baidu high-performance model search once
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import time
+          from pathlib import Path
+          import requests
+
+          key = str(os.getenv('BAIDU_AI_CLOUD_API_KEY') or '').strip()
+          receipt = {
+              'endpoint': '/v2/ai_search/web_summary',
+              'request_count': 0,
+              'secret_present': bool(key),
+              'secret_values_exposed': False,
+              'paid_fallback_authorized': False,
+              'model_search_completed': False,
+          }
+          if not key:
+              receipt['error'] = 'BAIDU_AI_CLOUD_API_KEY missing'
+          else:
+              started = time.perf_counter()
+              response = requests.post(
+                  'https://qianfan.baidubce.com/v2/ai_search/web_summary',
+                  headers={
+                      'Authorization': f'Bearer {key}',
+                      'Content-Type': 'application/json',
+                      'Accept': 'application/json',
+                  },
+                  json={
+                      'instruction': '仅返回简短事实摘要并保留来源引用。',
+                      'messages': [{'role': 'user', 'content': '福州市人民政府政务公开'}],
+                      'stream': False,
+                      'resource_type_filter': [{'type': 'web', 'top_k': 1}],
+                  },
+                  timeout=90,
+                  allow_redirects=False,
+              )
+              receipt['request_count'] = 1
+              receipt['http_status'] = response.status_code
+              receipt['response_bytes'] = len(response.content)
+              receipt['duration_ms'] = round((time.perf_counter() - started) * 1000)
+              try:
+                  payload = response.json()
+              except ValueError:
+                  payload = {}
+              if isinstance(payload, dict):
+                  receipt['upstream_code'] = payload.get('code') or payload.get('error_code')
+                  receipt['upstream_message'] = str(
+                      payload.get('message') or payload.get('error_msg') or payload.get('error') or ''
+                  )[:500]
+                  receipt['has_answer_content'] = bool(
+                      payload.get('result') or payload.get('content') or payload.get('choices') or payload.get('answer')
+                  )
+                  receipt['has_references'] = any(
+                      isinstance(payload.get(name), list) and bool(payload.get(name))
+                      for name in ('references', 'search_results', 'resource_list', 'citations')
+                  )
+              receipt['model_search_completed'] = 200 <= response.status_code < 300 and not receipt.get('upstream_code')
+          Path('baidu-model-search-probe.json').write_text(
+              json.dumps(receipt, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
+          )
+          print(json.dumps(receipt, ensure_ascii=False))
+          PY
+
+      - name: Upload sanitized Baidu probe receipt
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: baidu-model-search-probe-${{ github.run_id }}
+          path: baidu-model-search-probe.json
+          if-no-files-found: error
+          retention-days: 30
