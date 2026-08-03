@@ -225,6 +225,12 @@
       "classification": "second-wave governed global theses, books, grants, trials, national catalogs, archives, museums, government publications and research metadata layer",
       "decision": "integrate-new",
       "implementation": "22 fixed HTTPS sources through 9 bounded read-only operations; existing scholarly, legal, international-organization and first-wave literature providers are mapped rather than duplicated"
+    },
+    {
+      "requested_name": "global-knowledge-fabric",
+      "classification": "third-wave governed entity, scholarly-relations, dataset, government-regulation, scientific and standards knowledge layer",
+      "decision": "integrate-new",
+      "implementation": "16 fixed HTTPS sources through 9 bounded read-only operations; existing Wikidata, scholarly, legal, international-organization and first/second-wave sources are mapped rather than duplicated"
     }
   ],
   "summary": {

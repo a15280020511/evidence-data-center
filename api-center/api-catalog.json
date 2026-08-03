@@ -62,15 +62,16 @@
     "openstreetmap/provider-catalog.json",
     "gnews/provider-catalog.json",
     "global-literature-libraries/provider-catalog.json",
-    "global-knowledge-archives/provider-catalog.json"
+    "global-knowledge-archives/provider-catalog.json",
+    "global-knowledge-fabric/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "0ee32be643491b866a59fc9b00d9045b7e4bdbf2369edc4a65b350aa8d303c55",
+  "managed_provider_catalog_sha256": "a2fef6e417eb18fdd6bca62163e7e6771c44c197a8755e03e46dc732a0c300f7",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 60,
-  "enabled_managed_provider_count": 60,
-  "managed_operation_count": 665,
-  "exposed_parameter_count": 2356,
+  "managed_provider_count": 61,
+  "enabled_managed_provider_count": 61,
+  "managed_operation_count": 674,
+  "exposed_parameter_count": 2377,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -31461,6 +31462,435 @@
       "secret_value_exposed": false,
       "provider_sha256": "e65f7c045c71588225b75e83c060e6ad45829f1e9e6496e7d13b2c82ba987a58",
       "catalog_file": "global-knowledge-archives/provider-catalog.json"
+    },
+    {
+      "provider_id": "global-knowledge-fabric",
+      "display_name": "全球知识织网第三波",
+      "description": "固定接入科研机构与作者标识、计算机科学书目、研究对象关系、科研数据集、政府资助与法规、欧盟出版物、生命科学知识和技术标准。",
+      "enabled": true,
+      "ticket_prefix": "[intel-knowledge-fabric]",
+      "catalog_policy": "仅开放9项固定只读操作和16个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。",
+      "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不使用cursor、不自动重试、不跟随重定向；凭证仅后端注入；保留来源权利和响应哈希。",
+      "operation_count": 9,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取第三波全球知识织网能力目录。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "source": "local",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "source-access-matrix",
+          "description": "读取来源、凭证、费用、权利和暂缓原因矩阵。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "source": "local",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "entity-search",
+          "description": "检索科研机构、研究者或作者实体。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "ror",
+                  "orcid",
+                  "dblp-author"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET_OR_FIXED_POST",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "scholarly-search",
+          "description": "检索计算机科学文献、学术场馆或研究对象关系事件。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit",
+            "relation_type"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "dblp-publication",
+                  "dblp-venue",
+                  "crossref-events"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              },
+              "relation_type": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET_OR_FIXED_POST",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "dataset-search",
+          "description": "检索公开科研数据集或机器学习数据集。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "harvard-dataverse",
+                  "openml"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET_OR_FIXED_POST",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "government-search",
+          "description": "检索政府资助、法规、数据目录或欧盟出版物。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "grants-gov",
+                  "regulations-gov",
+                  "data-gov",
+                  "eu-cellar"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET_OR_FIXED_POST",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "science-search",
+          "description": "检索结构生物学、蛋白质或药物发现知识。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "rcsb-pdb",
+                  "uniprot",
+                  "chembl"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET_OR_FIXED_POST",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "record-get",
+          "description": "读取一个固定来源的单条公开记录。",
+          "parameter_names": [
+            "source_id",
+            "record_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "ror",
+                  "orcid",
+                  "harvard-dataverse",
+                  "openml",
+                  "grants-gov",
+                  "regulations-gov",
+                  "data-gov",
+                  "rcsb-pdb",
+                  "uniprot",
+                  "chembl"
+                ]
+              },
+              "record_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240
+              }
+            },
+            "required": [
+              "source_id",
+              "record_id"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET_OR_FIXED_POST",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        },
+        {
+          "operation_id": "standards-search",
+          "description": "检索IETF标准、RFC和Internet-Draft过程元数据。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "ietf-datatracker"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-source-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET_OR_FIXED_POST",
+            "read_only": true,
+            "credential_mode": "source-dependent",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false,
+            "full_text_policy": "metadata-and-declared-open-locations-only"
+          }
+        }
+      ],
+      "limits": {
+        "source_count": 16,
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 75,
+        "max_response_bytes": 5000000,
+        "automatic_pagination_allowed": false,
+        "automatic_retry_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "dynamic_providers_allowed": false,
+        "arbitrary_sparql_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "paywall_bypass_allowed": false,
+        "unauthorized_full_text_copying_allowed": false,
+        "personal_profiling_allowed": false,
+        "patient_level_data_allowed": false,
+        "real_time_tracking_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "8f52281cbde68abf5e8bb2c344b91c660d300e8ac472847f24d2f76b331aeeb5",
+      "catalog_file": "global-knowledge-fabric/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -39800,5 +40230,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "f33b129653c6dda4f9b412c527f9b3cd2376f0aa0adaea4af069cb09aa0aebb1"
+  "catalog_sha256": "46dac9c89cd64f15901dfe9c02d2395a2cbbc03410063d44738e1591e3d11f9c"
 }

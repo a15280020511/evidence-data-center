@@ -1,1 +1,335 @@
-{"placeholder":"will be replaced"}
+{
+  "schema_version": "global-knowledge-fabric-source-matrix-v1",
+  "active_source_count": 16,
+  "sources": [
+    {
+      "source_id": "ror",
+      "name": "Research Organization Registry (ROR)",
+      "category": "entity-graph",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.ror.org/v2/organizations",
+      "operations": [
+        "entity-search",
+        "record-get"
+      ],
+      "credential_mode": "optional_client_id",
+      "credential_env": "ROR_CLIENT_ID",
+      "license_policy": "Open organization metadata; preserve identifiers, status and provenance.",
+      "cost": "free; optional client ID for higher future rate limit"
+    },
+    {
+      "source_id": "orcid",
+      "name": "ORCID Public API",
+      "category": "researcher-identity",
+      "protocol": "rest-search-record",
+      "base_url": "https://pub.orcid.org/v3.0",
+      "operations": [
+        "entity-search",
+        "record-get"
+      ],
+      "credential_mode": "required_free_token",
+      "credential_env": "ORCID_PUBLIC_API_TOKEN",
+      "license_policy": "Public ORCID record data only; no profiling or restricted fields.",
+      "cost": "free public API credentials for non-commercial public-data access"
+    },
+    {
+      "source_id": "dblp-publication",
+      "name": "dblp Publications",
+      "category": "computer-science",
+      "protocol": "rest-search",
+      "base_url": "https://dblp.org/search/publ/api",
+      "operations": [
+        "scholarly-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "CC0 bibliographic metadata; source full text rights remain external.",
+      "cost": "free"
+    },
+    {
+      "source_id": "dblp-author",
+      "name": "dblp Authors",
+      "category": "researcher-identity",
+      "protocol": "rest-search",
+      "base_url": "https://dblp.org/search/author/api",
+      "operations": [
+        "entity-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "CC0 author metadata; do not infer sensitive attributes.",
+      "cost": "free"
+    },
+    {
+      "source_id": "dblp-venue",
+      "name": "dblp Venues",
+      "category": "scholarly-venues",
+      "protocol": "rest-search",
+      "base_url": "https://dblp.org/search/venue/api",
+      "operations": [
+        "scholarly-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "CC0 venue metadata.",
+      "cost": "free"
+    },
+    {
+      "source_id": "crossref-events",
+      "name": "Crossref Event Data",
+      "category": "scholarly-relations",
+      "protocol": "rest-filter",
+      "base_url": "https://api.eventdata.crossref.org/v1/events",
+      "operations": [
+        "scholarly-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "CC0 event records; updates/deletions remain source-governed and results are indicators, not truth.",
+      "cost": "free"
+    },
+    {
+      "source_id": "harvard-dataverse",
+      "name": "Harvard Dataverse",
+      "category": "research-data",
+      "protocol": "rest-search-record",
+      "base_url": "https://dataverse.harvard.edu/api",
+      "operations": [
+        "dataset-search",
+        "record-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Published dataset metadata and declared public files only; dataset terms control reuse.",
+      "cost": "free"
+    },
+    {
+      "source_id": "openml",
+      "name": "OpenML",
+      "category": "machine-learning-data",
+      "protocol": "rest-search-record",
+      "base_url": "https://www.openml.org/api/v1/json",
+      "operations": [
+        "dataset-search",
+        "record-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public dataset/task metadata; no uploads or execution submissions.",
+      "cost": "free for read access"
+    },
+    {
+      "source_id": "grants-gov",
+      "name": "Grants.gov",
+      "category": "government-grants",
+      "protocol": "rest-post-search-record",
+      "base_url": "https://api.grants.gov/v1/api",
+      "operations": [
+        "government-search",
+        "record-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Official US federal grant opportunity data; read-only.",
+      "cost": "free"
+    },
+    {
+      "source_id": "regulations-gov",
+      "name": "Regulations.gov",
+      "category": "government-regulation",
+      "protocol": "rest-search-record",
+      "base_url": "https://api.regulations.gov/v4",
+      "operations": [
+        "government-search",
+        "record-get"
+      ],
+      "credential_mode": "required_free_key",
+      "credential_env": "REGULATIONS_GOV_API_KEY",
+      "license_policy": "Official public regulatory documents and dockets; commenting/write APIs disabled.",
+      "cost": "free api.data.gov key"
+    },
+    {
+      "source_id": "data-gov",
+      "name": "Data.gov CKAN Catalog",
+      "category": "government-data-catalog",
+      "protocol": "ckan-search-record",
+      "base_url": "https://catalog.data.gov/api/3/action",
+      "operations": [
+        "government-search",
+        "record-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Catalog metadata only; dataset-specific rights and access rules apply.",
+      "cost": "free"
+    },
+    {
+      "source_id": "eu-cellar",
+      "name": "EU Publications Office CELLAR",
+      "category": "eu-publications-knowledge-graph",
+      "protocol": "fixed-sparql",
+      "base_url": "https://publications.europa.eu/webapi/rdf/sparql",
+      "operations": [
+        "government-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "EU publication metadata and linked data; fixed templates only, no arbitrary SPARQL.",
+      "cost": "free"
+    },
+    {
+      "source_id": "rcsb-pdb",
+      "name": "RCSB Protein Data Bank",
+      "category": "structural-biology",
+      "protocol": "rest-post-search-record",
+      "base_url": "https://search.rcsb.org/rcsbsearch/v2/query",
+      "operations": [
+        "science-search",
+        "record-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public structural biology identifiers and metadata; source data-use terms apply.",
+      "cost": "free"
+    },
+    {
+      "source_id": "uniprot",
+      "name": "UniProt",
+      "category": "protein-knowledge",
+      "protocol": "rest-search-record",
+      "base_url": "https://rest.uniprot.org/uniprotkb",
+      "operations": [
+        "science-search",
+        "record-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public protein annotations and provenance; no bulk pagination.",
+      "cost": "free"
+    },
+    {
+      "source_id": "chembl",
+      "name": "ChEMBL",
+      "category": "drug-discovery",
+      "protocol": "rest-search-record",
+      "base_url": "https://www.ebi.ac.uk/chembl/api/data",
+      "operations": [
+        "science-search",
+        "record-get"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Public bioactivity and molecule metadata; not medical advice.",
+      "cost": "free"
+    },
+    {
+      "source_id": "ietf-datatracker",
+      "name": "IETF Datatracker",
+      "category": "technical-standards",
+      "protocol": "rest-search",
+      "base_url": "https://datatracker.ietf.org/api/v1/doc/document",
+      "operations": [
+        "standards-search"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "license_policy": "Official IETF document-process metadata; public standards documents remain source-governed.",
+      "cost": "free"
+    }
+  ],
+  "mapped_existing_sources": [
+    "Wikidata",
+    "OpenAlex",
+    "Crossref REST",
+    "DataCite",
+    "OpenCitations",
+    "Unpaywall",
+    "arXiv",
+    "PubMed/PMC",
+    "Internet Archive",
+    "Library of Congress",
+    "OpenAIRE",
+    "Semantic Scholar",
+    "Europe PMC",
+    "Zenodo",
+    "OSF",
+    "Figshare",
+    "Dryad",
+    "EconBiz",
+    "OSTI.GOV",
+    "NASA ADS",
+    "Europeana",
+    "DPLA",
+    "CiNii",
+    "Gallica",
+    "DOAJ",
+    "EconStor",
+    "EPO Publication Server",
+    "ERIC",
+    "UKRI GtR",
+    "NIH RePORTER",
+    "ClinicalTrials.gov",
+    "USGS Publications",
+    "Federal Register",
+    "GovInfo",
+    "DNB",
+    "HAL",
+    "DOAB",
+    "NBER",
+    "GLEIF",
+    "USAspending",
+    "Congress.gov",
+    "CourtListener",
+    "SEC EDGAR"
+  ],
+  "not_enabled": [
+    {
+      "source_id": "openreview",
+      "reason": "Official API v2 exists, but anonymous search behavior must pass a dedicated production acceptance before activation."
+    },
+    {
+      "source_id": "chebi",
+      "reason": "Public APIs exist, but the current canonical search/record endpoint contract requires separate migration validation."
+    },
+    {
+      "source_id": "nsf-awards",
+      "reason": "Official Award Search API is documented, but a current canonical production endpoint was not verified in this implementation pass."
+    },
+    {
+      "source_id": "ecfr",
+      "reason": "Official developer APIs exist; exact versioner/search endpoint contract requires a dedicated legal-data provider and live acceptance."
+    },
+    {
+      "source_id": "legislation-gov-uk",
+      "reason": "Official machine-readable feeds exist, but stable search and record contracts require separate validation."
+    },
+    {
+      "source_id": "kci",
+      "reason": "REST requires a free key and OAI-PMH endpoint needs current HTTPS production validation."
+    },
+    {
+      "source_id": "shodhganga",
+      "reason": "Repository is open, but its OAI endpoint must pass current HTTPS production acceptance."
+    },
+    {
+      "source_id": "scielo",
+      "reason": "Documented OAI endpoints remain HTTP in official documentation; HTTPS policy blocks activation."
+    },
+    {
+      "source_id": "la-referencia",
+      "reason": "No stable official fixed API endpoint was verified."
+    },
+    {
+      "source_id": "uk-national-archives-discovery",
+      "reason": "Requires approval and IP allowlisting and prohibits caching returned content."
+    },
+    {
+      "source_id": "orcid-member-api",
+      "reason": "Paid organizational membership; only the free Public API is enabled."
+    },
+    {
+      "source_id": "commercial-knowledge-systems",
+      "reason": "Scopus, Web of Science, ProQuest, EBSCO, JSTOR full text, CNKI, Wanfang, LexisNexis, Westlaw, Bloomberg, Factiva, PitchBook and Capital IQ require commercial authorization."
+    }
+  ]
+}
