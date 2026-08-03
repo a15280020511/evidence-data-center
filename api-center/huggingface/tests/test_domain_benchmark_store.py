@@ -49,25 +49,36 @@ class FakeApi:
 
 
 class DomainBenchmarkStoreTests(unittest.TestCase):
-    def test_requirements_are_complete(self) -> None:
+    def test_requirements_and_material_directories_are_complete(self) -> None:
         document = MODULE.load_json(MODULE.REQUIREMENTS_PATH)
         result = MODULE.validate_requirements(document)
         self.assertEqual(set(result["domains"]), MODULE.EXPECTED_DOMAINS)
         self.assertEqual(set(result["asset_libraries"]), MODULE.EXPECTED_ASSET_LIBRARIES)
+        self.assertEqual(
+            {row["id"] for row in result["material_directories"]},
+            MODULE.EXPECTED_MATERIAL_DIRECTORIES,
+        )
         self.assertEqual(len(result["requirements_sha256"]), 64)
+        self.assertEqual(len(result["material_directory_sha256"]), 64)
 
     def test_bundle_is_deterministic_and_complete(self) -> None:
         with tempfile.TemporaryDirectory() as first, tempfile.TemporaryDirectory() as second:
             one = MODULE.build_bundle(Path(first))
             two = MODULE.build_bundle(Path(second))
             self.assertEqual(one["bundle_sha256"], two["bundle_sha256"])
-            self.assertEqual(one["file_count"], 19)
+            self.assertEqual(one["file_count"], 120)
+            self.assertEqual(one["domain_count"], 8)
+            self.assertEqual(one["asset_library_count"], 12)
+            self.assertEqual(one["material_directories_per_domain"], 12)
             first_paths = {row["path"] for row in one["files"]}
             self.assertIn("requirements.json", first_paths)
             self.assertIn("manifest.schema.json", first_paths)
+            self.assertIn("material-directory-registry.json", first_paths)
             self.assertIn("library-index.json", first_paths)
             for domain in MODULE.EXPECTED_DOMAINS:
                 self.assertIn(f"domains/{domain}/requirements.json", first_paths)
+                for directory in MODULE.EXPECTED_MATERIAL_DIRECTORIES:
+                    self.assertIn(f"domains/{domain}/{directory}/README.json", first_paths)
             for library in MODULE.EXPECTED_ASSET_LIBRARIES:
                 self.assertIn(f"asset-libraries/{library}/README.json", first_paths)
 
@@ -88,6 +99,10 @@ class DomainBenchmarkStoreTests(unittest.TestCase):
             self.assertFalse(receipt["direct_center_connection"])
             self.assertFalse(receipt["secret_values_exposed"])
             self.assertEqual(receipt["model_calls"], 0)
+            self.assertEqual(receipt["file_count"], 121)
+            self.assertEqual(receipt["domain_count"], 8)
+            self.assertEqual(receipt["asset_library_count"], 12)
+            self.assertEqual(receipt["material_directories_per_domain"], 12)
             self.assertEqual(receipt["commit_oid"], "commit-oid-123")
             self.assertEqual(len(fake.uploaded), 1)
             saved = json.loads(
