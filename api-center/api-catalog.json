@@ -64,15 +64,16 @@
     "global-literature-libraries/provider-catalog.json",
     "global-knowledge-archives/provider-catalog.json",
     "global-knowledge-fabric/provider-catalog.json",
-    "baidu-ai-cloud/provider-catalog.json"
+    "baidu-ai-cloud/provider-catalog.json",
+    "open-software-security-knowledge/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "24986f362bddf1a9ae8124b1faac92f3a9a5eab79b4d365e9708e88c1086a712",
+  "managed_provider_catalog_sha256": "29a5985fac1d80cf9f23e6836702fea6bb37fd932995e62d0b4f0bafc0f1d98a",
   "connector_count": 68,
   "enabled_connector_count": 68,
-  "managed_provider_count": 62,
-  "enabled_managed_provider_count": 62,
-  "managed_operation_count": 677,
-  "exposed_parameter_count": 2380,
+  "managed_provider_count": 63,
+  "enabled_managed_provider_count": 63,
+  "managed_operation_count": 688,
+  "exposed_parameter_count": 2416,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -130,6 +131,9 @@
     "gnews/provider-catalog.json",
     "global-literature-libraries/provider-catalog.json",
     "global-knowledge-archives/provider-catalog.json",
+    "global-knowledge-fabric/provider-catalog.json",
+    "baidu-ai-cloud/provider-catalog.json",
+    "open-software-security-knowledge/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -32037,6 +32041,639 @@
       "secret_value_exposed": false,
       "provider_sha256": "99a10301319b992d2a9e0509dcbd41b8aaa64b9a3ea8423c1dfe01ced1d377b4",
       "catalog_file": "baidu-ai-cloud/provider-catalog.json"
+    },
+    {
+      "provider_id": "open-software-security-knowledge",
+      "display_name": "全球开源软件、安全与开放标准知识层",
+      "description": "固定接入源代码档案、跨生态包与依赖、许可证、漏洞、安全优先级和开放技术标准元数据。",
+      "enabled": true,
+      "ticket_prefix": "[intel-software-security]",
+      "catalog_policy": "仅开放11项固定只读操作和18个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态包源、软件执行、漏洞利用代码和写操作。",
+      "execution_policy": "每票最多一次上游请求；不自动翻页、重试或跟随重定向；不下载、安装或执行软件包和源代码；只返回公开防御性元数据并保留来源权利字段与响应哈希。",
+      "operation_count": 11,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地第四波能力目录。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "source": "local",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "source-access-matrix",
+          "description": "读取来源、费用、Key、权利和暂缓原因矩阵。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {},
+            "maxProperties": 0
+          },
+          "result_contract": {
+            "source": "local",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "software-object-get",
+          "description": "从Software Heritage读取一个固定哈希对象的非批量元数据。",
+          "parameter_names": [
+            "source_id",
+            "object_type",
+            "object_id",
+            "hash_algorithm"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "const": "software-heritage"
+              },
+              "object_type": {
+                "type": "string",
+                "enum": [
+                  "content",
+                  "directory",
+                  "revision",
+                  "release",
+                  "snapshot"
+                ]
+              },
+              "object_id": {
+                "type": "string",
+                "pattern": "^[A-Fa-f0-9]{40,64}$"
+              },
+              "hash_algorithm": {
+                "type": "string",
+                "enum": [
+                  "sha1",
+                  "sha1_git",
+                  "sha256",
+                  "blake2s256"
+                ],
+                "default": "sha1"
+              }
+            },
+            "required": [
+              "source_id",
+              "object_type",
+              "object_id"
+            ]
+          },
+          "result_contract": {
+            "source": "software-heritage",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "optional-backend-token",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "package-search",
+          "description": "在固定包或许可证来源执行一页公开元数据检索。",
+          "parameter_names": [
+            "source_id",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "clearlydefined",
+                  "npm",
+                  "crates-io",
+                  "rubygems",
+                  "packagist",
+                  "pub-dev"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50,
+                "default": 20
+              }
+            },
+            "required": [
+              "source_id",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-package-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "package-get",
+          "description": "读取一个固定生态包的公开元数据。",
+          "parameter_names": [
+            "source_id",
+            "package",
+            "system"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "deps-dev",
+                  "pypi",
+                  "npm",
+                  "crates-io",
+                  "rubygems",
+                  "packagist",
+                  "pub-dev"
+                ]
+              },
+              "package": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 220,
+                "pattern": "^[A-Za-z0-9@._/+:-]+$"
+              },
+              "system": {
+                "type": "string",
+                "enum": [
+                  "GO",
+                  "RUBYGEMS",
+                  "NPM",
+                  "CARGO",
+                  "MAVEN",
+                  "PYPI",
+                  "NUGET"
+                ]
+              }
+            },
+            "required": [
+              "source_id",
+              "package"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-package-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "package-version-get",
+          "description": "读取一个固定包版本的元数据、许可证和已知公告关系。",
+          "parameter_names": [
+            "source_id",
+            "package",
+            "version",
+            "system"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "deps-dev",
+                  "pypi",
+                  "npm",
+                  "crates-io"
+                ]
+              },
+              "package": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 220,
+                "pattern": "^[A-Za-z0-9@._/+:-]+$"
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[A-Za-z0-9._+:-]+$"
+              },
+              "system": {
+                "type": "string",
+                "enum": [
+                  "GO",
+                  "RUBYGEMS",
+                  "NPM",
+                  "CARGO",
+                  "MAVEN",
+                  "PYPI",
+                  "NUGET"
+                ]
+              }
+            },
+            "required": [
+              "source_id",
+              "package",
+              "version"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-package-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "dependency-graph-get",
+          "description": "从deps.dev读取一个固定版本的解析依赖图。",
+          "parameter_names": [
+            "source_id",
+            "package",
+            "version",
+            "system"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "const": "deps-dev"
+              },
+              "package": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 220,
+                "pattern": "^[A-Za-z0-9@._/+:-]+$"
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[A-Za-z0-9._+:-]+$"
+              },
+              "system": {
+                "type": "string",
+                "enum": [
+                  "NPM",
+                  "CARGO",
+                  "MAVEN",
+                  "PYPI"
+                ]
+              }
+            },
+            "required": [
+              "source_id",
+              "package",
+              "version",
+              "system"
+            ]
+          },
+          "result_contract": {
+            "source": "deps-dev",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "license-definition-get",
+          "description": "从ClearlyDefined读取一个固定组件版本的许可证定义。",
+          "parameter_names": [
+            "source_id",
+            "component_type",
+            "provider",
+            "namespace",
+            "package",
+            "version"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "const": "clearlydefined"
+              },
+              "component_type": {
+                "type": "string",
+                "enum": [
+                  "npm",
+                  "pypi",
+                  "maven",
+                  "nuget",
+                  "gem",
+                  "crate",
+                  "go",
+                  "composer"
+                ]
+              },
+              "provider": {
+                "type": "string",
+                "enum": [
+                  "npmjs",
+                  "pypi",
+                  "mavencentral",
+                  "nuget",
+                  "rubygems",
+                  "cratesio",
+                  "golang",
+                  "packagist"
+                ]
+              },
+              "namespace": {
+                "type": "string",
+                "maxLength": 160,
+                "pattern": "^[A-Za-z0-9@._/+:-]*$",
+                "default": "-"
+              },
+              "package": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 180,
+                "pattern": "^[A-Za-z0-9@._/+:-]+$"
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[A-Za-z0-9._+:-]+$"
+              }
+            },
+            "required": [
+              "source_id",
+              "component_type",
+              "provider",
+              "package",
+              "version"
+            ]
+          },
+          "result_contract": {
+            "source": "clearlydefined",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "vulnerability-record-get",
+          "description": "读取一个OSV、CVE、NVD或EPSS公开防御性记录。",
+          "parameter_names": [
+            "source_id",
+            "vulnerability_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "osv",
+                  "nvd",
+                  "first-epss",
+                  "mitre-cve"
+                ]
+              },
+              "vulnerability_id": {
+                "type": "string",
+                "minLength": 4,
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9._:-]+$"
+              }
+            },
+            "required": [
+              "source_id",
+              "vulnerability_id"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-vulnerability-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "source-dependent-optional-backend-key",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "package-vulnerability-query",
+          "description": "向OSV提交一个固定包版本并返回已知漏洞记录。",
+          "parameter_names": [
+            "source_id",
+            "ecosystem",
+            "package",
+            "version"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "const": "osv"
+              },
+              "ecosystem": {
+                "type": "string",
+                "enum": [
+                  "PyPI",
+                  "npm",
+                  "Go",
+                  "Maven",
+                  "NuGet",
+                  "RubyGems",
+                  "crates.io",
+                  "Packagist",
+                  "Pub"
+                ]
+              },
+              "package": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 220,
+                "pattern": "^[A-Za-z0-9@._/+:-]+$"
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120,
+                "pattern": "^[A-Za-z0-9._+:-]+$"
+              }
+            },
+            "required": [
+              "source_id",
+              "ecosystem",
+              "package",
+              "version"
+            ]
+          },
+          "result_contract": {
+            "source": "osv",
+            "official_endpoint": "https://api.osv.dev/v1/query",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        },
+        {
+          "operation_id": "security-standard-record-get",
+          "description": "读取固定安全优先级、项目评分、许可证、RFC或IANA注册表记录。",
+          "parameter_names": [
+            "source_id",
+            "record_id",
+            "platform",
+            "owner",
+            "repository",
+            "registry"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "enum": [
+                  "cisa-kev",
+                  "openssf-scorecard",
+                  "spdx-license-list",
+                  "rfc-editor",
+                  "iana-registries"
+                ]
+              },
+              "record_id": {
+                "type": "string",
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9._:+-]*$"
+              },
+              "platform": {
+                "type": "string",
+                "enum": [
+                  "github.com",
+                  "gitlab.com"
+                ]
+              },
+              "owner": {
+                "type": "string",
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9._-]+$"
+              },
+              "repository": {
+                "type": "string",
+                "maxLength": 100,
+                "pattern": "^[A-Za-z0-9._-]+$"
+              },
+              "registry": {
+                "type": "string",
+                "enum": [
+                  "protocol-numbers",
+                  "service-names-port-numbers",
+                  "media-types",
+                  "tls-parameters",
+                  "http-fields",
+                  "well-known-uris"
+                ]
+              }
+            },
+            "required": [
+              "source_id"
+            ]
+          },
+          "result_contract": {
+            "source": "fixed-security-standard-registry",
+            "official_endpoint": "fixed-source-registry",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "requests_per_ticket_max": 1,
+            "automatic_pagination": false,
+            "automatic_retry": false
+          }
+        }
+      ],
+      "limits": {
+        "source_count": 18,
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 15000000,
+        "automatic_pagination_allowed": false,
+        "automatic_retry_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "dynamic_providers_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "package_download_allowed": false,
+        "package_installation_allowed": false,
+        "source_code_execution_allowed": false,
+        "exploit_code_retrieval_allowed": false,
+        "vulnerability_submission_allowed": false,
+        "paywall_bypass_allowed": false,
+        "personal_profiling_allowed": false,
+        "real_time_tracking_allowed": false,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "ac00bfc369acb64c55ed711f64fc9fbaa20111ee28d6122c864e7b3967b4ac17",
+      "catalog_file": "open-software-security-knowledge/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -40376,5 +41013,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "0afcfc68c33e351fec59543a9421c469256ec68310f998538259c74ce2e71c80"
+  "catalog_sha256": "ae224abf5a7f63e992bb38d15c8d949e0b0d76988263d2767720109c7d04d35b"
 }
