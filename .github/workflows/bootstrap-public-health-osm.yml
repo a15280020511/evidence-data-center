@@ -1,10 +1,14 @@
-# bootstrap-trigger: 2026-08-03-r2
+# bootstrap-trigger: 2026-08-03-r3
 name: Bootstrap Public Health and OSM Providers
 
 on:
   push:
     branches:
       - feat/public-health-osm-providers
+    paths:
+      - ".github/workflows/bootstrap-public-health-osm.yml"
+  pull_request:
+    branches: [main]
     paths:
       - ".github/workflows/bootstrap-public-health-osm.yml"
 
