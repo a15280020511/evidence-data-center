@@ -67,6 +67,7 @@ GOOGLE_PUBLIC_INTELLIGENCE_CATALOG = HERE / "google-public-intelligence/provider
 REALITY_OBSERVATION_CATALOG = HERE / "reality-observation/provider-catalog.json"
 COPERNICUS_MARINE_CATALOG = HERE / "copernicus-marine/provider-catalog.json"
 NOAA_CDO_CATALOG = HERE / "noaa-cdo/provider-catalog.json"
+GLOBAL_SENSOR_BACKBONE_CATALOG = HERE / "global-sensor-backbone/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
     "tickflow": 5,
@@ -123,6 +124,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "reality-observation": 27,
     "copernicus-marine": 3,
     "noaa-cdo": 5,
+    "global-sensor-backbone": 21,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -179,6 +181,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     REALITY_OBSERVATION_CATALOG,
     NOAA_CDO_CATALOG,
     COPERNICUS_MARINE_CATALOG,
+    GLOBAL_SENSOR_BACKBONE_CATALOG,
 )
 
 load_json = base.load_json
@@ -251,6 +254,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "reality-observation/provider-catalog.json",
         "noaa-cdo/provider-catalog.json",
         "copernicus-marine/provider-catalog.json",
+        "global-sensor-backbone/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (
