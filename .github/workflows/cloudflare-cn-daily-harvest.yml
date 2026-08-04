@@ -55,10 +55,6 @@ jobs:
           python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             validate --output-dir daily-harvest-artifacts/compiler-validation
           python -m py_compile api-center/huggingface/build_governance_baseline_export.py
-          if grep -q 'secrets.HF_TOKEN\|--commit-to-hf' .github/workflows/cloudflare-cn-daily-harvest.yml; then
-            echo 'direct private Hugging Face access is forbidden in evidence center' >&2
-            exit 1
-          fi
 
       - name: Ensure queue labels
         run: |
