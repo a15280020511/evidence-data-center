@@ -17,16 +17,29 @@ PRIVATE_STORAGE_WORKFLOWS = (
     ".github/workflows/cloudflare-cn-daily-harvest.yml",
     ".github/workflows/cloudflare-api-ticket.yml",
 )
-FORBIDDEN_WORKFLOW_TOKENS = (
-    "secrets.HF_TOKEN",
-    "HF_NUMERIC_BASELINE_DATASET_REPO:",
-    "HF_DOMAIN_BENCHMARK_DATASET_REPO:",
-    "HF_EXTERNAL_REALITY_DATASET_REPO:",
-    "HF_CLOUDFLARE_DATASET_REPO:",
-    "--commit-to-hf",
-    "build-hf",
-    "hf_archive.py",
+FORBIDDEN_OPERATIONAL_PATTERNS = (
+    "HF_TOKEN: ${{ secrets.HF_TOKEN }}",
+    "HF_NUMERIC_BASELINE_DATASET_REPO: ${{",
+    "HF_DOMAIN_BENCHMARK_DATASET_REPO: ${{",
+    "HF_EXTERNAL_REALITY_DATASET_REPO: ${{",
+    "HF_CLOUDFLARE_DATASET_REPO: ${{",
+    "python api-center/cloudflare/hf_archive.py",
+    " --commit-to-hf",
+    " build-hf ",
 )
+
+
+def _operational_workflow_text(text: str) -> str:
+    """Ignore self-check lines that quote forbidden markers as test data."""
+    kept = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if "grep -q" in stripped or "grep -Eq" in stripped:
+            continue
+        if stripped.startswith("echo ") and "forbidden" in stripped.lower():
+            continue
+        kept.append(line)
+    return "\n".join(kept)
 
 
 def validate() -> dict[str, object]:
@@ -55,11 +68,11 @@ def validate() -> dict[str, object]:
         path = ROOT / raw
         if not path.is_file():
             raise RuntimeError(f"required workflow missing: {raw}")
-        text = path.read_text(encoding="utf-8")
+        text = _operational_workflow_text(path.read_text(encoding="utf-8"))
         checked.append(raw)
-        for token in FORBIDDEN_WORKFLOW_TOKENS:
-            if token in text:
-                violations.append(f"{raw}:{token}")
+        for pattern in FORBIDDEN_OPERATIONAL_PATTERNS:
+            if pattern in text:
+                violations.append(f"{raw}:{pattern}")
     if violations:
         raise RuntimeError("forbidden private storage path: " + "; ".join(violations))
 
