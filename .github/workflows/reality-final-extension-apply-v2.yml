@@ -5,11 +5,13 @@ on:
     branches: [feat/reality-observation-final-extensions-v2]
     paths:
       - "api-center/extend_reality_final.py"
+      - "api-center/fix_reality_catalog_tail.py"
       - ".github/workflows/reality-final-extension-apply-v2.yml"
       - "api-center/copernicus-marine/**"
   pull_request:
     paths:
       - "api-center/extend_reality_final.py"
+      - "api-center/fix_reality_catalog_tail.py"
       - ".github/workflows/reality-final-extension-apply-v2.yml"
       - "api-center/copernicus-marine/**"
 
@@ -45,7 +47,9 @@ jobs:
             -r api-center/reality-observation/requirements.txt
           python -m pip check
       - name: Apply deterministic source patches
-        run: python api-center/extend_reality_final.py
+        run: |
+          python api-center/extend_reality_final.py
+          python api-center/fix_reality_catalog_tail.py
       - name: Rebuild deterministic contracts
         run: |
           set -euo pipefail
