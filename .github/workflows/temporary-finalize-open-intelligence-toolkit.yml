@@ -16,9 +16,9 @@ jobs:
   finalize:
     if: >-
       github.actor == github.repository_owner &&
-      github.event.issue.title == '[maintenance] finalize open intelligence toolkit 20260804'
+      github.event.issue.title == '[maintenance] finalize toolkit non-workflow files 20260804'
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout feature branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -29,44 +29,33 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Apply final production contracts
+      - name: Rebuild, validate and commit non-workflow files
+        id: finalize
+        continue-on-error: true
         run: |
-          set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
-          python maintenance/demote_sec_and_rebuild_toolkit.py
-          python - <<'PY'
-          from pathlib import Path
-          path=Path('.github/workflows/api-catalog-validate.yml')
-          text=path.read_text(encoding='utf-8')
-          text=text.replace('== 758','== 756').replace("'open-intelligence-toolkit': 22","'open-intelligence-toolkit': 20")
-          if '== 758' in text or "'open-intelligence-toolkit': 22" in text:
-              raise SystemExit('frozen toolkit counts were not synchronized')
-          path.write_text(text,encoding='utf-8')
-          PY
-      - name: Remove migration-only branch files
-        run: |
+          set +e
+          exec > >(tee /tmp/open-toolkit-finalizer.log) 2>&1
+          echo 'STAGE=install_catalog_dependencies'
+          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt || exit $?
+
+          echo 'STAGE=rebuild'
+          python maintenance/demote_sec_and_rebuild_toolkit.py || exit $?
+
+          echo 'STAGE=cleanup_non_workflow'
           rm -f \
             maintenance/apply_open_intelligence_toolkit.py \
             maintenance/sync_open_intelligence_contracts.py \
             maintenance/demote_sec_and_rebuild_toolkit.py \
-            maintenance/open-toolkit-rebuild-diagnostics.txt \
-            .github/workflows/apply-open-intelligence-toolkit.yml \
-            .github/workflows/sync-open-intelligence-contracts.yml \
-            .github/workflows/demote-sec-and-rebuild-toolkit.yml \
-            .github/workflows/finalize-open-intelligence-toolkit.yml \
-            .github/workflows/sync-final-open-toolkit-workflows.yml \
-            .github/workflows/finalize-open-toolkit-contract-counts.yml \
-            .github/workflows/finalize-open-intelligence-toolkit.yml
-      - name: Validate final branch surface
-        run: |
-          set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input -r api-center/open-intelligence-toolkit/requirements.txt
-          python -m pip check
-          python -m py_compile api-center/open-intelligence-toolkit/open_intelligence_toolkit_task.py api-center/open-intelligence-toolkit/validate_open_intelligence_toolkit.py
-          python -m unittest discover -s api-center/open-intelligence-toolkit/tests -p 'test_*.py' -v
-          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v
-          python api-center/build_config.py
-          python api-center/build_catalog_market_search.py
+            maintenance/open-toolkit-rebuild-diagnostics.txt
+
+          echo 'STAGE=provider_validation'
+          python -m pip install --disable-pip-version-check --no-input -r api-center/open-intelligence-toolkit/requirements.txt || exit $?
+          python -m pip check || exit $?
+          python -m py_compile api-center/open-intelligence-toolkit/open_intelligence_toolkit_task.py api-center/open-intelligence-toolkit/validate_open_intelligence_toolkit.py || exit $?
+          python -m unittest discover -s api-center/open-intelligence-toolkit/tests -p 'test_*.py' -v || exit $?
+          python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v || exit $?
+          python api-center/build_config.py || exit $?
+          python api-center/build_catalog_market_search.py || exit $?
           python - <<'PY'
           import json
           catalog=json.load(open('api-center/api-catalog.json'))
@@ -81,24 +70,35 @@ jobs:
           assert any(row['id']=='sec-edgar' for row in matrix['conditional_not_directly_invokable'])
           assert not any(row['operation_id'].startswith('sec-') for row in toolkit['operations'])
           PY
-          git diff --check
-      - name: Commit clean final feature branch
-        run: |
-          set -euo pipefail
+          git diff --check || exit $?
+
+          echo 'STAGE=commit_non_workflow'
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
-          if git diff --cached --quiet; then
-            echo 'No finalization changes found'
-            exit 1
-          fi
-          git commit -m 'feat: finalize clean 20-operation open intelligence toolkit'
-          git push origin HEAD:feat/open-intelligence-toolkit-20260804
-      - name: Close maintenance issue
+          git add api-center maintenance
+          git diff --cached --quiet && { echo 'No non-workflow finalization changes found'; exit 41; }
+          git commit -m 'feat: finalize 20-operation toolkit contracts' || exit $?
+          git push origin HEAD:feat/open-intelligence-toolkit-20260804 || exit $?
+          exit 0
+      - name: Publish diagnostic outcome
         if: always()
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OUTCOME: ${{ steps.finalize.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          gh issue comment "$GITHUB_EVENT_ISSUE_NUMBER" --body "One-shot finalizer outcome: ${{ job.status }}."
-          gh issue close "$GITHUB_EVENT_ISSUE_NUMBER" --reason completed
-        continue-on-error: true
+          {
+            echo "Finalizer outcome: $OUTCOME"
+            echo "Run: $RUN_URL"
+            echo
+            echo '```text'
+            tail -n 160 /tmp/open-toolkit-finalizer.log 2>/dev/null || true
+            echo '```'
+          } > /tmp/comment.md
+          gh issue comment "${{ github.event.issue.number }}" --body-file /tmp/comment.md
+          if [[ "$OUTCOME" == "success" ]]; then
+            gh issue close "${{ github.event.issue.number }}" --reason completed
+          fi
+      - name: Fail closed
+        if: steps.finalize.outcome != 'success'
+        run: exit 1
