@@ -58,7 +58,7 @@
     ],
     "principle": "Do not add another runtime merely because a source appears in search results when equivalent normalized coverage already exists."
   },
-  "recommended_next_integrations": [
+  "production_integrations_added": [
     {
       "source_id": "re3data",
       "name": "Registry of Research Data Repositories",
@@ -66,8 +66,33 @@
       "official_interface": "https://www.re3data.org/api/v40/repositories",
       "credential_mode": "none",
       "license": "Database entries CC0 where stated; other site content generally CC BY 4.0 unless noted.",
-      "status": "implemented-in-research-data-registry-pending-live-acceptance",
+      "status": "production-live-accepted",
       "operations": ["re3data-repositories", "re3data-repository"],
+      "live_acceptance_issue": 995,
+      "live_acceptance_status": "INTEL_RE3DATA_COMPLETED",
+      "live_acceptance_duration_ms": 956,
+      "priority": "P0"
+    }
+  ],
+  "recommended_next_integrations": [
+    {
+      "source_id": "oapen-library",
+      "name": "OAPEN Library",
+      "unique_value": "Open-access scholarly books and chapters with book-level metadata and machine interfaces, which are not replaced by journal-centric indexes.",
+      "credential_mode": "none",
+      "interfaces": ["REST", "OAI-PMH", "JSON", "CSV"],
+      "metadata_license": "CC0 where stated by OAPEN",
+      "status": "official-interfaces-verified-not-yet-implemented",
+      "priority": "P0"
+    },
+    {
+      "source_id": "doab",
+      "name": "Directory of Open Access Books",
+      "unique_value": "Peer-reviewed open-access book and publisher directory with open metadata and machine interfaces.",
+      "credential_mode": "none",
+      "interfaces": ["REST", "OAI-PMH"],
+      "metadata_license": "CC0",
+      "status": "official-interfaces-verified-not-yet-implemented",
       "priority": "P0"
     },
     {
