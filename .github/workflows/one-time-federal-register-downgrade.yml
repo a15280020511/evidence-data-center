@@ -11,9 +11,7 @@ permissions:
 
 jobs:
   downgrade:
-    if: >-
-      github.actor == github.repository_owner &&
-      github.event.head_commit.message == 'chore: activate Federal Register downgrade'
+    if: github.event.head_commit.message == 'chore: activate Federal Register downgrade v2'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
