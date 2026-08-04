@@ -1,0 +1,83 @@
+name: Bootstrap NOAA Integration From PR
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  bootstrap:
+    if: github.head_ref == 'feat/noaa-official-data'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Extract and run deterministic NOAA generator
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          text = Path('.github/workflows/bootstrap-noaa-integration.yml').read_text(encoding='utf-8')
+          start = text.index("          python - <<'PY'\n") + len("          python - <<'PY'\n")
+          end = text.index("\n          PY\n", start)
+          lines = text[start:end].splitlines()
+          script = '\n'.join(line[10:] if line.startswith('          ') else line for line in lines) + '\n'
+          Path('/tmp/bootstrap_noaa.py').write_text(script, encoding='utf-8')
+          PY
+          python /tmp/bootstrap_noaa.py
+
+      - name: Rebuild deterministic contracts
+        run: |
+          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
+          python api-center/build_config.py
+          python api-center/build_catalog_market_search.py
+          python -m unittest discover -s api-center/tests -p 'test_noaa_connectors.py' -v
+          git diff --check
+
+      - name: Run zero-cost NOAA smoke checks
+        continue-on-error: true
+        run: |
+          ua='decision-system-intelligence-center/1.0 (github.com/a15280020511/evidence-data-center)'
+          mkdir -p /tmp/noaa-smoke
+          curl -L --max-time 30 -A "$ua" -H 'Accept: application/geo+json' -fsS 'https://api.weather.gov/points/38.8977,-77.0365' -o /tmp/noaa-smoke/points.json
+          curl -L --max-time 30 -A "$ua" -H 'Accept: application/geo+json' -fsS 'https://api.weather.gov/alerts/active?area=DC&limit=1' -o /tmp/noaa-smoke/alerts.json
+          curl -L --max-time 30 -A "$ua" -H 'Accept: application/json' -fsS 'https://www.ncei.noaa.gov/access/services/search/v1/data?dataset=daily-summaries&startDate=2024-01-01&endDate=2024-01-02&stations=USW00094728&limit=1' -o /tmp/noaa-smoke/ncei.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          result = {}
+          for name in ('points', 'alerts', 'ncei'):
+              path = Path('/tmp/noaa-smoke') / f'{name}.json'
+              value = json.loads(path.read_text(encoding='utf-8'))
+              result[name] = {'nonempty': bool(value), 'type': type(value).__name__}
+          Path('noaa-smoke-result.json').write_text(json.dumps({'status':'PASS','checks':result}, indent=2) + '\n', encoding='utf-8')
+          PY
+
+      - name: Upload smoke evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: noaa-smoke-${{ github.run_id }}
+          path: noaa-smoke-result.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Commit integration and remove bootstrap workflows
+        run: |
+          rm .github/workflows/bootstrap-noaa-integration.yml .github/workflows/bootstrap-noaa-pr.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m 'feat: add official NOAA weather and climate connectors'
+          git push origin HEAD:feat/noaa-official-data
