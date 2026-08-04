@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Build, validate and synchronize the pure-numeric Hugging Face baseline library.
-
-Only numeric Parquet payloads are uploaded to Hugging Face. Human-readable control
-metadata stays in GitHub. The Compute Center remains network-denied and receives
-only GPT-selected immutable artifacts through the usage center.
-"""
+"""Validate and synchronize the pure-numeric Hugging Face compute baseline library."""
 from __future__ import annotations
 
 import argparse
@@ -17,13 +12,12 @@ from typing import Any, Mapping
 
 import pyarrow as pa
 import pyarrow.parquet as pq
-from huggingface_hub import CommitOperationAdd, CommitOperationDelete, HfApi, hf_hub_download
+from huggingface_hub import CommitOperationAdd, HfApi, hf_hub_download
 
 HERE = Path(__file__).resolve().parent
 CONTROL_ROOT = HERE / "numeric-baseline-library"
 REGISTRY_PATH = CONTROL_ROOT / "numeric-table-registry.json"
 MATRIX_PATH = CONTROL_ROOT / "operation-data-matrix.json"
-
 HF_TOKEN_ENV = "HF_TOKEN"
 HF_REPO_ENV = "HF_NUMERIC_BASELINE_DATASET_REPO"
 DEFAULT_REPO_NAME = "compute-numeric-baselines"
@@ -33,21 +27,14 @@ EXPECTED_MANAGED_MODE_COUNT = 185
 EXPECTED_TABLE_COUNT = 31
 
 TYPE_MAP = {
-    "int8": pa.int8(),
-    "int16": pa.int16(),
-    "int32": pa.int32(),
-    "int64": pa.int64(),
-    "uint8": pa.uint8(),
-    "uint16": pa.uint16(),
-    "uint32": pa.uint32(),
-    "uint64": pa.uint64(),
-    "float32": pa.float32(),
-    "float64": pa.float64(),
+    "int8": pa.int8(), "int16": pa.int16(), "int32": pa.int32(), "int64": pa.int64(),
+    "uint8": pa.uint8(), "uint16": pa.uint16(), "uint32": pa.uint32(), "uint64": pa.uint64(),
+    "float32": pa.float32(), "float64": pa.float64(),
 }
 
 
 class NumericBaselineStoreError(RuntimeError):
-    """Raised when the numeric baseline contract or payload is invalid."""
+    pass
 
 
 def _load_json(path: Path) -> Any:
@@ -62,7 +49,7 @@ def _write_json(path: Path, value: Any) -> None:
     )
 
 
-def _canonical_sha(value: Any) -> str:
+def _sha(value: Any) -> str:
     raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
@@ -73,13 +60,6 @@ def _file_sha(path: Path) -> str:
         for block in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(block)
     return digest.hexdigest()
-
-
-def _redact(message: str, token: str) -> str:
-    text = str(message)
-    if token:
-        text = text.replace(token, "[REDACTED]")
-    return text.replace("\n", " ")[:1600]
 
 
 def _parse_column(spec: str) -> tuple[str, pa.DataType]:
@@ -104,48 +84,30 @@ def validate_control_plane(
         raise NumericBaselineStoreError("unsupported numeric table registry")
     if registry.get("status") != "production-control":
         raise NumericBaselineStoreError("numeric table registry is not production-control")
-    if registry.get("private_dataset_required") is not True:
-        raise NumericBaselineStoreError("numeric baseline dataset must remain private")
-    if registry.get("remote_root") != REMOTE_ROOT:
-        raise NumericBaselineStoreError("numeric baseline remote root mismatch")
+    if registry.get("private_dataset_required") is not True or registry.get("remote_root") != REMOTE_ROOT:
+        raise NumericBaselineStoreError("private numeric storage contract mismatch")
 
-    encoding = registry.get("encoding")
-    if not isinstance(encoding, Mapping):
-        raise NumericBaselineStoreError("numeric encoding contract missing")
-    required_encoding = {
-        "format": "parquet",
-        "compression": "zstd",
-        "dictionary": False,
-        "nulls": False,
-        "categories": "integer_codes",
-        "time": "int64",
+    expected_encoding = {
+        "format": "parquet", "compression": "zstd", "dictionary": False,
+        "nulls": False, "categories": "integer_codes", "time": "int64",
         "control_metadata": "github-only",
     }
-    for key, expected in required_encoding.items():
-        if encoding.get(key) != expected:
-            raise NumericBaselineStoreError(f"invalid numeric encoding policy: {key}")
+    encoding = registry.get("encoding")
+    if not isinstance(encoding, Mapping) or any(encoding.get(k) != v for k, v in expected_encoding.items()):
+        raise NumericBaselineStoreError("numeric encoding contract mismatch")
+    if set(registry.get("allowed_types") or []) != set(TYPE_MAP):
+        raise NumericBaselineStoreError("allowed numeric types mismatch")
 
-    allowed = registry.get("allowed_types")
-    if not isinstance(allowed, list) or set(allowed) != set(TYPE_MAP):
-        raise NumericBaselineStoreError("allowed numeric types do not match implementation")
-
-    raw_tables = registry.get("tables")
-    if not isinstance(raw_tables, list) or len(raw_tables) != EXPECTED_TABLE_COUNT:
+    table_rows = registry.get("tables")
+    if not isinstance(table_rows, list) or len(table_rows) != EXPECTED_TABLE_COUNT:
         raise NumericBaselineStoreError("numeric table registry must contain exactly 31 tables")
-
     tables: dict[str, list[tuple[str, pa.DataType]]] = {}
-    for row in raw_tables:
+    for row in table_rows:
         if not isinstance(row, Mapping):
             raise NumericBaselineStoreError("numeric table row must be an object")
         table_id = str(row.get("id") or "")
         columns = row.get("columns")
-        if (
-            not table_id
-            or not table_id.replace("_", "").isalnum()
-            or not isinstance(columns, list)
-            or not columns
-            or table_id in tables
-        ):
+        if not table_id or table_id in tables or not isinstance(columns, list) or not columns:
             raise NumericBaselineStoreError(f"invalid or duplicate numeric table: {table_id!r}")
         parsed = [_parse_column(item) for item in columns]
         names = [name for name, _ in parsed]
@@ -154,7 +116,6 @@ def validate_control_plane(
         if table_id != "provenance_index" and "provenance_id" not in names:
             raise NumericBaselineStoreError(f"table {table_id} lacks numeric provenance_id")
         tables[table_id] = parsed
-
     if "provenance_index" not in tables:
         raise NumericBaselineStoreError("numeric provenance table is required")
 
@@ -176,70 +137,56 @@ def validate_control_plane(
         raise NumericBaselineStoreError("compute operation count mismatch")
     if int(catalog.get("effective_managed_mode_count") or 0) != EXPECTED_MANAGED_MODE_COUNT:
         raise NumericBaselineStoreError("compute managed mode count mismatch")
-    if len(str(catalog.get("sha256") or "")) != 64:
-        raise NumericBaselineStoreError("compute catalog hash missing")
+    blob_sha = str(catalog.get("git_blob_sha") or "")
+    if len(blob_sha) != 40 or any(ch not in "0123456789abcdef" for ch in blob_sha):
+        raise NumericBaselineStoreError("compute catalog Git blob SHA missing")
 
-    policy = matrix.get("payload_policy")
-    required_policy = {
-        "numeric_payload_only": True,
-        "text_columns_allowed": False,
-        "object_columns_allowed": False,
-        "null_values_allowed": False,
-        "primary_format": "parquet-zstd",
-        "control_metadata_storage": "github-only",
+    expected_policy = {
+        "numeric_payload_only": True, "text_columns_allowed": False,
+        "object_columns_allowed": False, "null_values_allowed": False,
+        "primary_format": "parquet-zstd", "control_metadata_storage": "github-only",
         "huggingface_control_json_allowed": False,
     }
-    if not isinstance(policy, Mapping):
-        raise NumericBaselineStoreError("numeric payload policy missing")
-    for key, expected in required_policy.items():
-        if policy.get(key) != expected:
-            raise NumericBaselineStoreError(f"invalid numeric payload policy: {key}")
+    policy = matrix.get("payload_policy")
+    if not isinstance(policy, Mapping) or any(policy.get(k) != v for k, v in expected_policy.items()):
+        raise NumericBaselineStoreError("numeric payload policy mismatch")
 
-    operations = matrix.get("operations")
-    if not isinstance(operations, list) or len(operations) != EXPECTED_OPERATION_COUNT:
+    operation_rows = matrix.get("operations")
+    if not isinstance(operation_rows, list) or len(operation_rows) != EXPECTED_OPERATION_COUNT:
         raise NumericBaselineStoreError("operation data matrix must cover exactly 29 operations")
-    operation_ids: list[str] = []
-    referenced_tables: set[str] = set()
-    operation_rows: list[dict[str, Any]] = []
-    for row in operations:
+    ids: list[str] = []
+    referenced: set[str] = set()
+    normalized_rows: list[dict[str, Any]] = []
+    for row in operation_rows:
         if not isinstance(row, Mapping):
             raise NumericBaselineStoreError("operation data row must be an object")
         operation_id = str(row.get("operation_id") or "")
-        required_tables = row.get("required_tables")
-        if not operation_id or not isinstance(required_tables, list) or not required_tables:
+        required = [str(item) for item in row.get("required_tables") or []]
+        if not operation_id or not required or len(required) != len(set(required)):
             raise NumericBaselineStoreError(f"invalid operation data row: {operation_id!r}")
-        normalized = [str(item) for item in required_tables]
-        if len(normalized) != len(set(normalized)):
-            raise NumericBaselineStoreError(f"duplicate table requirement for {operation_id}")
-        unknown = sorted(set(normalized) - set(tables))
+        unknown = sorted(set(required) - set(tables))
         if unknown:
             raise NumericBaselineStoreError(
                 f"operation {operation_id} references unknown tables: {', '.join(unknown)}"
             )
-        operation_ids.append(operation_id)
-        referenced_tables.update(normalized)
-        operation_rows.append({"operation_id": operation_id, "required_tables": normalized})
-    if len(operation_ids) != len(set(operation_ids)):
+        ids.append(operation_id)
+        referenced.update(required)
+        normalized_rows.append({"operation_id": operation_id, "required_tables": required})
+    if len(ids) != len(set(ids)):
         raise NumericBaselineStoreError("duplicate operation IDs in data matrix")
-
-    unreferenced = sorted(set(tables) - referenced_tables - {"provenance_index"})
+    unreferenced = sorted(set(tables) - referenced - {"provenance_index"})
     if unreferenced:
         raise NumericBaselineStoreError(
             f"numeric tables are not connected to any operation: {', '.join(unreferenced)}"
         )
-
     return {
-        "registry": registry,
-        "matrix": matrix,
-        "tables": tables,
-        "operations": operation_rows,
-        "registry_sha256": _canonical_sha(registry),
-        "matrix_sha256": _canonical_sha(matrix),
+        "registry": registry, "matrix": matrix, "tables": tables, "operations": normalized_rows,
+        "registry_sha256": _sha(registry), "matrix_sha256": _sha(matrix),
     }
 
 
-def _schema_for(columns: list[tuple[str, pa.DataType]]) -> pa.Schema:
-    return pa.schema([pa.field(name, data_type, nullable=False) for name, data_type in columns])
+def _schema(columns: list[tuple[str, pa.DataType]]) -> pa.Schema:
+    return pa.schema([pa.field(name, dtype, nullable=False) for name, dtype in columns])
 
 
 def validate_numeric_parquet(
@@ -250,31 +197,23 @@ def validate_numeric_parquet(
 ) -> dict[str, Any]:
     if path.suffix != ".parquet":
         raise NumericBaselineStoreError(f"non-Parquet payload rejected: {path.name}")
-    schema = pq.read_schema(path)
-    expected = _schema_for(expected_columns)
-    if schema.names != expected.names:
+    actual = pq.read_schema(path)
+    expected = _schema(expected_columns)
+    if actual.names != expected.names:
         raise NumericBaselineStoreError(f"column mismatch: {path.name}")
-    for actual_field, expected_field in zip(schema, expected):
-        if actual_field.type != expected_field.type:
-            raise NumericBaselineStoreError(
-                f"type mismatch in {path.name}:{actual_field.name}: "
-                f"{actual_field.type} != {expected_field.type}"
-            )
-        if not (pa.types.is_integer(actual_field.type) or pa.types.is_floating(actual_field.type)):
-            raise NumericBaselineStoreError(
-                f"non-numeric Parquet column rejected: {path.name}:{actual_field.name}"
-            )
+    for got, wanted in zip(actual, expected):
+        if got.type != wanted.type:
+            raise NumericBaselineStoreError(f"type mismatch in {path.name}:{got.name}")
+        if not (pa.types.is_integer(got.type) or pa.types.is_floating(got.type)):
+            raise NumericBaselineStoreError(f"non-numeric Parquet column rejected: {path.name}:{got.name}")
     table = pq.read_table(path)
     if require_zero_rows and table.num_rows != 0:
         raise NumericBaselineStoreError(f"bootstrap table must contain zero rows: {path.name}")
-    for column in table.columns:
-        if column.null_count:
-            raise NumericBaselineStoreError(f"null values rejected: {path.name}")
+    if any(column.null_count for column in table.columns):
+        raise NumericBaselineStoreError(f"null values rejected: {path.name}")
     return {
-        "rows": table.num_rows,
-        "columns": table.num_columns,
-        "bytes": path.stat().st_size,
-        "sha256": _file_sha(path),
+        "rows": table.num_rows, "columns": table.num_columns,
+        "bytes": path.stat().st_size, "sha256": _file_sha(path),
     }
 
 
@@ -284,65 +223,46 @@ def build_bootstrap(output_dir: Path) -> dict[str, Any]:
         shutil.rmtree(output_dir)
     data_dir = output_dir / "data"
     data_dir.mkdir(parents=True)
-
     files: list[dict[str, Any]] = []
     for table_id in sorted(control["tables"]):
         columns = control["tables"][table_id]
-        schema = _schema_for(columns)
-        arrays = [pa.array([], type=field.type) for field in schema]
-        table = pa.Table.from_arrays(arrays, schema=schema)
+        schema = _schema(columns)
+        table = pa.Table.from_arrays([pa.array([], type=f.type) for f in schema], schema=schema)
         path = data_dir / f"{table_id}.parquet"
         pq.write_table(
-            table,
-            path,
-            compression="zstd",
-            use_dictionary=False,
-            write_statistics=True,
-            version="2.6",
-            data_page_version="2.0",
+            table, path, compression="zstd", use_dictionary=False,
+            write_statistics=True, version="2.6", data_page_version="2.0",
         )
-        validation = validate_numeric_parquet(path, columns, require_zero_rows=True)
-        files.append(
-            {
-                "table_id": table_id,
-                "remote_path": f"{REMOTE_ROOT}/{table_id}.parquet",
-                **validation,
-            }
-        )
-
-    manifest = {
+        files.append({
+            "table_id": table_id,
+            "remote_path": f"{REMOTE_ROOT}/{table_id}.parquet",
+            **validate_numeric_parquet(path, columns, require_zero_rows=True),
+        })
+    receipt = {
         "schema_version": "numeric-baseline-bootstrap-receipt-v1",
         "status": "NUMERIC_BASELINE_BOOTSTRAP_VALIDATED",
-        "table_count": len(files),
-        "operation_count": EXPECTED_OPERATION_COUNT,
+        "table_count": len(files), "operation_count": EXPECTED_OPERATION_COUNT,
         "managed_mode_count": EXPECTED_MANAGED_MODE_COUNT,
-        "registry_sha256": control["registry_sha256"],
-        "matrix_sha256": control["matrix_sha256"],
-        "content_sha256": _canonical_sha(
-            [{"table_id": row["table_id"], "sha256": row["sha256"]} for row in files]
-        ),
-        "files": files,
-        "huggingface_payloads_numeric_only": True,
-        "huggingface_control_json_uploaded": False,
-        "compute_runtime_network_allowed": False,
+        "registry_sha256": control["registry_sha256"], "matrix_sha256": control["matrix_sha256"],
+        "content_sha256": _sha([{"table_id": r["table_id"], "sha256": r["sha256"]} for r in files]),
+        "files": files, "huggingface_payloads_numeric_only": True,
+        "huggingface_control_json_uploaded": False, "compute_runtime_network_allowed": False,
         "direct_center_connection_allowed": False,
-        "selection_and_relay_owner": "gpts-usage-center",
-        "model_calls": 0,
+        "selection_and_relay_owner": "gpts-usage-center", "model_calls": 0,
     }
-    _write_json(output_dir / "validation-receipt.json", manifest)
-    return manifest
+    _write_json(output_dir / "validation-receipt.json", receipt)
+    return receipt
 
 
-def _resolve_repo_id(api: HfApi, token: str, override: str | None) -> tuple[str, str]:
+def _resolve_repo_id(api: HfApi, token: str) -> tuple[str, str]:
     identity = api.whoami(token=token)
     if not isinstance(identity, Mapping) or not identity.get("name"):
         raise NumericBaselineStoreError("Hugging Face identity could not be resolved")
     owner = str(identity["name"])
-    requested = str(override or "").strip()
-    repo_id = requested or f"{owner}/{DEFAULT_REPO_NAME}"
+    repo_id = os.getenv(HF_REPO_ENV, "").strip() or f"{owner}/{DEFAULT_REPO_NAME}"
     parts = repo_id.split("/")
     allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-")
-    if len(parts) != 2 or any(not part or any(ch not in allowed for ch in part) for part in parts):
+    if len(parts) != 2 or any(not p or any(ch not in allowed for ch in p) for p in parts):
         raise NumericBaselineStoreError("numeric baseline dataset repo must use safe owner/name")
     return repo_id, owner
 
@@ -353,80 +273,57 @@ def sync_private_library(output_dir: Path) -> dict[str, Any]:
         raise NumericBaselineStoreError("HF_TOKEN is required")
     bootstrap = build_bootstrap(output_dir)
     api = HfApi()
-    repo_id, owner = _resolve_repo_id(api, token, os.getenv(HF_REPO_ENV))
+    repo_id, owner = _resolve_repo_id(api, token)
     api.create_repo(repo_id=repo_id, repo_type="dataset", private=True, exist_ok=True, token=token)
-
     info = api.repo_info(repo_id=repo_id, repo_type="dataset", token=token)
     if not bool(getattr(info, "private", False)):
         raise NumericBaselineStoreError("numeric baseline dataset must be private")
 
     expected_paths = {row["remote_path"] for row in bootstrap["files"]}
     existing = set(api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=token))
-    unexpected = sorted(
-        path for path in existing
-        if path not in expected_paths and not path.startswith(".")
-    )
+    unexpected = sorted(p for p in existing if p not in expected_paths and not p.startswith("."))
     if unexpected:
         raise NumericBaselineStoreError(
-            "numeric-only dataset contains unexpected non-baseline files: "
-            + ", ".join(unexpected[:20])
+            "numeric-only dataset contains unexpected files: " + ", ".join(unexpected[:20])
         )
 
-    operations: list[Any] = []
-    for path in sorted(existing - expected_paths):
-        if path.startswith("."):
-            continue
-        operations.append(CommitOperationDelete(path_in_repo=path))
-    for row in bootstrap["files"]:
-        operations.append(
-            CommitOperationAdd(
-                path_in_repo=row["remote_path"],
-                path_or_fileobj=output_dir / "data" / f"{row['table_id']}.parquet",
-            )
+    operations = [
+        CommitOperationAdd(
+            path_in_repo=row["remote_path"],
+            path_or_fileobj=output_dir / "data" / f"{row['table_id']}.parquet",
         )
+        for row in bootstrap["files"]
+    ]
     commit = api.create_commit(
-        repo_id=repo_id,
-        repo_type="dataset",
-        operations=operations,
-        commit_message="Initialize pure numeric compute baseline schemas",
-        token=token,
+        repo_id=repo_id, repo_type="dataset", operations=operations,
+        commit_message="Initialize pure numeric compute baseline schemas", token=token,
     )
 
-    verified: list[dict[str, Any]] = []
     control = validate_control_plane()
+    verified: list[dict[str, Any]] = []
     for row in bootstrap["files"]:
         local = hf_hub_download(
-            repo_id=repo_id,
-            filename=row["remote_path"],
-            repo_type="dataset",
-            token=token,
-            force_download=True,
+            repo_id=repo_id, filename=row["remote_path"], repo_type="dataset",
+            token=token, force_download=True,
         )
-        validation = validate_numeric_parquet(
+        checked = validate_numeric_parquet(
             Path(local), control["tables"][row["table_id"]], require_zero_rows=True
         )
-        if validation["sha256"] != row["sha256"]:
-            raise NumericBaselineStoreError(
-                f"remote numeric payload hash mismatch: {row['table_id']}"
-            )
-        verified.append({"table_id": row["table_id"], **validation})
+        if checked["sha256"] != row["sha256"]:
+            raise NumericBaselineStoreError(f"remote numeric payload hash mismatch: {row['table_id']}")
+        verified.append({"table_id": row["table_id"], **checked})
 
-    remote_files = set(api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=token))
-    visible_payloads = {path for path in remote_files if not path.startswith(".")}
-    if visible_payloads != expected_paths:
+    visible = {
+        p for p in api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=token)
+        if not p.startswith(".")
+    }
+    if visible != expected_paths or any(not p.endswith(".parquet") for p in visible):
         raise NumericBaselineStoreError("remote numeric dataset file set mismatch")
-    if any(not path.endswith(".parquet") for path in visible_payloads):
-        raise NumericBaselineStoreError("non-Parquet content detected in numeric dataset")
-
     receipt = {
-        **bootstrap,
-        "status": "NUMERIC_BASELINE_LIBRARY_SYNCHRONIZED",
-        "repository": repo_id,
-        "repository_owner": owner,
-        "private": True,
+        **bootstrap, "status": "NUMERIC_BASELINE_LIBRARY_SYNCHRONIZED",
+        "repository": repo_id, "repository_owner": owner, "private": True,
         "commit_oid": str(getattr(commit, "oid", "") or ""),
-        "verified_files": verified,
-        "remote_file_count": len(visible_payloads),
+        "verified_files": verified, "remote_file_count": len(visible),
         "secret_values_exposed": False,
     }
     _write_json(output_dir / "sync-receipt.json", receipt)
@@ -441,8 +338,7 @@ def render_receipt(output_dir: Path) -> str:
         return "HF numeric baseline result: `NO_RECEIPT`\n"
     row = _load_json(path)
     lines = [
-        f"HF numeric baseline result: `{row.get('status', 'UNKNOWN')}`",
-        "",
+        f"HF numeric baseline result: `{row.get('status', 'UNKNOWN')}`", "",
         f"- Numeric table families: `{row.get('table_count', 0)}`",
         f"- Compute operations covered: `{row.get('operation_count', 0)}`",
         f"- Managed modes covered: `{row.get('managed_mode_count', 0)}`",
@@ -454,8 +350,10 @@ def render_receipt(output_dir: Path) -> str:
         f"- Content SHA256: `{row.get('content_sha256', '')}`",
     ]
     if row.get("repository"):
-        lines.append(f"- Private dataset: `{row['repository']}`")
-        lines.append(f"- Remote numeric files: `{row.get('remote_file_count', 0)}`")
+        lines += [
+            f"- Private dataset: `{row['repository']}`",
+            f"- Remote numeric files: `{row.get('remote_file_count', 0)}`",
+        ]
     return "\n".join(lines) + "\n"
 
 
@@ -475,17 +373,14 @@ def main() -> int:
         return 0
     except Exception as exc:
         token = os.getenv(HF_TOKEN_ENV, "")
+        message = str(exc).replace(token, "[REDACTED]") if token else str(exc)
         output_dir.mkdir(parents=True, exist_ok=True)
-        _write_json(
-            output_dir / "failure-receipt.json",
-            {
-                "status": "NUMERIC_BASELINE_FAILED",
-                "error": _redact(str(exc), token),
-                "secret_values_exposed": False,
-                "model_calls": 0,
-            },
-        )
-        print(_redact(str(exc), token))
+        _write_json(output_dir / "failure-receipt.json", {
+            "status": "NUMERIC_BASELINE_FAILED",
+            "error": message.replace("\n", " ")[:1600],
+            "secret_values_exposed": False, "model_calls": 0,
+        })
+        print(message.replace("\n", " ")[:1600])
         return 1
 
 
