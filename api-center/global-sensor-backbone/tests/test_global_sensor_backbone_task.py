@@ -63,9 +63,14 @@ class GlobalSensorBackboneTests(unittest.TestCase):
                 },
             )
 
-    def test_wis2_topic_is_namespace_limited(self) -> None:
-        with self.assertRaisesRegex(ValueError, "namespace"):
-            module._wis2({"topic": "#"}, 5)
+    def test_wis2_brokers_are_fixed_and_tls_scoped(self) -> None:
+        self.assertEqual(
+            set(module.WIS2_BROKERS),
+            {"noaa", "meteofrance", "cma", "inmet"},
+        )
+        self.assertTrue(
+            all(host and "/" not in host for host in module.WIS2_BROKERS.values())
+        )
 
 
 if __name__ == "__main__":
