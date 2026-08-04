@@ -4,6 +4,7 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
+BASE_SHA = "d148855e73a000e27e20fc2cd5daa6cae15dd5c4"
 FILES = (
     "api-center/tests/test_api_catalog.py",
     "api-center/tests/test_capability_maximization.py",
@@ -11,11 +12,8 @@ FILES = (
 
 
 def base_content(path: str) -> str:
-    merge_base = subprocess.check_output(
-        ["git", "merge-base", "HEAD", "origin/main"], text=True
-    ).strip()
     return subprocess.check_output(
-        ["git", "show", f"{merge_base}:{path}"], text=True
+        ["git", "show", f"{BASE_SHA}:{path}"], text=True
     )
 
 
@@ -25,7 +23,10 @@ def main() -> int:
         old = '"public-data-geospatial": 35,'
         if old not in text:
             raise SystemExit(f"expected count not found in {name}")
-        Path(name).write_text(text.replace(old, '"public-data-geospatial": 34,'), encoding="utf-8")
+        Path(name).write_text(
+            text.replace(old, '"public-data-geospatial": 34,'),
+            encoding="utf-8",
+        )
     return 0
 
 
