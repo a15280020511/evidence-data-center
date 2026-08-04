@@ -1,0 +1,180 @@
+name: NOAA Fuzhou Typhoon Probability Analysis
+
+on:
+  push:
+    branches: [analysis/noaa-fuzhou-typhoon-2026]
+
+permissions:
+  contents: read
+
+jobs:
+  model:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Install deterministic dependencies
+        run: python -m pip install --disable-pip-version-check --no-input requests==2.32.5
+
+      - name: Run NOAA historical-track and ENSO analogue model
+        run: |
+          python - <<'PY'
+          import json
+          import math
+          import statistics
+          from collections import defaultdict
+          from pathlib import Path
+          import requests
+
+          FUZHOU = {"lat": 26.0745, "lon": 119.2965}
+          YEARS = list(range(1981, 2026))
+          MONTHS = set(range(8, 13))
+          SERVICE = "https://services2.arcgis.com/FiaPA4ga0iQKduv3/ArcGIS/rest/services/IBTrACS_ALL_list_v04r00_lines_1/FeatureServer/0/query"
+          session = requests.Session()
+          session.headers.update({"User-Agent": "evidence-data-center-noaa-typhoon-model/1"})
+
+          def query_radius(radius_km: int):
+              params = {
+                  "where": "year >= 1981 AND year <= 2025 AND month >= 8 AND month <= 12 AND BASIN = 'WP'",
+                  "geometry": json.dumps({"x": FUZHOU["lon"], "y": FUZHOU["lat"], "spatialReference": {"wkid": 4326}}),
+                  "geometryType": "esriGeometryPoint",
+                  "inSR": "4326",
+                  "spatialRel": "esriSpatialRelIntersects",
+                  "distance": str(radius_km),
+                  "units": "esriSRUnit_Kilometer",
+                  "outFields": "SID,NAME,year,month,USA_WIND",
+                  "returnGeometry": "false",
+                  "resultRecordCount": "1000",
+                  "f": "json",
+              }
+              response = session.get(SERVICE, params=params, timeout=60, allow_redirects=False)
+              response.raise_for_status()
+              payload = response.json()
+              if "error" in payload:
+                  raise RuntimeError(payload["error"])
+              features = payload.get("features") or []
+              if payload.get("exceededTransferLimit"):
+                  raise RuntimeError(f"query exceeded ArcGIS transfer limit at {radius_km} km")
+              storms = {}
+              for feature in features:
+                  a = feature.get("attributes") or {}
+                  sid = str(a.get("SID") or "").strip()
+                  year = int(a.get("year") or 0)
+                  month = int(a.get("month") or 0)
+                  if not sid or year not in YEARS or month not in MONTHS:
+                      continue
+                  row = storms.setdefault(sid, {"sid": sid, "name": a.get("NAME"), "year": year, "months": set(), "max_wind_kt": None})
+                  row["months"].add(month)
+                  wind = a.get("USA_WIND")
+                  if isinstance(wind, (int, float)) and wind >= 0:
+                      row["max_wind_kt"] = max(row["max_wind_kt"] or 0, float(wind))
+              for row in storms.values():
+                  row["months"] = sorted(row["months"])
+              return list(storms.values()), len(features)
+
+          def parse_oni():
+              url = "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
+              response = session.get(url, timeout=45, allow_redirects=False)
+              response.raise_for_status()
+              by_year = defaultdict(dict)
+              for line in response.text.splitlines():
+                  parts = line.split()
+                  if len(parts) < 4 or parts[0] == "SEAS":
+                      continue
+                  season, year_s = parts[0], parts[1]
+                  try:
+                      year = int(year_s)
+                      anomaly = float(parts[-1])
+                  except ValueError:
+                      continue
+                  by_year[year][season] = anomaly
+              analog = []
+              strong = []
+              for year in YEARS:
+                  vals = [by_year.get(year, {}).get(s) for s in ("ASO", "SON", "OND")]
+                  vals = [v for v in vals if v is not None]
+                  if vals and max(vals) >= 0.5:
+                      analog.append(year)
+                  if vals and max(vals) >= 1.0:
+                      strong.append(year)
+              return analog, strong, {str(y): by_year[y] for y in sorted(by_year) if y >= 1980}
+
+          def beta_interval(successes: int, trials: int, seed: int = 20260804):
+              import random
+              rng = random.Random(seed + successes * 1000 + trials)
+              samples = sorted(rng.betavariate(successes + 1, trials - successes + 1) for _ in range(200000))
+              return {
+                  "posterior_mean": round((successes + 1) / (trials + 2), 4),
+                  "credible_80": [round(samples[int(0.10 * len(samples))], 4), round(samples[int(0.90 * len(samples))], 4)],
+                  "credible_90": [round(samples[int(0.05 * len(samples))], 4), round(samples[int(0.95 * len(samples))], 4)],
+              }
+
+          analog_years, strong_analog_years, oni = parse_oni()
+          output = {
+              "schema_version": "noaa-fuzhou-typhoon-model-v1",
+              "location": FUZHOU,
+              "historical_period": "1981-2025",
+              "forecast_window": "2026-08-01/2026-12-31",
+              "source": {
+                  "tracks": "NOAA IBTrACS v04r00 ArcGIS feature layer updated 2026-03-03",
+                  "enso": "NOAA CPC ONI",
+              },
+              "enso_analog_years": analog_years,
+              "moderate_or_strong_enso_analog_years": strong_analog_years,
+              "radii": {},
+          }
+
+          for radius in (100, 200, 300):
+              storms, feature_count = query_radius(radius)
+              by_year = defaultdict(list)
+              for storm in storms:
+                  by_year[storm["year"]].append(storm)
+              hit_years = sorted(by_year)
+              typhoon_years = sorted(y for y, rows in by_year.items() if any((r["max_wind_kt"] or 0) >= 64 for r in rows))
+              analog_hits = sorted(set(hit_years).intersection(analog_years))
+              strong_analog_hits = sorted(set(hit_years).intersection(strong_analog_years))
+              monthly_storms = defaultdict(set)
+              for storm in storms:
+                  for month in storm["months"]:
+                      monthly_storms[month].add(storm["sid"])
+              output["radii"][str(radius)] = {
+                  "arcgis_feature_count": feature_count,
+                  "unique_storm_count": len(storms),
+                  "hit_year_count": len(hit_years),
+                  "hit_years": hit_years,
+                  "annual_hit_rate": round(len(hit_years) / len(YEARS), 4),
+                  "annual_hit_posterior": beta_interval(len(hit_years), len(YEARS), seed=radius),
+                  "typhoon_intensity_hit_year_count": len(typhoon_years),
+                  "typhoon_intensity_hit_rate": round(len(typhoon_years) / len(YEARS), 4),
+                  "el_nino_analog_trials": len(analog_years),
+                  "el_nino_analog_hit_count": len(analog_hits),
+                  "el_nino_analog_hit_rate": round(len(analog_hits) / len(analog_years), 4) if analog_years else None,
+                  "el_nino_analog_posterior": beta_interval(len(analog_hits), len(analog_years), seed=radius + 10) if analog_years else None,
+                  "moderate_strong_el_nino_trials": len(strong_analog_years),
+                  "moderate_strong_el_nino_hit_count": len(strong_analog_hits),
+                  "moderate_strong_el_nino_hit_rate": round(len(strong_analog_hits) / len(strong_analog_years), 4) if strong_analog_years else None,
+                  "moderate_strong_el_nino_posterior": beta_interval(len(strong_analog_hits), len(strong_analog_years), seed=radius + 20) if strong_analog_years else None,
+                  "monthly_unique_storm_counts": {str(m): len(monthly_storms[m]) for m in sorted(monthly_storms)},
+                  "storms": sorted(storms, key=lambda r: (r["year"], r["sid"])),
+              }
+
+          Path("noaa-fuzhou-typhoon-model.json").write_text(json.dumps(output, ensure_ascii=False, indent=2), encoding="utf-8")
+          print("MODEL_RESULT_BEGIN")
+          print(json.dumps(output, ensure_ascii=False))
+          print("MODEL_RESULT_END")
+          PY
+
+      - name: Upload model evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: noaa-fuzhou-typhoon-model-${{ github.run_id }}
+          path: noaa-fuzhou-typhoon-model.json
+          if-no-files-found: error
+          retention-days: 30
