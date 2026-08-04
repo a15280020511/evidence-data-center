@@ -1,4 +1,4 @@
-name: Run Cloudflare China Daily Harvest Queue
+name: Run Cloudflare China Daily Governance Export Queue
 
 on:
   schedule:
@@ -22,10 +22,6 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      HF_NUMERIC_BASELINE_DATASET_REPO: ${{ vars.HF_NUMERIC_BASELINE_DATASET_REPO }}
-      HF_HUB_DISABLE_TELEMETRY: "1"
-      HF_HUB_DISABLE_PROGRESS_BARS: "1"
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -51,13 +47,18 @@ jobs:
             -r api-center/huggingface/requirements-numeric-baseline.txt
           python -m pip check
 
-      - name: Validate control plane before collection
+      - name: Validate producer-only control plane
         run: |
           set -euo pipefail
           python api-center/cloudflare/numeric-compiler/china_intelligence_controls.py \
             validate --output-dir daily-harvest-artifacts/control-validation
           python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             validate --output-dir daily-harvest-artifacts/compiler-validation
+          python -m py_compile api-center/huggingface/build_governance_baseline_export.py
+          if grep -q 'secrets.HF_TOKEN\|--commit-to-hf' .github/workflows/cloudflare-cn-daily-harvest.yml; then
+            echo 'direct private Hugging Face access is forbidden in evidence center' >&2
+            exit 1
+          fi
 
       - name: Ensure queue labels
         run: |
@@ -66,7 +67,7 @@ jobs:
           gh label create cn-harvest-active --color FBCA04 --description "Active China numeric harvest task" --force
           gh label create cn-harvest-deferred-quota --color D4C5F9 --description "Deferred until next UTC day because free quota was exhausted" --force
           gh label create cn-harvest-deferred-rate-limit --color C5DEF5 --description "Deferred until next UTC day because platform rate limit was reached" --force
-          gh label create cn-harvest-completed --color 0E8A16 --description "China numeric harvest completed" --force
+          gh label create cn-harvest-completed --color 0E8A16 --description "China numeric harvest completed and exported for governance" --force
           gh label create cn-harvest-quarantined --color B60205 --description "China numeric harvest requires review" --force
           gh label create cn-harvest-rejected --color 5319E7 --description "China numeric harvest ticket rejected" --force
 
@@ -74,37 +75,27 @@ jobs:
         run: |
           set -euo pipefail
           mapfile -t stale_issues < <(
-            gh issue list \
-              --state open \
-              --label cn-harvest-active \
-              --limit 100 \
-              --search 'in:title "[queue-cn-numeric]"' \
-              --json number \
-              --jq '.[].number'
+            gh issue list --state open --label cn-harvest-active --limit 100 \
+              --search 'in:title "[queue-cn-numeric]"' --json number --jq '.[].number'
           )
           for issue_number in "${stale_issues[@]}"; do
-            gh issue edit "$issue_number" \
-              --remove-label cn-harvest-active \
+            gh issue edit "$issue_number" --remove-label cn-harvest-active \
               --add-label cn-harvest-deferred-rate-limit >/dev/null
             gh issue comment "$issue_number" \
-              --body 'Daily harvest recovery: `DEFERRED_AFTER_INTERRUPTED_RUN`; the task will be retried in the current oldest-first queue.' >/dev/null
+              --body 'Daily harvest recovery: `DEFERRED_AFTER_INTERRUPTED_RUN`; retry remains governed by the oldest-first queue.' >/dev/null
           done
 
       - name: Build oldest-first resumable queue
         run: |
           set -euo pipefail
           mkdir -p daily-harvest-artifacts
-          gh issue list \
-            --state open \
-            --limit 100 \
+          gh issue list --state open --limit 100 \
             --search 'in:title "[queue-cn-numeric]"' \
-            --json number,title,body,createdAt,labels > daily-harvest-artifacts/open-queue.json
+            --json number,title,createdAt,labels > daily-harvest-artifacts/open-queue.json
           python - <<'PY'
           import json
           from pathlib import Path
-
-          source = Path('daily-harvest-artifacts/open-queue.json')
-          rows = json.loads(source.read_text(encoding='utf-8'))
+          rows = json.loads(Path('daily-harvest-artifacts/open-queue.json').read_text(encoding='utf-8'))
           deferred = {'cn-harvest-deferred-quota', 'cn-harvest-deferred-rate-limit'}
           excluded = {'cn-harvest-completed', 'cn-harvest-quarantined', 'cn-harvest-rejected', 'cn-harvest-active'}
           plan = []
@@ -114,11 +105,10 @@ jobs:
               labels = {str(item.get('name') or '') for item in row.get('labels') or []}
               if labels & excluded:
                   continue
-              priority = 0 if labels & deferred else 1
               plan.append({
                   'number': int(row['number']),
                   'created_at': str(row.get('createdAt') or ''),
-                  'priority': priority,
+                  'priority': 0 if labels & deferred else 1,
               })
           plan.sort(key=lambda item: (item['priority'], item['created_at'], item['number']))
           Path('daily-harvest-artifacts/queue-plan.json').write_text(
@@ -128,7 +118,7 @@ jobs:
           print(f'planned_tasks={len(plan)}')
           PY
 
-      - name: Execute sequentially until free quota stop
+      - name: Execute sequentially without private Dataset access
         shell: bash
         run: |
           set -euo pipefail
@@ -155,14 +145,8 @@ jobs:
 
           clear_queue_labels() {
             local issue_number="$1"
-            for label in \
-              cn-harvest-pending \
-              cn-harvest-active \
-              cn-harvest-deferred-quota \
-              cn-harvest-deferred-rate-limit \
-              cn-harvest-completed \
-              cn-harvest-quarantined \
-              cn-harvest-rejected; do
+            for label in cn-harvest-pending cn-harvest-active cn-harvest-deferred-quota \
+              cn-harvest-deferred-rate-limit cn-harvest-completed cn-harvest-quarantined cn-harvest-rejected; do
               gh issue edit "$issue_number" --remove-label "$label" >/dev/null 2>&1 || true
             done
           }
@@ -173,6 +157,11 @@ jobs:
             python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
               render --output-dir "$output_dir" > "$output_dir/comment.md" 2>/dev/null || true
             if [[ -s "$output_dir/comment.md" ]]; then
+              {
+                echo
+                echo '- Private Hugging Face write executed: `false`'
+                echo '- Storage authority: `a15280020511/decision-system-governance`'
+              } >> "$output_dir/comment.md"
               gh issue comment "$issue_number" --body-file "$output_dir/comment.md" >/dev/null
             fi
           }
@@ -194,7 +183,6 @@ jobs:
             task_dir="daily-harvest-artifacts/tasks/${issue_number}"
             mkdir -p "$task_dir"
             gh issue view "$issue_number" --json body --jq .body > "$task_dir/ticket.json"
-
             if ! python -m json.tool "$task_dir/ticket.json" >/dev/null 2>&1; then
               clear_queue_labels "$issue_number"
               gh issue edit "$issue_number" --add-label cn-harvest-rejected >/dev/null
@@ -210,10 +198,7 @@ jobs:
 
             set +e
             python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
-              execute \
-              --ticket "$task_dir/ticket.json" \
-              --output-dir "$task_dir" \
-              --commit-to-hf
+              execute --ticket "$task_dir/ticket.json" --output-dir "$task_dir"
             rc=$?
             set -e
 
@@ -240,15 +225,11 @@ jobs:
                 stop_code=5
                 stop_reason="platform-rate-limit-reached"
                 break
-              elif grep -Eq 'captcha|login|required permission|forbidden|blocked hostname|non-public ip' <<<"$failure_lower"; then
-                gh issue edit "$issue_number" --add-label cn-harvest-quarantined >/dev/null
-                quarantined=$((quarantined + 1))
               else
                 gh issue edit "$issue_number" --add-label cn-harvest-quarantined >/dev/null
                 quarantined=$((quarantined + 1))
               fi
             fi
-
             sleep 10
           done
 
@@ -258,12 +239,11 @@ jobs:
           import json
           from datetime import datetime, timedelta, timezone
           from pathlib import Path
-
           now = datetime.now(timezone.utc)
           next_day = (now + timedelta(days=1)).date()
           next_resume = datetime(next_day.year, next_day.month, next_day.day, 0, 15, tzinfo=timezone.utc)
           receipt = {
-              'status': 'CLOUDFLARE_DAILY_HARVEST_FINISHED',
+              'status': 'CLOUDFLARE_DAILY_HARVEST_EXPORTED_FOR_GOVERNANCE',
               'utc_date': now.date().isoformat(),
               'started_count': int('${started}'),
               'completed_count': int('${completed}'),
@@ -277,7 +257,8 @@ jobs:
               'paid_usage_allowed': False,
               'automatic_external_model_fallback_used': False,
               'raw_text_persisted': False,
-              'numeric_huggingface_payload_only': True,
+              'direct_huggingface_write': False,
+              'storage_gateway': 'a15280020511/decision-system-governance',
           }
           Path('daily-harvest-artifacts/daily-harvest-receipt.json').write_text(
               json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + '\n',
@@ -285,6 +266,33 @@ jobs:
           )
           print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
           PY
+
+      - name: Build merged governance baseline export
+        id: export
+        shell: bash
+        run: |
+          set -euo pipefail
+          if find daily-harvest-artifacts/tasks -type f -name '*.parquet' -print -quit | grep -q .; then
+            batch_date="$(date -u +%Y%m%d)"
+            python api-center/huggingface/build_governance_baseline_export.py \
+              --input-dir daily-harvest-artifacts/tasks \
+              --output-dir governance-baseline-export \
+              --source-run-id "$GITHUB_RUN_ID" \
+              --batch-id "daily-${batch_date}-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}" \
+              --mode append_batch
+            echo "has_export=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_export=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload immutable governance baseline Artifact
+        if: steps.export.outputs.has_export == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.export.outputs.artifact_name }}
+          path: governance-baseline-export/
+          if-no-files-found: error
+          retention-days: 30
 
       - name: Publish run summary
         if: always()
@@ -298,15 +306,25 @@ jobs:
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
           fi
+          if [[ -f governance-baseline-export-receipt.json ]]; then
+            {
+              echo
+              echo '## Governance baseline handoff'
+              echo
+              echo "- Artifact: \`${{ steps.export.outputs.artifact_name }}\`"
+              echo "- Manifest SHA-256: \`${{ steps.export.outputs.manifest_sha256 }}\`"
+              echo '- Next authority: `a15280020511/decision-system-governance`'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       - name: Upload safe daily evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: cloudflare-cn-daily-harvest-${{ github.run_id }}
+          name: cloudflare-cn-daily-harvest-evidence-${{ github.run_id }}
           path: |
             daily-harvest-artifacts/**/*.json
-            daily-harvest-artifacts/**/*.parquet
             daily-harvest-artifacts/**/*.md
+            governance-baseline-export-receipt.json
           if-no-files-found: warn
           retention-days: 30
