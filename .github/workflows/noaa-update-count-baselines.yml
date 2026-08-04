@@ -51,9 +51,10 @@ jobs:
               path.write_text(text, encoding='utf-8')
           PY
 
-      - name: Verify no stale connector-count baseline remains
+      - name: Verify no stale production baseline remains
         run: |
-          if grep -R -n -E 'connector_count[^\n]*68|enabled_connector_count[^\n]*68' api-center/tests .github/workflows; then
+          if grep -R -n -E 'connector_count[^\n]*68|enabled_connector_count[^\n]*68' \
+            api-center/tests .github/workflows/api-catalog-validate.yml; then
             echo 'Stale connector-count baseline remains.' >&2
             exit 1
           fi
