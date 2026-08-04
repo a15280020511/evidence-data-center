@@ -45,7 +45,7 @@ def parameters_for(operation: str, source_id: str) -> dict:
     row = dict(SEARCH_PARAMS[operation])
     row["source_id"] = source_id
     if operation == "scholarly-search":
-        row["query"] = "graph neural networks"
+        row["query"] = "database"
     return row
 
 
@@ -59,7 +59,7 @@ def validate_registry() -> dict:
     sources = matrix["sources"]
     assert provider["provider_id"] == "global-knowledge-fabric"
     assert provider["ticket_prefix"] == "[intel-knowledge-fabric]"
-    assert len(sources) == matrix["active_source_count"] == provider["limits"]["source_count"] == 15
+    assert len(sources) == matrix["active_source_count"] == provider["limits"]["source_count"] == 14
     assert len(operations) == 9
     assert provider["limits"]["requests_per_ticket_max"] == 1
     assert provider["limits"]["max_response_bytes"] == 5000000
@@ -98,7 +98,6 @@ def validate_registry() -> dict:
 
 LIVE_CASES = {
     "ror": ("entity-search", {"source_id": "ror", "query": "University of Oxford", "limit": 2}),
-    "dblp-publication": ("scholarly-search", {"source_id": "dblp-publication", "query": "graph neural networks", "limit": 2}),
     "dblp-author": ("entity-search", {"source_id": "dblp-author", "query": "Barbara Liskov", "limit": 2}),
     "dblp-venue": ("scholarly-search", {"source_id": "dblp-venue", "query": "SIGIR", "limit": 2}),
     "harvard-dataverse": ("dataset-search", {"source_id": "harvard-dataverse", "query": "climate", "limit": 2}),

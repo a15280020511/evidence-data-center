@@ -1,0 +1,96 @@
+{
+  "schema_version": "open-intelligence-source-access-matrix-v1",
+  "enabled_no_key_sources": [
+    "common-crawl",
+    "gdacs",
+    "bls-v1",
+    "ecb-sdmx",
+    "wikimedia-pageviews",
+    "hacker-news",
+    "ror-v2",
+    "uk-legislation",
+    "ted-search",
+    "fixed-ckan-portals",
+    "fixed-socrata-portals",
+    "stack-exchange-anonymous",
+    "bluesky-public-appview",
+    "cas-data-center-catalog"
+  ],
+  "existing_capabilities_reused_without_duplication": [
+    "browserless",
+    "cloudflare-browser-run",
+    "internet-archive",
+    "gdelt",
+    "eurostat",
+    "openalex",
+    "datacite",
+    "opencitations",
+    "unpaywall",
+    "usaspending",
+    "transitland"
+  ],
+  "conditional_not_directly_invokable": [
+    {
+      "id": "browsertrix",
+      "reason": "requires a self-hosted browser service and evidence storage"
+    },
+    {
+      "id": "crawl4ai",
+      "reason": "requires a controlled self-hosted browser runtime"
+    },
+    {
+      "id": "playwright-mcp",
+      "reason": "browser control must remain behind the existing bounded browser layer"
+    },
+    {
+      "id": "searxng",
+      "reason": "requires a maintained self-hosted metasearch instance"
+    },
+    {
+      "id": "docling",
+      "reason": "heavy local document runtime; activate only in a dedicated file pipeline"
+    },
+    {
+      "id": "grobid",
+      "reason": "requires a separately pinned Java service"
+    },
+    {
+      "id": "apache-tika",
+      "reason": "requires a separately pinned Java service"
+    },
+    {
+      "id": "opensearch",
+      "reason": "requires persistent service/storage; not needed for source-of-truth retrieval"
+    },
+    {
+      "id": "scrapy",
+      "reason": "allowed only for future fixed-domain collectors, never arbitrary crawling"
+    },
+    {
+      "id": "phda",
+      "reason": "official interface requires uniqueNum verification parameter"
+    },
+    {
+      "id": "sciencedb-open-api",
+      "reason": "public Open API/OAI-PMH endpoint contract not yet frozen"
+    },
+    {
+      "id": "national-dataset-platform",
+      "reason": "portal is operational but no stable public API is documented"
+    },
+    {
+      "id": "wikimedia-eventstreams",
+      "reason": "continuous streaming conflicts with one-request bounded execution"
+    },
+    {
+      "id": "sec-edgar",
+      "reason": "official data.sec.gov returned HTTP 403 from the GitHub Actions production egress even with fair-access identification headers; do not expose as a production operation"
+    }
+  ],
+  "licence_and_use_notes": {
+    "bluesky": "public AppView; no pagination cursor is exposed",
+    "stack-exchange": "anonymous quota only; no app key",
+    "cas-data-centers": "catalog discovery only; downstream center policies vary"
+  },
+  "secret_values_exposed": false
+}

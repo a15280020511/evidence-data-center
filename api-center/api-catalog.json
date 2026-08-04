@@ -69,15 +69,16 @@
     "google-public-intelligence/provider-catalog.json",
     "reality-observation/provider-catalog.json",
     "noaa-cdo/provider-catalog.json",
-    "copernicus-marine/provider-catalog.json"
+    "copernicus-marine/provider-catalog.json",
+    "open-intelligence-toolkit/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "61ea33e58a2f2813bd9ca9e7fb9e2f94dabd821e87b574e35232fad46928e7df",
+  "managed_provider_catalog_sha256": "cc48b1221467e98d4ce95e74d43a2c84fe0e1bd1355dead4645552ca2d7528df",
   "connector_count": 72,
   "enabled_connector_count": 72,
-  "managed_provider_count": 67,
-  "enabled_managed_provider_count": 67,
-  "managed_operation_count": 736,
-  "exposed_parameter_count": 2619,
+  "managed_provider_count": 68,
+  "enabled_managed_provider_count": 68,
+  "managed_operation_count": 756,
+  "exposed_parameter_count": 2666,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -143,6 +144,7 @@
     "noaa-cdo/provider-catalog.json",
     "copernicus-marine/provider-catalog.json",
     "global-sensor-backbone/provider-catalog.json",
+    "open-intelligence-toolkit/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -31003,7 +31005,7 @@
       "description": "固定接入教育研究、开放专著、国家图书馆目录、博物馆开放馆藏、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据；需要Key的来源仅Google Books与BHL。",
       "enabled": true,
       "ticket_prefix": "[intel-knowledge]",
-      "catalog_policy": "仅开放9项固定只读操作和16个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "catalog_policy": "仅开放9项固定只读操作和14个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。",
       "operation_count": 9,
       "operations": [
@@ -31071,7 +31073,6 @@
                   "nih-reporter",
                   "clinicaltrials-gov",
                   "usgs-publications",
-                  "federal-register",
                   "met-museum",
                   "art-institute-chicago",
                   "digitalnz",
@@ -31124,7 +31125,6 @@
                 "enum": [
                   "ukri-gtr",
                   "clinicaltrials-gov",
-                  "federal-register",
                   "met-museum",
                   "art-institute-chicago",
                   "digitalnz",
@@ -31170,7 +31170,6 @@
                 "type": "string",
                 "enum": [
                   "hal-oai",
-                  "doab-oai",
                   "rijksmuseum-oai"
                 ]
               }
@@ -31209,7 +31208,6 @@
                 "type": "string",
                 "enum": [
                   "hal-oai",
-                  "doab-oai",
                   "rijksmuseum-oai"
                 ]
               },
@@ -31264,7 +31262,6 @@
                 "type": "string",
                 "enum": [
                   "hal-oai",
-                  "doab-oai",
                   "rijksmuseum-oai"
                 ]
               },
@@ -31405,7 +31402,7 @@
         }
       ],
       "limits": {
-        "source_count": 16,
+        "source_count": 14,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 90,
         "max_response_bytes": 15000000,
@@ -31430,7 +31427,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "eee324982647c9bcfa40c380c8204dcd2548c820ef23e9280c6e901e31274999",
+      "provider_sha256": "2a5e8bc5afa9ccec33979eddcd20d5f7b8122f26bd210990c1ccf332c78f9ec3",
       "catalog_file": "global-knowledge-archives/provider-catalog.json"
     },
     {
@@ -31439,7 +31436,7 @@
       "description": "固定接入科研机构与作者标识、计算机科学书目、研究对象关系、科研数据集、政府资助与法规、欧盟出版物、生命科学知识和技术标准。",
       "enabled": true,
       "ticket_prefix": "[intel-knowledge-fabric]",
-      "catalog_policy": "仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。",
+      "catalog_policy": "仅开放9项固定只读操作和14个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不使用cursor、不自动重试、不跟随重定向；凭证仅后端注入；保留来源权利和响应哈希。",
       "operation_count": 9,
       "operations": [
@@ -31549,7 +31546,6 @@
               "source_id": {
                 "type": "string",
                 "enum": [
-                  "dblp-publication",
                   "dblp-venue"
                 ]
               },
@@ -31827,7 +31823,7 @@
         }
       ],
       "limits": {
-        "source_count": 15,
+        "source_count": 14,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 75,
         "max_response_bytes": 5000000,
@@ -31853,7 +31849,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "f237e8794b12cf3aa8ccc907e0a190e6528565273dddb308fac8ecf38228282c",
+      "provider_sha256": "b38f51a1bd04f41f560b018fe31c42dc56cb22607b4605ea026483e82090aa15",
       "catalog_file": "global-knowledge-fabric/provider-catalog.json"
     },
     {
@@ -35143,6 +35139,749 @@
       "secret_value_exposed": false,
       "provider_sha256": "b5772f3928c85d3964b2e37dd96c9eeff06028941dd09a75d9c4e02993d37821",
       "catalog_file": "copernicus-marine/provider-catalog.json"
+    },
+    {
+      "provider_id": "open-intelligence-toolkit",
+      "display_name": "开放情报采集与解析工具包",
+      "description": "统一提供免Key公共情报API、固定门户检索和离线HTML正文/结构化数据提取；重型浏览与文档服务仅注册状态，不伪报联通。",
+      "enabled": true,
+      "ticket_prefix": "[intel-open-toolkit]",
+      "catalog_policy": "只允许22项固定只读或本地操作；禁止任意主机、任意URL、登录、Cookie、验证码绕过、自动分页、自动重试、持续流、个人画像、写入和交易。",
+      "execution_policy": "每票最多一次上游请求；固定端点或固定门户枚举；HTML解析完全离线；所有结果生成哈希、诊断和Artifact回执。",
+      "operation_count": 20,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地开放情报工具包能力目录。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "LOCAL",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "source-access-matrix",
+          "description": "读取来源、费用、许可和生产状态矩阵。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "LOCAL",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "toolchain-status",
+          "description": "读取浏览、解析、索引和条件工具状态。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "LOCAL",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "common-crawl-collinfo",
+          "description": "读取 Common Crawl 可用索引集合。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://index.commoncrawl.org/collinfo.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "common-crawl-index",
+          "description": "在指定 Common Crawl 索引中查找历史网页记录。",
+          "parameter_names": [
+            "index",
+            "url",
+            "match_type",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "index": {
+                "type": "string",
+                "pattern": "^CC-MAIN-[0-9]{4}-[0-9]{2}$"
+              },
+              "url": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "match_type": {
+                "enum": [
+                  "exact",
+                  "prefix",
+                  "host",
+                  "domain"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "index",
+              "url"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://index.commoncrawl.org/{index}-index",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "gdacs-events",
+          "description": "读取 GDACS 当前全球灾害事件 GeoJSON。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://www.gdacs.org/contentdata/xml/gdacsAPP_Home.geojson",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "bls-series",
+          "description": "读取美国 BLS v1 时间序列。",
+          "parameter_names": [
+            "series_ids",
+            "start_year",
+            "end_year"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "series_ids": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 25,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9._-]{1,80}$"
+                }
+              },
+              "start_year": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              },
+              "end_year": {
+                "type": "integer",
+                "minimum": 1900,
+                "maximum": 2100
+              }
+            },
+            "required": [
+              "series_ids"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://api.bls.gov/publicAPI/v1/timeseries/data/",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "ecb-sdmx-data",
+          "description": "读取 ECB Data Portal SDMX 数据。",
+          "parameter_names": [
+            "flow",
+            "key",
+            "start_period",
+            "end_period",
+            "format"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "flow": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]{1,100}$"
+              },
+              "key": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.+-]{1,500}$"
+              },
+              "start_period": {
+                "type": "string",
+                "maxLength": 30
+              },
+              "end_period": {
+                "type": "string",
+                "maxLength": 30
+              },
+              "format": {
+                "enum": [
+                  "csvdata",
+                  "jsondata"
+                ]
+              }
+            },
+            "required": [
+              "flow",
+              "key"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://data-api.ecb.europa.eu/service/data/{flow}/{key}",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "wikimedia-pageviews",
+          "description": "读取 Wikimedia 聚合页面浏览量。",
+          "parameter_names": [
+            "project",
+            "access",
+            "agent",
+            "article",
+            "granularity",
+            "start",
+            "end"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "project": {
+                "type": "string",
+                "pattern": "^[a-z0-9.-]{1,80}$"
+              },
+              "access": {
+                "enum": [
+                  "all-access",
+                  "desktop",
+                  "mobile-app",
+                  "mobile-web"
+                ]
+              },
+              "agent": {
+                "enum": [
+                  "all-agents",
+                  "user",
+                  "spider",
+                  "automated"
+                ]
+              },
+              "article": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "granularity": {
+                "enum": [
+                  "daily",
+                  "monthly"
+                ]
+              },
+              "start": {
+                "type": "string",
+                "pattern": "^[0-9]{8}(?:[0-9]{2})?$"
+              },
+              "end": {
+                "type": "string",
+                "pattern": "^[0-9]{8}(?:[0-9]{2})?$"
+              }
+            },
+            "required": [
+              "project",
+              "article",
+              "start",
+              "end"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/...",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "hackernews-topstories",
+          "description": "读取 Hacker News 热门条目编号。",
+          "parameter_names": [
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 500
+              }
+            }
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://hacker-news.firebaseio.com/v0/topstories.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "hackernews-item",
+          "description": "读取单个 Hacker News 条目。",
+          "parameter_names": [
+            "item_id"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "item_id": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              }
+            },
+            "required": [
+              "item_id"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://hacker-news.firebaseio.com/v0/item/{item_id}.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "ror-search",
+          "description": "搜索 ROR v2 全球研究机构。",
+          "parameter_names": [
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://api.ror.org/v2/organizations",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "uk-legislation-search",
+          "description": "搜索英国 legislation.gov.uk 机器可读法规目录。",
+          "parameter_names": [
+            "title",
+            "year",
+            "number",
+            "type",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "year": {
+                "type": "integer",
+                "minimum": 1000,
+                "maximum": 2100
+              },
+              "number": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 999999
+              },
+              "type": {
+                "type": "string",
+                "pattern": "^[a-z-]{1,60}$"
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 50
+              }
+            },
+            "required": [
+              "title"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://www.legislation.gov.uk/search/data.feed",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "ted-search",
+          "description": "搜索欧盟 TED 公共采购公告。",
+          "parameter_names": [
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://api.ted.europa.eu/v3/notices/search",
+            "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "ckan-package-search",
+          "description": "在固定 CKAN 开放数据门户中搜索数据集。",
+          "parameter_names": [
+            "portal",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "portal": {
+                "enum": [
+                  "uk",
+                  "hdx",
+                  "open-africa"
+                ]
+              },
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "portal",
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "fixed CKAN allowlist",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "socrata-dataset-rows",
+          "description": "读取固定 Socrata 门户的公开数据集行。",
+          "parameter_names": [
+            "portal",
+            "dataset_id",
+            "query",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "portal": {
+                "enum": [
+                  "nyc",
+                  "cdc",
+                  "chicago"
+                ]
+              },
+              "dataset_id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]{4}-[a-z0-9]{4}$"
+              },
+              "query": {
+                "type": "string",
+                "maxLength": 200
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "portal",
+              "dataset_id"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "fixed Socrata allowlist",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "stackexchange-search",
+          "description": "搜索 Stack Exchange 技术问答。",
+          "parameter_names": [
+            "query",
+            "site",
+            "tagged",
+            "sort",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "site": {
+                "type": "string",
+                "pattern": "^[a-z0-9.-]{1,80}$"
+              },
+              "tagged": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9+#_.;-]{1,200}$"
+              },
+              "sort": {
+                "enum": [
+                  "activity",
+                  "creation",
+                  "votes",
+                  "relevance"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://api.stackexchange.com/2.3/search/advanced",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "bluesky-search-posts",
+          "description": "通过 Bluesky 公共 AppView 搜索公开帖子。",
+          "parameter_names": [
+            "query",
+            "sort",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "sort": {
+                "enum": [
+                  "top",
+                  "latest"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "query"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "cas-data-centers",
+          "description": "读取中国科学院科学数据中心公开目录页。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "https://www.casdc.cn/dataV/",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "html-structure-extract",
+          "description": "离线提取给定 HTML 的正文、可读内容和结构化元数据。",
+          "parameter_names": [
+            "html",
+            "base_url"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "html": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200000
+              },
+              "base_url": {
+                "type": "string",
+                "pattern": "^https://[^\\s]{1,500}$"
+              }
+            },
+            "required": [
+              "html"
+            ]
+          },
+          "result_contract": {
+            "source": "open-intelligence-toolkit",
+            "official_endpoint": "LOCAL",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 5000000,
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "redirects_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "login_allowed": false,
+        "cookie_persistence_allowed": false,
+        "captcha_bypass_allowed": false,
+        "write_operations_allowed": false,
+        "personal_profiling_allowed": false,
+        "model_calls": 0,
+        "secret_values_exposed": false
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "724f6e69467389f5b3d7c2421289ff5e65ff8a1458ff588c85a7afda70fc4db7",
+      "catalog_file": "open-intelligence-toolkit/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -44415,5 +45154,5 @@
       "directly_invokable": true
     }
   ],
-  "catalog_sha256": "bbe09832f95fb88442c847ccec6dd1a7cf74194fa34d984bf31d3a52d3118a20"
+  "catalog_sha256": "49274c7a7a96b15984034c89dd03044da3498f97f5f8ba0070bb1ddc7bf6ec20"
 }

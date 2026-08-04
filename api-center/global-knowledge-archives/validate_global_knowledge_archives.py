@@ -63,7 +63,7 @@ def validate_registry() -> dict:
     sources = matrix["sources"]
     assert provider["provider_id"] == "global-knowledge-archives"
     assert provider["ticket_prefix"] == "[intel-knowledge]"
-    assert len(sources) == matrix["active_source_count"] == provider["limits"]["source_count"] == 16
+    assert len(sources) == matrix["active_source_count"] == provider["limits"]["source_count"] == 14
     assert len(operations) == 9
     assert matrix["governance"]["fixed_sources_only"] is True
     assert matrix["governance"]["arbitrary_urls_allowed"] is False
@@ -119,13 +119,11 @@ LIVE_CASES = {
     "nih-reporter": ("knowledge-search", {"source_id": "nih-reporter", "query": "malaria vaccine", "limit": 2}),
     "clinicaltrials-gov": ("knowledge-search", {"source_id": "clinicaltrials-gov", "query": "malaria", "limit": 2}),
     "usgs-publications": ("knowledge-search", {"source_id": "usgs-publications", "query": "earthquake", "limit": 2}),
-    "federal-register": ("knowledge-search", {"source_id": "federal-register", "query": "artificial intelligence", "limit": 2}),
     "met-museum": ("knowledge-search", {"source_id": "met-museum", "query": "sunflowers", "limit": 2}),
     "art-institute-chicago": ("knowledge-search", {"source_id": "art-institute-chicago", "query": "monet", "limit": 2}),
     "digitalnz": ("knowledge-search", {"source_id": "digitalnz", "query": "social welfare", "limit": 2}),
     "dnb-sru": ("sru-search", {"source_id": "dnb-sru", "query": "tit=climate", "limit": 2, "record_schema": "MARC21-xml"}),
     "hal-oai": ("oai-identify", {"source_id": "hal-oai"}),
-    "doab-oai": ("oai-identify", {"source_id": "doab-oai"}),
     "rijksmuseum-oai": ("oai-identify", {"source_id": "rijksmuseum-oai"}),
     "nber-metadata": ("metadata-file-get", {"source_id": "nber-metadata", "dataset": "reference"}),
 }

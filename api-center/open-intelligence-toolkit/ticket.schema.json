@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Open Intelligence Toolkit Ticket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "task_id",
+    "provider",
+    "operation",
+    "objective",
+    "parameters",
+    "data_policy",
+    "acceptance"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{7,127}$"
+    },
+    "provider": {
+      "const": "open-intelligence-toolkit"
+    },
+    "operation": {
+      "enum": [
+        "catalog-capabilities",
+        "source-access-matrix",
+        "toolchain-status",
+        "common-crawl-collinfo",
+        "common-crawl-index",
+        "gdacs-events",
+        "bls-series",
+        "ecb-sdmx-data",
+        "wikimedia-pageviews",
+        "hackernews-topstories",
+        "hackernews-item",
+        "ror-search",
+        "uk-legislation-search",
+        "ted-search",
+        "ckan-package-search",
+        "socrata-dataset-rows",
+        "stackexchange-search",
+        "bluesky-search-posts",
+        "cas-data-centers",
+        "html-structure-extract"
+      ]
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 3000
+    },
+    "parameters": {
+      "type": "object",
+      "maxProperties": 16,
+      "additionalProperties": true
+    },
+    "data_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "classification",
+        "contains_personal_data"
+      ],
+      "properties": {
+        "classification": {
+          "const": "public"
+        },
+        "contains_personal_data": {
+          "const": false
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 90
+        },
+        "max_response_bytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 5000000
+        }
+      }
+    }
+  }
+}

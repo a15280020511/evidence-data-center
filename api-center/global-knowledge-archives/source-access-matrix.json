@@ -1,6 +1,6 @@
 {
   "schema_version": "global-knowledge-archives-source-matrix-v1",
-  "active_source_count": 16,
+  "active_source_count": 14,
   "sources": [
     {
       "source_id": "eric",
@@ -72,21 +72,6 @@
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Official USGS publication metadata and lawful document links; external publisher rights remain external.",
-      "cost": "free"
-    },
-    {
-      "source_id": "federal-register",
-      "name": "Federal Register",
-      "category": "regulatory-publications",
-      "protocol": "rest-search-record",
-      "base_url": "https://www.federalregister.gov/api/v1",
-      "operations": [
-        "knowledge-search",
-        "knowledge-record"
-      ],
-      "credential_mode": "none",
-      "credential_env": "",
-      "license_policy": "FederalRegister.gov metadata is a discovery layer; authoritative legal reliance should use the linked official publication edition.",
       "cost": "free"
     },
     {
@@ -192,22 +177,6 @@
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Metadata harvesting under HAL terms; full text remains governed by record-level licenses.",
-      "cost": "free"
-    },
-    {
-      "source_id": "doab-oai",
-      "name": "Directory of Open Access Books",
-      "category": "open-access-books",
-      "protocol": "oai-pmh",
-      "base_url": "https://directory.doabooks.org/oai/request",
-      "operations": [
-        "oai-identify",
-        "oai-list-records",
-        "oai-get-record"
-      ],
-      "credential_mode": "none",
-      "credential_env": "",
-      "license_policy": "Open-access book metadata; preserve book and chapter license information.",
       "cost": "free"
     },
     {
@@ -341,6 +310,14 @@
     {
       "source_id": "oapen-oai",
       "reason": "The documented OAI endpoint closed the connection without returning an Identify response during the bounded production acceptance on 2026-08-03. DOAB remains active for open-book discovery; OAPEN is deferred until a current stable endpoint is verified."
+    },
+    {
+      "source_id": "doab-oai",
+      "reason": "The official DOAB OAI-PMH Identify endpoint returned HTTP 520 in repeated bounded GitHub Actions production probes on 2026-08-04. The connector remains registered as a conditional capability; existing OpenAlex, Crossref, DataCite, Open Library and other literature sources cover production discovery until the endpoint is reliable."
+    },
+    {
+      "source_id": "federal-register",
+      "reason": "The official FederalRegister.gov API returned HTTP 403 from the GitHub Actions production execution platform during a bounded single-request acceptance on 2026-08-04. The connector remains a conditional capability; authoritative regulatory discovery can use existing Congress.gov, GovInfo, legal and general web evidence providers until this endpoint is reliably reachable."
     }
   ],
   "governance": {
