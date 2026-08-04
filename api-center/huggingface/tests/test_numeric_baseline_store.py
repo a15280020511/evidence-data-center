@@ -61,6 +61,38 @@ class NumericBaselineStoreTests(unittest.TestCase):
                         or pa.types.is_floating(field.type)
                     )
 
+    def test_existing_numeric_tables_are_preserved_by_sync_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bootstrap = MODULE.build_bootstrap(Path(tmp) / "bootstrap")
+            expected = {row["remote_path"] for row in bootstrap["files"]}
+            plan = MODULE.plan_template_initialization(
+                expected | {".gitattributes"}, bootstrap["files"]
+            )
+            self.assertEqual(plan["missing_paths"], [])
+            self.assertEqual(set(plan["preserved_paths"]), expected)
+            self.assertEqual(plan["expected_paths"], expected)
+
+    def test_only_missing_numeric_tables_are_initialized(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bootstrap = MODULE.build_bootstrap(Path(tmp) / "bootstrap")
+            expected = {row["remote_path"] for row in bootstrap["files"]}
+            missing = sorted(expected)[0]
+            plan = MODULE.plan_template_initialization(expected - {missing}, bootstrap["files"])
+            self.assertEqual(plan["missing_paths"], [missing])
+            self.assertEqual(len(plan["preserved_paths"]), 30)
+
+    def test_unexpected_remote_file_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            bootstrap = MODULE.build_bootstrap(Path(tmp) / "bootstrap")
+            expected = {row["remote_path"] for row in bootstrap["files"]}
+            with self.assertRaisesRegex(
+                MODULE.NumericBaselineStoreError, "unexpected files"
+            ):
+                MODULE.plan_template_initialization(
+                    expected | {"numeric-baselines/v1/data/raw-text.json"},
+                    bootstrap["files"],
+                )
+
     def test_text_column_contract_is_rejected(self) -> None:
         registry = copy.deepcopy(MODULE._load_json(MODULE.REGISTRY_PATH))
         registry["tables"][0]["columns"].append("raw_text:string")
