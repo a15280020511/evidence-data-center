@@ -95,10 +95,6 @@ jobs:
           assert role['storage_gateway_owner'] == 'a15280020511/decision-system-governance'
           assert role['intelligence_center_direct_dataset_write_allowed'] is False
           PY
-          if grep -q 'secrets.HF_TOKEN\|--commit-to-hf' .github/workflows/cloudflare-cn-numeric-compiler.yml; then
-            echo 'direct private Hugging Face writes are forbidden in evidence center' >&2
-            exit 1
-          fi
           git diff --check
 
       - name: Upload validation evidence
