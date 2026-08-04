@@ -1,0 +1,136 @@
+{
+  "schema_version": "cloudflare-daily-harvest-policy-v1",
+  "status": "production-control",
+  "goal": "在不产生Cloudflare付费的前提下，每日顺序使用免费Browser Run与Workers AI额度，额度耗尽后停止并在下一UTC日从断点继续",
+  "verified_limits_as_of": "2026-08-04",
+  "cloudflare_free_limits": {
+    "workers_ai_neurons_per_utc_day": 10000,
+    "browser_run_seconds_per_utc_day": 600,
+    "quick_action_minimum_interval_seconds": 10,
+    "browser_timeout_seconds": 60,
+    "crawl_jobs_per_utc_day": 5,
+    "crawl_max_pages_per_job": 100,
+    "reset_time_utc": "00:00"
+  },
+  "daily_budget": {
+    "maximum_estimated_workers_ai_neurons": 9800,
+    "maximum_estimated_browser_run_seconds": 570,
+    "maximum_quick_action_requests": 50,
+    "minimum_seconds_between_requests": 10,
+    "maximum_concurrent_collection_tasks": 1,
+    "paid_usage_allowed": false,
+    "automatic_paid_upgrade_allowed": false,
+    "automatic_external_model_fallback_allowed": false,
+    "remaining_margin_is_safety_reserve": true
+  },
+  "schedule": {
+    "resume_cron_utc": "15 0 * * *",
+    "resume_time_china_standard_time": "08:15",
+    "manual_dispatch_allowed": true,
+    "same_day_automatic_retry_after_quota_error": false,
+    "next_day_resume_oldest_deferred_first": true
+  },
+  "queue": {
+    "owner": "evidence-data-center-github-actions",
+    "storage": "github-issues-and-comments",
+    "raw_content_in_queue_allowed": false,
+    "required_ticket_fields": [
+      "task_id",
+      "profile_id",
+      "url",
+      "data_policy",
+      "acceptance"
+    ],
+    "states": [
+      "pending",
+      "active",
+      "deferred-quota",
+      "deferred-rate-limit",
+      "completed",
+      "quarantined",
+      "rejected"
+    ],
+    "labels": {
+      "pending": "cn-harvest-pending",
+      "active": "cn-harvest-active",
+      "deferred_quota": "cn-harvest-deferred-quota",
+      "deferred_rate_limit": "cn-harvest-deferred-rate-limit",
+      "completed": "cn-harvest-completed",
+      "quarantined": "cn-harvest-quarantined",
+      "rejected": "cn-harvest-rejected"
+    },
+    "duplicate_task_id_allowed": false,
+    "one_active_task_global": true,
+    "cursor_fields": [
+      "task_id_hash",
+      "source_url_hash",
+      "profile_id_code",
+      "page_or_cursor_code",
+      "last_attempt_epoch",
+      "attempt_count",
+      "defer_reason_code"
+    ]
+  },
+  "stop_conditions": [
+    "cloudflare_http_429",
+    "browser_time_limit_exceeded",
+    "workers_ai_neuron_limit_exceeded",
+    "estimated_browser_seconds_reached",
+    "estimated_neurons_reached",
+    "daily_request_count_reached",
+    "credential_or_permission_failure",
+    "captcha_or_login_required",
+    "platform_access_policy_violation",
+    "numeric_validation_failure_rate_above_threshold"
+  ],
+  "stop_behavior": {
+    "finish_current_successful_numeric_commit_before_stop": true,
+    "start_no_new_task_after_stop": true,
+    "mark_remaining_tasks_deferred": true,
+    "preserve_numeric_cursor_only": true,
+    "persist_raw_page_or_model_response": false,
+    "post_daily_receipt": true,
+    "daily_receipt_fields": [
+      "utc_date_code",
+      "started_count",
+      "completed_count",
+      "deferred_count",
+      "quarantined_count",
+      "estimated_browser_seconds",
+      "estimated_neurons",
+      "quota_stop_code",
+      "next_resume_epoch"
+    ]
+  },
+  "resume_behavior": {
+    "reset_estimated_daily_usage_at_utc_midnight": true,
+    "resume_deferred_before_new_pending": true,
+    "preserve_task_id": true,
+    "preserve_source_url_hash": true,
+    "revalidate_current_platform_policy": true,
+    "revalidate_url_and_schema": true,
+    "maximum_attempts_per_task": 5,
+    "quarantine_after_maximum_attempts": true,
+    "no_same_day_retry_after_platform_block": true
+  },
+  "priority_order": [
+    "official_central_policy_and_statistics",
+    "official_regulatory_and_judicial",
+    "central_soe_and_major_state_project",
+    "local_government_and_local_soe",
+    "listed_company_and_major_private_enterprise",
+    "official_social_platform_rank_or_verified_account",
+    "cross_source_business_andindustry_intelligence",
+    "general_public_social_aggregate"
+  ],
+  "data_rules": {
+    "deterministic_numeric_sources_use_ai": false,
+    "official_api_preferred_over_browser": true,
+    "social_platform_official_api_preferred": true,
+    "numeric_parquet_only_to_huggingface": true,
+    "raw_text_to_huggingface": false,
+    "personal_data_allowed": false,
+    "direct_center_connection_allowed": false,
+    "selection_and_relay_owner": "gpts-usage-center"
+  }
+}
