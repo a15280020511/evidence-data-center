@@ -101,7 +101,7 @@ class ApiCatalogTests(unittest.TestCase):
             catalog["enabled_connector_count"],
             manifest["enabled_connector_count"],
         )
-        self.assertEqual(catalog["connector_count"], 68)
+        self.assertEqual(catalog["connector_count"], 75)
         self.assertEqual(catalog["managed_provider_count"], len(EXPECTED_OPERATION_COUNTS))
         self.assertEqual(catalog["enabled_managed_provider_count"], len(EXPECTED_OPERATION_COUNTS))
         self.assertEqual(catalog["managed_operation_count"], sum(EXPECTED_OPERATION_COUNTS.values()))
