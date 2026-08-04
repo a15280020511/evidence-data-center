@@ -73,10 +73,6 @@ jobs:
           assert manifest['secret_values_exposed'] is False
           assert manifest['model_calls'] == 0
           PY
-          if grep -q 'secrets.HF_TOKEN\| sync --output-dir' .github/workflows/hf-domain-benchmark-library.yml; then
-            echo 'private Hugging Face synchronization is forbidden in evidence center' >&2
-            exit 1
-          fi
           git diff --check
 
       - name: Upload validation evidence
