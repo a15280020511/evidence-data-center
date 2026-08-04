@@ -1,78 +1,90 @@
-# Hugging Face 纯数值计算基准库
+# 计算中心纯数值基准库生产合同
 
-> **专用角色标记：本 Hugging Face 私有 Dataset 是计算中心的外部基准库。禁止将其用作通用知识库、知识图谱、文献库、情报档案库或原始资料库。**
+> **本目录位于情报中心，但只保存表结构、数值化规则和导出验证代码。私有 Hugging Face Dataset 的存储网关、凭据、入库和转交全部属于治理仓库。**
 
-机器可读边界见 `library-role.json`：
+治理网关已在 `a15280020511/decision-system-governance` 主线提交 `38e7316df654c806372fd6a6bef6e7fa19fa13b7` 正式建立。情报中心的任何数值输出必须符合该网关合同，不得恢复私有 Dataset 直连。
+
+机器角色见 `library-role.json`：
 
 ```text
-owner_center=computation-simulation-center
-library_role=compute-center-baseline-library
-knowledge_base_storage_allowed=false
-knowledge_graph_storage_allowed=false
-raw_text_storage_allowed=false
-document_storage_allowed=false
+beneficiary_center=a15280020511/compute-simulation-center
+data_producer=a15280020511/evidence-data-center
+storage_gateway_owner=a15280020511/decision-system-governance
+intelligence_center_direct_dataset_write_allowed=false
+compute_center_direct_dataset_access_allowed=false
 ```
 
-本目录定义计算中心的外部纯数值基准库。Hugging Face 私有 Dataset 只保存数值型 Parquet 数据，不保存原始网页、PDF、正文、摘要、URL、自然语言说明或 JSON 控制文件。
-
-## 架构边界
+## 正确链路
 
 ```text
-采集与临时清洗
-→ 数值化、编码、单位统一、范围校验
+网页 GPTs
+→ 治理仓库
+→ 情报中心采集公开信息
+→ 清洗、编码、单位统一、范围和质量校验
 → 纯数值 Parquet
-→ Hugging Face 私有 Dataset
-→ 网页 GPT 选择并生成独立转交证明
+→ 情报中心发布不可变 GitHub Actions Artifact
+→ 治理仓库核验 Manifest、SHA、Schema、类型、空值和来源
+→ 治理仓库写入私有 compute-numeric-baselines
+→ 治理仓库按任务构建转交包
 → 断网计算中心
 ```
 
-- 情报中心、计算中心、专家中心禁止互相直连。
-- 网页 GPT 是唯一选择和转交者。
-- 计算中心保持 `network=deny`。
-- Hugging Face 仅是外部数值基准存储，不承担推理、模型调用或中心间调度。
-- GitHub 仅保存字段定义、代码表、转换规则、质量门和版本控制；这些控制资料不上传到 Hugging Face 数值库。
-- 情报中心发现的资料、知识、文献和图谱不得直接写入该 Dataset；只有完成清洗、数值化、编码、质量验证且满足既定表结构的数据才能进入。
+## 情报中心允许做的事
 
-## 覆盖范围
+- 读取公开数据源；
+- 清洗、去重和标准化；
+- 将地区、行业、实体、事件、单位和方法编码为整数 ID；
+- 生成纯数值 Parquet；
+- 生成治理入库 Manifest；
+- 上传不可变 Artifact；
+- 发布来源、Run、Artifact、文件 SHA 和行数回执。
 
-基准库按当前计算中心生产目录建立，覆盖 29 个 operation 和 185 个有效托管模式，包括：
+## 情报中心禁止做的事
 
-- 蒙特卡洛、敏感性、情景比较和优化；
-- 时间序列、计量经济、因果、贝叶斯和缺失数据；
-- 金融、商业、投资、供应链和投入产出；
-- GIS、栅格、交通、能源、电网、水力和基础设施；
-- 排队、流程、系统动力学、Agent 和群体行为；
-- 博弈、谈判、战略政策、网络传播和危机预警；
-- 冻结基准、现实结果反馈、误差与验收阈值。
-
-`operation-data-matrix.json` 固定每个计算 operation 所需的数值表。`numeric-table-registry.json` 固定全部表的纯数值列和类型。
+- 配置或使用私有基准库 `HF_TOKEN`；
+- 直接读取、写入或初始化 `compute-numeric-baselines`；
+- 直接向计算中心传送数据；
+- 把网页正文、PDF、摘要、知识库、知识图谱、控制 JSON 或 Secret 写入 Dataset；
+- 让 GPTs 直接控制本仓库。
 
 ## 纯数值规则
 
-Hugging Face 数据文件必须满足：
+导出的每个 Parquet 必须满足：
 
-1. 只允许 Parquet；
-2. 所有列必须为整数或浮点数；
-3. 禁止字符串、二进制对象、列表、结构体、时间对象和布尔对象；
-4. 分类、实体、地区、行业、事件、单位和方法全部用整数 ID；
-5. 时间统一编码为 `int64`；
-6. 缺失值不得使用 `null`，必须使用数值掩码列；
+1. 所有列均为整数或浮点数；
+2. Schema 字段不可为空；
+3. 数据不得含 `null`；
+4. 文件名必须与受管表 ID 一致；
+5. 使用 ZSTD 压缩；
+6. 来源以数值 `provenance_id` 和数值指纹保存；
 7. 不确定性使用上下界、置信度和分布参数；
-8. 来源只保留数值 `provenance_id` 与拆分后的 128 位指纹；
-9. 文件使用 ZSTD 压缩；
-10. 非数值控制信息只保存在 GitHub。
+8. 控制元数据只进入治理 Artifact 的 `manifest.json`，不得上传到 Hugging Face。
 
-## 生命周期规则
+## 覆盖范围
 
-- 首次同步只为缺失的数值表创建零行 Parquet 模板；
-- 已存在的数值表必须回读并验证，但同步器不得覆盖；
-- 真实数据由受控采集、清洗和数值化流程生成完整版本化 Parquet 快照；
-- 新快照进入私有 Dataset 后保留 Hugging Face 提交历史，便于回滚和按时间点复算；
-- 重复运行结构同步不得清空、重写或降低已有数据行数；
-- 任何非数值文件、额外文件或不符合 Schema 的表都会阻断同步。
+当前控制面覆盖 29 个计算 operation、185 个托管模式和 31 类纯数值表，包括统计、优化、时间序列、计量、因果、贝叶斯、金融、商业、GIS、交通、能源、系统动力学、Agent、博弈、政策、网络传播和危机预警。
 
-## 当前状态
+- `operation-data-matrix.json`：计算 operation 与数值表需求；
+- `numeric-table-registry.json`：表名、列名和数值类型；
+- `build_governance_baseline_export.py`：生成治理入库 Artifact 和 Manifest。
 
-控制合同、29 项操作需求矩阵、31 类纯数值表、生成器、验证器、同步工作流和测试已经建立。独立私有 Dataset `compute-numeric-baselines` 已初始化31个零行数值 Parquet模板，保证库内没有文字分析载荷。同步器采用“只补缺失表、已有表只校验不覆盖”的策略，以便后续安全积累真实数值快照。
+## 存储所有权
 
-真实长期数据仍需由后续采集、清洗、数值化和验证任务持续填充；空模板不能替代真实基准。
+私有 Dataset `compute-numeric-baselines` 的唯一运行入口位于：
+
+```text
+a15280020511/decision-system-governance/compute-baseline-gateway/
+```
+
+情报中心只负责生产，不负责存储；计算中心只负责使用，不负责联网取数；治理仓库负责验证、入库、转交和审计。
+
+## 后台配置迁移
+
+代码合并不会自动移动、读取或删除 GitHub Secrets。完成迁移后应人工执行：
+
+1. 在治理仓库配置 `HF_TOKEN`；
+2. 在治理仓库配置只允许读取情报中心 Actions Artifact 的 `BASELINE_TRANSFER_TOKEN`；
+3. 可选配置 `HF_NUMERIC_BASELINE_DATASET_REPO=James147258/compute-numeric-baselines`；
+4. 从情报仓库删除私有 Dataset 用途的 `HF_TOKEN` 及相关私有 Dataset Variables；
+5. 确认计算与专家仓库均未配置 `HF_TOKEN`；
+6. 使用治理仓库 `[baseline]` 健康检查取得生产回执后，才可宣称网关已实际联通。

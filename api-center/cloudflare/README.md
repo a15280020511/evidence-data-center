@@ -7,40 +7,56 @@
 - Issue 前缀：`[intel-cloudflare]`
 - Provider：`cloudflare`
 - 每张票据最多执行一个固定 Cloudflare API 请求。
+- 外部控制入口：仅允许治理仓库派发的正式子 Issue。
 
 ## 采集与存储分工
 
 ```text
-Cloudflare
-└─ 负责网页、Radar 和 URL Scanner 数据采集
-
-GitHub Actions
-└─ 负责票据校验、串行执行、完整性校验、哈希与审计回执
-
-Hugging Face Private Dataset Repo
-└─ 负责采集结果的长期、版本化、追加式存储
+网页 GPTs
+→ Decision System Governance
+→ Evidence & Data Center / Cloudflare
+→ GitHub Actions Artifact + 哈希回执
+→ Decision System Governance 核验与后续路由
 ```
 
-Hugging Face 在此处是数据湖式证据仓库，不作为低延迟事务数据库。每次成功采集会写入独立目录，包含原始响应或二进制文件、`ticket.json`、`diagnostics.json`、`manifest.json` 和 `archive-record.json`。目录按 UTC 年/月/日、操作、任务和 GitHub Run 分区；重复内容由 Git/LFS 内容寻址存储复用底层对象。
+Cloudflare 负责公开网页、Radar 和 URL Scanner 数据采集；GitHub Actions 负责票据校验、串行执行、完整性校验、哈希和审计回执。
 
-只归档满足以下条件的结果：
+普通情报结果不再写入任何私有 Hugging Face Dataset。成功结果只形成受控 GitHub Actions Artifact，默认保留30天，后续由治理仓库按具体任务核验、取回和路由。
 
-- Cloudflare 执行状态为 `INTEL_CLOUDFLARE_COMPLETED`；
-- 数据分类为 `public`；
-- `contains_personal_data=false`；
-- 本地 Manifest 文件大小与 SHA-256 全部一致；
-- Secret 泄露标记全部为 `false`；
-- Hugging Face 目标仓库确认为私有 Dataset Repo。
+## 计算基准数据
 
-归档失败时任务按失败关闭，但 GitHub Artifact 仍保留30天作为恢复证据。
+只有明确进入数值编译流程的数据，才能在情报中心完成：
+
+1. 清洗和去重；
+2. 实体、地区、行业、事件、单位和方法整数编码；
+3. 单位统一和范围校验；
+4. 纯数值 Parquet 生成；
+5. Manifest 和 SHA-256 生成；
+6. `compute-baseline-export-*` 不可变 Artifact 发布。
+
+情报中心不得直接写入私有 `compute-numeric-baselines`。治理仓库的 `compute-baseline-gateway` 核验 Artifact 后才可入库。计算中心保持断网，不得直接访问 Cloudflare、情报中心或 Hugging Face。
 
 ## 后台配置
 
-- `CLOUDFLARE_API_TOKEN`：Cloudflare Custom Token。建议仅授予 `Browser Rendering - Edit`、`Radar - Read`、`URL Scanner - Read`。
-- `CLOUDFLARE_ACCOUNT_ID`：32 位 Cloudflare Account ID。
-- `HF_TOKEN`：Hugging Face Fine-grained Token，用于私有 Dataset Repo 创建和写入。
-- `HF_CLOUDFLARE_DATASET_REPO`：可选 Repository Variable，格式为 `owner/name`。未配置时自动使用 `<HF账户>/cloudflare-intelligence-archive`。
+情报中心只配置：
 
-禁止使用 Cloudflare Global API Key。Browser Rendering 仅允许公网 HTTPS URL，不接受 Cookie、代理、自定义请求头、浏览器脚本或任意 API 路径。URL Scanner 只读取已有扫描，不提交新扫描。
+- `CLOUDFLARE_API_TOKEN`：Cloudflare Custom Token；
+- `CLOUDFLARE_ACCOUNT_ID`：Cloudflare Account ID。
 
-Hugging Face 归档层不改变 Cloudflare Provider 的只读边界；写入只发生在情报中心自己的私有归档仓库。归档流程不上传 Secret、不写入私有或个人数据、不执行模型推理。
+情报中心不得配置：
+
+- 私有 Dataset 写入用途的 `HF_TOKEN`；
+- `HF_CLOUDFLARE_DATASET_REPO`；
+- `HF_NUMERIC_BASELINE_DATASET_REPO`。
+
+私有计算基准库所需的 `HF_TOKEN` 和目标 Dataset 变量只允许配置在 `a15280020511/decision-system-governance`。
+
+## 安全边界
+
+- 禁止 Cloudflare Global API Key；
+- Browser Rendering 只允许公网 HTTPS URL；
+- 不接受 Cookie、代理、自定义请求头、浏览器脚本或任意 API 路径；
+- URL Scanner 只读取已有扫描，不提交新扫描；
+- 普通情报 Artifact 不自动转化为计算基准数据；
+- 禁止情报中心和计算中心直接通信；
+- 禁止正文、PDF、自然语言材料、知识库和知识图谱进入计算基准 Dataset。
