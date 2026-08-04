@@ -6,9 +6,12 @@ on:
       - "api-center/huggingface/numeric-baseline-library/china-enterprise-soe-operational-domain-requirements.json"
       - "api-center/huggingface/numeric-baseline-library/china-social-intelligence-codebook.json"
       - "api-center/cloudflare/numeric-compiler/china-social-platform-access-policy.json"
+      - "api-center/cloudflare/numeric-compiler/cloudflare-ai-routing-policy.json"
       - "api-center/cloudflare/numeric-compiler/cloudflare-daily-harvest-policy.json"
       - "api-center/cloudflare/numeric-compiler/china_intelligence_controls.py"
+      - "api-center/cloudflare/numeric-compiler/china_intelligence_quota_consistency.py"
       - "api-center/cloudflare/numeric-compiler/tests/test_china_intelligence_controls.py"
+      - "api-center/cloudflare/numeric-compiler/tests/test_china_intelligence_quota_consistency.py"
       - ".github/workflows/china-enterprise-social-controls.yml"
       - ".github/workflows/cloudflare-cn-daily-harvest.yml"
   push:
@@ -17,9 +20,12 @@ on:
       - "api-center/huggingface/numeric-baseline-library/china-enterprise-soe-operational-domain-requirements.json"
       - "api-center/huggingface/numeric-baseline-library/china-social-intelligence-codebook.json"
       - "api-center/cloudflare/numeric-compiler/china-social-platform-access-policy.json"
+      - "api-center/cloudflare/numeric-compiler/cloudflare-ai-routing-policy.json"
       - "api-center/cloudflare/numeric-compiler/cloudflare-daily-harvest-policy.json"
       - "api-center/cloudflare/numeric-compiler/china_intelligence_controls.py"
+      - "api-center/cloudflare/numeric-compiler/china_intelligence_quota_consistency.py"
       - "api-center/cloudflare/numeric-compiler/tests/test_china_intelligence_controls.py"
+      - "api-center/cloudflare/numeric-compiler/tests/test_china_intelligence_quota_consistency.py"
       - ".github/workflows/china-enterprise-social-controls.yml"
       - ".github/workflows/cloudflare-cn-daily-harvest.yml"
   workflow_dispatch:
@@ -51,11 +57,15 @@ jobs:
           set -euo pipefail
           python -m py_compile \
             api-center/cloudflare/numeric-compiler/china_intelligence_controls.py \
-            api-center/cloudflare/numeric-compiler/tests/test_china_intelligence_controls.py
+            api-center/cloudflare/numeric-compiler/china_intelligence_quota_consistency.py \
+            api-center/cloudflare/numeric-compiler/tests/test_china_intelligence_controls.py \
+            api-center/cloudflare/numeric-compiler/tests/test_china_intelligence_quota_consistency.py
           python -m unittest discover \
             -s api-center/cloudflare/numeric-compiler/tests \
-            -p 'test_china_intelligence_controls.py' -v
+            -p 'test_china_intelligence_*.py' -v
           python api-center/cloudflare/numeric-compiler/china_intelligence_controls.py \
+            validate --output-dir china-enterprise-social-validation
+          python api-center/cloudflare/numeric-compiler/china_intelligence_quota_consistency.py \
             validate --output-dir china-enterprise-social-validation
           python - <<'PY'
           import json
@@ -63,6 +73,9 @@ jobs:
 
           receipt = json.loads(
               Path('china-enterprise-social-validation/validation-receipt.json').read_text(encoding='utf-8')
+          )
+          quota = json.loads(
+              Path('china-enterprise-social-validation/quota-consistency-receipt.json').read_text(encoding='utf-8')
           )
           assert receipt['status'] == 'CHINA_ENTERPRISE_SOCIAL_DAILY_CONTROLS_VALIDATED'
           assert receipt['enterprise_domain_count'] == 20
@@ -75,6 +88,12 @@ jobs:
           assert receipt['raw_text_persisted'] is False
           assert receipt['numeric_huggingface_payload_only'] is True
           assert receipt['direct_center_connection_allowed'] is False
+          assert quota['status'] == 'CLOUDFLARE_DAILY_QUOTA_POLICIES_CONSISTENT'
+          assert quota['utilization_soft_stop'] == 0.98
+          assert quota['hard_stop_on_429'] is True
+          assert quota['next_day_resume'] is True
+          assert quota['external_model_enabled_by_default'] is False
+          assert quota['automatic_paid_fallback_allowed'] is False
           PY
           git diff --check
 
