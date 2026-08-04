@@ -1,0 +1,108 @@
+name: NOAA CDO V3 Bootstrap
+
+on:
+  push:
+    branches: [feat/noaa-cdo-token-v3]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bootstrap-noaa-cdo-v3
+  cancel-in-progress: true
+
+jobs:
+  bootstrap:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/noaa-cdo-token-v3
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Copy validated NOAA CDO module and register catalog
+        run: |
+          set -euo pipefail
+          git fetch origin feat/noaa-cdo-token-v2
+          git checkout origin/feat/noaa-cdo-token-v2 -- api-center/noaa-cdo
+          python - <<'PY'
+          from pathlib import Path
+
+          builder = Path('api-center/build_catalog_market_search.py')
+          text = builder.read_text(encoding='utf-8')
+          constant_marker = 'REALITY_OBSERVATION_CATALOG = HERE / "reality-observation/provider-catalog.json"\n'
+          expected_marker = '    "reality-observation": 25,\n'
+          tuple_marker = '    REALITY_OBSERVATION_CATALOG,\n'
+          reading_marker = '        "reality-observation/provider-catalog.json",\n'
+          if 'NOAA_CDO_CATALOG = HERE / "noaa-cdo/provider-catalog.json"' not in text:
+              assert constant_marker in text
+              text = text.replace(constant_marker, constant_marker + 'NOAA_CDO_CATALOG = HERE / "noaa-cdo/provider-catalog.json"\n', 1)
+          if '    "noaa-cdo": 5,\n' not in text:
+              assert expected_marker in text
+              text = text.replace(expected_marker, expected_marker + '    "noaa-cdo": 5,\n', 1)
+          if '    NOAA_CDO_CATALOG,\n' not in text:
+              assert tuple_marker in text
+              text = text.replace(tuple_marker, tuple_marker + '    NOAA_CDO_CATALOG,\n', 1)
+          if '        "noaa-cdo/provider-catalog.json",\n' not in text:
+              assert reading_marker in text
+              text = text.replace(reading_marker, reading_marker + '        "noaa-cdo/provider-catalog.json",\n', 1)
+          builder.write_text(text, encoding='utf-8')
+
+          test_path = Path('api-center/tests/test_api_catalog.py')
+          test_text = test_path.read_text(encoding='utf-8')
+          if '    "noaa-cdo": 5,\n' not in test_text:
+              marker = '    "reality-observation": 25,\n'
+              if marker not in test_text:
+                  marker = '    "google-public-intelligence": 9,\n'
+              assert marker in test_text
+              test_text = test_text.replace(marker, marker + '    "noaa-cdo": 5,\n', 1)
+          test_path.write_text(test_text, encoding='utf-8')
+          PY
+
+      - name: Build and validate
+        run: |
+          set -euo pipefail
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/noaa-cdo/requirements.txt
+          python api-center/build_catalog_market_search.py
+          python -m unittest discover -s api-center/noaa-cdo/tests -p 'test_*.py' -v
+          python -m unittest api-center.tests.test_api_catalog -v
+          git diff --check
+
+      - name: Verify configured NOAA CDO token
+        env:
+          NOAA_CDO_TOKEN: ${{ secrets.NOAA_CDO_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, os, requests
+          token = (os.environ.get('NOAA_CDO_TOKEN') or '').strip()
+          assert token, 'NOAA_CDO_TOKEN is not configured'
+          headers = {'token': token, 'Accept': 'application/json', 'User-Agent': 'evidence-data-center-noaa-cdo/1'}
+          base = 'https://www.ncei.noaa.gov/cdo-web/api/v2'
+          datasets = requests.get(base + '/datasets', params={'limit': 1}, headers=headers, timeout=30, allow_redirects=False)
+          datasets.raise_for_status()
+          stations = requests.get(base + '/stations', params={'datasetid':'GHCND','extent':'25.9,119.0,26.2,119.5','limit':25}, headers=headers, timeout=30, allow_redirects=False)
+          stations.raise_for_status()
+          ids = [row.get('id') for row in (stations.json().get('results') or [])]
+          assert 'GHCND:CHM00058847' in ids, ids
+          print(json.dumps({'status':'PASS','datasets_http':datasets.status_code,'stations_http':stations.status_code,'fuzhou_station':'GHCND:CHM00058847','token_exposed':False}))
+          PY
+
+      - name: Commit generated integration
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add api-center/noaa-cdo api-center/build_catalog_market_search.py api-center/api-catalog.json api-center/api-catalog.md api-center/tests/test_api_catalog.py
+          if git diff --cached --quiet; then
+            echo 'NOAA CDO integration already current.'
+          else
+            git commit -m 'feat: integrate NOAA CDO token provider on latest main'
+            git push origin HEAD:feat/noaa-cdo-token-v3
+          fi
