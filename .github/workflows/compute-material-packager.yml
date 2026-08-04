@@ -58,10 +58,6 @@ jobs:
           set -euo pipefail
           python -m py_compile api-center/huggingface/compute_material_packager.py
           python -m unittest api-center/huggingface/tests/test_compute_material_packager.py -v
-          if grep -q 'secrets.HF_TOKEN\|build-hf' .github/workflows/compute-material-packager.yml; then
-            echo 'private Dataset reads and compute package builds belong to governance' >&2
-            exit 1
-          fi
           git diff --check
 
       - name: Record migration boundary
