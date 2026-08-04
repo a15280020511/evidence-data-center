@@ -1,15 +1,19 @@
-name: Validate and Run Cloudflare China Numeric Compiler
+name: Validate and Export Cloudflare China Numeric Batch
 
 on:
   pull_request:
     paths:
       - "api-center/cloudflare/numeric-compiler/**"
+      - "api-center/huggingface/build_governance_baseline_export.py"
+      - "api-center/huggingface/tests/test_governance_baseline_export.py"
       - "api-center/huggingface/numeric-baseline-library/china-finance-business-*.json"
       - ".github/workflows/cloudflare-cn-numeric-compiler.yml"
   push:
     branches: [main]
     paths:
       - "api-center/cloudflare/numeric-compiler/**"
+      - "api-center/huggingface/build_governance_baseline_export.py"
+      - "api-center/huggingface/tests/test_governance_baseline_export.py"
       - "api-center/huggingface/numeric-baseline-library/china-finance-business-*.json"
       - ".github/workflows/cloudflare-cn-numeric-compiler.yml"
   issues:
@@ -32,6 +36,9 @@ jobs:
        startsWith(github.event.issue.title, '[compile-cn-numeric]'))
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      HF_TOKEN: ""
+      HF_NUMERIC_BASELINE_DATASET_REPO: ""
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -57,22 +64,25 @@ jobs:
             -r api-center/huggingface/requirements-numeric-baseline.txt
           python -m pip check
 
-      - name: Compile and validate fixed profiles
+      - name: Compile and validate fixed profiles and export contract
         run: |
           set -euo pipefail
           python -m py_compile \
             api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler.py \
             api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
-            api-center/cloudflare/numeric-compiler/tests/test_cloudflare_numeric_compiler.py
+            api-center/huggingface/build_governance_baseline_export.py
           python -m unittest discover \
             -s api-center/cloudflare/numeric-compiler/tests \
             -p 'test_*.py' -v
+          python -m unittest \
+            api-center/huggingface/tests/test_governance_baseline_export.py -v
           python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             validate --output-dir cloudflare-cn-numeric-validation
           python - <<'PY'
           import json
           from pathlib import Path
           receipt = json.loads(Path('cloudflare-cn-numeric-validation/validation-receipt.json').read_text(encoding='utf-8'))
+          role = json.loads(Path('api-center/huggingface/numeric-baseline-library/library-role.json').read_text(encoding='utf-8'))
           assert receipt['status'] == 'CLOUDFLARE_NUMERIC_COMPILER_VALIDATED'
           assert receipt['profile_count'] == 13
           assert receipt['domain_count'] == 12
@@ -80,10 +90,15 @@ jobs:
           assert receipt['arbitrary_prompt_allowed'] is False
           assert receipt['arbitrary_schema_allowed'] is False
           assert receipt['raw_text_persisted'] is False
-          assert receipt['numeric_hf_payload_only'] is True
           assert receipt['direct_center_connection_allowed'] is False
           assert receipt['model_calls'] == 0
+          assert role['storage_gateway_owner'] == 'a15280020511/decision-system-governance'
+          assert role['intelligence_center_direct_dataset_write_allowed'] is False
           PY
+          if grep -q 'secrets.HF_TOKEN\|--commit-to-hf' .github/workflows/cloudflare-cn-numeric-compiler.yml; then
+            echo 'direct private Hugging Face writes are forbidden in evidence center' >&2
+            exit 1
+          fi
           git diff --check
 
       - name: Upload validation evidence
@@ -109,10 +124,6 @@ jobs:
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      HF_NUMERIC_BASELINE_DATASET_REPO: ${{ vars.HF_NUMERIC_BASELINE_DATASET_REPO }}
-      HF_HUB_DISABLE_TELEMETRY: "1"
-      HF_HUB_DISABLE_PROGRESS_BARS: "1"
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -158,7 +169,8 @@ jobs:
               echo
               echo "- Task ID: \`${task_id}\`"
               echo '- New Cloudflare request executed: `false`'
-              echo '- Hugging Face write executed: `false`'
+              echo '- Private Hugging Face write executed: `false`'
+              echo '- Governance Artifact exported: `false`'
             } > duplicate-comment.md
             gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@duplicate-comment.md
           else
@@ -180,7 +192,7 @@ jobs:
             render --output-dir cloudflare-cn-numeric-artifacts > comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@comment.md
 
-      - name: Execute one Cloudflare extraction and numeric append
+      - name: Execute one Cloudflare extraction without private Dataset access
         id: execute
         if: steps.duplicate.outputs.duplicate != 'true' && steps.prepare.outcome == 'success'
         continue-on-error: true
@@ -188,24 +200,56 @@ jobs:
           python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             execute \
             --ticket cloudflare-cn-numeric-artifacts/ticket.json \
-            --output-dir cloudflare-cn-numeric-artifacts \
-            --commit-to-hf
+            --output-dir cloudflare-cn-numeric-artifacts
 
-      - name: Publish final receipt
+      - name: Build immutable governance baseline export
+        id: export
+        if: steps.execute.outcome == 'success'
+        continue-on-error: true
+        run: |
+          python api-center/huggingface/build_governance_baseline_export.py \
+            --input-dir cloudflare-cn-numeric-artifacts/numeric-batch \
+            --output-dir governance-baseline-export \
+            --source-run-id "$GITHUB_RUN_ID" \
+            --batch-id "issue-${ISSUE_NUMBER}-run-${GITHUB_RUN_ID}-attempt-${GITHUB_RUN_ATTEMPT}" \
+            --mode append_batch
+
+      - name: Publish final producer receipt
         if: always() && steps.duplicate.outputs.duplicate != 'true'
         run: |
           python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             render --output-dir cloudflare-cn-numeric-artifacts > comment.md || true
+          if [[ -f governance-baseline-export-receipt.json ]]; then
+            {
+              echo
+              echo '## GOVERNANCE_BASELINE_EXPORT_READY'
+              echo
+              echo "- Source run ID: \`${GITHUB_RUN_ID}\`"
+              echo "- Artifact name: \`${{ steps.export.outputs.artifact_name }}\`"
+              echo "- Manifest SHA-256: \`${{ steps.export.outputs.manifest_sha256 }}\`"
+              echo '- Private Hugging Face write executed: `false`'
+              echo '- Next authority: `a15280020511/decision-system-governance`'
+            } >> comment.md
+          fi
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@comment.md
 
-      - name: Upload safe numeric evidence
+      - name: Upload immutable governance baseline Artifact
+        if: steps.export.outcome == 'success'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: ${{ steps.export.outputs.artifact_name }}
+          path: governance-baseline-export/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload safe execution evidence
         if: always() && steps.duplicate.outputs.duplicate != 'true'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: cloudflare-cn-numeric-${{ github.event.issue.number }}-${{ github.run_id }}
+          name: cloudflare-cn-numeric-evidence-${{ github.event.issue.number }}-${{ github.run_id }}
           path: |
             cloudflare-cn-numeric-artifacts/*.json
-            cloudflare-cn-numeric-artifacts/numeric-batch/*.parquet
+            governance-baseline-export-receipt.json
           if-no-files-found: warn
           retention-days: 30
 
@@ -214,5 +258,6 @@ jobs:
           always() &&
           (steps.duplicate.outputs.duplicate == 'true' ||
            steps.prepare.outcome != 'success' ||
-           steps.execute.outcome != 'success')
+           steps.execute.outcome != 'success' ||
+           steps.export.outcome != 'success')
         run: exit 1
