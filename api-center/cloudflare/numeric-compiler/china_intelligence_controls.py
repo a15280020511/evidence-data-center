@@ -62,7 +62,7 @@ def _unique_ids(rows: Any, expected: int, name: str, prefix: str | None = None) 
 def validate_enterprise(payload: Mapping[str, Any]) -> dict[str, Any]:
     if payload.get("schema_version") != "china-enterprise-soe-operational-domain-requirements-v1":
         raise ChinaIntelligenceControlError("unsupported enterprise/SOE control schema")
-    if payload.get("status") != "production-control" or payload.get("domain_count") != 20:
+    if payload.get("status") != "production-control" or payload.get("domain_count") != 21:
         raise ChinaIntelligenceControlError("enterprise/SOE domains are incomplete")
     policy = _mapping(payload.get("storage_policy"), "enterprise storage policy")
     required_policy = {
@@ -84,7 +84,7 @@ def validate_enterprise(payload: Mapping[str, Any]) -> dict[str, Any]:
     if len(scope) < 10 or not all(value is True for value in scope.values()):
         raise ChinaIntelligenceControlError("enterprise entity scope is incomplete")
     domains = payload.get("domains")
-    ids = _unique_ids(domains, 20, "enterprise domains", "cn-")
+    ids = _unique_ids(domains, 21, "enterprise domains", "cn-")
     for row in domains:
         if len(row.get("variable_groups") or []) < 10:
             raise ChinaIntelligenceControlError(f"enterprise domain lacks variable groups: {row.get('id')}")
