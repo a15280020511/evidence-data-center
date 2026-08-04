@@ -1,4 +1,5 @@
 name: Temporary Remove Keyed Sensor Sources
+# One-shot deterministic removal; deleted before merge.
 
 on:
   pull_request:
@@ -39,12 +40,14 @@ jobs:
           python -m unittest discover \
             -s api-center/global-sensor-backbone/tests \
             -p 'test_*.py' -v
-          grep -R -n -E \
+          if grep -R -n -E \
             'GLOBAL_FISHING_WATCH_API_TOKEN|GIE_API_KEY|KOREA_DATA_GO_KR_SERVICE_KEY|gfw-events|gie-storage|kpx-current-supply|kpx-generation-mix|global-fishing-watch-vessels' \
             api-center .github/workflows \
+            --exclude-dir='__pycache__' \
             --exclude='temporary-remove-keyed-sensor-sources.yml' \
-            --exclude='remove_keyed_sensor_sources.py' \
-            && exit 1 || true
+            --exclude='remove_keyed_sensor_sources.py'; then
+            exit 1
+          fi
           git diff --check
 
       - name: Commit removal and generated catalogs
