@@ -4,7 +4,7 @@
     "operation_count": 29,
     "path": "compute-center/compute-capabilities.json",
     "repository": "a15280020511/compute-simulation-center",
-    "sha256": "e7cea687683b49682518fc444ab8078c21c3d6a4"
+    "git_blob_sha": "e7cea687683b49682518fc444ab8078c21c3d6a4"
   },
   "compute_runtime_network_allowed": false,
   "direct_center_to_center_connection_allowed": false,
