@@ -697,7 +697,7 @@
       "default_circuit_breaker": true,
       "backend_rate_limit": true,
       "ssrf_static_policy": "public-host-or-loopback-test-only",
-      "connector_sha256": "52e3ddb68e44ef10632b135cb63327e710fc9a548935505fa5b68c84e30eaf8d"
+      "connector_sha256": "96338d92596ab58c7c265385fa1a3962870350b593652649d75d5e266cc835de"
     },
     {
       "id": "noaa-nws-alerts-active",
@@ -713,7 +713,7 @@
       "default_circuit_breaker": true,
       "backend_rate_limit": true,
       "ssrf_static_policy": "public-host-or-loopback-test-only",
-      "connector_sha256": "f799ca0e32f9f5be66bd040e988dd50c41eb79e8110daca2a393bec858d6681a"
+      "connector_sha256": "430a81a7434066ada571ac0720c666805159469e946b2cb3612a6e32fef42803"
     },
     {
       "id": "noaa-nws-forecast-hourly",
@@ -1258,5 +1258,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "validation_config_sha256": "e6631cd887f06f71451739d67b9acd7c1512cff5cebc4c6358f875d17040ca1d"
+  "validation_config_sha256": "72c4654f748a0c05cf64abb6aa5f690ea5ba80ecec2ab41f3687699ece145747"
 }

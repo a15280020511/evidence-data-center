@@ -4,8 +4,8 @@
 - 普通连接器：`75/75` 已启用
 - 托管提供方：`64/64` 已启用
 - 托管操作总数：`698`
-- 已公开参数总数：`2490`
-- 目录 SHA-256：`f75554204968a55d91f4ff6cf64281d480590060102a0583b6b06ef8dfa25edd`
+- 已公开参数总数：`2484`
+- 目录 SHA-256：`a47cb9efdfe71933bf3de97f8b91a5600f0d8fc02192330f137dd5d6ae71d2af`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -127,8 +127,8 @@
 | NewsAPI 全网新闻检索 | `newsapi-everything` | 启用 | `news-search` | `GET /data/newsapi/everything` | `11` |
 | NewsAPI 新闻来源目录 | `newsapi-sources` | 启用 | `news-source-catalog` | `GET /data/newsapi/sources` | `3` |
 | NewsAPI 头条新闻 | `newsapi-top-headlines` | 启用 | `news-headlines` | `GET /data/newsapi/top-headlines` | `6` |
-| NOAA/NCEI 历史气象数据检索 | `noaa-ncei-data-search` | 启用 | `historical-weather-climate-discovery` | `GET /data/noaa/ncei/search` | `10` |
-| NOAA/NWS 活动天气警报 | `noaa-nws-alerts-active` | 启用 | `weather-alerts` | `GET /data/noaa/nws/alerts/active` | `15` |
+| NOAA/NCEI 历史气象数据检索 | `noaa-ncei-data-search` | 启用 | `historical-weather-climate-discovery` | `GET /data/noaa/ncei/search` | `8` |
+| NOAA/NWS 活动天气警报 | `noaa-nws-alerts-active` | 启用 | `weather-alerts` | `GET /data/noaa/nws/alerts/active` | `11` |
 | NOAA/NWS 官方逐小时预报 | `noaa-nws-forecast-hourly` | 启用 | `weather-hourly-forecast` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly` | `4` |
 | NOAA/NWS 官方分时预报 | `noaa-nws-forecast` | 启用 | `weather-forecast` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast` | `4` |
 | NOAA/NWS 网格观测站列表 | `noaa-nws-gridpoint-stations` | 启用 | `weather-stations` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/stations` | `5` |
@@ -31438,7 +31438,7 @@
 - 成本等级：`free-public-no-key`
 - 详情文件：`connectors/noaa-ncei-data-search.connector.json`
 - Secret环境变量名：`无`（仅名称）
-- 连接器SHA-256：`52e3ddb68e44ef10632b135cb63327e710fc9a548935505fa5b68c84e30eaf8d`
+- 连接器SHA-256：`96338d92596ab58c7c265385fa1a3962870350b593652649d75d5e266cc835de`
 
 请求契约：
 
@@ -31450,17 +31450,15 @@
     "dataset",
     "startDate",
     "endDate",
-    "boundingBox",
+    "bbox",
     "stations",
     "dataTypes",
     "limit",
-    "offset",
-    "sortfield",
-    "sortorder"
+    "offset"
   ],
   "parameter_rules": {
     "properties": {
-      "boundingBox": {
+      "bbox": {
         "max_length": 80,
         "pattern": "^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$",
         "type": "string"
@@ -31490,17 +31488,6 @@
         "minimum": 0,
         "type": "integer"
       },
-      "sortfield": {
-        "max_length": 80,
-        "type": "string"
-      },
-      "sortorder": {
-        "enum": [
-          "asc",
-          "desc"
-        ],
-        "type": "string"
-      },
       "startDate": {
         "max_length": 10,
         "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
@@ -31525,13 +31512,13 @@
     ]
   },
   "parameter_notes": {
-    "boundingBox": "可选；北,西,南,东",
     "dataTypes": "可选；数据类型列表",
     "dataset": "必填；例如 daily-summaries",
     "endDate": "必填；YYYY-MM-DD",
     "limit": "可选；最多 1000",
     "startDate": "必填；YYYY-MM-DD",
-    "stations": "可选；站点 ID 列表"
+    "stations": "可选；站点 ID 列表",
+    "bbox": "可选；北,西,南,东"
   },
   "example_parameters": {
     "dataset": "daily-summaries",
@@ -31568,6 +31555,8 @@
     "results",
     "totalCount",
     "formats",
+    "dataTypes",
+    "stations",
     "errorMessage",
     "errorCode",
     "errors"
@@ -31607,7 +31596,7 @@
 - 成本等级：`free-public-no-key`
 - 详情文件：`connectors/noaa-nws-alerts-active.connector.json`
 - Secret环境变量名：`无`（仅名称）
-- 连接器SHA-256：`f799ca0e32f9f5be66bd040e988dd50c41eb79e8110daca2a393bec858d6681a`
+- 连接器SHA-256：`430a81a7434066ada571ac0720c666805159469e946b2cb3612a6e32fef42803`
 
 请求契约：
 
@@ -31626,11 +31615,7 @@
     "status",
     "message_type",
     "event",
-    "code",
-    "limit",
-    "cursor",
-    "start",
-    "end"
+    "code"
   ],
   "parameter_rules": {
     "properties": {
@@ -31647,22 +31632,9 @@
         "max_length": 100,
         "type": "string"
       },
-      "cursor": {
-        "max_length": 256,
-        "type": "string"
-      },
-      "end": {
-        "max_length": 40,
-        "type": "string"
-      },
       "event": {
         "max_length": 200,
         "type": "string"
-      },
-      "limit": {
-        "maximum": 500,
-        "minimum": 1,
-        "type": "integer"
       },
       "message_type": {
         "max_length": 100,
@@ -31680,10 +31652,6 @@
       },
       "severity": {
         "max_length": 100,
-        "type": "string"
-      },
-      "start": {
-        "max_length": 40,
         "type": "string"
       },
       "status": {
@@ -31714,13 +31682,11 @@
   "parameter_notes": {
     "area": "州或领地两位代码，可逗号分隔",
     "event": "事件名称",
-    "limit": "可选；1 至 500",
     "point": "纬度,经度",
     "zone": "预警区代码"
   },
   "example_parameters": {
-    "area": "DC",
-    "limit": 20
+    "area": "DC"
   },
   "input_headers": [],
   "additional_parameters_allowed": false
@@ -31768,9 +31734,9 @@
       "timeout": 20
     },
     "rate_limit": {
-      "capacity": 2,
-      "every": "1s",
-      "max_rate": 2
+      "capacity": 1,
+      "every": "30s",
+      "max_rate": 1
     }
   },
   "rate_limit_enabled": true,
@@ -31783,6 +31749,7 @@
 - 必须至少提供一个地域或事件过滤条件，禁止无界拉取全部警报
 - 警报正文应结合发布时间和失效时间解释
 - 该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文
+- NWS 建议活动警报请求频率不超过每 30 秒一次
 
 ## NOAA/NWS 官方逐小时预报 (`noaa-nws-forecast-hourly`)
 

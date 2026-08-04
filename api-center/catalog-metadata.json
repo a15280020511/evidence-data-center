@@ -1760,13 +1760,13 @@
         "大范围或长期批量任务应拆分并遵守公平使用"
       ],
       "parameter_notes": {
-        "boundingBox": "可选；北,西,南,东",
         "dataTypes": "可选；数据类型列表",
         "dataset": "必填；例如 daily-summaries",
         "endDate": "必填；YYYY-MM-DD",
         "limit": "可选；最多 1000",
         "startDate": "必填；YYYY-MM-DD",
-        "stations": "可选；站点 ID 列表"
+        "stations": "可选；站点 ID 列表",
+        "bbox": "可选；北,西,南,东"
       },
       "use_cases": [
         "历史气象数据发现",
@@ -1780,20 +1780,19 @@
       "description": "按州、坐标、区域、预警区或事件筛选当前有效的官方天气警报。",
       "display_name": "NOAA/NWS 活动天气警报",
       "example_parameters": {
-        "area": "DC",
-        "limit": 20
+        "area": "DC"
       },
       "freshness": "活动警报实时更新；以响应 sent、effective、expires 字段为准",
       "geographic_coverage": "美国及 NWS 服务区域",
       "limitations": [
         "必须至少提供一个地域或事件过滤条件，禁止无界拉取全部警报",
         "警报正文应结合发布时间和失效时间解释",
-        "该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文"
+        "该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文",
+        "NWS 建议活动警报请求频率不超过每 30 秒一次"
       ],
       "parameter_notes": {
         "area": "州或领地两位代码，可逗号分隔",
         "event": "事件名称",
-        "limit": "可选；1 至 500",
         "point": "纬度,经度",
         "zone": "预警区代码"
       },

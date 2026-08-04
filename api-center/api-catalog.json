@@ -8,8 +8,8 @@
   "source_manifest_file": "connector-manifest.json",
   "source_metadata_file": "catalog-metadata.json",
   "source_manifest_version": 4,
-  "source_manifest_sha256": "3781ae59a51814f6863c73b0f38ce6a664e8c05d83945cd13b4bf03a9803425d",
-  "source_metadata_sha256": "e71c1fae5cbcd8e4d705198994b5d791c9f8395af044baf1f451bba53940e96e",
+  "source_manifest_sha256": "8bd391350dc613be8557765ee51d97eea251c7b280c8f1ffebf0f1121bfb5fd5",
+  "source_metadata_sha256": "92673427a1937047aeaddb5d3ee768e0eef75413e4207b8def43edb39d324310",
   "managed_provider_catalog_file": "managed-provider-index",
   "managed_provider_catalog_files": [
     "google-cloud/provider-catalog.json",
@@ -74,7 +74,7 @@
   "managed_provider_count": 64,
   "enabled_managed_provider_count": 64,
   "managed_operation_count": 698,
-  "exposed_parameter_count": 2490,
+  "exposed_parameter_count": 2484,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -38136,13 +38136,11 @@
         "dataset",
         "startDate",
         "endDate",
-        "boundingBox",
+        "bbox",
         "stations",
         "dataTypes",
         "limit",
-        "offset",
-        "sortfield",
-        "sortorder"
+        "offset"
       ],
       "request_contract": {
         "path_parameter_names": [],
@@ -38151,17 +38149,15 @@
           "dataset",
           "startDate",
           "endDate",
-          "boundingBox",
+          "bbox",
           "stations",
           "dataTypes",
           "limit",
-          "offset",
-          "sortfield",
-          "sortorder"
+          "offset"
         ],
         "parameter_rules": {
           "properties": {
-            "boundingBox": {
+            "bbox": {
               "max_length": 80,
               "pattern": "^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$",
               "type": "string"
@@ -38191,17 +38187,6 @@
               "minimum": 0,
               "type": "integer"
             },
-            "sortfield": {
-              "max_length": 80,
-              "type": "string"
-            },
-            "sortorder": {
-              "enum": [
-                "asc",
-                "desc"
-              ],
-              "type": "string"
-            },
             "startDate": {
               "max_length": 10,
               "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
@@ -38226,13 +38211,13 @@
           ]
         },
         "parameter_notes": {
-          "boundingBox": "可选；北,西,南,东",
           "dataTypes": "可选；数据类型列表",
           "dataset": "必填；例如 daily-summaries",
           "endDate": "必填；YYYY-MM-DD",
           "limit": "可选；最多 1000",
           "startDate": "必填；YYYY-MM-DD",
-          "stations": "可选；站点 ID 列表"
+          "stations": "可选；站点 ID 列表",
+          "bbox": "可选；北,西,南,东"
         },
         "example_parameters": {
           "dataset": "daily-summaries",
@@ -38253,7 +38238,7 @@
       "response_quality": {
         "collection_path": "results",
         "hard_limit": 1000,
-        "recommended_action": "Use a narrow dataset, date interval, station list or bounding box; do not use this connector for bulk archive mirroring."
+        "recommended_action": "Use a narrow dataset, date interval, station list or bbox; do not use this connector for bulk archive mirroring."
       },
       "backend_contract": {
         "host": "https://www.ncei.noaa.gov",
@@ -38264,6 +38249,8 @@
           "results",
           "totalCount",
           "formats",
+          "dataTypes",
+          "stations",
           "errorMessage",
           "errorCode",
           "errors"
@@ -38309,7 +38296,7 @@
       "metadata_pointer": "catalog-metadata.json#/connectors/noaa-ncei-data-search",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "52e3ddb68e44ef10632b135cb63327e710fc9a548935505fa5b68c84e30eaf8d"
+      "connector_sha256": "96338d92596ab58c7c265385fa1a3962870350b593652649d75d5e266cc835de"
     },
     {
       "connector_id": "noaa-nws-alerts-active",
@@ -38338,11 +38325,7 @@
         "status",
         "message_type",
         "event",
-        "code",
-        "limit",
-        "cursor",
-        "start",
-        "end"
+        "code"
       ],
       "request_contract": {
         "path_parameter_names": [],
@@ -38358,11 +38341,7 @@
           "status",
           "message_type",
           "event",
-          "code",
-          "limit",
-          "cursor",
-          "start",
-          "end"
+          "code"
         ],
         "parameter_rules": {
           "properties": {
@@ -38379,22 +38358,9 @@
               "max_length": 100,
               "type": "string"
             },
-            "cursor": {
-              "max_length": 256,
-              "type": "string"
-            },
-            "end": {
-              "max_length": 40,
-              "type": "string"
-            },
             "event": {
               "max_length": 200,
               "type": "string"
-            },
-            "limit": {
-              "maximum": 500,
-              "minimum": 1,
-              "type": "integer"
             },
             "message_type": {
               "max_length": 100,
@@ -38412,10 +38378,6 @@
             },
             "severity": {
               "max_length": 100,
-              "type": "string"
-            },
-            "start": {
-              "max_length": 40,
               "type": "string"
             },
             "status": {
@@ -38446,13 +38408,11 @@
         "parameter_notes": {
           "area": "州或领地两位代码，可逗号分隔",
           "event": "事件名称",
-          "limit": "可选；1 至 500",
           "point": "纬度,经度",
           "zone": "预警区代码"
         },
         "example_parameters": {
-          "area": "DC",
-          "limit": 20
+          "area": "DC"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -38491,9 +38451,9 @@
             "timeout": 20
           },
           "rate_limit": {
-            "capacity": 2,
-            "every": "1s",
-            "max_rate": 2
+            "capacity": 1,
+            "every": "30s",
+            "max_rate": 1
           }
         },
         "rate_limit_enabled": true,
@@ -38505,8 +38465,7 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "area": "DC",
-        "limit": 20
+        "area": "DC"
       },
       "geographic_coverage": "美国及 NWS 服务区域",
       "freshness": "活动警报实时更新；以响应 sent、effective、expires 字段为准",
@@ -38514,13 +38473,14 @@
       "limitations": [
         "必须至少提供一个地域或事件过滤条件，禁止无界拉取全部警报",
         "警报正文应结合发布时间和失效时间解释",
-        "该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文"
+        "该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文",
+        "NWS 建议活动警报请求频率不超过每 30 秒一次"
       ],
       "detail_file": "connectors/noaa-nws-alerts-active.connector.json",
       "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-alerts-active",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "f799ca0e32f9f5be66bd040e988dd50c41eb79e8110daca2a393bec858d6681a"
+      "connector_sha256": "430a81a7434066ada571ac0720c666805159469e946b2cb3612a6e32fef42803"
     },
     {
       "connector_id": "noaa-nws-forecast-hourly",
@@ -42607,5 +42567,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "f75554204968a55d91f4ff6cf64281d480590060102a0583b6b06ef8dfa25edd"
+  "catalog_sha256": "a47cb9efdfe71933bf3de97f8b91a5600f0d8fc02192330f137dd5d6ae71d2af"
 }
