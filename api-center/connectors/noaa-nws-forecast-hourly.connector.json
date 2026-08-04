@@ -33,7 +33,7 @@
     "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly"
   },
   "enabled": true,
-  "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
+  "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast/hourly",
   "id": "noaa-nws-forecast-hourly",
   "input_query_strings": [
     "units"

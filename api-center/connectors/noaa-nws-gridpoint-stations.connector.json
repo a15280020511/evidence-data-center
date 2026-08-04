@@ -33,7 +33,7 @@
     "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/stations"
   },
   "enabled": true,
-  "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/stations",
+  "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/stations",
   "id": "noaa-nws-gridpoint-stations",
   "input_query_strings": [
     "limit",

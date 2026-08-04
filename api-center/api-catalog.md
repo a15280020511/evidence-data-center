@@ -5,7 +5,7 @@
 - 托管提供方：`64/64` 已启用
 - 托管操作总数：`698`
 - 已公开参数总数：`2484`
-- 目录 SHA-256：`a47cb9efdfe71933bf3de97f8b91a5600f0d8fc02192330f137dd5d6ae71d2af`
+- 目录 SHA-256：`c858bead3e72310585cb072164d2adeff7c9552dacd08d7cc432b8018a85f280`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -129,10 +129,10 @@
 | NewsAPI 头条新闻 | `newsapi-top-headlines` | 启用 | `news-headlines` | `GET /data/newsapi/top-headlines` | `6` |
 | NOAA/NCEI 历史气象数据检索 | `noaa-ncei-data-search` | 启用 | `historical-weather-climate-discovery` | `GET /data/noaa/ncei/search` | `8` |
 | NOAA/NWS 活动天气警报 | `noaa-nws-alerts-active` | 启用 | `weather-alerts` | `GET /data/noaa/nws/alerts/active` | `11` |
-| NOAA/NWS 官方逐小时预报 | `noaa-nws-forecast-hourly` | 启用 | `weather-hourly-forecast` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly` | `4` |
-| NOAA/NWS 官方分时预报 | `noaa-nws-forecast` | 启用 | `weather-forecast` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast` | `4` |
-| NOAA/NWS 网格观测站列表 | `noaa-nws-gridpoint-stations` | 启用 | `weather-stations` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/stations` | `5` |
-| NOAA/NWS 坐标网格解析 | `noaa-nws-points` | 启用 | `weather-location-resolution` | `GET /data/noaa/nws/points/{latitude},{longitude}` | `2` |
+| NOAA/NWS 官方逐小时预报 | `noaa-nws-forecast-hourly` | 启用 | `weather-hourly-forecast` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast/hourly` | `4` |
+| NOAA/NWS 官方分时预报 | `noaa-nws-forecast` | 启用 | `weather-forecast` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast` | `4` |
+| NOAA/NWS 网格观测站列表 | `noaa-nws-gridpoint-stations` | 启用 | `weather-stations` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/stations` | `5` |
+| NOAA/NWS 坐标网格解析 | `noaa-nws-points` | 启用 | `weather-location-resolution` | `GET /data/noaa/nws/points/{latitude}/{longitude}` | `2` |
 | NOAA/NWS 站点最新观测 | `noaa-nws-station-latest` | 启用 | `weather-observations` | `GET /data/noaa/nws/stations/{station_id}/observations/latest` | `2` |
 | Open-Meteo空气质量 | `openmeteo-air-quality` | 启用 | `environment` | `GET /data/openmeteo/air-quality` | `11` |
 | Open-Meteo历史天气 | `openmeteo-archive` | 启用 | `historical-weather` | `GET /data/openmeteo/archive` | `13` |
@@ -31761,7 +31761,7 @@
 - 成本等级：`free-public-no-key`
 - 详情文件：`connectors/noaa-nws-forecast-hourly.connector.json`
 - Secret环境变量名：`无`（仅名称）
-- 连接器SHA-256：`af0f08ef70facfd7e0f1cea0ab9c773c881c6722086126336899b99b7e6f8d9c`
+- 连接器SHA-256：`63e19e73ecec712b64385a2c13910feb5c1aa1bd937779d7f7201f9396d3a728`
 
 请求契约：
 
@@ -31883,7 +31883,7 @@
 - 成本等级：`free-public-no-key`
 - 详情文件：`connectors/noaa-nws-forecast.connector.json`
 - Secret环境变量名：`无`（仅名称）
-- 连接器SHA-256：`a061a21155255bad1000b9921e02a8359211417b8740eb5d6409ca2ce2b3e0fb`
+- 连接器SHA-256：`0608c942ed429156cda0e7fed76ca7eb74dea800b92ac8b9818fcd31962f9f1c`
 
 请求契约：
 
@@ -32005,7 +32005,7 @@
 - 成本等级：`free-public-no-key`
 - 详情文件：`connectors/noaa-nws-gridpoint-stations.connector.json`
 - Secret环境变量名：`无`（仅名称）
-- 连接器SHA-256：`3af512f3a51a32bc4fffa282f618ddd00f253a1d83eee80ac2e4038e79746080`
+- 连接器SHA-256：`95bc94a26157b847efb986663730177c0da7060a8b671f8d56f9de6c472d29e0`
 
 请求契约：
 
@@ -32131,7 +32131,7 @@
 - 成本等级：`free-public-no-key`
 - 详情文件：`connectors/noaa-nws-points.connector.json`
 - Secret环境变量名：`无`（仅名称）
-- 连接器SHA-256：`dbc5d1c7f49b50871cd3aeab1a877773469f337c4a8cee9322ea80e265da0493`
+- 连接器SHA-256：`62fb86a28e3422cdd1f322b74daeca87efe01c36458ca111a9e6dca5cdb433bf`
 
 请求契约：
 

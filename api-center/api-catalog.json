@@ -8,7 +8,7 @@
   "source_manifest_file": "connector-manifest.json",
   "source_metadata_file": "catalog-metadata.json",
   "source_manifest_version": 4,
-  "source_manifest_sha256": "8bd391350dc613be8557765ee51d97eea251c7b280c8f1ffebf0f1121bfb5fd5",
+  "source_manifest_sha256": "b2b9124c41e3c1b619c8f9cba5d875461d328a67ee7d3c8f03d731eac2586746",
   "source_metadata_sha256": "92673427a1937047aeaddb5d3ee768e0eef75413e4207b8def43edb39d324310",
   "managed_provider_catalog_file": "managed-provider-index",
   "managed_provider_catalog_files": [
@@ -38493,7 +38493,7 @@
         "出行和活动计划"
       ],
       "enabled": true,
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast/hourly",
       "method": "GET",
       "output_encoding": "json",
       "timeout": "20s",
@@ -38617,7 +38617,7 @@
       "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-forecast-hourly",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "af0f08ef70facfd7e0f1cea0ab9c773c881c6722086126336899b99b7e6f8d9c"
+      "connector_sha256": "63e19e73ecec712b64385a2c13910feb5c1aa1bd937779d7f7201f9396d3a728"
     },
     {
       "connector_id": "noaa-nws-forecast",
@@ -38630,7 +38630,7 @@
         "官方预报交叉核验"
       ],
       "enabled": true,
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast",
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast",
       "method": "GET",
       "output_encoding": "json",
       "timeout": "20s",
@@ -38754,7 +38754,7 @@
       "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-forecast",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "a061a21155255bad1000b9921e02a8359211417b8740eb5d6409ca2ce2b3e0fb"
+      "connector_sha256": "0608c942ed429156cda0e7fed76ca7eb74dea800b92ac8b9818fcd31962f9f1c"
     },
     {
       "connector_id": "noaa-nws-gridpoint-stations",
@@ -38767,7 +38767,7 @@
         "观测覆盖核验"
       ],
       "enabled": true,
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/stations",
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/stations",
       "method": "GET",
       "output_encoding": "json",
       "timeout": "20s",
@@ -38896,7 +38896,7 @@
       "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-gridpoint-stations",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "3af512f3a51a32bc4fffa282f618ddd00f253a1d83eee80ac2e4038e79746080"
+      "connector_sha256": "95bc94a26157b847efb986663730177c0da7060a8b671f8d56f9de6c472d29e0"
     },
     {
       "connector_id": "noaa-nws-points",
@@ -38909,7 +38909,7 @@
         "衔接官方预报和观测"
       ],
       "enabled": true,
-      "endpoint": "/data/noaa/nws/points/{latitude},{longitude}",
+      "endpoint": "/data/noaa/nws/points/{latitude}/{longitude}",
       "method": "GET",
       "output_encoding": "json",
       "timeout": "20s",
@@ -39009,7 +39009,7 @@
       "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-points",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "dbc5d1c7f49b50871cd3aeab1a877773469f337c4a8cee9322ea80e265da0493"
+      "connector_sha256": "62fb86a28e3422cdd1f322b74daeca87efe01c36458ca111a9e6dca5cdb433bf"
     },
     {
       "connector_id": "noaa-nws-station-latest",
@@ -42567,5 +42567,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "a47cb9efdfe71933bf3de97f8b91a5600f0d8fc02192330f137dd5d6ae71d2af"
+  "catalog_sha256": "c858bead3e72310585cb072164d2adeff7c9552dacd08d7cc432b8018a85f280"
 }

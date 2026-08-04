@@ -2185,7 +2185,7 @@
       ]
     },
     {
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast/hourly",
       "method": "GET",
       "output_encoding": "json",
       "backend": [
@@ -2232,7 +2232,7 @@
       ]
     },
     {
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast",
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast",
       "method": "GET",
       "output_encoding": "json",
       "backend": [
@@ -2279,7 +2279,7 @@
       ]
     },
     {
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/stations",
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/stations",
       "method": "GET",
       "output_encoding": "json",
       "backend": [
@@ -2327,7 +2327,7 @@
       ]
     },
     {
-      "endpoint": "/data/noaa/nws/points/{latitude},{longitude}",
+      "endpoint": "/data/noaa/nws/points/{latitude}/{longitude}",
       "method": "GET",
       "output_encoding": "json",
       "backend": [

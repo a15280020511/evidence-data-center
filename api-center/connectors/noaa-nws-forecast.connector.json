@@ -33,7 +33,7 @@
     "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast"
   },
   "enabled": true,
-  "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast",
+  "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast",
   "id": "noaa-nws-forecast",
   "input_query_strings": [
     "units"

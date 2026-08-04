@@ -33,7 +33,7 @@
     "url_pattern": "/points/{latitude},{longitude}"
   },
   "enabled": true,
-  "endpoint": "/data/noaa/nws/points/{latitude},{longitude}",
+  "endpoint": "/data/noaa/nws/points/{latitude}/{longitude}",
   "id": "noaa-nws-points",
   "method": "GET",
   "output_encoding": "json",
