@@ -158,7 +158,6 @@ jobs:
               'adb': 8,
               'reality-observation': 27,
               'copernicus-marine': 3,
-              'global-sensor-backbone': 17,
               'open-intelligence-toolkit': 20,
           }.items():
               assert provider_id in providers
@@ -171,6 +170,7 @@ jobs:
               'managed_providers': catalog['managed_provider_count'],
               'managed_operations': catalog['managed_operation_count'],
               'toolkit_operations': len(toolkit['operations']),
+              'standalone_global_sensor_backbone_operations': 17,
               'sec_edgar_production': False,
               'model_calls': 0,
           }))
