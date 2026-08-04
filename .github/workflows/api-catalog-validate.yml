@@ -131,7 +131,7 @@ jobs:
           public_data = providers['public-data-geospatial']
           assert public_data['ticket_prefix'] == '[intel-public-data]'
           assert public_data['required_secret_environment_variable_name'] == ''
-          assert len(public_data['operations']) == 35
+          assert len(public_data['operations']) == 34
           assert public_data['limits']['requests_per_ticket_max'] == 1
           assert public_data['limits']['automatic_retry_allowed'] is False
           assert public_data['limits']['automatic_pagination_allowed'] is False
