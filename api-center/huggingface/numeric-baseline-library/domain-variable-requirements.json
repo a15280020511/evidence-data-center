@@ -1,0 +1,123 @@
+{
+  "schema_version": "compute-numeric-domain-requirements-v1",
+  "status": "production-control",
+  "domain_count": 18,
+  "storage_policy": {
+    "huggingface_payload_numeric_only": true,
+    "natural_language_payload_allowed": false,
+    "control_metadata_location": "github",
+    "selection_and_relay_owner": "gpts-usage-center",
+    "compute_runtime_network_allowed": false,
+    "direct_center_connection_allowed": false
+  },
+  "domains": [
+    {
+      "id": "macroeconomy-fiscal-monetary",
+      "priority": "P1",
+      "variable_groups": ["real_output_and_gdp", "industrial_and_service_activity", "cpi_ppi_and_deflators", "fiscal_revenue_expenditure_balance", "government_debt_and_maturity", "money_credit_and_liquidity", "interest_rates_and_yield_curve", "exchange_rates_and_reserves", "employment_income_and_consumption", "publication_lag_and_revision_vintage"],
+      "default_tables": ["observations", "econometric_panel", "regime_events", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "enterprise-commerce-industry",
+      "priority": "P1",
+      "variable_groups": ["enterprise_identity_and_ownership_codes", "revenue_cost_profit_cashflow", "assets_liabilities_and_capital", "capacity_output_inventory_utilization", "store_project_and_poi_counts", "prices_sales_orders_and_conversion", "supplier_customer_concentration", "bankruptcy_penalty_and_compliance_events", "competition_and_market_share", "business_unit_economics"],
+      "default_tables": ["observations", "financial_panel", "entity_links", "input_output_matrix", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "finance-capital-markets",
+      "priority": "P1",
+      "variable_groups": ["point_in_time_prices_returns_volume", "corporate_actions_and_delistings", "fundamentals_with_publication_dates", "risk_free_rates_and_factor_returns", "liquidity_spreads_and_transaction_costs", "fund_bond_derivative_and_fx_terms", "volatility_drawdown_and_tail_loss", "portfolio_constraints_and_exposures", "cashflows_duration_and_greeks", "realized_investment_outcomes"],
+      "default_tables": ["financial_panel", "observations", "optimization_coefficients", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "law-policy-regulation",
+      "priority": "P1",
+      "variable_groups": ["jurisdiction_and_rule_type_codes", "publication_effective_and_expiry_times", "regulated_entity_and_industry_codes", "mandatory_prohibitive_and_supportive_clause_counts", "threshold_rate_quota_and_tax_parameters", "penalty_fine_and_enforcement_counts", "policy_intensity_and_coverage_ranges", "amendment_repeal_and_precedence_links", "compliance_cost_and_response_times", "policy_outcome_and_reversal_events"],
+      "default_tables": ["regime_events", "parameter_matrix", "entity_links", "decision_matrix", "benchmark_outcomes"]
+    },
+    {
+      "id": "population-labor-income",
+      "priority": "P1",
+      "variable_groups": ["population_age_sex_household_structure", "birth_death_and_migration_rates", "employment_unemployment_and_participation", "wages_hours_vacancies_and_turnover", "income_consumption_assets_and_debt", "urbanization_and_mobility", "social_security_and_assistance", "inequality_and_quantiles", "survey_weights_and_sampling_design", "education_to_employment_transition"],
+      "default_tables": ["observations", "econometric_panel", "survey_design", "transition_matrix", "agent_population", "benchmark_outcomes"]
+    },
+    {
+      "id": "geospatial-land-urban",
+      "priority": "P1",
+      "variable_groups": ["administrative_and_grid_codes", "longitude_latitude_elevation", "land_use_and_land_cover", "building_parcel_and_floor_area", "poi_density_and_business_mix", "travel_time_and_accessibility", "land_and_real_estate_prices", "night_lights_and_change", "population_and_activity_density", "spatial_adjacency_and_distance"],
+      "default_tables": ["spatial_points", "spatial_edges", "raster_cells", "observations", "benchmark_outcomes"]
+    },
+    {
+      "id": "transport-logistics-ports",
+      "priority": "P1",
+      "variable_groups": ["road_rail_transit_network_nodes_edges", "origin_destination_demand", "vehicle_and_mode_counts", "speed_travel_time_delay_and_reliability", "capacity_flow_density_and_queue", "freight_volume_weight_value_and_distance", "port_berth_throughput_and_dwell", "flight_route_airport_and_load", "shipping_route_port_and_freight_rate", "disruption_incident_and_recovery"],
+      "default_tables": ["transport_demand", "infrastructure_nodes", "infrastructure_edges", "event_log", "observations", "benchmark_outcomes"]
+    },
+    {
+      "id": "energy-power-resources",
+      "priority": "P1",
+      "variable_groups": ["generation_load_and_capacity", "fuel_mix_and_heat_rate", "grid_nodes_lines_impedance_and_limits", "voltage_frequency_and_losses", "outage_failure_and_restoration", "oil_gas_coal_production_inventory_price", "renewable_resource_and_capacity_factor", "storage_charge_discharge_and_efficiency", "energy_trade_and_dependency", "reserves_depletion_and_emissions"],
+      "default_tables": ["infrastructure_nodes", "infrastructure_edges", "state_space", "observations", "resource_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "international-trade-supply-chain",
+      "priority": "P1",
+      "variable_groups": ["bilateral_trade_value_volume_and_price", "hs_sector_and_country_codes", "tariff_quota_tax_and_rule_parameters", "input_output_and_value_added_links", "supplier_customer_and_ownership_links", "shipping_freight_port_and_lead_time", "inventory_capacity_and_service_level", "sanction_control_and_disruption_events", "concentration_substitutability_and_dependency", "shock_propagation_and_recovery"],
+      "default_tables": ["input_output_matrix", "entity_links", "network_edges", "observations", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "agriculture-food-commodities",
+      "priority": "P2",
+      "variable_groups": ["crop_area_yield_and_production", "planting_harvest_and_season_codes", "livestock_aquaculture_and_feed", "weather_soil_water_and_input_use", "inventory_storage_and_losses", "wholesale_retail_and_futures_prices", "imports_exports_and_dependency", "food_supply_consumption_and_nutrition", "pest_disease_and_safety_events", "commodity_volatility_and_stress"],
+      "default_tables": ["observations", "spatial_points", "raster_cells", "state_space", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "environment-climate-weather",
+      "priority": "P1",
+      "variable_groups": ["temperature_precipitation_wind_pressure", "climate_normals_anomalies_and_extremes", "air_water_and_soil_quality", "emissions_carbon_and_energy_intensity", "flood_drought_fire_storm_and_loss", "remote_sensing_indices_and_land_change", "water_balance_and_resource_availability", "hazard_exposure_vulnerability_and_capacity", "forecast_probability_and_interval", "event_onset_duration_and_recovery"],
+      "default_tables": ["observations", "raster_cells", "spatial_points", "uncertainty_parameters", "crisis_indicators", "benchmark_outcomes"]
+    },
+    {
+      "id": "public-health-healthcare",
+      "priority": "P2",
+      "variable_groups": ["incidence_prevalence_and_mortality", "age_sex_region_and_risk_group_codes", "hospital_bed_staff_and_equipment_capacity", "visits_admissions_length_of_stay_and_cost", "medicine_device_inventory_and_supply", "insurance_coverage_and_payment", "intervention_timing_coverage_and_effect", "contact_mobility_and_transmission", "survival_recovery_and_readmission", "forecast_and_warning_performance"],
+      "default_tables": ["observations", "econometric_panel", "transition_matrix", "agent_population", "resource_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "science-technology-patents",
+      "priority": "P2",
+      "variable_groups": ["publication_patent_grant_and_project_counts", "citation_family_and_assignment_links", "researcher_institution_and_company_ids", "funding_amount_duration_and_stage", "technology_class_and_readiness_codes", "software_dependency_and_release_metrics", "standards_adoption_and_compliance", "innovation_network_centrality", "commercialization_and_failure_outcomes", "capability_gap_and_dependency"],
+      "default_tables": ["observations", "network_edges", "entity_links", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "education-human-capital",
+      "priority": "P2",
+      "variable_groups": ["institution_capacity_and_location", "enrollment_attendance_progression_dropout", "scores_attainment_and_skill_levels", "teacher_staff_ratio_pay_and_turnover", "education_spending_and_unit_cost", "admissions_exam_and_quota_parameters", "training_certification_and_completion", "school_to_work_transition", "employment_wage_and_return_to_education", "policy_intervention_and_outcome"],
+      "default_tables": ["observations", "econometric_panel", "survey_design", "transition_matrix", "spatial_points", "benchmark_outcomes"]
+    },
+    {
+      "id": "public-safety-emergency",
+      "priority": "P2",
+      "variable_groups": ["incident_type_time_and_location", "frequency_severity_damage_and_loss", "exposure_population_and_assets", "response_units_capacity_and_travel_time", "dispatch_queue_service_and_clearance", "warning_threshold_and_error_cost", "infrastructure_failure_and_dependency", "evacuation_shelter_and_resource_demand", "recovery_duration_and_cost", "false_alarm_miss_and_outcome"],
+      "default_tables": ["crisis_indicators", "event_log", "resource_parameters", "spatial_points", "network_edges", "benchmark_outcomes"]
+    },
+    {
+      "id": "media-news-public-opinion",
+      "priority": "P2",
+      "variable_groups": ["topic_entity_and_event_codes", "mention_volume_and_attention_share", "sentiment_stance_and_uncertainty_probabilities", "source_reliability_and_contradiction_scores", "network_diffusion_and_reach", "adoption_correction_and_decay_rates", "survey_support_opposition_and_intensity", "narrative_cooccurrence_and_transition", "misinformation_correction_time", "forecast_error_and_realized_behavior"],
+      "default_tables": ["observations", "network_edges", "agent_population", "regime_events", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "infrastructure-telecom-internet",
+      "priority": "P2",
+      "variable_groups": ["network_nodes_edges_capacity_and_coverage", "traffic_latency_loss_and_throughput", "mobile_broadband_satellite_and_cloud_capacity", "data_center_compute_power_and_utilization", "outage_failure_restoration_and_redundancy", "capital_cost_operating_cost_and_price", "user_demand_adoption_and_churn", "dependency_and_cascade_links", "project_schedule_progress_and_delay", "service_level_and_reliability"],
+      "default_tables": ["infrastructure_nodes", "infrastructure_edges", "observations", "event_log", "network_edges", "benchmark_outcomes"]
+    },
+    {
+      "id": "government-public-services",
+      "priority": "P1",
+      "variable_groups": ["organization_function_and_jurisdiction_codes", "budget_revenue_expenditure_and_debt", "procurement_bid_contract_and_supplier", "project_cost_schedule_progress_and_variance", "public_asset_capacity_condition_and_utilization", "service_volume_wait_time_quality_and_satisfaction", "staffing_productivity_and_unit_cost", "policy_target_threshold_and_resource_allocation", "audit_violation_and_correction_events", "outcome_efficiency_and_equity_metrics"],
+      "default_tables": ["observations", "event_log", "optimization_coefficients", "resource_parameters", "entity_links", "benchmark_outcomes"]
+    }
+  ]
+}

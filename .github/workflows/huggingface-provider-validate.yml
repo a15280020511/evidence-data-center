@@ -53,19 +53,26 @@ jobs:
           cache-dependency-path: |
             api-center/requirements.txt
             api-center/huggingface/requirements.txt
+            api-center/huggingface/requirements-numeric-baseline.txt
 
       - name: Install pinned dependencies
         run: |
           set -euo pipefail
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
-            -r api-center/huggingface/requirements.txt
+            -r api-center/huggingface/requirements.txt \
+            -r api-center/huggingface/requirements-numeric-baseline.txt
           python -m pip check
 
       - name: Compile and run provider regressions
         run: |
           set -euo pipefail
-          python -m py_compile api-center/managed_provider_runtime.py api-center/huggingface/huggingface_task.py api-center/huggingface/tests/test_huggingface.py
+          python -m py_compile \
+            api-center/managed_provider_runtime.py \
+            api-center/huggingface/huggingface_task.py \
+            api-center/huggingface/numeric_baseline_store.py \
+            api-center/huggingface/tests/test_huggingface.py \
+            api-center/huggingface/tests/test_numeric_baseline_store.py
           python -m unittest discover -s api-center/huggingface/tests -p 'test_*.py' -v
 
       - name: Verify provider and catalog invariants
