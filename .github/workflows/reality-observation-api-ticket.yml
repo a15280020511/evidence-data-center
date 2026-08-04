@@ -27,6 +27,7 @@ jobs:
       FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
       FINGRID_API_KEY: ${{ secrets.FINGRID_API_KEY }}
       ENTSOE_API_TOKEN: ${{ secrets.ENTSOE_API_TOKEN }}
+      MAPILLARY_ACCESS_TOKEN: ${{ secrets.MAPILLARY_ACCESS_TOKEN }}
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262

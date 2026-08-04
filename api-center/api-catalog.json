@@ -68,15 +68,16 @@
     "open-software-security-knowledge/provider-catalog.json",
     "google-public-intelligence/provider-catalog.json",
     "reality-observation/provider-catalog.json",
-    "noaa-cdo/provider-catalog.json"
+    "noaa-cdo/provider-catalog.json",
+    "copernicus-marine/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "161ee9e455b2bce9c179c70c5677b5220492bcfcfc2c94e088cfedb4e1024dc7",
+  "managed_provider_catalog_sha256": "96a6773727eebec12aabadfbf97c10d4f03ec507d66e372f8cefbf359d5fbd82",
   "connector_count": 72,
   "enabled_connector_count": 72,
-  "managed_provider_count": 66,
-  "enabled_managed_provider_count": 66,
-  "managed_operation_count": 728,
-  "exposed_parameter_count": 2598,
+  "managed_provider_count": 67,
+  "enabled_managed_provider_count": 67,
+  "managed_operation_count": 733,
+  "exposed_parameter_count": 2614,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -140,6 +141,7 @@
     "google-public-intelligence/provider-catalog.json",
     "reality-observation/provider-catalog.json",
     "noaa-cdo/provider-catalog.json",
+    "copernicus-marine/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -33231,7 +33233,7 @@
       "ticket_prefix": "[intel-reality-observation]",
       "catalog_policy": "仅开放固定官方/公益主机和固定只读操作；禁止任意URL、持续流、设备控制、个人跟踪、登录绕过、批量镜像和写入。",
       "execution_policy": "每张票据最多一次受控上游请求；参数、空间范围、时间范围和结果上限均受Schema限制；凭证仅由GitHub Actions后端注入。",
-      "operation_count": 25,
+      "operation_count": 27,
       "operations": [
         {
           "operation_id": "catalog-capabilities",
@@ -33622,6 +33624,47 @@
           }
         },
         {
+          "operation_id": "mapillary-image-search",
+          "description": "按小范围边界框检索Mapillary公开街景图像元数据和1024像素缩略图地址。",
+          "parameter_names": [
+            "bbox",
+            "limit"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                }
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 25
+              }
+            },
+            "required": [
+              "bbox"
+            ]
+          },
+          "result_contract": {
+            "provider": "reality-observation",
+            "official_origin": "https://graph.mapillary.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "MAPILLARY_ACCESS_TOKEN",
+            "content_scope": "public-image-metadata-and-thumbnail-urls"
+          }
+        },
+        {
           "operation_id": "ioos-erddap-search",
           "description": "搜索IOOS ERDDAP海洋浮标、岸站、滑翔机和雷达数据集。",
           "parameter_names": [
@@ -34002,6 +34045,40 @@
           }
         },
         {
+          "operation_id": "melbourne-transport-activity-latest",
+          "description": "读取墨尔本AIRS五分钟分类交通活动量，区分行人、自行车、电动滑板车、汽车、公交和货车等。",
+          "parameter_names": [
+            "limit",
+            "offset"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 100
+              },
+              "offset": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 10000,
+                "default": 0
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "reality-observation",
+            "official_origin": "https://data.melbourne.vic.gov.au",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "aggregation": "count,countin,countout by class and countline"
+          }
+        },
+        {
           "operation_id": "melbourne-pedestrian-latest",
           "description": "读取墨尔本最近一小时分钟级双向行人传感器并计算活动汇总。",
           "parameter_names": [
@@ -34322,7 +34399,8 @@
         "optional_secret_environment_variables": [
           "FIRMS_MAP_KEY",
           "FINGRID_API_KEY",
-          "ENTSOE_API_TOKEN"
+          "ENTSOE_API_TOKEN",
+          "MAPILLARY_ACCESS_TOKEN"
         ],
         "fixed_api_hosts": [
           "planetarycomputer.microsoft.com",
@@ -34344,7 +34422,8 @@
           "api.carbonintensity.org.uk",
           "data.elexon.co.uk",
           "data.fingrid.fi",
-          "web-api.tp.entsoe.eu"
+          "web-api.tp.entsoe.eu",
+          "graph.mapillary.com"
         ],
         "known_limitations": [
           "不存在全球完整、近期、免费、亚米级地面俯视影像API；NAIP仅覆盖美国，OpenAerialMap和KartaView覆盖取决于社区采集。",
@@ -34357,7 +34436,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "3f89ff844957d15c89d741cbb7d5afdca38e64312e116985a43387b40580f18c",
+      "provider_sha256": "e22662e90e65e6cb9f1693d2616f600094bb2c39cf829085455d4e25f2d61eaf",
       "catalog_file": "reality-observation/provider-catalog.json"
     },
     {
@@ -34761,6 +34840,190 @@
       "secret_value_exposed": false,
       "provider_sha256": "edff7885bdd8977f1ed675059b456c60fe417281a1f796b2e3f112beef47b5c3",
       "catalog_file": "noaa-cdo/provider-catalog.json"
+    },
+    {
+      "provider_id": "copernicus-marine",
+      "display_name": "Copernicus Marine 海洋现实观测",
+      "description": "通过官方Copernicus Marine Toolbox检索卫星、现场观测和模式海洋数据，并下载严格受限的小范围CSV子集。",
+      "enabled": true,
+      "ticket_prefix": "[intel-copernicus-marine]",
+      "catalog_policy": "只开放本地目录、匿名元数据检索和凭证化小范围CSV子集；禁止整库get、任意输出路径、服务URL、递归文件过滤和批量循环。",
+      "execution_policy": "每票据至多一个Toolbox高层操作；凭证只由GitHub Actions注入；结果体积和空间时间范围均受硬边界约束。",
+      "operation_count": 3,
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地Copernicus Marine能力和限制。",
+          "parameter_names": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "provider": "copernicus-marine",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "describe",
+          "description": "匿名检索官方海洋产品和数据集元数据，并输出受限紧凑目录。",
+          "parameter_names": [
+            "contains",
+            "product_id",
+            "dataset_id",
+            "max_products",
+            "max_datasets_per_product"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                }
+              },
+              "product_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$"
+              },
+              "dataset_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,199}$"
+              },
+              "max_products": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20,
+                "default": 10
+              },
+              "max_datasets_per_product": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20,
+                "default": 10
+              }
+            }
+          },
+          "result_contract": {
+            "provider": "copernicus-marine",
+            "official_origin": "https://data.marine.copernicus.eu",
+            "http_method": "TOOLBOX",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "subset-csv",
+          "description": "使用免费账户凭证下载严格受限的海洋数据CSV子集。",
+          "parameter_names": [
+            "dataset_id",
+            "variables",
+            "bbox",
+            "start_datetime",
+            "end_datetime",
+            "minimum_depth",
+            "maximum_depth"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dataset_id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,199}$"
+              },
+              "variables": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+                }
+              },
+              "bbox": {
+                "type": "array",
+                "minItems": 4,
+                "maxItems": 4,
+                "items": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                }
+              },
+              "start_datetime": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "end_datetime": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "minimum_depth": {
+                "type": "number",
+                "minimum": -12000,
+                "maximum": 12000
+              },
+              "maximum_depth": {
+                "type": "number",
+                "minimum": -12000,
+                "maximum": 12000
+              }
+            },
+            "required": [
+              "dataset_id",
+              "variables",
+              "bbox",
+              "start_datetime",
+              "end_datetime"
+            ]
+          },
+          "result_contract": {
+            "provider": "copernicus-marine",
+            "official_origin": "https://data.marine.copernicus.eu",
+            "http_method": "TOOLBOX",
+            "read_only": true,
+            "credential_mode": "username-password-backend-only",
+            "content_type": "text/csv"
+          }
+        }
+      ],
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "provider_concurrency_max": 1,
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "whole_dataset_get_allowed": false,
+        "arbitrary_output_path_allowed": false,
+        "arbitrary_service_url_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false,
+        "bbox_span_degrees_max": 2.0,
+        "time_span_days_max": 7,
+        "depth_span_meters_max": 500,
+        "variables_max": 5,
+        "output_bytes_max": 20000000,
+        "optional_secret_environment_variables": [
+          "COPERNICUSMARINE_SERVICE_USERNAME",
+          "COPERNICUSMARINE_SERVICE_PASSWORD"
+        ]
+      },
+      "required_secret_environment_variable_name": "",
+      "optional_secret_environment_variable_name": "",
+      "required_repository_variable": "",
+      "secret_value_exposed": false,
+      "provider_sha256": "b5772f3928c85d3964b2e37dd96c9eeff06028941dd09a75d9c4e02993d37821",
+      "catalog_file": "copernicus-marine/provider-catalog.json"
     }
   ],
   "replaced_legacy_connectors": [
@@ -44022,5 +44285,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "6fd898c2720f028e6b0183b895bfd85ff2b9a68a2857a1cc5acbc298cd0feb80"
+  "catalog_sha256": "0355216860d0a1aa6c98816c1f01ec8844db24ae4292ca0f84ae72d62487d746"
 }

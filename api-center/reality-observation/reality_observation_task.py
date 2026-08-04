@@ -300,6 +300,34 @@ def build_request(
             "response_kind": "json",
         }
 
+
+    if operation == "mapillary-image-search":
+        token = _secret("MAPILLARY_ACCESS_TOKEN", env)
+        bbox_values = _bbox(parameters)
+        if (bbox_values[2] - bbox_values[0]) > 0.2 or (bbox_values[3] - bbox_values[1]) > 0.2:
+            raise ValueError("Mapillary bbox span exceeds 0.2 degrees")
+        return {
+            "method": "GET",
+            "url": "https://graph.mapillary.com/images",
+            "safe_path": "/images",
+            "params": {
+                "bbox": ",".join(f"{value:g}" for value in bbox_values),
+                "fields": "id,captured_at,computed_geometry,computed_compass_angle,thumb_1024_url,is_pano,sequence",
+                "limit": str(
+                    bounded_int(
+                        parameters.get("limit"),
+                        default=25,
+                        minimum=1,
+                        maximum=100,
+                        name="limit",
+                    )
+                ),
+            },
+            "headers": {**base_headers, "Authorization": f"OAuth {token}"},
+            "response_kind": "json",
+            "credential_name": "MAPILLARY_ACCESS_TOKEN",
+        }
+
     if operation == "kartaview-nearby-photos":
         lat = _bounded_float(
             parameters.get("latitude"), minimum=-90, maximum=90, name="latitude"
@@ -553,6 +581,40 @@ def build_request(
             "response_kind": "json",
         }
 
+
+    if operation == "melbourne-transport-activity-latest":
+        return {
+            "method": "GET",
+            "url": (
+                "https://data.melbourne.vic.gov.au/api/explore/v2.1/catalog/datasets/"
+                "transport-activity-counts/records"
+            ),
+            "safe_path": "/api/explore/v2.1/catalog/datasets/transport-activity-counts/records",
+            "params": {
+                "limit": str(
+                    bounded_int(
+                        parameters.get("limit"),
+                        default=100,
+                        minimum=1,
+                        maximum=100,
+                        name="limit",
+                    )
+                ),
+                "offset": str(
+                    bounded_int(
+                        parameters.get("offset"),
+                        default=0,
+                        minimum=0,
+                        maximum=10000,
+                        name="offset",
+                    )
+                ),
+                "order_by": "from desc",
+            },
+            "headers": base_headers,
+            "response_kind": "json",
+        }
+
     if operation in {"melbourne-pedestrian-latest", "melbourne-pedestrian-history"}:
         latest = operation.endswith("latest")
         dataset = (
@@ -766,6 +828,44 @@ def _summarize_melbourne(data: Any) -> Mapping[str, Any]:
     }
 
 
+
+def _summarize_transport_activity(data: Any) -> Mapping[str, Any]:
+    if not isinstance(data, Mapping):
+        return {"data": data}
+    results = data.get("results")
+    if not isinstance(results, list):
+        return {"data": data}
+    by_class: dict[str, int] = {}
+    total = 0
+    countlines: set[int] = set()
+    latest = None
+    for row in results:
+        if not isinstance(row, Mapping):
+            continue
+        road_class = str(row.get("class") or "unknown")
+        try:
+            value = int(row.get("count") or 0)
+        except (TypeError, ValueError):
+            value = 0
+        total += value
+        by_class[road_class] = by_class.get(road_class, 0) + value
+        try:
+            countlines.add(int(row.get("countlineid")))
+        except (TypeError, ValueError):
+            pass
+        timestamp = row.get("from")
+        if isinstance(timestamp, str) and (latest is None or timestamp > latest):
+            latest = timestamp
+    return {
+        "record_count": len(results),
+        "countline_count": len(countlines),
+        "total_activity_count": total,
+        "activity_by_class": by_class,
+        "latest_interval_start": latest,
+        "records": results,
+        "total_count": data.get("total_count"),
+    }
+
 def _snapshot_from_response(operation: str, kind: str, raw: bytes, response: requests.Response) -> Any:
     if kind == "json":
         try:
@@ -774,6 +874,8 @@ def _snapshot_from_response(operation: str, kind: str, raw: bytes, response: req
             raise RuntimeError("upstream returned invalid JSON") from exc
         if operation == "melbourne-pedestrian-latest":
             return _summarize_melbourne(data)
+        if operation == "melbourne-transport-activity-latest":
+            return _summarize_transport_activity(data)
         return data
     text = raw.decode("utf-8", errors="replace")
     if kind == "csv":

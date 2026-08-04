@@ -65,6 +65,7 @@ BAIDU_AI_CLOUD_CATALOG = HERE / "baidu-ai-cloud/provider-catalog.json"
 OPEN_SOFTWARE_SECURITY_KNOWLEDGE_CATALOG = HERE / "open-software-security-knowledge/provider-catalog.json"
 GOOGLE_PUBLIC_INTELLIGENCE_CATALOG = HERE / "google-public-intelligence/provider-catalog.json"
 REALITY_OBSERVATION_CATALOG = HERE / "reality-observation/provider-catalog.json"
+COPERNICUS_MARINE_CATALOG = HERE / "copernicus-marine/provider-catalog.json"
 NOAA_CDO_CATALOG = HERE / "noaa-cdo/provider-catalog.json"
 
 EXPECTED_EXTENDED_PROVIDERS = {
@@ -119,7 +120,8 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "baidu-ai-cloud": 4,
     "open-software-security-knowledge": 11,
     "google-public-intelligence": 9,
-    "reality-observation": 25,
+    "reality-observation": 27,
+    "copernicus-marine": 3,
     "noaa-cdo": 5,
 }
 
@@ -176,6 +178,7 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     GOOGLE_PUBLIC_INTELLIGENCE_CATALOG,
     REALITY_OBSERVATION_CATALOG,
     NOAA_CDO_CATALOG,
+    COPERNICUS_MARINE_CATALOG,
 )
 
 load_json = base.load_json
@@ -247,6 +250,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         "google-public-intelligence/provider-catalog.json",
         "reality-observation/provider-catalog.json",
         "noaa-cdo/provider-catalog.json",
+        "copernicus-marine/provider-catalog.json",
     ):
         if item not in reading_order:
             insert_at = (

@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`72/72` 已启用
-- 托管提供方：`66/66` 已启用
-- 托管操作总数：`728`
-- 已公开参数总数：`2598`
-- 目录 SHA-256：`6fd898c2720f028e6b0183b895bfd85ff2b9a68a2857a1cc5acbc298cd0feb80`
+- 托管提供方：`67/67` 已启用
+- 托管操作总数：`733`
+- 已公开参数总数：`2614`
+- 目录 SHA-256：`0355216860d0a1aa6c98816c1f01ec8844db24ae4292ca0f84ae72d62487d746`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -81,8 +81,9 @@
 | 百度AI搜索与模型摘要 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `4` | 否 |
 | 全球开源软件、安全与开放标准知识层 | `open-software-security-knowledge` | 启用 | `[intel-software-security]` | `11` | 否 |
 | Google公开情报 | `google-public-intelligence` | 启用 | `[intel-google-public]` | `9` | 否 |
-| 现实传感器、空间影像、人流与电力观测 | `reality-observation` | 启用 | `[intel-reality-observation]` | `25` | 否 |
+| 现实传感器、空间影像、人流与电力观测 | `reality-observation` | 启用 | `[intel-reality-observation]` | `27` | 否 |
 | NOAA Climate Data Online 中国历史气象发现 | `noaa-cdo` | 启用 | `[intel-noaa-cdo]` | `5` | 否 |
+| Copernicus Marine 海洋现实观测 | `copernicus-marine` | 启用 | `[intel-copernicus-marine]` | `3` | 否 |
 
 ## 普通连接器
 
@@ -27099,7 +27100,7 @@
 - 票据前缀：`[intel-reality-observation]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`3f89ff844957d15c89d741cbb7d5afdca38e64312e116985a43387b40580f18c`
+- 提供方SHA-256：`e22662e90e65e6cb9f1693d2616f600094bb2c39cf829085455d4e25f2d61eaf`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -27419,6 +27420,38 @@
 }
 ```
 
+| `mapillary-image-search` | 按小范围边界框检索Mapillary公开街景图像元数据和1024像素缩略图地址。 | `bbox, limit` |
+
+`mapillary-image-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    }
+  },
+  "required": [
+    "bbox"
+  ]
+}
+```
+
 | `ioos-erddap-search` | 搜索IOOS ERDDAP海洋浮标、岸站、滑翔机和雷达数据集。 | `search_for, page, items_per_page` |
 
 `ioos-erddap-search` 参数Schema：
@@ -27716,6 +27749,31 @@
 }
 ```
 
+| `melbourne-transport-activity-latest` | 读取墨尔本AIRS五分钟分类交通活动量，区分行人、自行车、电动滑板车、汽车、公交和货车等。 | `limit, offset` |
+
+`melbourne-transport-activity-latest` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    },
+    "offset": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "default": 0
+    }
+  }
+}
+```
+
 | `melbourne-pedestrian-latest` | 读取墨尔本最近一小时分钟级双向行人传感器并计算活动汇总。 | `location_id, limit` |
 
 `melbourne-pedestrian-latest` 参数Schema：
@@ -27974,7 +28032,8 @@
   "optional_secret_environment_variables": [
     "FIRMS_MAP_KEY",
     "FINGRID_API_KEY",
-    "ENTSOE_API_TOKEN"
+    "ENTSOE_API_TOKEN",
+    "MAPILLARY_ACCESS_TOKEN"
   ],
   "fixed_api_hosts": [
     "planetarycomputer.microsoft.com",
@@ -27996,7 +28055,8 @@
     "api.carbonintensity.org.uk",
     "data.elexon.co.uk",
     "data.fingrid.fi",
-    "web-api.tp.entsoe.eu"
+    "web-api.tp.entsoe.eu",
+    "graph.mapillary.com"
   ],
   "known_limitations": [
     "不存在全球完整、近期、免费、亚米级地面俯视影像API；NAIP仅覆盖美国，OpenAerialMap和KartaView覆盖取决于社区采集。",
@@ -28338,6 +28398,161 @@
   "write_operations_allowed": false,
   "secret_values_exposed": false,
   "authentication_required": true
+}
+```
+
+## Copernicus Marine 海洋现实观测 (`copernicus-marine`)
+
+- 状态：`启用`
+- 说明：通过官方Copernicus Marine Toolbox检索卫星、现场观测和模式海洋数据，并下载严格受限的小范围CSV子集。
+- 目录策略：只开放本地目录、匿名元数据检索和凭证化小范围CSV子集；禁止整库get、任意输出路径、服务URL、递归文件过滤和批量循环。
+- 执行策略：每票据至多一个Toolbox高层操作；凭证只由GitHub Actions注入；结果体积和空间时间范围均受硬边界约束。
+- 票据前缀：`[intel-copernicus-marine]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`b5772f3928c85d3964b2e37dd96c9eeff06028941dd09a75d9c4e02993d37821`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地Copernicus Marine能力和限制。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `describe` | 匿名检索官方海洋产品和数据集元数据，并输出受限紧凑目录。 | `contains, product_id, dataset_id, max_products, max_datasets_per_product` |
+
+`describe` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "contains": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80
+      }
+    },
+    "product_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,127}$"
+    },
+    "dataset_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,199}$"
+    },
+    "max_products": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    },
+    "max_datasets_per_product": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 10
+    }
+  }
+}
+```
+
+| `subset-csv` | 使用免费账户凭证下载严格受限的海洋数据CSV子集。 | `dataset_id, variables, bbox, start_datetime, end_datetime, minimum_depth, maximum_depth` |
+
+`subset-csv` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,199}$"
+    },
+    "variables": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z][A-Za-z0-9_]{0,63}$"
+      }
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "start_datetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "end_datetime": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "minimum_depth": {
+      "type": "number",
+      "minimum": -12000,
+      "maximum": 12000
+    },
+    "maximum_depth": {
+      "type": "number",
+      "minimum": -12000,
+      "maximum": 12000
+    }
+  },
+  "required": [
+    "dataset_id",
+    "variables",
+    "bbox",
+    "start_datetime",
+    "end_datetime"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "provider_concurrency_max": 1,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "whole_dataset_get_allowed": false,
+  "arbitrary_output_path_allowed": false,
+  "arbitrary_service_url_allowed": false,
+  "write_operations_allowed": false,
+  "secret_values_exposed": false,
+  "bbox_span_degrees_max": 2.0,
+  "time_span_days_max": 7,
+  "depth_span_meters_max": 500,
+  "variables_max": 5,
+  "output_bytes_max": 20000000,
+  "optional_secret_environment_variables": [
+    "COPERNICUSMARINE_SERVICE_USERNAME",
+    "COPERNICUSMARINE_SERVICE_PASSWORD"
+  ]
 }
 ```
 
