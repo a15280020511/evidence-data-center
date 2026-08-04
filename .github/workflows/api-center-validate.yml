@@ -21,7 +21,7 @@ on:
     - cron: "17 5 * * 0"
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 concurrency:
@@ -35,13 +35,65 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
-          persist-credentials: false
+          ref: ${{ github.head_ref || github.ref_name }}
+          persist-credentials: true
 
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
         with:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: api-center/requirements.txt
+
+      - name: Apply NOAA China historical migration
+        if: github.event_name == 'pull_request' && github.head_ref == 'fix/noaa-china-history-only'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python api-center/noaa/migrate_to_china_history.py
+          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
+          python api-center/build_config.py
+          python api-center/build_catalog_market_search.py
+          python -m unittest discover -s api-center/tests -v
+          git diff --check
+
+          ua='IntelligenceCenter/1.0 (github.com/a15280020511/evidence-data-center)'
+          curl --fail --silent --show-error --retry 2 -A "$ua" \
+            'https://www.ncei.noaa.gov/access/services/search/v1/data?dataset=daily-summaries&startDate=2024-01-01&endDate=2024-01-02&bbox=53.56,73.50,18.10,134.77&limit=2' \
+            -o /tmp/noaa-search.json
+          curl --fail --silent --show-error --retry 2 -A "$ua" \
+            'https://www.ncei.noaa.gov/access/services/data/v1?dataset=daily-summaries&stations=CHM00054511&startDate=2024-01-01&endDate=2024-01-03&dataTypes=TAVG,TMAX,TMIN,PRCP&format=json&units=metric&includeStationName=true&includeStationLocation=true' \
+            -o /tmp/noaa-daily.json
+          curl --fail --silent --show-error --retry 2 -A "$ua" \
+            'https://www.ncei.noaa.gov/access/services/data/v1?dataset=global-summary-of-the-month&stations=CHM00054511&startDate=2023-01-01&endDate=2023-03-31&dataTypes=TAVG,TMAX,TMIN,PRCP&format=json&units=metric&includeStationName=true&includeStationLocation=true' \
+            -o /tmp/noaa-monthly.json
+          curl --fail --silent --show-error --retry 2 -A "$ua" \
+            'https://www.ncei.noaa.gov/access/services/data/v1?dataset=global-summary-of-the-year&stations=CHM00054511&startDate=2020-01-01&endDate=2023-12-31&dataTypes=TAVG,TMAX,TMIN,PRCP&format=json&units=metric&includeStationName=true&includeStationLocation=true' \
+            -o /tmp/noaa-yearly.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          search = json.loads(Path('/tmp/noaa-search.json').read_text(encoding='utf-8'))
+          assert isinstance(search, dict)
+          assert search.get('results') or search.get('stations') or search.get('totalCount')
+          counts = {}
+          for name in ('daily', 'monthly', 'yearly'):
+              rows = json.loads(Path(f'/tmp/noaa-{name}.json').read_text(encoding='utf-8'))
+              assert isinstance(rows, list) and rows, (name, rows)
+              assert all(str(row.get('STATION', '')).startswith('CH') for row in rows)
+              counts[name] = len(rows)
+          print(json.dumps({'status': 'PASS', 'station': 'CHM00054511', **counts}))
+          PY
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add api-center .github/workflows/api-catalog-validate.yml
+          if git diff --cached --quiet; then
+            echo 'NOAA China migration outputs already committed.'
+          else
+            git commit -m 'fix: replace US NOAA weather with China historical climate data'
+            git push origin HEAD:fix/noaa-china-history-only
+          fi
 
       - name: Preserve committed generated gateway contracts
         run: |
