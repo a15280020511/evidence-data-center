@@ -373,12 +373,11 @@
         },
         {
           "operation_id": "google-news",
-          "description": "执行同步 Google News 搜索并返回结构化 JSON 结果。",
+          "description": "执行同步 Google News 关键词搜索并返回结构化 JSON 结果；时间范围使用 time_range，禁止与关键词不兼容的 so 排序参数。",
           "parameters": [
             "query",
             "gl",
             "hl",
-            "sort_by_date",
             "start",
             "time_range"
           ],
@@ -403,9 +402,6 @@
                 "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
                 "minLength": 2,
                 "maxLength": 5
-              },
-              "sort_by_date": {
-                "type": "boolean"
               },
               "start": {
                 "type": "integer",

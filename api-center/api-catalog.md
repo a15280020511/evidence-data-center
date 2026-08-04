@@ -4,8 +4,8 @@
 - 普通连接器：`72/72` 已启用
 - 托管提供方：`67/67` 已启用
 - 托管操作总数：`737`
-- 已公开参数总数：`2622`
-- 目录 SHA-256：`16a3a29eafa55f3ace554ae9a58e508eeeb693f3e6ae8fca302d34f8fd7465a6`
+- 已公开参数总数：`2621`
+- 目录 SHA-256：`f73699873d53cba454b97cff33267839c7c999f0a7f5e7def0f9c7cf818ac5e1`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -5105,7 +5105,7 @@
 - 票据前缀：`[api-serpapi]`
 - Secret环境变量名：`SERPAPI_API_KEY`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`76d40e7ea071c4d19a624b64430d831ca87801b8e750f5f3ee3839ada48c8e5d`
+- 提供方SHA-256：`d65952952af2fb457979b3adef596a5b09f0ca666a9213899f4a21c78957d8c4`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -5187,7 +5187,7 @@
 }
 ```
 
-| `google-news` | 执行同步 Google News 搜索并返回结构化 JSON 结果。 | `query, gl, hl, sort_by_date, start, time_range` |
+| `google-news` | 执行同步 Google News 关键词搜索并返回结构化 JSON 结果；时间范围使用 time_range，禁止与关键词不兼容的 so 排序参数。 | `query, gl, hl, start, time_range` |
 
 `google-news` 参数Schema：
 
@@ -5213,9 +5213,6 @@
       "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
       "minLength": 2,
       "maxLength": 5
-    },
-    "sort_by_date": {
-      "type": "boolean"
     },
     "start": {
       "type": "integer",

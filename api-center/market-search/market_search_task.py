@@ -346,8 +346,6 @@ def serpapi_query(operation: str, parameters: Mapping[str, Any], timeout: int, m
         gl = optional_country_code(parameters.get("gl"), "gl")
         if gl:
             query["gl"] = gl
-        if bool(parameters.get("sort_by_date", False)):
-            query["so"] = "1"
         time_range = str(parameters.get("time_range") or "")
         if time_range:
             query["q"] = f"{query_text} when:1{TIME_RANGES[time_range]}"
