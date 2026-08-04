@@ -70,7 +70,7 @@ jobs:
           matrix=json.loads(Path('api-center/global-knowledge-archives/source-access-matrix.json').read_text())
           catalog=json.loads(Path('api-center/api-catalog.json').read_text())
           assert receipt['status']=='PASS'
-          assert receipt['source_count']==16
+          assert receipt['source_count']==15
           assert receipt['operation_count']==9
           assert receipt['network_used'] is False
           assert receipt['model_calls']==0
@@ -80,13 +80,14 @@ jobs:
           assert provider['limits']['automatic_pagination_allowed'] is False
           assert provider['limits']['paywall_bypass_allowed'] is False
           assert provider['limits']['patient_level_data_allowed'] is False
-          assert len(matrix['not_enabled']) >= 14
+          assert len(matrix['not_enabled']) >= 15
           assert any(row['source_id']=='theses-fr' for row in matrix['not_enabled'])
           assert any(row['source_id']=='oapen-oai' for row in matrix['not_enabled'])
+          assert any(row['source_id']=='doab-oai' for row in matrix['not_enabled'])
           key_sources={row['source_id'] for row in matrix['sources'] if row['credential_mode']=='required_free_key'}
           assert key_sources=={'google-books','bhl'}
           assert provider['optional_secret_environment_variables']==['GOOGLE_PUBLIC_INTELLIGENCE_API_KEY','BHL_API_KEY']
-          assert not ({'trove','nara','smithsonian','govinfo'} & {row['source_id'] for row in matrix['sources']})
+          assert not ({'trove','nara','smithsonian','govinfo','doab-oai'} & {row['source_id'] for row in matrix['sources']})
           rows={row['provider_id']:row for row in catalog['managed_providers']}
           assert rows['global-knowledge-archives']['operation_count']==9
           assert catalog['managed_provider_count']==len(rows)
@@ -121,7 +122,6 @@ jobs:
           - digitalnz
           - dnb-sru
           - hal-oai
-          - doab-oai
           - rijksmuseum-oai
           - nber-metadata
     steps:
