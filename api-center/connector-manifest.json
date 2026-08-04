@@ -1,7 +1,7 @@
 {
   "version": 4,
-  "connector_count": 68,
-  "enabled_connector_count": 68,
+  "connector_count": 75,
+  "enabled_connector_count": 75,
   "required_secret_environment_variables": [
     "AMAP_API_KEY",
     "BAIDU_MAP_API_KEY",
@@ -684,6 +684,135 @@
       "connector_sha256": "03a4fce728dbf80a6c7b87e774e72f350d5cf5562a52de366ced920ba5a05e35"
     },
     {
+      "id": "noaa-ncei-data-search",
+      "file": "connectors/noaa-ncei-data-search.connector.json",
+      "enabled": true,
+      "endpoint": "/data/noaa/ncei/search",
+      "method": "GET",
+      "path_parameter_names": [],
+      "write_approved": false,
+      "backend_host": "https://www.ncei.noaa.gov",
+      "secret_environment_variable": null,
+      "secret_injection": null,
+      "default_circuit_breaker": true,
+      "backend_rate_limit": true,
+      "ssrf_static_policy": "public-host-or-loopback-test-only",
+      "connector_sha256": "52e3ddb68e44ef10632b135cb63327e710fc9a548935505fa5b68c84e30eaf8d"
+    },
+    {
+      "id": "noaa-nws-alerts-active",
+      "file": "connectors/noaa-nws-alerts-active.connector.json",
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/alerts/active",
+      "method": "GET",
+      "path_parameter_names": [],
+      "write_approved": false,
+      "backend_host": "https://api.weather.gov",
+      "secret_environment_variable": null,
+      "secret_injection": null,
+      "default_circuit_breaker": true,
+      "backend_rate_limit": true,
+      "ssrf_static_policy": "public-host-or-loopback-test-only",
+      "connector_sha256": "f799ca0e32f9f5be66bd040e988dd50c41eb79e8110daca2a393bec858d6681a"
+    },
+    {
+      "id": "noaa-nws-forecast-hourly",
+      "file": "connectors/noaa-nws-forecast-hourly.connector.json",
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
+      "method": "GET",
+      "path_parameter_names": [
+        "grid_x",
+        "grid_y",
+        "office"
+      ],
+      "write_approved": false,
+      "backend_host": "https://api.weather.gov",
+      "secret_environment_variable": null,
+      "secret_injection": null,
+      "default_circuit_breaker": true,
+      "backend_rate_limit": true,
+      "ssrf_static_policy": "public-host-or-loopback-test-only",
+      "connector_sha256": "af0f08ef70facfd7e0f1cea0ab9c773c881c6722086126336899b99b7e6f8d9c"
+    },
+    {
+      "id": "noaa-nws-forecast",
+      "file": "connectors/noaa-nws-forecast.connector.json",
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast",
+      "method": "GET",
+      "path_parameter_names": [
+        "grid_x",
+        "grid_y",
+        "office"
+      ],
+      "write_approved": false,
+      "backend_host": "https://api.weather.gov",
+      "secret_environment_variable": null,
+      "secret_injection": null,
+      "default_circuit_breaker": true,
+      "backend_rate_limit": true,
+      "ssrf_static_policy": "public-host-or-loopback-test-only",
+      "connector_sha256": "a061a21155255bad1000b9921e02a8359211417b8740eb5d6409ca2ce2b3e0fb"
+    },
+    {
+      "id": "noaa-nws-gridpoint-stations",
+      "file": "connectors/noaa-nws-gridpoint-stations.connector.json",
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/stations",
+      "method": "GET",
+      "path_parameter_names": [
+        "grid_x",
+        "grid_y",
+        "office"
+      ],
+      "write_approved": false,
+      "backend_host": "https://api.weather.gov",
+      "secret_environment_variable": null,
+      "secret_injection": null,
+      "default_circuit_breaker": true,
+      "backend_rate_limit": true,
+      "ssrf_static_policy": "public-host-or-loopback-test-only",
+      "connector_sha256": "3af512f3a51a32bc4fffa282f618ddd00f253a1d83eee80ac2e4038e79746080"
+    },
+    {
+      "id": "noaa-nws-points",
+      "file": "connectors/noaa-nws-points.connector.json",
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/points/{latitude},{longitude}",
+      "method": "GET",
+      "path_parameter_names": [
+        "latitude",
+        "longitude"
+      ],
+      "write_approved": false,
+      "backend_host": "https://api.weather.gov",
+      "secret_environment_variable": null,
+      "secret_injection": null,
+      "default_circuit_breaker": true,
+      "backend_rate_limit": true,
+      "ssrf_static_policy": "public-host-or-loopback-test-only",
+      "connector_sha256": "dbc5d1c7f49b50871cd3aeab1a877773469f337c4a8cee9322ea80e265da0493"
+    },
+    {
+      "id": "noaa-nws-station-latest",
+      "file": "connectors/noaa-nws-station-latest.connector.json",
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/stations/{station_id}/observations/latest",
+      "method": "GET",
+      "path_parameter_names": [
+        "station_id"
+      ],
+      "write_approved": false,
+      "backend_host": "https://api.weather.gov",
+      "secret_environment_variable": null,
+      "secret_injection": null,
+      "default_circuit_breaker": true,
+      "backend_rate_limit": true,
+      "ssrf_static_policy": "public-host-or-loopback-test-only",
+      "connector_sha256": "fb32d4e9a46aec714dc866fca94c7b1af3f8cc2ae19506b9083d9c8dd2167ebb"
+    },
+    {
       "id": "openmeteo-air-quality",
       "file": "connectors/openmeteo-air-quality.connector.json",
       "enabled": true,
@@ -1129,5 +1258,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "validation_config_sha256": "3e3783d482ba913d45a0b5ac28fc4623b3775ce2caf88d9ddaac2d82b21cdd2c"
+  "validation_config_sha256": "e6631cd887f06f71451739d67b9acd7c1512cff5cebc4c6358f875d17040ca1d"
 }

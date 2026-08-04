@@ -1,0 +1,124 @@
+{
+  "backend": {
+    "allow": [
+      "results",
+      "totalCount",
+      "formats",
+      "errorMessage",
+      "errorCode",
+      "errors"
+    ],
+    "encoding": "json",
+    "host": "https://www.ncei.noaa.gov",
+    "method": "GET",
+    "resilience": {
+      "circuit_breaker": {
+        "interval": 60,
+        "log_status_change": true,
+        "max_errors": 3,
+        "timeout": 30
+      },
+      "rate_limit": {
+        "capacity": 1,
+        "every": "1s",
+        "max_rate": 1
+      }
+    },
+    "url_pattern": "/access/services/search/v1/data"
+  },
+  "enabled": true,
+  "endpoint": "/data/noaa/ncei/search",
+  "id": "noaa-ncei-data-search",
+  "input_query_strings": [
+    "dataset",
+    "startDate",
+    "endDate",
+    "boundingBox",
+    "stations",
+    "dataTypes",
+    "limit",
+    "offset",
+    "sortfield",
+    "sortorder"
+  ],
+  "method": "GET",
+  "output_encoding": "json",
+  "parameter_rules": {
+    "properties": {
+      "boundingBox": {
+        "max_length": 80,
+        "pattern": "^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$",
+        "type": "string"
+      },
+      "dataTypes": {
+        "max_length": 1000,
+        "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+        "type": "string"
+      },
+      "dataset": {
+        "max_length": 80,
+        "pattern": "^[a-z0-9-]{3,80}$",
+        "type": "string"
+      },
+      "endDate": {
+        "max_length": 10,
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "type": "string"
+      },
+      "limit": {
+        "maximum": 1000,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "offset": {
+        "maximum": 1000000,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "sortfield": {
+        "max_length": 80,
+        "type": "string"
+      },
+      "sortorder": {
+        "enum": [
+          "asc",
+          "desc"
+        ],
+        "type": "string"
+      },
+      "startDate": {
+        "max_length": 10,
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "type": "string"
+      },
+      "stations": {
+        "max_length": 1000,
+        "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+        "type": "string"
+      }
+    },
+    "required_any_of": [
+      [
+        "dataset"
+      ],
+      [
+        "startDate"
+      ],
+      [
+        "endDate"
+      ]
+    ]
+  },
+  "response_contract": {
+    "any_data_paths": [
+      "results"
+    ],
+    "success_when_data_present": true
+  },
+  "response_quality": {
+    "collection_path": "results",
+    "hard_limit": 1000,
+    "recommended_action": "Use a narrow dataset, date interval, station list or bounding box; do not use this connector for bulk archive mirroring."
+  },
+  "timeout": "30s"
+}

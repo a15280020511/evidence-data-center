@@ -8,8 +8,8 @@
   "source_manifest_file": "connector-manifest.json",
   "source_metadata_file": "catalog-metadata.json",
   "source_manifest_version": 4,
-  "source_manifest_sha256": "6eebb16a7501629ff1ba159aea5ae19fda7c2e53b071084146b18ffad8b73d30",
-  "source_metadata_sha256": "9b26d626cf9f25525a18caf0907767b3c46a087c39945ce2a4f3ae4daa38a3f3",
+  "source_manifest_sha256": "3781ae59a51814f6863c73b0f38ce6a664e8c05d83945cd13b4bf03a9803425d",
+  "source_metadata_sha256": "e71c1fae5cbcd8e4d705198994b5d791c9f8395af044baf1f451bba53940e96e",
   "managed_provider_catalog_file": "managed-provider-index",
   "managed_provider_catalog_files": [
     "google-cloud/provider-catalog.json",
@@ -69,12 +69,12 @@
     "google-public-intelligence/provider-catalog.json"
   ],
   "managed_provider_catalog_sha256": "2ffc993570c51511413c807e5d983bf452606e78945ec03daf6ae791b1acfea3",
-  "connector_count": 68,
-  "enabled_connector_count": 68,
+  "connector_count": 75,
+  "enabled_connector_count": 75,
   "managed_provider_count": 64,
   "enabled_managed_provider_count": 64,
   "managed_operation_count": 698,
-  "exposed_parameter_count": 2448,
+  "exposed_parameter_count": 2490,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -33287,8 +33287,8 @@
           ]
         },
         "parameter_notes": {
-          "locations": "高德官方参数；按接口文档填写",
-          "coordsys": "高德官方参数；按接口文档填写"
+          "coordsys": "高德官方参数；按接口文档填写",
+          "locations": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -33398,8 +33398,8 @@
           ]
         },
         "parameter_notes": {
-          "origin": "高德官方参数；按接口文档填写",
           "destination": "高德官方参数；按接口文档填写",
+          "origin": "高德官方参数；按接口文档填写",
           "show_fields": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
@@ -33505,15 +33505,15 @@
         ],
         "parameter_rules": {},
         "parameter_notes": {
-          "origin": "必填；经度,纬度",
           "destination": "必填；经度,纬度",
-          "waypoints": "可选；途经点",
+          "origin": "必填；经度,纬度",
+          "show_fields": "可选；扩展返回字段",
           "strategy": "可选；路线策略",
-          "show_fields": "可选；扩展返回字段"
+          "waypoints": "可选；途经点"
         },
         "example_parameters": {
-          "origin": "119.2965,26.0745",
-          "destination": "119.3062,26.0637"
+          "destination": "119.3062,26.0637",
+          "origin": "119.2965,26.0745"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -33554,8 +33554,8 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "origin": "119.2965,26.0745",
-        "destination": "119.3062,26.0637"
+        "destination": "119.3062,26.0637",
+        "origin": "119.2965,26.0745"
       },
       "geographic_coverage": "中国大陆",
       "freshness": "请求时实时返回；交通时效以供应商响应为准",
@@ -33640,15 +33640,15 @@
           ]
         },
         "parameter_notes": {
-          "origin": "高德官方参数；按接口文档填写",
-          "destination": "高德官方参数；按接口文档填写",
           "city1": "高德官方参数；按接口文档填写",
           "city2": "高德官方参数；按接口文档填写",
-          "strategy": "高德官方参数；按接口文档填写",
-          "nightflag": "高德官方参数；按接口文档填写",
           "date": "高德官方参数；按接口文档填写",
-          "time": "高德官方参数；按接口文档填写",
-          "show_fields": "高德官方参数；按接口文档填写"
+          "destination": "高德官方参数；按接口文档填写",
+          "nightflag": "高德官方参数；按接口文档填写",
+          "origin": "高德官方参数；按接口文档填写",
+          "show_fields": "高德官方参数；按接口文档填写",
+          "strategy": "高德官方参数；按接口文档填写",
+          "time": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -33743,13 +33743,13 @@
         ],
         "parameter_rules": {},
         "parameter_notes": {
-          "origin": "必填；经度,纬度",
           "destination": "必填；经度,纬度",
+          "origin": "必填；经度,纬度",
           "show_fields": "可选；扩展返回字段"
         },
         "example_parameters": {
-          "origin": "119.2965,26.0745",
-          "destination": "119.3000,26.0700"
+          "destination": "119.3000,26.0700",
+          "origin": "119.2965,26.0745"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -33790,8 +33790,8 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "origin": "119.2965,26.0745",
-        "destination": "119.3000,26.0700"
+        "destination": "119.3000,26.0700",
+        "origin": "119.2965,26.0745"
       },
       "geographic_coverage": "中国大陆",
       "freshness": "请求时返回",
@@ -33837,13 +33837,13 @@
         ],
         "parameter_rules": {},
         "parameter_notes": {
-          "origins": "必填；一个或多个起点坐标",
           "destination": "必填；目标坐标",
+          "origins": "必填；一个或多个起点坐标",
           "type": "可选；距离计算类型"
         },
         "example_parameters": {
-          "origins": "119.2965,26.0745|119.3100,26.0800",
           "destination": "119.3062,26.0637",
+          "origins": "119.2965,26.0745|119.3100,26.0800",
           "type": "1"
         },
         "input_headers": [],
@@ -33884,8 +33884,8 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "origins": "119.2965,26.0745|119.3100,26.0800",
         "destination": "119.3062,26.0637",
+        "origins": "119.2965,26.0745|119.3100,26.0800",
         "type": "1"
       },
       "geographic_coverage": "中国大陆",
@@ -33951,11 +33951,11 @@
           ]
         },
         "parameter_notes": {
-          "keywords": "高德官方参数；按接口文档填写",
-          "subdistrict": "高德官方参数；按接口文档填写",
-          "showbiz": "高德官方参数；按接口文档填写",
           "extensions": "高德官方参数；按接口文档填写",
-          "filter": "高德官方参数；按接口文档填写"
+          "filter": "高德官方参数；按接口文档填写",
+          "keywords": "高德官方参数；按接口文档填写",
+          "showbiz": "高德官方参数；按接口文档填写",
+          "subdistrict": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -34047,8 +34047,8 @@
         "parameter_rules": {},
         "parameter_notes": {
           "address": "必填；公开地址",
-          "city": "建议填写；城市或行政区",
-          "batch": "可选；是否批量"
+          "batch": "可选；是否批量",
+          "city": "建议填写；城市或行政区"
         },
         "example_parameters": {
           "address": "福州宝龙城市广场",
@@ -34162,12 +34162,12 @@
           ]
         },
         "parameter_notes": {
-          "keywords": "高德官方参数；按接口文档填写",
-          "type": "高德官方参数；按接口文档填写",
-          "location": "高德官方参数；按接口文档填写",
           "city": "高德官方参数；按接口文档填写",
           "citylimit": "高德官方参数；按接口文档填写",
-          "datatype": "高德官方参数；按接口文档填写"
+          "datatype": "高德官方参数；按接口文档填写",
+          "keywords": "高德官方参数；按接口文档填写",
+          "location": "高德官方参数；按接口文档填写",
+          "type": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -34396,14 +34396,14 @@
         },
         "parameter_notes": {
           "keywords": "高德官方参数；按接口文档填写",
-          "types": "高德官方参数；按接口文档填写",
           "location": "高德官方参数；按接口文档填写",
+          "page_num": "高德官方参数；按接口文档填写",
+          "page_size": "高德官方参数；按接口文档填写",
           "radius": "高德官方参数；按接口文档填写",
-          "sortrule": "高德官方参数；按接口文档填写",
           "region": "高德官方参数；按接口文档填写",
           "show_fields": "高德官方参数；按接口文档填写",
-          "page_size": "高德官方参数；按接口文档填写",
-          "page_num": "高德官方参数；按接口文档填写"
+          "sortrule": "高德官方参数；按接口文档填写",
+          "types": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -34622,12 +34622,12 @@
           ]
         },
         "parameter_notes": {
-          "polygon": "高德官方参数；按接口文档填写",
           "keywords": "高德官方参数；按接口文档填写",
-          "types": "高德官方参数；按接口文档填写",
-          "show_fields": "高德官方参数；按接口文档填写",
+          "page_num": "高德官方参数；按接口文档填写",
           "page_size": "高德官方参数；按接口文档填写",
-          "page_num": "高德官方参数；按接口文档填写"
+          "polygon": "高德官方参数；按接口文档填写",
+          "show_fields": "高德官方参数；按接口文档填写",
+          "types": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -34727,16 +34727,16 @@
         "parameter_rules": {},
         "parameter_notes": {
           "keywords": "必填或与types至少填写一项",
-          "types": "可选；POI类别",
-          "region": "建议填写；城市或行政区",
+          "page_num": "可选；页码",
           "page_size": "可选；单页数量",
-          "page_num": "可选；页码"
+          "region": "建议填写；城市或行政区",
+          "types": "可选；POI类别"
         },
         "example_parameters": {
           "keywords": "商场",
-          "region": "福州",
+          "page_num": 1,
           "page_size": 20,
-          "page_num": 1
+          "region": "福州"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -34778,9 +34778,9 @@
       },
       "example_parameters": {
         "keywords": "商场",
-        "region": "福州",
+        "page_num": 1,
         "page_size": 20,
-        "page_num": 1
+        "region": "福州"
       },
       "geographic_coverage": "中国大陆",
       "freshness": "请求时返回；POI 更新频率由供应商决定",
@@ -34832,13 +34832,13 @@
         ],
         "parameter_rules": {},
         "parameter_notes": {
+          "extensions": "可选；基础或完整结果",
           "location": "必填；经度,纬度",
-          "radius": "可选；搜索半径",
-          "extensions": "可选；基础或完整结果"
+          "radius": "可选；搜索半径"
         },
         "example_parameters": {
-          "location": "119.2965,26.0745",
-          "extensions": "all"
+          "extensions": "all",
+          "location": "119.2965,26.0745"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -34878,8 +34878,8 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "location": "119.2965,26.0745",
-        "extensions": "all"
+        "extensions": "all",
+        "location": "119.2965,26.0745"
       },
       "geographic_coverage": "中国大陆",
       "freshness": "请求时返回",
@@ -34938,10 +34938,10 @@
           ]
         },
         "parameter_notes": {
-          "location": "高德官方参数；按接口文档填写",
-          "radius": "高德官方参数；按接口文档填写",
+          "extensions": "高德官方参数；按接口文档填写",
           "level": "高德官方参数；按接口文档填写",
-          "extensions": "高德官方参数；按接口文档填写"
+          "location": "高德官方参数；按接口文档填写",
+          "radius": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -35043,9 +35043,9 @@
           ]
         },
         "parameter_notes": {
-          "rectangle": "高德官方参数；按接口文档填写",
+          "extensions": "高德官方参数；按接口文档填写",
           "level": "高德官方参数；按接口文档填写",
-          "extensions": "高德官方参数；按接口文档填写"
+          "rectangle": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -35157,10 +35157,10 @@
           ]
         },
         "parameter_notes": {
-          "name": "高德官方参数；按接口文档填写",
           "adcode": "高德官方参数；按接口文档填写",
+          "extensions": "高德官方参数；按接口文档填写",
           "level": "高德官方参数；按接口文档填写",
-          "extensions": "高德官方参数；按接口文档填写"
+          "name": "高德官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -35512,17 +35512,17 @@
           ]
         },
         "parameter_notes": {
-          "origin": "必填；坐标或名称",
-          "destination": "必填；坐标或名称",
-          "waypoints": "可选途经点",
-          "tactics": "路线策略",
           "coord_type": "输入坐标类型",
-          "ret_coordtype": "返回坐标类型"
+          "destination": "必填；坐标或名称",
+          "origin": "必填；坐标或名称",
+          "ret_coordtype": "返回坐标类型",
+          "tactics": "路线策略",
+          "waypoints": "可选途经点"
         },
         "example_parameters": {
-          "origin": "26.0745,119.2965",
-          "destination": "26.0637,119.3062",
           "coord_type": "gcj02",
+          "destination": "26.0637,119.3062",
+          "origin": "26.0745,119.2965",
           "ret_coordtype": "gcj02"
         },
         "input_headers": [],
@@ -35567,9 +35567,9 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "origin": "26.0745,119.2965",
-        "destination": "26.0637,119.3062",
         "coord_type": "gcj02",
+        "destination": "26.0637,119.3062",
+        "origin": "26.0745,119.2965",
         "ret_coordtype": "gcj02"
       },
       "geographic_coverage": "中国；以百度地图道路覆盖为准",
@@ -35639,9 +35639,9 @@
           ]
         },
         "parameter_notes": {
-          "origin": "百度地图官方参数；按接口文档填写",
-          "destination": "百度地图官方参数；按接口文档填写",
           "coord_type": "百度地图官方参数；按接口文档填写",
+          "destination": "百度地图官方参数；按接口文档填写",
+          "origin": "百度地图官方参数；按接口文档填写",
           "ret_coordtype": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
@@ -35755,11 +35755,11 @@
           ]
         },
         "parameter_notes": {
-          "origin": "百度地图官方参数；按接口文档填写",
-          "destination": "百度地图官方参数；按接口文档填写",
           "coord_type": "百度地图官方参数；按接口文档填写",
-          "ret_coordtype": "百度地图官方参数；按接口文档填写",
+          "destination": "百度地图官方参数；按接口文档填写",
+          "origin": "百度地图官方参数；按接口文档填写",
           "region": "百度地图官方参数；按接口文档填写",
+          "ret_coordtype": "百度地图官方参数；按接口文档填写",
           "tactics": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
@@ -35869,9 +35869,9 @@
           ]
         },
         "parameter_notes": {
-          "origin": "百度地图官方参数；按接口文档填写",
-          "destination": "百度地图官方参数；按接口文档填写",
           "coord_type": "百度地图官方参数；按接口文档填写",
+          "destination": "百度地图官方参数；按接口文档填写",
+          "origin": "百度地图官方参数；按接口文档填写",
           "ret_coordtype": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
@@ -36101,8 +36101,8 @@
           }
         },
         "parameter_notes": {
-          "ip": "百度地图官方参数；按接口文档填写",
-          "coor": "百度地图官方参数；按接口文档填写"
+          "coor": "百度地图官方参数；按接口文档填写",
+          "ip": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -36201,9 +36201,9 @@
           ]
         },
         "parameter_notes": {
-          "uid": "百度地图官方参数；按接口文档填写",
+          "output": "百度地图官方参数；按接口文档填写",
           "scope": "百度地图官方参数；按接口文档填写",
-          "output": "百度地图官方参数；按接口文档填写"
+          "uid": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -36382,27 +36382,27 @@
           ]
         },
         "parameter_notes": {
-          "query": "必填；关键词",
-          "region": "区域搜索时填写城市或行政区",
           "bounds": "矩形边界搜索",
-          "location": "圆形搜索中心纬度,经度",
-          "radius": "圆形搜索半径，米",
-          "scope": "1基础结果，2详细结果",
-          "tag": "可选分类",
-          "page_size": "1至20",
-          "page_num": "从0开始",
-          "output": "固定建议json",
           "coord_type": "输入坐标类型",
-          "ret_coordtype": "返回坐标类型"
+          "location": "圆形搜索中心纬度,经度",
+          "output": "固定建议json",
+          "page_num": "从0开始",
+          "page_size": "1至20",
+          "query": "必填；关键词",
+          "radius": "圆形搜索半径，米",
+          "region": "区域搜索时填写城市或行政区",
+          "ret_coordtype": "返回坐标类型",
+          "scope": "1基础结果，2详细结果",
+          "tag": "可选分类"
         },
         "example_parameters": {
+          "output": "json",
+          "page_num": 0,
+          "page_size": 20,
           "query": "商场",
           "region": "福州",
-          "scope": 2,
-          "page_size": 20,
-          "page_num": 0,
-          "output": "json",
-          "ret_coordtype": "gcj02ll"
+          "ret_coordtype": "gcj02ll",
+          "scope": 2
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -36447,13 +36447,13 @@
         "value_exposed": false
       },
       "example_parameters": {
+        "output": "json",
+        "page_num": 0,
+        "page_size": 20,
         "query": "商场",
         "region": "福州",
-        "scope": 2,
-        "page_size": 20,
-        "page_num": 0,
-        "output": "json",
-        "ret_coordtype": "gcj02ll"
+        "ret_coordtype": "gcj02ll",
+        "scope": 2
       },
       "geographic_coverage": "中国；以百度地图覆盖为准",
       "freshness": "请求时读取百度地图当前POI数据",
@@ -36524,10 +36524,10 @@
           ]
         },
         "parameter_notes": {
-          "query": "百度地图官方参数；按接口文档填写",
-          "region": "百度地图官方参数；按接口文档填写",
           "city_limit": "百度地图官方参数；按接口文档填写",
           "output": "百度地图官方参数；按接口文档填写",
+          "query": "百度地图官方参数；按接口文档填写",
+          "region": "百度地图官方参数；按接口文档填写",
           "ret_coordtype": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
@@ -36648,17 +36648,17 @@
           ]
         },
         "parameter_notes": {
-          "location": "百度地图官方参数；按接口文档填写",
           "coordtype": "百度地图官方参数；按接口文档填写",
-          "ret_coordtype": "百度地图官方参数；按接口文档填写",
-          "pois": "百度地图官方参数；按接口文档填写",
-          "poi_types": "百度地图官方参数；按接口文档填写",
-          "radius": "百度地图官方参数；按接口文档填写",
           "extensions_poi": "百度地图官方参数；按接口文档填写",
           "extensions_road": "百度地图官方参数；按接口文档填写",
           "extensions_town": "百度地图官方参数；按接口文档填写",
           "language": "百度地图官方参数；按接口文档填写",
-          "language_auto": "百度地图官方参数；按接口文档填写"
+          "language_auto": "百度地图官方参数；按接口文档填写",
+          "location": "百度地图官方参数；按接口文档填写",
+          "poi_types": "百度地图官方参数；按接口文档填写",
+          "pois": "百度地图官方参数；按接口文档填写",
+          "radius": "百度地图官方参数；按接口文档填写",
+          "ret_coordtype": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -36769,11 +36769,11 @@
           ]
         },
         "parameter_notes": {
-          "origins": "百度地图官方参数；按接口文档填写",
-          "destinations": "百度地图官方参数；按接口文档填写",
-          "tactics": "百度地图官方参数；按接口文档填写",
           "coord_type": "百度地图官方参数；按接口文档填写",
-          "ret_coordtype": "百度地图官方参数；按接口文档填写"
+          "destinations": "百度地图官方参数；按接口文档填写",
+          "origins": "百度地图官方参数；按接口文档填写",
+          "ret_coordtype": "百度地图官方参数；按接口文档填写",
+          "tactics": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -36884,11 +36884,11 @@
           ]
         },
         "parameter_notes": {
-          "origins": "百度地图官方参数；按接口文档填写",
-          "destinations": "百度地图官方参数；按接口文档填写",
-          "tactics": "百度地图官方参数；按接口文档填写",
           "coord_type": "百度地图官方参数；按接口文档填写",
-          "ret_coordtype": "百度地图官方参数；按接口文档填写"
+          "destinations": "百度地图官方参数；按接口文档填写",
+          "origins": "百度地图官方参数；按接口文档填写",
+          "ret_coordtype": "百度地图官方参数；按接口文档填写",
+          "tactics": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -36999,11 +36999,11 @@
           ]
         },
         "parameter_notes": {
-          "origins": "百度地图官方参数；按接口文档填写",
-          "destinations": "百度地图官方参数；按接口文档填写",
-          "tactics": "百度地图官方参数；按接口文档填写",
           "coord_type": "百度地图官方参数；按接口文档填写",
-          "ret_coordtype": "百度地图官方参数；按接口文档填写"
+          "destinations": "百度地图官方参数；按接口文档填写",
+          "origins": "百度地图官方参数；按接口文档填写",
+          "ret_coordtype": "百度地图官方参数；按接口文档填写",
+          "tactics": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -37110,10 +37110,10 @@
           ]
         },
         "parameter_notes": {
-          "district_id": "百度地图官方参数；按接口文档填写",
-          "location": "百度地图官方参数；按接口文档填写",
+          "coordtype": "百度地图官方参数；按接口文档填写",
           "data_type": "百度地图官方参数；按接口文档填写",
-          "coordtype": "百度地图官方参数；按接口文档填写"
+          "district_id": "百度地图官方参数；按接口文档填写",
+          "location": "百度地图官方参数；按接口文档填写"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -37312,10 +37312,10 @@
         ],
         "parameter_rules": {},
         "parameter_notes": {
-          "observations": "DBnomics API参数",
           "facets": "DBnomics API参数",
-          "metadata": "DBnomics API参数",
           "limit": "DBnomics API参数",
+          "metadata": "DBnomics API参数",
+          "observations": "DBnomics API参数",
           "offset": "DBnomics API参数"
         },
         "example_parameters": {},
@@ -37414,10 +37414,10 @@
           ]
         },
         "parameter_notes": {
-          "q": "DBnomics API参数",
+          "facets": "DBnomics API参数",
           "limit": "DBnomics API参数",
           "offset": "DBnomics API参数",
-          "facets": "DBnomics API参数"
+          "q": "DBnomics API参数"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -37527,21 +37527,21 @@
         ],
         "parameter_rules": {},
         "parameter_notes": {
-          "provider_code": "必填；DBnomics 提供方代码，例如 NBS、WB、IMF",
-          "dataset_code": "必填；提供方的数据集代码，例如 A_A0201",
-          "series_code": "必填；精确单序列代码，例如 A020106",
-          "observations": "建议填1或true以返回观测值",
-          "facets": "可选；是否返回分面元数据",
-          "metadata": "可选；是否返回详细元数据",
           "align_periods": "可选；多序列时对齐期间，本连接器主要用于精确单序列",
+          "dataset_code": "必填；提供方的数据集代码，例如 A_A0201",
+          "facets": "可选；是否返回分面元数据",
           "limit": "可选；返回上限",
-          "offset": "可选；分页偏移"
+          "metadata": "可选；是否返回详细元数据",
+          "observations": "建议填1或true以返回观测值",
+          "offset": "可选；分页偏移",
+          "provider_code": "必填；DBnomics 提供方代码，例如 NBS、WB、IMF",
+          "series_code": "必填；精确单序列代码，例如 A020106"
         },
         "example_parameters": {
-          "provider_code": "NBS",
           "dataset_code": "A_A0201",
-          "series_code": "A020106",
-          "observations": 1
+          "observations": 1,
+          "provider_code": "NBS",
+          "series_code": "A020106"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -37584,10 +37584,10 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "provider_code": "NBS",
         "dataset_code": "A_A0201",
-        "series_code": "A020106",
-        "observations": 1
+        "observations": 1,
+        "provider_code": "NBS",
+        "series_code": "A020106"
       },
       "geographic_coverage": "全球；可通过 NBS 等提供方读取中国数据",
       "freshness": "DBnomics 抓取器通常在上游发布后自动更新，并保留历史修订",
@@ -37707,24 +37707,24 @@
           ]
         },
         "parameter_notes": {
-          "q": "建议必填；关键词或布尔表达式，官方上限500字符",
-          "searchIn": "可选；title、description、content，可逗号分隔",
-          "sources": "可选；最多20个来源ID，不能与domains同时假设等价",
           "domains": "可选；限定来源域名",
           "excludeDomains": "可选；排除域名",
           "from": "可选；ISO 8601起始时间，受套餐历史范围限制",
-          "to": "可选；ISO 8601结束时间",
           "language": "可选；两位语言代码，例如zh、en",
-          "sortBy": "可选；relevancy、popularity或publishedAt",
+          "page": "可选；页码",
           "pageSize": "可选；1至100",
-          "page": "可选；页码"
+          "q": "建议必填；关键词或布尔表达式，官方上限500字符",
+          "searchIn": "可选；title、description、content，可逗号分隔",
+          "sortBy": "可选；relevancy、popularity或publishedAt",
+          "sources": "可选；最多20个来源ID，不能与domains同时假设等价",
+          "to": "可选；ISO 8601结束时间"
         },
         "example_parameters": {
-          "q": "\"福州\" AND 商业",
           "language": "zh",
-          "sortBy": "publishedAt",
+          "page": 1,
           "pageSize": 20,
-          "page": 1
+          "q": "\"福州\" AND 商业",
+          "sortBy": "publishedAt"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -37777,11 +37777,11 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "q": "\"福州\" AND 商业",
         "language": "zh",
-        "sortBy": "publishedAt",
+        "page": 1,
         "pageSize": 20,
-        "page": 1
+        "q": "\"福州\" AND 商业",
+        "sortBy": "publishedAt"
       },
       "geographic_coverage": "全球；覆盖范围取决于NewsAPI收录的新闻源",
       "freshness": "取决于订阅套餐；Developer免费套餐文章延迟24小时且最多检索近1个月",
@@ -37869,12 +37869,12 @@
         },
         "parameter_notes": {
           "category": "可选；新闻类别",
-          "language": "可选；两位语言代码，例如zh、en",
-          "country": "可选；两位国家代码，例如cn、us"
+          "country": "可选；两位国家代码，例如cn、us",
+          "language": "可选；两位语言代码，例如zh、en"
         },
         "example_parameters": {
-          "language": "zh",
-          "country": "cn"
+          "country": "cn",
+          "language": "zh"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -37926,8 +37926,8 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "language": "zh",
-        "country": "cn"
+        "country": "cn",
+        "language": "zh"
       },
       "geographic_coverage": "全球；仅包含NewsAPI Top Headlines支持的来源子集",
       "freshness": "来源目录变化较慢，建议每日或每周缓存一次",
@@ -38032,18 +38032,18 @@
           ]
         },
         "parameter_notes": {
-          "q": "可选；关键词或短语",
-          "sources": "可选；来源ID列表；不能与country或category组合",
-          "country": "可选；两位国家代码；不能与sources组合",
           "category": "可选；business、entertainment、general、health、science、sports、technology",
+          "country": "可选；两位国家代码；不能与sources组合",
+          "page": "可选；页码",
           "pageSize": "可选；1至100",
-          "page": "可选；页码"
+          "q": "可选；关键词或短语",
+          "sources": "可选；来源ID列表；不能与country或category组合"
         },
         "example_parameters": {
-          "country": "cn",
           "category": "business",
-          "pageSize": 20,
-          "page": 1
+          "country": "cn",
+          "page": 1,
+          "pageSize": 20
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -38096,10 +38096,10 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "country": "cn",
         "category": "business",
-        "pageSize": 20,
-        "page": 1
+        "country": "cn",
+        "page": 1,
+        "pageSize": 20
       },
       "geographic_coverage": "NewsAPI支持的国家、类别和来源；具体列表以官方Sources目录为准",
       "freshness": "取决于订阅套餐；免费Developer套餐存在24小时延迟",
@@ -38115,6 +38115,1056 @@
       "secret_environment_variable_name": "NEWSAPI_API_KEY",
       "secret_value_exposed": false,
       "connector_sha256": "03a4fce728dbf80a6c7b87e774e72f350d5cf5562a52de366ced920ba5a05e35"
+    },
+    {
+      "connector_id": "noaa-ncei-data-search",
+      "display_name": "NOAA/NCEI 历史气象数据检索",
+      "description": "通过 NCEI Common Access Search Service 按数据集、日期、站点、数据类型或范围发现历史气象与气候数据记录。",
+      "data_category": "historical-weather-climate-discovery",
+      "use_cases": [
+        "历史气象数据发现",
+        "气候数据集与文件检索",
+        "站点和日期范围核验"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/ncei/search",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "30s",
+      "write_approved": false,
+      "parameter_names": [
+        "dataset",
+        "startDate",
+        "endDate",
+        "boundingBox",
+        "stations",
+        "dataTypes",
+        "limit",
+        "offset",
+        "sortfield",
+        "sortorder"
+      ],
+      "request_contract": {
+        "path_parameter_names": [],
+        "path_parameters": {},
+        "query_parameter_names": [
+          "dataset",
+          "startDate",
+          "endDate",
+          "boundingBox",
+          "stations",
+          "dataTypes",
+          "limit",
+          "offset",
+          "sortfield",
+          "sortorder"
+        ],
+        "parameter_rules": {
+          "properties": {
+            "boundingBox": {
+              "max_length": 80,
+              "pattern": "^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$",
+              "type": "string"
+            },
+            "dataTypes": {
+              "max_length": 1000,
+              "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+              "type": "string"
+            },
+            "dataset": {
+              "max_length": 80,
+              "pattern": "^[a-z0-9-]{3,80}$",
+              "type": "string"
+            },
+            "endDate": {
+              "max_length": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "limit": {
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "offset": {
+              "maximum": 1000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "sortfield": {
+              "max_length": 80,
+              "type": "string"
+            },
+            "sortorder": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            },
+            "startDate": {
+              "max_length": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "stations": {
+              "max_length": 1000,
+              "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+              "type": "string"
+            }
+          },
+          "required_any_of": [
+            [
+              "dataset"
+            ],
+            [
+              "startDate"
+            ],
+            [
+              "endDate"
+            ]
+          ]
+        },
+        "parameter_notes": {
+          "boundingBox": "可选；北,西,南,东",
+          "dataTypes": "可选；数据类型列表",
+          "dataset": "必填；例如 daily-summaries",
+          "endDate": "必填；YYYY-MM-DD",
+          "limit": "可选；最多 1000",
+          "startDate": "必填；YYYY-MM-DD",
+          "stations": "可选；站点 ID 列表"
+        },
+        "example_parameters": {
+          "dataset": "daily-summaries",
+          "endDate": "2024-01-07",
+          "limit": 20,
+          "startDate": "2024-01-01",
+          "stations": "USW00094728"
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "results"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {
+        "collection_path": "results",
+        "hard_limit": 1000,
+        "recommended_action": "Use a narrow dataset, date interval, station list or bounding box; do not use this connector for bulk archive mirroring."
+      },
+      "backend_contract": {
+        "host": "https://www.ncei.noaa.gov",
+        "url_pattern": "/access/services/search/v1/data",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "results",
+          "totalCount",
+          "formats",
+          "errorMessage",
+          "errorCode",
+          "errors"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 30
+          },
+          "rate_limit": {
+            "capacity": 1,
+            "every": "1s",
+            "max_rate": 1
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "dataset": "daily-summaries",
+        "endDate": "2024-01-07",
+        "limit": 20,
+        "startDate": "2024-01-01",
+        "stations": "USW00094728"
+      },
+      "geographic_coverage": "全球；具体范围取决于所选 NCEI 数据集",
+      "freshness": "随 NCEI 数据集更新；不同数据集延迟不同",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "这是数据发现接口，不是无界整库镜像工具",
+        "结果中的数据集、时间、单位、站点和质量标识必须保留",
+        "具体记录下载和格式能力依数据集而异",
+        "大范围或长期批量任务应拆分并遵守公平使用"
+      ],
+      "detail_file": "connectors/noaa-ncei-data-search.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-ncei-data-search",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "52e3ddb68e44ef10632b135cb63327e710fc9a548935505fa5b68c84e30eaf8d"
+    },
+    {
+      "connector_id": "noaa-nws-alerts-active",
+      "display_name": "NOAA/NWS 活动天气警报",
+      "description": "按州、坐标、区域、预警区或事件筛选当前有效的官方天气警报。",
+      "data_category": "weather-alerts",
+      "use_cases": [
+        "灾害天气预警",
+        "运营和出行风险",
+        "应急态势核验"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/alerts/active",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "20s",
+      "write_approved": false,
+      "parameter_names": [
+        "area",
+        "point",
+        "region",
+        "zone",
+        "urgency",
+        "severity",
+        "certainty",
+        "status",
+        "message_type",
+        "event",
+        "code",
+        "limit",
+        "cursor",
+        "start",
+        "end"
+      ],
+      "request_contract": {
+        "path_parameter_names": [],
+        "path_parameters": {},
+        "query_parameter_names": [
+          "area",
+          "point",
+          "region",
+          "zone",
+          "urgency",
+          "severity",
+          "certainty",
+          "status",
+          "message_type",
+          "event",
+          "code",
+          "limit",
+          "cursor",
+          "start",
+          "end"
+        ],
+        "parameter_rules": {
+          "properties": {
+            "area": {
+              "max_length": 80,
+              "pattern": "^[A-Z]{2}(?:,[A-Z]{2})*$",
+              "type": "string"
+            },
+            "certainty": {
+              "max_length": 100,
+              "type": "string"
+            },
+            "code": {
+              "max_length": 100,
+              "type": "string"
+            },
+            "cursor": {
+              "max_length": 256,
+              "type": "string"
+            },
+            "end": {
+              "max_length": 40,
+              "type": "string"
+            },
+            "event": {
+              "max_length": 200,
+              "type": "string"
+            },
+            "limit": {
+              "maximum": 500,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "message_type": {
+              "max_length": 100,
+              "type": "string"
+            },
+            "point": {
+              "max_length": 24,
+              "pattern": "^-?[0-9]{1,2}(?:\\.[0-9]{1,6})?,-?[0-9]{1,3}(?:\\.[0-9]{1,6})?$",
+              "type": "string"
+            },
+            "region": {
+              "max_length": 8,
+              "pattern": "^[A-Z]{2,8}$",
+              "type": "string"
+            },
+            "severity": {
+              "max_length": 100,
+              "type": "string"
+            },
+            "start": {
+              "max_length": 40,
+              "type": "string"
+            },
+            "status": {
+              "max_length": 100,
+              "type": "string"
+            },
+            "urgency": {
+              "max_length": 100,
+              "type": "string"
+            },
+            "zone": {
+              "max_length": 220,
+              "pattern": "^[A-Z0-9-]{3,20}(?:,[A-Z0-9-]{3,20})*$",
+              "type": "string"
+            }
+          },
+          "required_any_of": [
+            [
+              "area",
+              "point",
+              "region",
+              "zone",
+              "event",
+              "code"
+            ]
+          ]
+        },
+        "parameter_notes": {
+          "area": "州或领地两位代码，可逗号分隔",
+          "event": "事件名称",
+          "limit": "可选；1 至 500",
+          "point": "纬度,经度",
+          "zone": "预警区代码"
+        },
+        "example_parameters": {
+          "area": "DC",
+          "limit": 20
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "features"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {},
+      "backend_contract": {
+        "host": "https://api.weather.gov",
+        "url_pattern": "/alerts/active",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "@context",
+          "id",
+          "type",
+          "geometry",
+          "properties",
+          "features",
+          "pagination",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "correlationId"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 20
+          },
+          "rate_limit": {
+            "capacity": 2,
+            "every": "1s",
+            "max_rate": 2
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "area": "DC",
+        "limit": 20
+      },
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "freshness": "活动警报实时更新；以响应 sent、effective、expires 字段为准",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "必须至少提供一个地域或事件过滤条件，禁止无界拉取全部警报",
+        "警报正文应结合发布时间和失效时间解释",
+        "该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文"
+      ],
+      "detail_file": "connectors/noaa-nws-alerts-active.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-alerts-active",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "f799ca0e32f9f5be66bd040e988dd50c41eb79e8110daca2a393bec858d6681a"
+    },
+    {
+      "connector_id": "noaa-nws-forecast-hourly",
+      "display_name": "NOAA/NWS 官方逐小时预报",
+      "description": "按 NWS 网格取得逐小时官方天气预报。",
+      "data_category": "weather-hourly-forecast",
+      "use_cases": [
+        "逐小时运营安排",
+        "短时天气风险",
+        "出行和活动计划"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "20s",
+      "write_approved": false,
+      "parameter_names": [
+        "grid_x",
+        "grid_y",
+        "office",
+        "units"
+      ],
+      "request_contract": {
+        "path_parameter_names": [
+          "grid_x",
+          "grid_y",
+          "office"
+        ],
+        "path_parameters": {
+          "grid_x": {
+            "max_length": 3,
+            "pattern": "^[0-9]{1,3}$"
+          },
+          "grid_y": {
+            "max_length": 3,
+            "pattern": "^[0-9]{1,3}$"
+          },
+          "office": {
+            "max_length": 3,
+            "pattern": "^[A-Z]{3}$"
+          }
+        },
+        "query_parameter_names": [
+          "units"
+        ],
+        "parameter_rules": {
+          "properties": {
+            "units": {
+              "enum": [
+                "us",
+                "si"
+              ],
+              "type": "string"
+            }
+          }
+        },
+        "parameter_notes": {
+          "grid_x": "必填；网格 X",
+          "grid_y": "必填；网格 Y",
+          "office": "必填；三位 NWS 办公室代码",
+          "units": "可选；us 或 si"
+        },
+        "example_parameters": {
+          "grid_x": "97",
+          "grid_y": "71",
+          "office": "LWX",
+          "units": "si"
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "properties.periods"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {},
+      "backend_contract": {
+        "host": "https://api.weather.gov",
+        "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "@context",
+          "id",
+          "type",
+          "geometry",
+          "properties",
+          "features",
+          "pagination",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "correlationId"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 20
+          },
+          "rate_limit": {
+            "capacity": 2,
+            "every": "1s",
+            "max_rate": 2
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "grid_x": "97",
+        "grid_y": "71",
+        "office": "LWX",
+        "units": "si"
+      },
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "freshness": "随对应 NWS 预报办公室更新",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "只覆盖 NWS 服务区域",
+        "逐小时预报仍需结合官方警报和现场观测"
+      ],
+      "detail_file": "connectors/noaa-nws-forecast-hourly.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-forecast-hourly",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "af0f08ef70facfd7e0f1cea0ab9c773c881c6722086126336899b99b7e6f8d9c"
+    },
+    {
+      "connector_id": "noaa-nws-forecast",
+      "display_name": "NOAA/NWS 官方分时预报",
+      "description": "按 NWS 办公室和网格坐标取得约 12 小时时段的官方文字与要素预报。",
+      "data_category": "weather-forecast",
+      "use_cases": [
+        "美国天气决策",
+        "风险与运营计划",
+        "官方预报交叉核验"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/forecast",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "20s",
+      "write_approved": false,
+      "parameter_names": [
+        "grid_x",
+        "grid_y",
+        "office",
+        "units"
+      ],
+      "request_contract": {
+        "path_parameter_names": [
+          "grid_x",
+          "grid_y",
+          "office"
+        ],
+        "path_parameters": {
+          "grid_x": {
+            "max_length": 3,
+            "pattern": "^[0-9]{1,3}$"
+          },
+          "grid_y": {
+            "max_length": 3,
+            "pattern": "^[0-9]{1,3}$"
+          },
+          "office": {
+            "max_length": 3,
+            "pattern": "^[A-Z]{3}$"
+          }
+        },
+        "query_parameter_names": [
+          "units"
+        ],
+        "parameter_rules": {
+          "properties": {
+            "units": {
+              "enum": [
+                "us",
+                "si"
+              ],
+              "type": "string"
+            }
+          }
+        },
+        "parameter_notes": {
+          "grid_x": "必填；网格 X",
+          "grid_y": "必填；网格 Y",
+          "office": "必填；三位 NWS 办公室代码",
+          "units": "可选；us 或 si"
+        },
+        "example_parameters": {
+          "grid_x": "97",
+          "grid_y": "71",
+          "office": "LWX",
+          "units": "si"
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "properties.periods"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {},
+      "backend_contract": {
+        "host": "https://api.weather.gov",
+        "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "@context",
+          "id",
+          "type",
+          "geometry",
+          "properties",
+          "features",
+          "pagination",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "correlationId"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 20
+          },
+          "rate_limit": {
+            "capacity": 2,
+            "every": "1s",
+            "max_rate": 2
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "grid_x": "97",
+        "grid_y": "71",
+        "office": "LWX",
+        "units": "si"
+      },
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "freshness": "随对应 NWS 预报办公室更新",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "网格参数必须先由 NOAA/NWS points 解析",
+        "预报存在不确定性，不能视为观测事实"
+      ],
+      "detail_file": "connectors/noaa-nws-forecast.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-forecast",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "a061a21155255bad1000b9921e02a8359211417b8740eb5d6409ca2ce2b3e0fb"
+    },
+    {
+      "connector_id": "noaa-nws-gridpoint-stations",
+      "display_name": "NOAA/NWS 网格观测站列表",
+      "description": "取得指定 NWS 网格附近可用的官方观测站。",
+      "data_category": "weather-stations",
+      "use_cases": [
+        "查找附近观测站",
+        "为最新观测准备站点 ID",
+        "观测覆盖核验"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x},{grid_y}/stations",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "20s",
+      "write_approved": false,
+      "parameter_names": [
+        "grid_x",
+        "grid_y",
+        "office",
+        "limit",
+        "cursor"
+      ],
+      "request_contract": {
+        "path_parameter_names": [
+          "grid_x",
+          "grid_y",
+          "office"
+        ],
+        "path_parameters": {
+          "grid_x": {
+            "max_length": 3,
+            "pattern": "^[0-9]{1,3}$"
+          },
+          "grid_y": {
+            "max_length": 3,
+            "pattern": "^[0-9]{1,3}$"
+          },
+          "office": {
+            "max_length": 3,
+            "pattern": "^[A-Z]{3}$"
+          }
+        },
+        "query_parameter_names": [
+          "limit",
+          "cursor"
+        ],
+        "parameter_rules": {
+          "properties": {
+            "cursor": {
+              "max_length": 256,
+              "type": "string"
+            },
+            "limit": {
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        },
+        "parameter_notes": {
+          "cursor": "可选；分页游标",
+          "grid_x": "必填",
+          "grid_y": "必填",
+          "limit": "可选；最多 100",
+          "office": "必填；NWS 办公室代码"
+        },
+        "example_parameters": {
+          "grid_x": "97",
+          "grid_y": "71",
+          "limit": 20,
+          "office": "LWX"
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "features"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {},
+      "backend_contract": {
+        "host": "https://api.weather.gov",
+        "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/stations",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "@context",
+          "id",
+          "type",
+          "geometry",
+          "properties",
+          "features",
+          "pagination",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "correlationId"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 20
+          },
+          "rate_limit": {
+            "capacity": 2,
+            "every": "1s",
+            "max_rate": 2
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "grid_x": "97",
+        "grid_y": "71",
+        "limit": 20,
+        "office": "LWX"
+      },
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "freshness": "请求时返回站点目录",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "站点可用性和报告频率不一致",
+        "站点目录不等同于该站点当前有有效观测"
+      ],
+      "detail_file": "connectors/noaa-nws-gridpoint-stations.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-gridpoint-stations",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "3af512f3a51a32bc4fffa282f618ddd00f253a1d83eee80ac2e4038e79746080"
+    },
+    {
+      "connector_id": "noaa-nws-points",
+      "display_name": "NOAA/NWS 坐标网格解析",
+      "description": "把美国境内经纬度解析为 NWS 预报办公室、网格坐标、预报端点和观测站入口。",
+      "data_category": "weather-location-resolution",
+      "use_cases": [
+        "美国地点预报准备",
+        "确定 NWS 办公室与网格",
+        "衔接官方预报和观测"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/points/{latitude},{longitude}",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "20s",
+      "write_approved": false,
+      "parameter_names": [
+        "latitude",
+        "longitude"
+      ],
+      "request_contract": {
+        "path_parameter_names": [
+          "latitude",
+          "longitude"
+        ],
+        "path_parameters": {
+          "latitude": {
+            "max_length": 10,
+            "pattern": "^-?[0-9]{1,2}(?:\\.[0-9]{1,6})?$"
+          },
+          "longitude": {
+            "max_length": 11,
+            "pattern": "^-?[0-9]{1,3}(?:\\.[0-9]{1,6})?$"
+          }
+        },
+        "query_parameter_names": [],
+        "parameter_rules": {},
+        "parameter_notes": {
+          "latitude": "必填；十进制度纬度",
+          "longitude": "必填；十进制度经度"
+        },
+        "example_parameters": {
+          "latitude": "38.8977",
+          "longitude": "-77.0365"
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "properties"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {},
+      "backend_contract": {
+        "host": "https://api.weather.gov",
+        "url_pattern": "/points/{latitude},{longitude}",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "@context",
+          "id",
+          "type",
+          "geometry",
+          "properties",
+          "features",
+          "pagination",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "correlationId"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 20
+          },
+          "rate_limit": {
+            "capacity": 2,
+            "every": "1s",
+            "max_rate": 2
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "latitude": "38.8977",
+        "longitude": "-77.0365"
+      },
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "freshness": "请求时实时返回服务元数据",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "主要面向美国及 NWS 服务区域",
+        "先调用本连接器取得 office、gridX 和 gridY，再调用预报连接器",
+        "NWS 要求合理限速并使用可识别的 User-Agent；网关采用保守限速"
+      ],
+      "detail_file": "connectors/noaa-nws-points.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-points",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "dbc5d1c7f49b50871cd3aeab1a877773469f337c4a8cee9322ea80e265da0493"
+    },
+    {
+      "connector_id": "noaa-nws-station-latest",
+      "display_name": "NOAA/NWS 站点最新观测",
+      "description": "按官方观测站 ID 取得最新天气观测及质量控制字段。",
+      "data_category": "weather-observations",
+      "use_cases": [
+        "当前天气观测",
+        "预报与实况比较",
+        "短时风险核验"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/nws/stations/{station_id}/observations/latest",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "20s",
+      "write_approved": false,
+      "parameter_names": [
+        "station_id",
+        "require_qc"
+      ],
+      "request_contract": {
+        "path_parameter_names": [
+          "station_id"
+        ],
+        "path_parameters": {
+          "station_id": {
+            "max_length": 16,
+            "pattern": "^[A-Z0-9-]{3,16}$"
+          }
+        },
+        "query_parameter_names": [
+          "require_qc"
+        ],
+        "parameter_rules": {
+          "properties": {
+            "require_qc": {
+              "type": "boolean"
+            }
+          }
+        },
+        "parameter_notes": {
+          "require_qc": "可选；是否要求质量控制通过",
+          "station_id": "必填；官方站点 ID"
+        },
+        "example_parameters": {
+          "require_qc": true,
+          "station_id": "KDCA"
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "properties"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {},
+      "backend_contract": {
+        "host": "https://api.weather.gov",
+        "url_pattern": "/stations/{station_id}/observations/latest",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "@context",
+          "id",
+          "type",
+          "geometry",
+          "properties",
+          "features",
+          "pagination",
+          "title",
+          "status",
+          "detail",
+          "instance",
+          "correlationId"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 20
+          },
+          "rate_limit": {
+            "capacity": 2,
+            "every": "1s",
+            "max_rate": 2
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "require_qc": true,
+        "station_id": "KDCA"
+      },
+      "geographic_coverage": "NWS/MADIS 可用站点",
+      "freshness": "取决于站点最新报告时间",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "部分字段可能为空",
+        "官方文档记录部分非中部时区站点的 24 小时最高/最低温字段存在上游缺失问题"
+      ],
+      "detail_file": "connectors/noaa-nws-station-latest.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-station-latest",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "fb32d4e9a46aec714dc866fca94c7b1af3f8cc2ae19506b9083d9c8dd2167ebb"
     },
     {
       "connector_id": "openmeteo-air-quality",
@@ -38217,17 +39267,17 @@
           ]
         },
         "parameter_notes": {
+          "current": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "domains": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "current": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "domains": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔"
+          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -38392,19 +39442,19 @@
           ]
         },
         "parameter_notes": {
+          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
+          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -38562,16 +39612,16 @@
           ]
         },
         "parameter_notes": {
+          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "models": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔"
+          "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -38837,17 +39887,17 @@
           ]
         },
         "parameter_notes": {
+          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "models": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
+          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -39001,14 +40051,14 @@
           ]
         },
         "parameter_notes": {
-          "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "ensemble": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
@@ -39208,25 +40258,25 @@
           ]
         },
         "parameter_notes": {
+          "current": "current变量列表，例如temperature_2m,precipitation,weather_code",
+          "daily": "逐日变量列表",
+          "forecast_days": "1至16",
+          "hourly": "小时变量列表",
           "latitude": "必填；WGS84纬度",
           "longitude": "必填；WGS84经度",
-          "current": "current变量列表，例如temperature_2m,precipitation,weather_code",
-          "hourly": "小时变量列表",
-          "daily": "逐日变量列表",
-          "timezone": "建议填写auto或IANA时区",
-          "forecast_days": "1至16",
           "past_days": "0至92",
-          "temperature_unit": "celsius或fahrenheit",
-          "wind_speed_unit": "kmh、ms、mph或kn",
           "precipitation_unit": "mm或inch",
-          "timeformat": "iso8601或unixtime"
+          "temperature_unit": "celsius或fahrenheit",
+          "timeformat": "iso8601或unixtime",
+          "timezone": "建议填写auto或IANA时区",
+          "wind_speed_unit": "kmh、ms、mph或kn"
         },
         "example_parameters": {
+          "current": "temperature_2m,precipitation,weather_code,wind_speed_10m",
+          "forecast_days": 3,
+          "hourly": "temperature_2m,precipitation_probability",
           "latitude": 26.0745,
           "longitude": 119.2965,
-          "current": "temperature_2m,precipitation,weather_code,wind_speed_10m",
-          "hourly": "temperature_2m,precipitation_probability",
-          "forecast_days": 3,
           "timezone": "Asia/Shanghai"
         },
         "input_headers": [],
@@ -39279,11 +40329,11 @@
         "value_exposed": false
       },
       "example_parameters": {
+        "current": "temperature_2m,precipitation,weather_code,wind_speed_10m",
+        "forecast_days": 3,
+        "hourly": "temperature_2m,precipitation_probability",
         "latitude": 26.0745,
         "longitude": 119.2965,
-        "current": "temperature_2m,precipitation,weather_code,wind_speed_10m",
-        "hourly": "temperature_2m,precipitation_probability",
-        "forecast_days": 3,
         "timezone": "Asia/Shanghai"
       },
       "geographic_coverage": "全球经纬度",
@@ -39351,11 +40401,11 @@
           ]
         },
         "parameter_notes": {
-          "name": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "count": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "language": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "countryCode": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "format": "Open-Meteo官方参数；变量列表可用逗号分隔"
+          "format": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "language": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "name": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -39519,19 +40569,19 @@
           ]
         },
         "parameter_notes": {
+          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
+          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -39701,19 +40751,19 @@
           ]
         },
         "parameter_notes": {
+          "current": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "current": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "hourly": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "past_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "start_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "end_date": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "wave_height_min": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "wave_height_max": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔"
+          "wave_height_min": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -39861,16 +40911,16 @@
           ]
         },
         "parameter_notes": {
+          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "latitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "longitude": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "daily": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "models": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "forecast_days": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
           "temperature_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔",
-          "precipitation_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
+          "timeformat": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "timezone": "Open-Meteo官方参数；变量列表可用逗号分隔",
+          "wind_speed_unit": "Open-Meteo官方参数；变量列表可用逗号分隔"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -40117,19 +41167,19 @@
           ]
         },
         "parameter_notes": {
-          "lat": "Nominatim参数",
-          "lon": "Nominatim参数",
-          "format": "Nominatim参数",
-          "zoom": "Nominatim参数",
+          "accept-language": "Nominatim参数",
           "addressdetails": "Nominatim参数",
           "extratags": "Nominatim参数",
+          "format": "Nominatim参数",
+          "lat": "Nominatim参数",
+          "lon": "Nominatim参数",
           "namedetails": "Nominatim参数",
-          "accept-language": "Nominatim参数"
+          "zoom": "Nominatim参数"
         },
         "example_parameters": {
+          "format": "jsonv2",
           "lat": 26.0745,
-          "lon": 119.2965,
-          "format": "jsonv2"
+          "lon": 119.2965
         },
         "input_headers": [
           "User-Agent"
@@ -40185,9 +41235,9 @@
         "value_exposed": false
       },
       "example_parameters": {
+        "format": "jsonv2",
         "lat": 26.0745,
-        "lon": 119.2965,
-        "format": "jsonv2"
+        "lon": 119.2965
       },
       "geographic_coverage": "全球",
       "freshness": "随OSM社区更新",
@@ -40242,24 +41292,24 @@
         ],
         "parameter_rules": {},
         "parameter_notes": {
-          "q": "必填；结构化地点查询文本",
+          "accept-language": "可选；返回语言",
+          "addressdetails": "可选；地址明细",
+          "countrycodes": "可选；国家代码过滤，例如cn",
+          "extratags": "可选；额外标签",
           "format": "必填；正式票据使用geocodejson",
           "limit": "可选；返回数量，建议不超过5",
-          "countrycodes": "可选；国家代码过滤，例如cn",
-          "addressdetails": "可选；地址明细",
-          "extratags": "可选；额外标签",
           "namedetails": "可选；名称明细",
-          "accept-language": "可选；返回语言"
+          "q": "必填；结构化地点查询文本"
         },
         "example_parameters": {
-          "q": "福州宝龙城市广场,台江区,福州市,福建省,中国",
+          "accept-language": "zh-CN",
+          "addressdetails": 1,
+          "countrycodes": "cn",
+          "extratags": 1,
           "format": "geocodejson",
           "limit": 5,
-          "countrycodes": "cn",
-          "addressdetails": 1,
-          "extratags": 1,
           "namedetails": 1,
-          "accept-language": "zh-CN"
+          "q": "福州宝龙城市广场,台江区,福州市,福建省,中国"
         },
         "input_headers": [
           "User-Agent"
@@ -40303,14 +41353,14 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "q": "福州宝龙城市广场,台江区,福州市,福建省,中国",
+        "accept-language": "zh-CN",
+        "addressdetails": 1,
+        "countrycodes": "cn",
+        "extratags": 1,
         "format": "geocodejson",
         "limit": 5,
-        "countrycodes": "cn",
-        "addressdetails": 1,
-        "extratags": 1,
         "namedetails": 1,
-        "accept-language": "zh-CN"
+        "q": "福州宝龙城市广场,台江区,福州市,福建省,中国"
       },
       "geographic_coverage": "全球；完整度取决于OpenStreetMap社区数据",
       "freshness": "随OpenStreetMap与Nominatim索引更新",
@@ -40362,9 +41412,9 @@
         "parameter_notes": {
           "action": "Wikidata Action API参数",
           "entity": "Wikidata Action API参数",
+          "format": "Wikidata Action API参数",
           "property": "Wikidata Action API参数",
-          "rank": "Wikidata Action API参数",
-          "format": "Wikidata Action API参数"
+          "rank": "Wikidata Action API参数"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -40542,16 +41592,16 @@
         "parameter_rules": {},
         "parameter_notes": {
           "action": "Wikidata Action API参数",
+          "format": "Wikidata Action API参数",
           "ids": "Wikidata Action API参数",
-          "sites": "Wikidata Action API参数",
-          "titles": "Wikidata Action API参数",
-          "props": "Wikidata Action API参数",
-          "languages": "Wikidata Action API参数",
-          "sitefilter": "Wikidata Action API参数",
           "languagefallback": "Wikidata Action API参数",
+          "languages": "Wikidata Action API参数",
           "normalize": "Wikidata Action API参数",
+          "props": "Wikidata Action API参数",
           "redirects": "Wikidata Action API参数",
-          "format": "Wikidata Action API参数"
+          "sitefilter": "Wikidata Action API参数",
+          "sites": "Wikidata Action API参数",
+          "titles": "Wikidata Action API参数"
         },
         "example_parameters": {},
         "input_headers": [],
@@ -40645,22 +41695,22 @@
         "parameter_rules": {},
         "parameter_notes": {
           "action": "固定填写wbsearchentities",
-          "search": "必填；实体名称或关键词",
-          "language": "必填；搜索语言代码",
-          "uselang": "可选；返回界面语言",
-          "type": "可选；item或property",
-          "limit": "可选；结果数量",
           "continue": "可选；分页游标",
-          "format": "固定填写json"
+          "format": "固定填写json",
+          "language": "必填；搜索语言代码",
+          "limit": "可选；结果数量",
+          "search": "必填；实体名称或关键词",
+          "type": "可选；item或property",
+          "uselang": "可选；返回界面语言"
         },
         "example_parameters": {
           "action": "wbsearchentities",
-          "search": "Fuzhou",
+          "format": "json",
           "language": "en",
-          "uselang": "zh",
-          "type": "item",
           "limit": 5,
-          "format": "json"
+          "search": "Fuzhou",
+          "type": "item",
+          "uselang": "zh"
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -40703,12 +41753,12 @@
       },
       "example_parameters": {
         "action": "wbsearchentities",
-        "search": "Fuzhou",
+        "format": "json",
         "language": "en",
-        "uselang": "zh",
-        "type": "item",
         "limit": 5,
-        "format": "json"
+        "search": "Fuzhou",
+        "type": "item",
+        "uselang": "zh"
       },
       "geographic_coverage": "全球",
       "freshness": "请求时读取Wikidata当前公开数据",
@@ -40754,8 +41804,8 @@
         "parameter_rules": {},
         "parameter_notes": {
           "format": "世界银行API参数；建议format=json",
-          "per_page": "世界银行API参数；建议format=json",
-          "page": "世界银行API参数；建议format=json"
+          "page": "世界银行API参数；建议format=json",
+          "per_page": "世界银行API参数；建议format=json"
         },
         "example_parameters": {
           "format": "json"
@@ -40924,8 +41974,8 @@
         "parameter_rules": {},
         "parameter_notes": {
           "format": "世界银行API参数；建议format=json",
-          "per_page": "世界银行API参数；建议format=json",
-          "page": "世界银行API参数；建议format=json"
+          "page": "世界银行API参数；建议format=json",
+          "per_page": "世界银行API参数；建议format=json"
         },
         "example_parameters": {
           "format": "json"
@@ -41042,25 +42092,25 @@
         "parameter_rules": {},
         "parameter_notes": {
           "country_code": "必填；2至3位国家或地区代码，例如CHN",
-          "indicator_code": "必填；世界银行指标代码",
-          "format": "必填；本连接器正式票据使用jsonstat",
+          "ctrycode": "可选；国家代码响应选项",
           "date": "可选；年份或年份区间，例如2015:2025",
-          "mrv": "可选；最近若干期",
-          "mrnev": "可选；最近非空若干期",
-          "gapfill": "可选；是否填补空期",
-          "frequency": "可选；频率",
-          "source": "可选；数据源编号",
-          "per_page": "可选；分页大小",
-          "page": "可选；页码",
           "footnote": "可选；脚注",
+          "format": "必填；本连接器正式票据使用jsonstat",
+          "frequency": "可选；频率",
+          "gapfill": "可选；是否填补空期",
+          "indicator_code": "必填；世界银行指标代码",
+          "mrnev": "可选；最近非空若干期",
+          "mrv": "可选；最近若干期",
+          "page": "可选；页码",
+          "per_page": "可选；分页大小",
           "scale": "可选；缩放",
-          "ctrycode": "可选；国家代码响应选项"
+          "source": "可选；数据源编号"
         },
         "example_parameters": {
           "country_code": "CHN",
-          "indicator_code": "SP.URB.TOTL.IN.ZS",
+          "date": "2015:2025",
           "format": "jsonstat",
-          "date": "2015:2025"
+          "indicator_code": "SP.URB.TOTL.IN.ZS"
         },
         "input_headers": [
           "User-Agent"
@@ -41112,9 +42162,9 @@
       },
       "example_parameters": {
         "country_code": "CHN",
-        "indicator_code": "SP.URB.TOTL.IN.ZS",
+        "date": "2015:2025",
         "format": "jsonstat",
-        "date": "2015:2025"
+        "indicator_code": "SP.URB.TOTL.IN.ZS"
       },
       "geographic_coverage": "全球国家和地区；本连接器限制单个2至3位国家代码",
       "freshness": "随世界银行上游数据库更新；具体更新时间和年份以响应元数据为准",
@@ -41249,9 +42299,9 @@
         "parameter_rules": {},
         "parameter_notes": {
           "format": "世界银行API参数；建议format=json",
-          "source": "世界银行API参数；建议format=json",
+          "page": "世界银行API参数；建议format=json",
           "per_page": "世界银行API参数；建议format=json",
-          "page": "世界银行API参数；建议format=json"
+          "source": "世界银行API参数；建议format=json"
         },
         "example_parameters": {
           "format": "json"
@@ -41334,8 +42384,8 @@
         "parameter_rules": {},
         "parameter_notes": {
           "format": "世界银行API参数；建议format=json",
-          "per_page": "世界银行API参数；建议format=json",
-          "page": "世界银行API参数；建议format=json"
+          "page": "世界银行API参数；建议format=json",
+          "per_page": "世界银行API参数；建议format=json"
         },
         "example_parameters": {
           "format": "json"
@@ -41418,8 +42468,8 @@
         "parameter_rules": {},
         "parameter_notes": {
           "format": "世界银行API参数；建议format=json",
-          "per_page": "世界银行API参数；建议format=json",
-          "page": "世界银行API参数；建议format=json"
+          "page": "世界银行API参数；建议format=json",
+          "per_page": "世界银行API参数；建议format=json"
         },
         "example_parameters": {
           "format": "json"
@@ -41502,8 +42552,8 @@
         "parameter_rules": {},
         "parameter_notes": {
           "format": "世界银行API参数；建议format=json",
-          "per_page": "世界银行API参数；建议format=json",
-          "page": "世界银行API参数；建议format=json"
+          "page": "世界银行API参数；建议format=json",
+          "per_page": "世界银行API参数；建议format=json"
         },
         "example_parameters": {
           "format": "json"
@@ -41557,5 +42607,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "100b328e8a7cd9b14ce3e5809c13e450addbe119ddea781619f9c331af3bf10b"
+  "catalog_sha256": "f75554204968a55d91f4ff6cf64281d480590060102a0583b6b06ef8dfa25edd"
 }
