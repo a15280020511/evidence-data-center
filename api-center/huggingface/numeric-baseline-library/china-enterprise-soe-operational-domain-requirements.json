@@ -1,0 +1,390 @@
+{
+  "schema_version": "china-enterprise-soe-operational-domain-requirements-v1",
+  "status": "production-control",
+  "domain_count": 21,
+  "scope": "中国大陆公开、合法、非个人化的大型企业、中央企业、地方国企、金融机构、产业集团和重点项目运行数值基准",
+  "storage_policy": {
+    "huggingface_payload_numeric_only": true,
+    "natural_language_payload_allowed": false,
+    "control_metadata_location": "github",
+    "selection_and_relay_owner": "gpts-usage-center",
+    "compute_runtime_network_allowed": false,
+    "direct_center_connection_allowed": false,
+    "public_sources_only": true,
+    "personal_data_allowed": false,
+    "restricted_nonpublic_data_allowed": false,
+    "individual_employee_tracking_allowed": false,
+    "automatic_investment_recommendation_allowed": false
+  },
+  "entity_scope": {
+    "central_soes": true,
+    "central_financial_enterprises": true,
+    "local_soes": true,
+    "local_government_financing_vehicles": true,
+    "large_private_enterprises": true,
+    "listed_companies": true,
+    "major_unlisted_groups": true,
+    "public_institutions_with_business_operations": true,
+    "foreign_invested_enterprises_in_china": true,
+    "enterprise_groups_and_subsidiaries": true
+  },
+  "domains": [
+    {
+      "id": "cn-enterprise-master-ownership-control",
+      "priority": "P0",
+      "variable_groups": [
+        "unified_credit_security_and_group_codes",
+        "enterprise_type_state_ownership_level_and_controller",
+        "group_parent_subsidiary_and_equity_chain",
+        "registered_capital_paid_in_capital_andownership_ratio",
+        "industry_region_business_scope_andoperating_status",
+        "listing_board_bond_issuer_andfinancial_institution_codes",
+        "establishment_restructuring_merger_andcancellation_events",
+        "state_capital_authorization_andmanagement_level",
+        "major_shareholder_controller_andbeneficial_control_codes",
+        "entity_resolution_confidence_revision_andvalidity"
+      ],
+      "default_tables": ["entity_links", "observations", "regime_events", "network_edges", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-central-soe-group-operations",
+      "priority": "P0",
+      "variable_groups": [
+        "group_revenue_profit_assets_liabilities_androe",
+        "strategic_function_public_service_andpolicy_burden",
+        "state_capital_injection_transfer_dividend_andreturn",
+        "major_project_investment_capex_andcompletion",
+        "industrial_layout_capacity_output_andmarket_share",
+        "subsidiary_count_listing_securitization_andmixed_ownership",
+        "manager_assessment_target_andcompletion_rate",
+        "innovation_rd_patent_standard_andtechnology_breakthrough",
+        "debt_guarantee_contingent_liability_andrisk",
+        "operating_efficiency_productivity_andrealized_outcome"
+      ],
+      "default_tables": ["observations", "financial_panel", "econometric_panel", "entity_links", "resource_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-local-soe-lgfv-operations",
+      "priority": "P0",
+      "variable_groups": [
+        "local_controller_administrative_level_andregion",
+        "revenue_profit_assets_debt_andcashflow",
+        "government_project_public_service_andland_development",
+        "bond_bank_trust_lease_andnonstandard_financing",
+        "debt_maturity_interest_refinancing_andcoverage",
+        "government_receivable_subsidy_andcapital_injection",
+        "land_property_equity_andinfrastructure_assets",
+        "project_progress_payment_delay_andarrears",
+        "merger_restructuring_asset_injection_andtransformation",
+        "fiscal_linkage_default_restructuring_andrealized_recovery"
+      ],
+      "default_tables": ["observations", "financial_panel", "entity_links", "regime_events", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-large-private-enterprise-operations",
+      "priority": "P0",
+      "variable_groups": [
+        "group_revenue_profit_assets_andcashflow",
+        "market_share_customer_supplier_andchannel_network",
+        "capacity_output_orders_inventory_andpricing",
+        "capital_expenditure_rd_andtechnology_investment",
+        "domestic_overseas_region_andsegment_mix",
+        "debt_equity_bond_bank_andprivate_financing",
+        "ownership_pledge_guarantee_andrelated_transactions",
+        "employment_wage_tax_andregional_contribution",
+        "regulatory_litigation_penalty_andcompliance_events",
+        "growth_resilience_failure_recovery_andrealized_return"
+      ],
+      "default_tables": ["observations", "financial_panel", "entity_links", "network_edges", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-financial-performance",
+      "priority": "P0",
+      "variable_groups": [
+        "revenue_cost_gross_profit_operating_profit_andnet_profit",
+        "operating_investing_financing_andfree_cashflow",
+        "assets_liabilities_equity_andworking_capital",
+        "receivables_inventory_contract_assets_andimpairment",
+        "roe_roa_roic_margin_turnover_andleverage",
+        "interest_coverage_debt_service_andliquidity",
+        "segment_product_region_andcustomer_concentration",
+        "earnings_quality_accruals_cash_conversion_andrevision",
+        "forecast_guidance_actual_surprise_andmarket_reaction",
+        "point_in_time_vintage_andrealized_outcome"
+      ],
+      "default_tables": ["observations", "financial_panel", "econometric_panel", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-production-capacity-orders",
+      "priority": "P0",
+      "variable_groups": [
+        "factory_line_equipment_andnameplate_capacity",
+        "output_yield_utilization_energy_andunit_cost",
+        "orders_backlog_delivery_cycle_andcontract_value",
+        "inventory_raw_material_work_in_process_andfinished_goods",
+        "price_volume_mix_andcontribution_margin",
+        "quality_defect_rework_downtime_andmaintenance",
+        "supplier_lead_time_dependency_andsubstitution",
+        "customer_concentration_churn_andcollection",
+        "capacity_expansion_ramp_up_exit_andlearning_curve",
+        "realized_output_margin_delivery_andreturn"
+      ],
+      "default_tables": ["observations", "resource_parameters", "state_space", "input_output_matrix", "network_edges", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-project-investment-construction",
+      "priority": "P0",
+      "variable_groups": [
+        "project_code_location_industry_andowner",
+        "approval_filing_start_completion_andoperation_dates",
+        "planned_actual_investment_andfunding_sources",
+        "physical_progress_payment_andacceptance",
+        "land_energy_environment_andcapacity_approvals",
+        "contractor_supplier_andfinancing_links",
+        "cost_overrun_delay_change_order_andclaim",
+        "expected_actual_capacity_revenue_andprofit",
+        "npv_irr_payback_andreal_option_parameters",
+        "completion_utilization_benefit_andrealized_outcome"
+      ],
+      "default_tables": ["event_log", "observations", "resource_parameters", "entity_links", "optimization_coefficients", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-financing-debt-bonds",
+      "priority": "P0",
+      "variable_groups": [
+        "bank_loan_bond_bill_trust_lease_andother_financing",
+        "principal_interest_coupon_maturity_andamortization",
+        "credit_rating_spread_collateral_andcovenant",
+        "guarantee_pledge_freeze_andcontingent_liability",
+        "refinancing_redemption_exchange_andrestructuring",
+        "short_long_term_debt_andcurrency_mix",
+        "financing_cost_interest_coverage_anddebt_service",
+        "default_overdue_extension_andcross_default_events",
+        "creditor_bank_investor_andguarantor_links",
+        "recovery_loss_andrealized_credit_outcome"
+      ],
+      "default_tables": ["financial_panel", "observations", "entity_links", "regime_events", "transition_matrix", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-procurement-supply-chain",
+      "priority": "P0",
+      "variable_groups": [
+        "supplier_customer_distributor_andlogistics_links",
+        "purchase_sales_contract_amount_andvolume",
+        "single_source_top_supplier_andcustomer_concentration",
+        "delivery_lead_time_inventory_buffer_andservice_level",
+        "payment_terms_receivable_payable_andarrears",
+        "procurement_bid_discount_andwinning_supplier",
+        "bill_of_material_key_component_anddependency",
+        "import_export_origin_destination_andtrade_exposure",
+        "disruption_substitution_recovery_andresilience",
+        "cost_quality_delivery_andrealized_outcome"
+      ],
+      "default_tables": ["entity_links", "network_edges", "input_output_matrix", "observations", "event_log", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-tax-subsidy-government-business",
+      "priority": "P0",
+      "variable_groups": [
+        "tax_type_base_rate_payment_refund_andburden",
+        "government_subsidy_grant_rebate_andcapital_injection",
+        "government_procurement_contract_andaward",
+        "concession_license_franchise_andpublic_service_payment",
+        "land_energy_credit_andpolicy_support",
+        "invoice_sales_purchase_andindustry_aggregate",
+        "tax_penalty_arrears_andcompliance_events",
+        "government_entity_enterprise_andproject_links",
+        "regional_tax_employment_andinvestment_contribution",
+        "policy_support_business_response_andrealized_outcome"
+      ],
+      "default_tables": ["observations", "event_log", "entity_links", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-employment-wages-productivity",
+      "priority": "P1",
+      "variable_groups": [
+        "employee_count_contract_andskill_structure",
+        "wage_bonus_social_insurance_andwelfare_cost",
+        "hours_output_per_worker_andlabor_productivity",
+        "recruitment_vacancy_turnover_andretention",
+        "management_rd_sales_andproduction_staff_mix",
+        "training_qualification_andtalent_program",
+        "regional_employment_andmigrant_worker_share",
+        "safety_incident_injury_andlost_time",
+        "automation_digitization_andlabor_substitution",
+        "employment_income_productivity_andrealized_outcome"
+      ],
+      "default_tables": ["observations", "econometric_panel", "agent_population", "event_log", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-innovation-rd-intellectual-property",
+      "priority": "P1",
+      "variable_groups": [
+        "rd_expense_intensity_staff_andcapitalized_rd",
+        "research_project_funding_andcompletion",
+        "patent_trademark_software_copyright_andstandard",
+        "citation_family_quality_andlegal_status",
+        "technology_license_transfer_andcommercialization",
+        "university_institute_supplier_andcustomer_collaboration",
+        "key_equipment_material_software_anddomestic_substitution",
+        "new_product_revenue_price_andmargin",
+        "innovation_failure_delay_andimpairment",
+        "rd_investment_productivity_andrealized_return"
+      ],
+      "default_tables": ["observations", "entity_links", "network_edges", "event_log", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-digital-platform-data-cloud",
+      "priority": "P1",
+      "variable_groups": [
+        "users_accounts_merchants_devices_andenterprise_clients",
+        "dau_mau_sessions_orders_gmv_andtake_rate",
+        "traffic_conversion_retention_churn_andlifetime_value",
+        "cloud_compute_storage_network_andutilization",
+        "software_subscription_license_andservice_revenue",
+        "data_center_power_usage_efficiency_andcapacity",
+        "platform_commission_subsidy_marketing_andfulfillment_cost",
+        "cybersecurity_outage_latency_andrecovery",
+        "algorithm_data_compliance_andregulatory_events",
+        "network_effect_productivity_andrealized_profit"
+      ],
+      "default_tables": ["observations", "econometric_panel", "network_edges", "infrastructure_nodes", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-energy-resources-environment",
+      "priority": "P1",
+      "variable_groups": [
+        "electricity_fuel_water_andmaterial_consumption",
+        "energy_intensity_efficiency_andself_generation",
+        "carbon_emission_allowance_andcarbon_cost",
+        "pollutant_discharge_permit_andtreatment_capacity",
+        "resource_reserve_mining_refining_andprocessing",
+        "renewable_storage_andgreen_power_purchase",
+        "environmental_inspection_penalty_andremediation",
+        "climate_hazard_exposure_andbusiness_interruption",
+        "green_finance_capex_andproject_progress",
+        "energy_resource_environment_andrealized_outcome"
+      ],
+      "default_tables": ["observations", "resource_parameters", "infrastructure_nodes", "event_log", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-overseas-operations-trade",
+      "priority": "P1",
+      "variable_groups": [
+        "overseas_entity_project_asset_andemployee_count",
+        "country_region_revenue_profit_andcapital_expenditure",
+        "export_import_customs_andlocalization_ratio",
+        "exchange_rate_interest_andcommodity_exposure",
+        "sanction_export_control_tariff_andtrade_remedy",
+        "political_security_legal_andcompliance_risk",
+        "overseas_financing_guarantee_andinsurance",
+        "supplier_customer_partner_andgovernment_links",
+        "project_delay_impairment_exit_anddisposal",
+        "overseas_return_repatriation_andrealized_outcome"
+      ],
+      "default_tables": ["observations", "entity_links", "network_edges", "regime_events", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-governance-compliance-risk",
+      "priority": "P0",
+      "variable_groups": [
+        "board_supervisor_management_andcontroller_change",
+        "audit_opinion_internal_control_andaccounting_revision",
+        "related_party_transaction_guarantee_andfund_occupation",
+        "investigation_inquiry_penalty_andlitigation",
+        "bankruptcy_reorganization_liquidation_andexecution",
+        "fraud_corruption_bribery_anddiscipline_public_events",
+        "product_quality_recall_safety_andenvironment_incidents",
+        "data_antitrust_labor_tax_andindustry_compliance",
+        "risk_event_market_credit_andoperating_impact",
+        "correction_recovery_andrealized_outcome"
+      ],
+      "default_tables": ["event_log", "regime_events", "entity_links", "observations", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-financial-institutions-operations",
+      "priority": "P0",
+      "variable_groups": [
+        "bank_insurance_securities_fund_andtrust_entity_codes",
+        "assets_loans_deposits_premium_andmanaged_assets",
+        "interest_fee_underwriting_andinvestment_income",
+        "npl_overdue_provision_capital_andliquidity",
+        "insurance_claim_loss_reserve_andsolvency",
+        "brokerage_financing_margin_wealth_andasset_management",
+        "regional_industry_customer_andproduct_concentration",
+        "interbank_bond_derivative_andmarket_exposure",
+        "regulatory_penalty_risk_andresolution_events",
+        "profit_credit_loss_andrealized_outcome"
+      ],
+      "default_tables": ["financial_panel", "observations", "transition_matrix", "entity_links", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-infrastructure-utilities-enterprise-operations",
+      "priority": "P0",
+      "variable_groups": [
+        "power_water_gas_heat_telecom_transport_andport_assets",
+        "capacity_output_throughput_load_andutilization",
+        "tariff_price_subsidy_andpublic_service_compensation",
+        "network_node_line_route_andcoverage",
+        "demand_peak_reliability_loss_andservice_quality",
+        "maintenance_failure_outage_andrestoration",
+        "project_capex_construction_andcommissioning",
+        "fuel_energy_material_andoperating_cost",
+        "debt_financing_andgovernment_payment",
+        "service_profit_resilience_andrealized_outcome"
+      ],
+      "default_tables": ["infrastructure_nodes", "infrastructure_edges", "observations", "resource_parameters", "event_log", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-consumer-retail-service-enterprises",
+      "priority": "P1",
+      "variable_groups": [
+        "store_hotel_restaurant_cinema_andservice_outlet_count",
+        "sales_orders_visits_occupancy_andcustomer_volume",
+        "average_price_order_value_conversion_andrepurchase",
+        "same_store_same_product_andcohort_growth",
+        "rent_labor_energy_marketing_andplatform_cost",
+        "inventory_sku_discount_promotion_andwaste",
+        "delivery_fulfillment_refund_andservice_quality",
+        "brand_franchise_supplier_andchannel_links",
+        "regional_income_population_competition_andseasonality",
+        "unit_economics_cashflow_andrealized_profit"
+      ],
+      "default_tables": ["observations", "econometric_panel", "spatial_points", "transport_demand", "entity_links", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-social-contribution-public-value",
+      "priority": "P2",
+      "variable_groups": [
+        "tax_payment_employment_wage_andsocial_insurance",
+        "public_service_supply_andcoverage",
+        "regional_investment_procurement_andlocalization",
+        "poverty_assistance_rural_revitalization_andcharity",
+        "emergency_support_disaster_relief_andreserve",
+        "innovation_standard_andindustrial_ecosystem_contribution",
+        "small_supplier_payment_andarrears",
+        "energy_environment_andcarbon_externality",
+        "consumer_service_quality_andcomplaint",
+        "public_value_cost_andrealized_outcome"
+      ],
+      "default_tables": ["observations", "econometric_panel", "entity_links", "event_log", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-enterprise-benchmark-outcomes",
+      "priority": "P0",
+      "variable_groups": [
+        "forecast_value_actual_value_anderror",
+        "project_expected_actual_cost_time_andbenefit",
+        "capacity_expected_actual_output_andutilization",
+        "credit_expected_actual_default_andrecovery",
+        "policy_support_expected_actual_business_response",
+        "market_event_expected_actual_price_andvolume_reaction",
+        "supply_disruption_expected_actual_loss_andrecovery",
+        "investment_expected_actual_return_drawdown_andpayback",
+        "model_version_data_vintage_andacceptance_threshold",
+        "calibration_drift_revision_anddecision_grade"
+      ],
+      "default_tables": ["benchmark_outcomes", "observations", "uncertainty_parameters", "regime_events"]
+    }
+  ]
+}

@@ -94,9 +94,12 @@
   },
   "quota_policy": {
     "cloudflare_free_allocation_is_primary_semantic_budget": true,
-    "reserve_fraction_for_high_value_pages": 0.25,
-    "stop_new_ai_jobs_at_utilization": 0.9,
-    "overflow_action": "queue-or-approved-external-tier",
+    "reserve_fraction_for_high_value_pages": 0.02,
+    "stop_new_ai_jobs_at_utilization": 0.98,
+    "hard_stop_on_cloudflare_429": true,
+    "same_day_retry_after_quota_error_allowed": false,
+    "next_utc_day_resume_required": true,
+    "overflow_action": "defer-until-next-utc-day-or-approved-external-tier",
     "standard_numeric_sources_must_not_consume_ai_quota": true
   },
   "ingestion_gate": {
