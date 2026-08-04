@@ -1,11 +1,11 @@
 # 情报中心能力目录
 
 - 开放模式：`maximum-safe-readonly`
-- 普通连接器：`68/68` 已启用
+- 普通连接器：`75/75` 已启用
 - 托管提供方：`64/64` 已启用
 - 托管操作总数：`698`
-- 已公开参数总数：`2448`
-- 目录 SHA-256：`100b328e8a7cd9b14ce3e5809c13e450addbe119ddea781619f9c331af3bf10b`
+- 已公开参数总数：`2484`
+- 目录 SHA-256：`c858bead3e72310585cb072164d2adeff7c9552dacd08d7cc432b8018a85f280`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -127,6 +127,13 @@
 | NewsAPI 全网新闻检索 | `newsapi-everything` | 启用 | `news-search` | `GET /data/newsapi/everything` | `11` |
 | NewsAPI 新闻来源目录 | `newsapi-sources` | 启用 | `news-source-catalog` | `GET /data/newsapi/sources` | `3` |
 | NewsAPI 头条新闻 | `newsapi-top-headlines` | 启用 | `news-headlines` | `GET /data/newsapi/top-headlines` | `6` |
+| NOAA/NCEI 历史气象数据检索 | `noaa-ncei-data-search` | 启用 | `historical-weather-climate-discovery` | `GET /data/noaa/ncei/search` | `8` |
+| NOAA/NWS 活动天气警报 | `noaa-nws-alerts-active` | 启用 | `weather-alerts` | `GET /data/noaa/nws/alerts/active` | `11` |
+| NOAA/NWS 官方逐小时预报 | `noaa-nws-forecast-hourly` | 启用 | `weather-hourly-forecast` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast/hourly` | `4` |
+| NOAA/NWS 官方分时预报 | `noaa-nws-forecast` | 启用 | `weather-forecast` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast` | `4` |
+| NOAA/NWS 网格观测站列表 | `noaa-nws-gridpoint-stations` | 启用 | `weather-stations` | `GET /data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/stations` | `5` |
+| NOAA/NWS 坐标网格解析 | `noaa-nws-points` | 启用 | `weather-location-resolution` | `GET /data/noaa/nws/points/{latitude}/{longitude}` | `2` |
+| NOAA/NWS 站点最新观测 | `noaa-nws-station-latest` | 启用 | `weather-observations` | `GET /data/noaa/nws/stations/{station_id}/observations/latest` | `2` |
 | Open-Meteo空气质量 | `openmeteo-air-quality` | 启用 | `environment` | `GET /data/openmeteo/air-quality` | `11` |
 | Open-Meteo历史天气 | `openmeteo-archive` | 启用 | `historical-weather` | `GET /data/openmeteo/archive` | `13` |
 | Open-Meteo气候变化情景 | `openmeteo-climate` | 启用 | `climate` | `GET /data/openmeteo/climate` | `10` |
@@ -31420,6 +31427,905 @@
 - 免费Developer套餐并不适合真正的实时生产监控
 - 只提供新闻元数据和摘要片段，不提供完整正文
 - 头条排序、来源覆盖和国家分类由NewsAPI决定，不能视为完整媒体样本
+
+## NOAA/NCEI 历史气象数据检索 (`noaa-ncei-data-search`)
+
+- 状态：`启用`
+- 说明：通过 NCEI Common Access Search Service 按数据集、日期、站点、数据类型或范围发现历史气象与气候数据记录。
+- 适用：历史气象数据发现；气候数据集与文件检索；站点和日期范围核验
+- 地域：全球；具体范围取决于所选 NCEI 数据集
+- 新鲜度：随 NCEI 数据集更新；不同数据集延迟不同
+- 成本等级：`free-public-no-key`
+- 详情文件：`connectors/noaa-ncei-data-search.connector.json`
+- Secret环境变量名：`无`（仅名称）
+- 连接器SHA-256：`96338d92596ab58c7c265385fa1a3962870350b593652649d75d5e266cc835de`
+
+请求契约：
+
+```json
+{
+  "path_parameter_names": [],
+  "path_parameters": {},
+  "query_parameter_names": [
+    "dataset",
+    "startDate",
+    "endDate",
+    "bbox",
+    "stations",
+    "dataTypes",
+    "limit",
+    "offset"
+  ],
+  "parameter_rules": {
+    "properties": {
+      "bbox": {
+        "max_length": 80,
+        "pattern": "^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$",
+        "type": "string"
+      },
+      "dataTypes": {
+        "max_length": 1000,
+        "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+        "type": "string"
+      },
+      "dataset": {
+        "max_length": 80,
+        "pattern": "^[a-z0-9-]{3,80}$",
+        "type": "string"
+      },
+      "endDate": {
+        "max_length": 10,
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "type": "string"
+      },
+      "limit": {
+        "maximum": 1000,
+        "minimum": 1,
+        "type": "integer"
+      },
+      "offset": {
+        "maximum": 1000000,
+        "minimum": 0,
+        "type": "integer"
+      },
+      "startDate": {
+        "max_length": 10,
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "type": "string"
+      },
+      "stations": {
+        "max_length": 1000,
+        "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+        "type": "string"
+      }
+    },
+    "required_any_of": [
+      [
+        "dataset"
+      ],
+      [
+        "startDate"
+      ],
+      [
+        "endDate"
+      ]
+    ]
+  },
+  "parameter_notes": {
+    "dataTypes": "可选；数据类型列表",
+    "dataset": "必填；例如 daily-summaries",
+    "endDate": "必填；YYYY-MM-DD",
+    "limit": "可选；最多 1000",
+    "startDate": "必填；YYYY-MM-DD",
+    "stations": "可选；站点 ID 列表",
+    "bbox": "可选；北,西,南,东"
+  },
+  "example_parameters": {
+    "dataset": "daily-summaries",
+    "endDate": "2024-01-07",
+    "limit": 20,
+    "startDate": "2024-01-01",
+    "stations": "USW00094728"
+  },
+  "input_headers": [],
+  "additional_parameters_allowed": false
+}
+```
+
+响应契约：
+
+```json
+{
+  "any_data_paths": [
+    "results"
+  ],
+  "success_when_data_present": true
+}
+```
+
+安全后端契约：
+
+```json
+{
+  "host": "https://www.ncei.noaa.gov",
+  "url_pattern": "/access/services/search/v1/data",
+  "method": "GET",
+  "encoding": "json",
+  "allowed_response_fields": [
+    "results",
+    "totalCount",
+    "formats",
+    "dataTypes",
+    "stations",
+    "errorMessage",
+    "errorCode",
+    "errors"
+  ],
+  "resilience": {
+    "circuit_breaker": {
+      "interval": 60,
+      "log_status_change": true,
+      "max_errors": 3,
+      "timeout": 30
+    },
+    "rate_limit": {
+      "capacity": 1,
+      "every": "1s",
+      "max_rate": 1
+    }
+  },
+  "rate_limit_enabled": true,
+  "circuit_breaker_enabled": true,
+  "ssrf_static_policy": "public-host-or-loopback-test-only"
+}
+```
+
+限制：
+- 这是数据发现接口，不是无界整库镜像工具
+- 结果中的数据集、时间、单位、站点和质量标识必须保留
+- 具体记录下载和格式能力依数据集而异
+- 大范围或长期批量任务应拆分并遵守公平使用
+
+## NOAA/NWS 活动天气警报 (`noaa-nws-alerts-active`)
+
+- 状态：`启用`
+- 说明：按州、坐标、区域、预警区或事件筛选当前有效的官方天气警报。
+- 适用：灾害天气预警；运营和出行风险；应急态势核验
+- 地域：美国及 NWS 服务区域
+- 新鲜度：活动警报实时更新；以响应 sent、effective、expires 字段为准
+- 成本等级：`free-public-no-key`
+- 详情文件：`connectors/noaa-nws-alerts-active.connector.json`
+- Secret环境变量名：`无`（仅名称）
+- 连接器SHA-256：`430a81a7434066ada571ac0720c666805159469e946b2cb3612a6e32fef42803`
+
+请求契约：
+
+```json
+{
+  "path_parameter_names": [],
+  "path_parameters": {},
+  "query_parameter_names": [
+    "area",
+    "point",
+    "region",
+    "zone",
+    "urgency",
+    "severity",
+    "certainty",
+    "status",
+    "message_type",
+    "event",
+    "code"
+  ],
+  "parameter_rules": {
+    "properties": {
+      "area": {
+        "max_length": 80,
+        "pattern": "^[A-Z]{2}(?:,[A-Z]{2})*$",
+        "type": "string"
+      },
+      "certainty": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "code": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "event": {
+        "max_length": 200,
+        "type": "string"
+      },
+      "message_type": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "point": {
+        "max_length": 24,
+        "pattern": "^-?[0-9]{1,2}(?:\\.[0-9]{1,6})?,-?[0-9]{1,3}(?:\\.[0-9]{1,6})?$",
+        "type": "string"
+      },
+      "region": {
+        "max_length": 8,
+        "pattern": "^[A-Z]{2,8}$",
+        "type": "string"
+      },
+      "severity": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "status": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "urgency": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "zone": {
+        "max_length": 220,
+        "pattern": "^[A-Z0-9-]{3,20}(?:,[A-Z0-9-]{3,20})*$",
+        "type": "string"
+      }
+    },
+    "required_any_of": [
+      [
+        "area",
+        "point",
+        "region",
+        "zone",
+        "event",
+        "code"
+      ]
+    ]
+  },
+  "parameter_notes": {
+    "area": "州或领地两位代码，可逗号分隔",
+    "event": "事件名称",
+    "point": "纬度,经度",
+    "zone": "预警区代码"
+  },
+  "example_parameters": {
+    "area": "DC"
+  },
+  "input_headers": [],
+  "additional_parameters_allowed": false
+}
+```
+
+响应契约：
+
+```json
+{
+  "any_data_paths": [
+    "features"
+  ],
+  "success_when_data_present": true
+}
+```
+
+安全后端契约：
+
+```json
+{
+  "host": "https://api.weather.gov",
+  "url_pattern": "/alerts/active",
+  "method": "GET",
+  "encoding": "json",
+  "allowed_response_fields": [
+    "@context",
+    "id",
+    "type",
+    "geometry",
+    "properties",
+    "features",
+    "pagination",
+    "title",
+    "status",
+    "detail",
+    "instance",
+    "correlationId"
+  ],
+  "resilience": {
+    "circuit_breaker": {
+      "interval": 60,
+      "log_status_change": true,
+      "max_errors": 3,
+      "timeout": 20
+    },
+    "rate_limit": {
+      "capacity": 1,
+      "every": "30s",
+      "max_rate": 1
+    }
+  },
+  "rate_limit_enabled": true,
+  "circuit_breaker_enabled": true,
+  "ssrf_static_policy": "public-host-or-loopback-test-only"
+}
+```
+
+限制：
+- 必须至少提供一个地域或事件过滤条件，禁止无界拉取全部警报
+- 警报正文应结合发布时间和失效时间解释
+- 该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文
+- NWS 建议活动警报请求频率不超过每 30 秒一次
+
+## NOAA/NWS 官方逐小时预报 (`noaa-nws-forecast-hourly`)
+
+- 状态：`启用`
+- 说明：按 NWS 网格取得逐小时官方天气预报。
+- 适用：逐小时运营安排；短时天气风险；出行和活动计划
+- 地域：美国及 NWS 服务区域
+- 新鲜度：随对应 NWS 预报办公室更新
+- 成本等级：`free-public-no-key`
+- 详情文件：`connectors/noaa-nws-forecast-hourly.connector.json`
+- Secret环境变量名：`无`（仅名称）
+- 连接器SHA-256：`63e19e73ecec712b64385a2c13910feb5c1aa1bd937779d7f7201f9396d3a728`
+
+请求契约：
+
+```json
+{
+  "path_parameter_names": [
+    "grid_x",
+    "grid_y",
+    "office"
+  ],
+  "path_parameters": {
+    "grid_x": {
+      "max_length": 3,
+      "pattern": "^[0-9]{1,3}$"
+    },
+    "grid_y": {
+      "max_length": 3,
+      "pattern": "^[0-9]{1,3}$"
+    },
+    "office": {
+      "max_length": 3,
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "query_parameter_names": [
+    "units"
+  ],
+  "parameter_rules": {
+    "properties": {
+      "units": {
+        "enum": [
+          "us",
+          "si"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "parameter_notes": {
+    "grid_x": "必填；网格 X",
+    "grid_y": "必填；网格 Y",
+    "office": "必填；三位 NWS 办公室代码",
+    "units": "可选；us 或 si"
+  },
+  "example_parameters": {
+    "grid_x": "97",
+    "grid_y": "71",
+    "office": "LWX",
+    "units": "si"
+  },
+  "input_headers": [],
+  "additional_parameters_allowed": false
+}
+```
+
+响应契约：
+
+```json
+{
+  "any_data_paths": [
+    "properties.periods"
+  ],
+  "success_when_data_present": true
+}
+```
+
+安全后端契约：
+
+```json
+{
+  "host": "https://api.weather.gov",
+  "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
+  "method": "GET",
+  "encoding": "json",
+  "allowed_response_fields": [
+    "@context",
+    "id",
+    "type",
+    "geometry",
+    "properties",
+    "features",
+    "pagination",
+    "title",
+    "status",
+    "detail",
+    "instance",
+    "correlationId"
+  ],
+  "resilience": {
+    "circuit_breaker": {
+      "interval": 60,
+      "log_status_change": true,
+      "max_errors": 3,
+      "timeout": 20
+    },
+    "rate_limit": {
+      "capacity": 2,
+      "every": "1s",
+      "max_rate": 2
+    }
+  },
+  "rate_limit_enabled": true,
+  "circuit_breaker_enabled": true,
+  "ssrf_static_policy": "public-host-or-loopback-test-only"
+}
+```
+
+限制：
+- 只覆盖 NWS 服务区域
+- 逐小时预报仍需结合官方警报和现场观测
+
+## NOAA/NWS 官方分时预报 (`noaa-nws-forecast`)
+
+- 状态：`启用`
+- 说明：按 NWS 办公室和网格坐标取得约 12 小时时段的官方文字与要素预报。
+- 适用：美国天气决策；风险与运营计划；官方预报交叉核验
+- 地域：美国及 NWS 服务区域
+- 新鲜度：随对应 NWS 预报办公室更新
+- 成本等级：`free-public-no-key`
+- 详情文件：`connectors/noaa-nws-forecast.connector.json`
+- Secret环境变量名：`无`（仅名称）
+- 连接器SHA-256：`0608c942ed429156cda0e7fed76ca7eb74dea800b92ac8b9818fcd31962f9f1c`
+
+请求契约：
+
+```json
+{
+  "path_parameter_names": [
+    "grid_x",
+    "grid_y",
+    "office"
+  ],
+  "path_parameters": {
+    "grid_x": {
+      "max_length": 3,
+      "pattern": "^[0-9]{1,3}$"
+    },
+    "grid_y": {
+      "max_length": 3,
+      "pattern": "^[0-9]{1,3}$"
+    },
+    "office": {
+      "max_length": 3,
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "query_parameter_names": [
+    "units"
+  ],
+  "parameter_rules": {
+    "properties": {
+      "units": {
+        "enum": [
+          "us",
+          "si"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "parameter_notes": {
+    "grid_x": "必填；网格 X",
+    "grid_y": "必填；网格 Y",
+    "office": "必填；三位 NWS 办公室代码",
+    "units": "可选；us 或 si"
+  },
+  "example_parameters": {
+    "grid_x": "97",
+    "grid_y": "71",
+    "office": "LWX",
+    "units": "si"
+  },
+  "input_headers": [],
+  "additional_parameters_allowed": false
+}
+```
+
+响应契约：
+
+```json
+{
+  "any_data_paths": [
+    "properties.periods"
+  ],
+  "success_when_data_present": true
+}
+```
+
+安全后端契约：
+
+```json
+{
+  "host": "https://api.weather.gov",
+  "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast",
+  "method": "GET",
+  "encoding": "json",
+  "allowed_response_fields": [
+    "@context",
+    "id",
+    "type",
+    "geometry",
+    "properties",
+    "features",
+    "pagination",
+    "title",
+    "status",
+    "detail",
+    "instance",
+    "correlationId"
+  ],
+  "resilience": {
+    "circuit_breaker": {
+      "interval": 60,
+      "log_status_change": true,
+      "max_errors": 3,
+      "timeout": 20
+    },
+    "rate_limit": {
+      "capacity": 2,
+      "every": "1s",
+      "max_rate": 2
+    }
+  },
+  "rate_limit_enabled": true,
+  "circuit_breaker_enabled": true,
+  "ssrf_static_policy": "public-host-or-loopback-test-only"
+}
+```
+
+限制：
+- 网格参数必须先由 NOAA/NWS points 解析
+- 预报存在不确定性，不能视为观测事实
+
+## NOAA/NWS 网格观测站列表 (`noaa-nws-gridpoint-stations`)
+
+- 状态：`启用`
+- 说明：取得指定 NWS 网格附近可用的官方观测站。
+- 适用：查找附近观测站；为最新观测准备站点 ID；观测覆盖核验
+- 地域：美国及 NWS 服务区域
+- 新鲜度：请求时返回站点目录
+- 成本等级：`free-public-no-key`
+- 详情文件：`connectors/noaa-nws-gridpoint-stations.connector.json`
+- Secret环境变量名：`无`（仅名称）
+- 连接器SHA-256：`95bc94a26157b847efb986663730177c0da7060a8b671f8d56f9de6c472d29e0`
+
+请求契约：
+
+```json
+{
+  "path_parameter_names": [
+    "grid_x",
+    "grid_y",
+    "office"
+  ],
+  "path_parameters": {
+    "grid_x": {
+      "max_length": 3,
+      "pattern": "^[0-9]{1,3}$"
+    },
+    "grid_y": {
+      "max_length": 3,
+      "pattern": "^[0-9]{1,3}$"
+    },
+    "office": {
+      "max_length": 3,
+      "pattern": "^[A-Z]{3}$"
+    }
+  },
+  "query_parameter_names": [
+    "limit",
+    "cursor"
+  ],
+  "parameter_rules": {
+    "properties": {
+      "cursor": {
+        "max_length": 256,
+        "type": "string"
+      },
+      "limit": {
+        "maximum": 100,
+        "minimum": 1,
+        "type": "integer"
+      }
+    }
+  },
+  "parameter_notes": {
+    "cursor": "可选；分页游标",
+    "grid_x": "必填",
+    "grid_y": "必填",
+    "limit": "可选；最多 100",
+    "office": "必填；NWS 办公室代码"
+  },
+  "example_parameters": {
+    "grid_x": "97",
+    "grid_y": "71",
+    "limit": 20,
+    "office": "LWX"
+  },
+  "input_headers": [],
+  "additional_parameters_allowed": false
+}
+```
+
+响应契约：
+
+```json
+{
+  "any_data_paths": [
+    "features"
+  ],
+  "success_when_data_present": true
+}
+```
+
+安全后端契约：
+
+```json
+{
+  "host": "https://api.weather.gov",
+  "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/stations",
+  "method": "GET",
+  "encoding": "json",
+  "allowed_response_fields": [
+    "@context",
+    "id",
+    "type",
+    "geometry",
+    "properties",
+    "features",
+    "pagination",
+    "title",
+    "status",
+    "detail",
+    "instance",
+    "correlationId"
+  ],
+  "resilience": {
+    "circuit_breaker": {
+      "interval": 60,
+      "log_status_change": true,
+      "max_errors": 3,
+      "timeout": 20
+    },
+    "rate_limit": {
+      "capacity": 2,
+      "every": "1s",
+      "max_rate": 2
+    }
+  },
+  "rate_limit_enabled": true,
+  "circuit_breaker_enabled": true,
+  "ssrf_static_policy": "public-host-or-loopback-test-only"
+}
+```
+
+限制：
+- 站点可用性和报告频率不一致
+- 站点目录不等同于该站点当前有有效观测
+
+## NOAA/NWS 坐标网格解析 (`noaa-nws-points`)
+
+- 状态：`启用`
+- 说明：把美国境内经纬度解析为 NWS 预报办公室、网格坐标、预报端点和观测站入口。
+- 适用：美国地点预报准备；确定 NWS 办公室与网格；衔接官方预报和观测
+- 地域：美国及 NWS 服务区域
+- 新鲜度：请求时实时返回服务元数据
+- 成本等级：`free-public-no-key`
+- 详情文件：`connectors/noaa-nws-points.connector.json`
+- Secret环境变量名：`无`（仅名称）
+- 连接器SHA-256：`62fb86a28e3422cdd1f322b74daeca87efe01c36458ca111a9e6dca5cdb433bf`
+
+请求契约：
+
+```json
+{
+  "path_parameter_names": [
+    "latitude",
+    "longitude"
+  ],
+  "path_parameters": {
+    "latitude": {
+      "max_length": 10,
+      "pattern": "^-?[0-9]{1,2}(?:\\.[0-9]{1,6})?$"
+    },
+    "longitude": {
+      "max_length": 11,
+      "pattern": "^-?[0-9]{1,3}(?:\\.[0-9]{1,6})?$"
+    }
+  },
+  "query_parameter_names": [],
+  "parameter_rules": {},
+  "parameter_notes": {
+    "latitude": "必填；十进制度纬度",
+    "longitude": "必填；十进制度经度"
+  },
+  "example_parameters": {
+    "latitude": "38.8977",
+    "longitude": "-77.0365"
+  },
+  "input_headers": [],
+  "additional_parameters_allowed": false
+}
+```
+
+响应契约：
+
+```json
+{
+  "any_data_paths": [
+    "properties"
+  ],
+  "success_when_data_present": true
+}
+```
+
+安全后端契约：
+
+```json
+{
+  "host": "https://api.weather.gov",
+  "url_pattern": "/points/{latitude},{longitude}",
+  "method": "GET",
+  "encoding": "json",
+  "allowed_response_fields": [
+    "@context",
+    "id",
+    "type",
+    "geometry",
+    "properties",
+    "features",
+    "pagination",
+    "title",
+    "status",
+    "detail",
+    "instance",
+    "correlationId"
+  ],
+  "resilience": {
+    "circuit_breaker": {
+      "interval": 60,
+      "log_status_change": true,
+      "max_errors": 3,
+      "timeout": 20
+    },
+    "rate_limit": {
+      "capacity": 2,
+      "every": "1s",
+      "max_rate": 2
+    }
+  },
+  "rate_limit_enabled": true,
+  "circuit_breaker_enabled": true,
+  "ssrf_static_policy": "public-host-or-loopback-test-only"
+}
+```
+
+限制：
+- 主要面向美国及 NWS 服务区域
+- 先调用本连接器取得 office、gridX 和 gridY，再调用预报连接器
+- NWS 要求合理限速并使用可识别的 User-Agent；网关采用保守限速
+
+## NOAA/NWS 站点最新观测 (`noaa-nws-station-latest`)
+
+- 状态：`启用`
+- 说明：按官方观测站 ID 取得最新天气观测及质量控制字段。
+- 适用：当前天气观测；预报与实况比较；短时风险核验
+- 地域：NWS/MADIS 可用站点
+- 新鲜度：取决于站点最新报告时间
+- 成本等级：`free-public-no-key`
+- 详情文件：`connectors/noaa-nws-station-latest.connector.json`
+- Secret环境变量名：`无`（仅名称）
+- 连接器SHA-256：`fb32d4e9a46aec714dc866fca94c7b1af3f8cc2ae19506b9083d9c8dd2167ebb`
+
+请求契约：
+
+```json
+{
+  "path_parameter_names": [
+    "station_id"
+  ],
+  "path_parameters": {
+    "station_id": {
+      "max_length": 16,
+      "pattern": "^[A-Z0-9-]{3,16}$"
+    }
+  },
+  "query_parameter_names": [
+    "require_qc"
+  ],
+  "parameter_rules": {
+    "properties": {
+      "require_qc": {
+        "type": "boolean"
+      }
+    }
+  },
+  "parameter_notes": {
+    "require_qc": "可选；是否要求质量控制通过",
+    "station_id": "必填；官方站点 ID"
+  },
+  "example_parameters": {
+    "require_qc": true,
+    "station_id": "KDCA"
+  },
+  "input_headers": [],
+  "additional_parameters_allowed": false
+}
+```
+
+响应契约：
+
+```json
+{
+  "any_data_paths": [
+    "properties"
+  ],
+  "success_when_data_present": true
+}
+```
+
+安全后端契约：
+
+```json
+{
+  "host": "https://api.weather.gov",
+  "url_pattern": "/stations/{station_id}/observations/latest",
+  "method": "GET",
+  "encoding": "json",
+  "allowed_response_fields": [
+    "@context",
+    "id",
+    "type",
+    "geometry",
+    "properties",
+    "features",
+    "pagination",
+    "title",
+    "status",
+    "detail",
+    "instance",
+    "correlationId"
+  ],
+  "resilience": {
+    "circuit_breaker": {
+      "interval": 60,
+      "log_status_change": true,
+      "max_errors": 3,
+      "timeout": 20
+    },
+    "rate_limit": {
+      "capacity": 2,
+      "every": "1s",
+      "max_rate": 2
+    }
+  },
+  "rate_limit_enabled": true,
+  "circuit_breaker_enabled": true,
+  "ssrf_static_policy": "public-host-or-loopback-test-only"
+}
+```
+
+限制：
+- 部分字段可能为空
+- 官方文档记录部分非中部时区站点的 24 小时最高/最低温字段存在上游缺失问题
 
 ## Open-Meteo空气质量 (`openmeteo-air-quality`)
 

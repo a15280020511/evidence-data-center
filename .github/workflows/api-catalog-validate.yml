@@ -111,7 +111,7 @@ jobs:
           manifest = json.loads(Path('api-center/connector-manifest.json').read_text(encoding='utf-8'))
           providers = {row['provider_id']: row for row in catalog['managed_providers']}
 
-          assert manifest['connector_count'] == manifest['enabled_connector_count'] == 68
+          assert manifest['connector_count'] == manifest['enabled_connector_count'] == 75
           assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
           assert catalog['managed_provider_count'] == len(providers)
           assert catalog['enabled_managed_provider_count'] == len(providers)

@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "connectors": {
     "amap-direction-driving": {
       "display_name": "高德驾车路线规划",
@@ -1737,6 +1737,208 @@
       },
       "limitations": [
         "公共Nominatim限流严格；不得批量高频调用"
+      ]
+    },
+    "noaa-ncei-data-search": {
+      "cost_class": "free-public-no-key",
+      "data_category": "historical-weather-climate-discovery",
+      "description": "通过 NCEI Common Access Search Service 按数据集、日期、站点、数据类型或范围发现历史气象与气候数据记录。",
+      "display_name": "NOAA/NCEI 历史气象数据检索",
+      "example_parameters": {
+        "dataset": "daily-summaries",
+        "endDate": "2024-01-07",
+        "limit": 20,
+        "startDate": "2024-01-01",
+        "stations": "USW00094728"
+      },
+      "freshness": "随 NCEI 数据集更新；不同数据集延迟不同",
+      "geographic_coverage": "全球；具体范围取决于所选 NCEI 数据集",
+      "limitations": [
+        "这是数据发现接口，不是无界整库镜像工具",
+        "结果中的数据集、时间、单位、站点和质量标识必须保留",
+        "具体记录下载和格式能力依数据集而异",
+        "大范围或长期批量任务应拆分并遵守公平使用"
+      ],
+      "parameter_notes": {
+        "dataTypes": "可选；数据类型列表",
+        "dataset": "必填；例如 daily-summaries",
+        "endDate": "必填；YYYY-MM-DD",
+        "limit": "可选；最多 1000",
+        "startDate": "必填；YYYY-MM-DD",
+        "stations": "可选；站点 ID 列表",
+        "bbox": "可选；北,西,南,东"
+      },
+      "use_cases": [
+        "历史气象数据发现",
+        "气候数据集与文件检索",
+        "站点和日期范围核验"
+      ]
+    },
+    "noaa-nws-alerts-active": {
+      "cost_class": "free-public-no-key",
+      "data_category": "weather-alerts",
+      "description": "按州、坐标、区域、预警区或事件筛选当前有效的官方天气警报。",
+      "display_name": "NOAA/NWS 活动天气警报",
+      "example_parameters": {
+        "area": "DC"
+      },
+      "freshness": "活动警报实时更新；以响应 sent、effective、expires 字段为准",
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "limitations": [
+        "必须至少提供一个地域或事件过滤条件，禁止无界拉取全部警报",
+        "警报正文应结合发布时间和失效时间解释",
+        "该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文",
+        "NWS 建议活动警报请求频率不超过每 30 秒一次"
+      ],
+      "parameter_notes": {
+        "area": "州或领地两位代码，可逗号分隔",
+        "event": "事件名称",
+        "point": "纬度,经度",
+        "zone": "预警区代码"
+      },
+      "use_cases": [
+        "灾害天气预警",
+        "运营和出行风险",
+        "应急态势核验"
+      ]
+    },
+    "noaa-nws-forecast": {
+      "cost_class": "free-public-no-key",
+      "data_category": "weather-forecast",
+      "description": "按 NWS 办公室和网格坐标取得约 12 小时时段的官方文字与要素预报。",
+      "display_name": "NOAA/NWS 官方分时预报",
+      "example_parameters": {
+        "grid_x": "97",
+        "grid_y": "71",
+        "office": "LWX",
+        "units": "si"
+      },
+      "freshness": "随对应 NWS 预报办公室更新",
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "limitations": [
+        "网格参数必须先由 NOAA/NWS points 解析",
+        "预报存在不确定性，不能视为观测事实"
+      ],
+      "parameter_notes": {
+        "grid_x": "必填；网格 X",
+        "grid_y": "必填；网格 Y",
+        "office": "必填；三位 NWS 办公室代码",
+        "units": "可选；us 或 si"
+      },
+      "use_cases": [
+        "美国天气决策",
+        "风险与运营计划",
+        "官方预报交叉核验"
+      ]
+    },
+    "noaa-nws-forecast-hourly": {
+      "cost_class": "free-public-no-key",
+      "data_category": "weather-hourly-forecast",
+      "description": "按 NWS 网格取得逐小时官方天气预报。",
+      "display_name": "NOAA/NWS 官方逐小时预报",
+      "example_parameters": {
+        "grid_x": "97",
+        "grid_y": "71",
+        "office": "LWX",
+        "units": "si"
+      },
+      "freshness": "随对应 NWS 预报办公室更新",
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "limitations": [
+        "只覆盖 NWS 服务区域",
+        "逐小时预报仍需结合官方警报和现场观测"
+      ],
+      "parameter_notes": {
+        "grid_x": "必填；网格 X",
+        "grid_y": "必填；网格 Y",
+        "office": "必填；三位 NWS 办公室代码",
+        "units": "可选；us 或 si"
+      },
+      "use_cases": [
+        "逐小时运营安排",
+        "短时天气风险",
+        "出行和活动计划"
+      ]
+    },
+    "noaa-nws-gridpoint-stations": {
+      "cost_class": "free-public-no-key",
+      "data_category": "weather-stations",
+      "description": "取得指定 NWS 网格附近可用的官方观测站。",
+      "display_name": "NOAA/NWS 网格观测站列表",
+      "example_parameters": {
+        "grid_x": "97",
+        "grid_y": "71",
+        "limit": 20,
+        "office": "LWX"
+      },
+      "freshness": "请求时返回站点目录",
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "limitations": [
+        "站点可用性和报告频率不一致",
+        "站点目录不等同于该站点当前有有效观测"
+      ],
+      "parameter_notes": {
+        "cursor": "可选；分页游标",
+        "grid_x": "必填",
+        "grid_y": "必填",
+        "limit": "可选；最多 100",
+        "office": "必填；NWS 办公室代码"
+      },
+      "use_cases": [
+        "查找附近观测站",
+        "为最新观测准备站点 ID",
+        "观测覆盖核验"
+      ]
+    },
+    "noaa-nws-points": {
+      "cost_class": "free-public-no-key",
+      "data_category": "weather-location-resolution",
+      "description": "把美国境内经纬度解析为 NWS 预报办公室、网格坐标、预报端点和观测站入口。",
+      "display_name": "NOAA/NWS 坐标网格解析",
+      "example_parameters": {
+        "latitude": "38.8977",
+        "longitude": "-77.0365"
+      },
+      "freshness": "请求时实时返回服务元数据",
+      "geographic_coverage": "美国及 NWS 服务区域",
+      "limitations": [
+        "主要面向美国及 NWS 服务区域",
+        "先调用本连接器取得 office、gridX 和 gridY，再调用预报连接器",
+        "NWS 要求合理限速并使用可识别的 User-Agent；网关采用保守限速"
+      ],
+      "parameter_notes": {
+        "latitude": "必填；十进制度纬度",
+        "longitude": "必填；十进制度经度"
+      },
+      "use_cases": [
+        "美国地点预报准备",
+        "确定 NWS 办公室与网格",
+        "衔接官方预报和观测"
+      ]
+    },
+    "noaa-nws-station-latest": {
+      "cost_class": "free-public-no-key",
+      "data_category": "weather-observations",
+      "description": "按官方观测站 ID 取得最新天气观测及质量控制字段。",
+      "display_name": "NOAA/NWS 站点最新观测",
+      "example_parameters": {
+        "require_qc": true,
+        "station_id": "KDCA"
+      },
+      "freshness": "取决于站点最新报告时间",
+      "geographic_coverage": "NWS/MADIS 可用站点",
+      "limitations": [
+        "部分字段可能为空",
+        "官方文档记录部分非中部时区站点的 24 小时最高/最低温字段存在上游缺失问题"
+      ],
+      "parameter_notes": {
+        "require_qc": "可选；是否要求质量控制通过",
+        "station_id": "必填；官方站点 ID"
+      },
+      "use_cases": [
+        "当前天气观测",
+        "预报与实况比较",
+        "短时风险核验"
       ]
     }
   }

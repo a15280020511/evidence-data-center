@@ -1,0 +1,122 @@
+{
+  "backend": {
+    "allow": [
+      "@context",
+      "id",
+      "type",
+      "geometry",
+      "properties",
+      "features",
+      "pagination",
+      "title",
+      "status",
+      "detail",
+      "instance",
+      "correlationId"
+    ],
+    "encoding": "json",
+    "host": "https://api.weather.gov",
+    "method": "GET",
+    "resilience": {
+      "circuit_breaker": {
+        "interval": 60,
+        "log_status_change": true,
+        "max_errors": 3,
+        "timeout": 20
+      },
+      "rate_limit": {
+        "capacity": 1,
+        "every": "30s",
+        "max_rate": 1
+      }
+    },
+    "url_pattern": "/alerts/active"
+  },
+  "enabled": true,
+  "endpoint": "/data/noaa/nws/alerts/active",
+  "id": "noaa-nws-alerts-active",
+  "input_query_strings": [
+    "area",
+    "point",
+    "region",
+    "zone",
+    "urgency",
+    "severity",
+    "certainty",
+    "status",
+    "message_type",
+    "event",
+    "code"
+  ],
+  "method": "GET",
+  "output_encoding": "json",
+  "parameter_rules": {
+    "properties": {
+      "area": {
+        "max_length": 80,
+        "pattern": "^[A-Z]{2}(?:,[A-Z]{2})*$",
+        "type": "string"
+      },
+      "certainty": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "code": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "event": {
+        "max_length": 200,
+        "type": "string"
+      },
+      "message_type": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "point": {
+        "max_length": 24,
+        "pattern": "^-?[0-9]{1,2}(?:\\.[0-9]{1,6})?,-?[0-9]{1,3}(?:\\.[0-9]{1,6})?$",
+        "type": "string"
+      },
+      "region": {
+        "max_length": 8,
+        "pattern": "^[A-Z]{2,8}$",
+        "type": "string"
+      },
+      "severity": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "status": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "urgency": {
+        "max_length": 100,
+        "type": "string"
+      },
+      "zone": {
+        "max_length": 220,
+        "pattern": "^[A-Z0-9-]{3,20}(?:,[A-Z0-9-]{3,20})*$",
+        "type": "string"
+      }
+    },
+    "required_any_of": [
+      [
+        "area",
+        "point",
+        "region",
+        "zone",
+        "event",
+        "code"
+      ]
+    ]
+  },
+  "response_contract": {
+    "any_data_paths": [
+      "features"
+    ],
+    "success_when_data_present": true
+  },
+  "timeout": "20s"
+}

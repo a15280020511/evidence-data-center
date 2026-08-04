@@ -2078,6 +2078,346 @@
       ]
     },
     {
+      "endpoint": "/data/noaa/ncei/search",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://www.ncei.noaa.gov"
+          ],
+          "url_pattern": "/access/services/search/v1/data",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-noaa-ncei-data-search",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "results",
+            "totalCount",
+            "formats",
+            "dataTypes",
+            "stations",
+            "errorMessage",
+            "errorCode",
+            "errors"
+          ]
+        }
+      ],
+      "timeout": "30s",
+      "input_query_strings": [
+        "dataset",
+        "startDate",
+        "endDate",
+        "bbox",
+        "stations",
+        "dataTypes",
+        "limit",
+        "offset"
+      ]
+    },
+    {
+      "endpoint": "/data/noaa/nws/alerts/active",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.weather.gov"
+          ],
+          "url_pattern": "/alerts/active",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 20,
+              "max_errors": 3,
+              "name": "cb-noaa-nws-alerts-active",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "30s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "@context",
+            "id",
+            "type",
+            "geometry",
+            "properties",
+            "features",
+            "pagination",
+            "title",
+            "status",
+            "detail",
+            "instance",
+            "correlationId"
+          ]
+        }
+      ],
+      "timeout": "20s",
+      "input_query_strings": [
+        "area",
+        "point",
+        "region",
+        "zone",
+        "urgency",
+        "severity",
+        "certainty",
+        "status",
+        "message_type",
+        "event",
+        "code"
+      ]
+    },
+    {
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast/hourly",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.weather.gov"
+          ],
+          "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 20,
+              "max_errors": 3,
+              "name": "cb-noaa-nws-forecast-hourly",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 2.0,
+              "every": "1s",
+              "capacity": 2
+            }
+          },
+          "allow": [
+            "@context",
+            "id",
+            "type",
+            "geometry",
+            "properties",
+            "features",
+            "pagination",
+            "title",
+            "status",
+            "detail",
+            "instance",
+            "correlationId"
+          ]
+        }
+      ],
+      "timeout": "20s",
+      "input_query_strings": [
+        "units"
+      ]
+    },
+    {
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.weather.gov"
+          ],
+          "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 20,
+              "max_errors": 3,
+              "name": "cb-noaa-nws-forecast",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 2.0,
+              "every": "1s",
+              "capacity": 2
+            }
+          },
+          "allow": [
+            "@context",
+            "id",
+            "type",
+            "geometry",
+            "properties",
+            "features",
+            "pagination",
+            "title",
+            "status",
+            "detail",
+            "instance",
+            "correlationId"
+          ]
+        }
+      ],
+      "timeout": "20s",
+      "input_query_strings": [
+        "units"
+      ]
+    },
+    {
+      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/stations",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.weather.gov"
+          ],
+          "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/stations",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 20,
+              "max_errors": 3,
+              "name": "cb-noaa-nws-gridpoint-stations",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 2.0,
+              "every": "1s",
+              "capacity": 2
+            }
+          },
+          "allow": [
+            "@context",
+            "id",
+            "type",
+            "geometry",
+            "properties",
+            "features",
+            "pagination",
+            "title",
+            "status",
+            "detail",
+            "instance",
+            "correlationId"
+          ]
+        }
+      ],
+      "timeout": "20s",
+      "input_query_strings": [
+        "limit",
+        "cursor"
+      ]
+    },
+    {
+      "endpoint": "/data/noaa/nws/points/{latitude}/{longitude}",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.weather.gov"
+          ],
+          "url_pattern": "/points/{latitude},{longitude}",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 20,
+              "max_errors": 3,
+              "name": "cb-noaa-nws-points",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 2.0,
+              "every": "1s",
+              "capacity": 2
+            }
+          },
+          "allow": [
+            "@context",
+            "id",
+            "type",
+            "geometry",
+            "properties",
+            "features",
+            "pagination",
+            "title",
+            "status",
+            "detail",
+            "instance",
+            "correlationId"
+          ]
+        }
+      ],
+      "timeout": "20s"
+    },
+    {
+      "endpoint": "/data/noaa/nws/stations/{station_id}/observations/latest",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://api.weather.gov"
+          ],
+          "url_pattern": "/stations/{station_id}/observations/latest",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 20,
+              "max_errors": 3,
+              "name": "cb-noaa-nws-station-latest",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 2.0,
+              "every": "1s",
+              "capacity": 2
+            }
+          },
+          "allow": [
+            "@context",
+            "id",
+            "type",
+            "geometry",
+            "properties",
+            "features",
+            "pagination",
+            "title",
+            "status",
+            "detail",
+            "instance",
+            "correlationId"
+          ]
+        }
+      ],
+      "timeout": "20s",
+      "input_query_strings": [
+        "require_qc"
+      ]
+    },
+    {
       "endpoint": "/data/openmeteo/air-quality",
       "method": "GET",
       "output_encoding": "json",
