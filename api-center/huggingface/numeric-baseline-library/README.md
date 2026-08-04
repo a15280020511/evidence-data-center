@@ -2,6 +2,8 @@
 
 > **本目录位于情报中心，但只保存表结构、数值化规则和导出验证代码。私有 Hugging Face Dataset 的存储网关、凭据、入库和转交全部属于治理仓库。**
 
+治理网关已在 `a15280020511/decision-system-governance` 主线提交 `38e7316df654c806372fd6a6bef6e7fa19fa13b7` 正式建立。情报中心的任何数值输出必须符合该网关合同，不得恢复私有 Dataset 直连。
+
 机器角色见 `library-role.json`：
 
 ```text
