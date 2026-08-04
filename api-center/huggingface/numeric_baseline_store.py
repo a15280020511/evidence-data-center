@@ -254,6 +254,26 @@ def build_bootstrap(output_dir: Path) -> dict[str, Any]:
     return receipt
 
 
+def plan_template_initialization(
+    existing_files: set[str],
+    bootstrap_files: list[Mapping[str, Any]],
+) -> dict[str, Any]:
+    expected = {str(row["remote_path"]): str(row["table_id"]) for row in bootstrap_files}
+    visible = {path for path in existing_files if not path.startswith(".")}
+    unexpected = sorted(visible - set(expected))
+    if unexpected:
+        raise NumericBaselineStoreError(
+            "numeric-only dataset contains unexpected files: " + ", ".join(unexpected[:20])
+        )
+    missing = sorted(set(expected) - visible)
+    return {
+        "expected_paths": set(expected),
+        "missing_paths": missing,
+        "preserved_paths": sorted(visible),
+        "path_to_table": expected,
+    }
+
+
 def _resolve_repo_id(api: HfApi, token: str) -> tuple[str, str]:
     identity = api.whoami(token=token)
     if not isinstance(identity, Mapping) or not identity.get("name"):
@@ -279,51 +299,63 @@ def sync_private_library(output_dir: Path) -> dict[str, Any]:
     if not bool(getattr(info, "private", False)):
         raise NumericBaselineStoreError("numeric baseline dataset must be private")
 
-    expected_paths = {row["remote_path"] for row in bootstrap["files"]}
     existing = set(api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=token))
-    unexpected = sorted(p for p in existing if p not in expected_paths and not p.startswith("."))
-    if unexpected:
-        raise NumericBaselineStoreError(
-            "numeric-only dataset contains unexpected files: " + ", ".join(unexpected[:20])
-        )
-
+    plan = plan_template_initialization(existing, bootstrap["files"])
+    rows_by_path = {str(row["remote_path"]): row for row in bootstrap["files"]}
     operations = [
         CommitOperationAdd(
-            path_in_repo=row["remote_path"],
-            path_or_fileobj=output_dir / "data" / f"{row['table_id']}.parquet",
+            path_in_repo=remote_path,
+            path_or_fileobj=output_dir / "data" / f"{rows_by_path[remote_path]['table_id']}.parquet",
         )
-        for row in bootstrap["files"]
+        for remote_path in plan["missing_paths"]
     ]
-    commit = api.create_commit(
-        repo_id=repo_id, repo_type="dataset", operations=operations,
-        commit_message="Initialize pure numeric compute baseline schemas", token=token,
-    )
+    commit_oid = ""
+    if operations:
+        commit = api.create_commit(
+            repo_id=repo_id, repo_type="dataset", operations=operations,
+            commit_message="Initialize missing pure numeric compute baseline schemas", token=token,
+        )
+        commit_oid = str(getattr(commit, "oid", "") or "")
 
     control = validate_control_plane()
     verified: list[dict[str, Any]] = []
+    initialized = set(plan["missing_paths"])
     for row in bootstrap["files"]:
         local = hf_hub_download(
             repo_id=repo_id, filename=row["remote_path"], repo_type="dataset",
             token=token, force_download=True,
         )
         checked = validate_numeric_parquet(
-            Path(local), control["tables"][row["table_id"]], require_zero_rows=True
+            Path(local), control["tables"][row["table_id"]], require_zero_rows=False
         )
-        if checked["sha256"] != row["sha256"]:
-            raise NumericBaselineStoreError(f"remote numeric payload hash mismatch: {row['table_id']}")
+        if row["remote_path"] in initialized and checked["sha256"] != row["sha256"]:
+            raise NumericBaselineStoreError(f"initialized numeric template hash mismatch: {row['table_id']}")
         verified.append({"table_id": row["table_id"], **checked})
 
     visible = {
-        p for p in api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=token)
-        if not p.startswith(".")
+        path for path in api.list_repo_files(repo_id=repo_id, repo_type="dataset", token=token)
+        if not path.startswith(".")
     }
-    if visible != expected_paths or any(not p.endswith(".parquet") for p in visible):
+    if visible != plan["expected_paths"] or any(not path.endswith(".parquet") for path in visible):
         raise NumericBaselineStoreError("remote numeric dataset file set mismatch")
+    remote_content_sha = _sha([
+        {"table_id": row["table_id"], "sha256": row["sha256"], "rows": row["rows"]}
+        for row in sorted(verified, key=lambda item: item["table_id"])
+    ])
     receipt = {
-        **bootstrap, "status": "NUMERIC_BASELINE_LIBRARY_SYNCHRONIZED",
-        "repository": repo_id, "repository_owner": owner, "private": True,
-        "commit_oid": str(getattr(commit, "oid", "") or ""),
-        "verified_files": verified, "remote_file_count": len(visible),
+        **bootstrap,
+        "status": "NUMERIC_BASELINE_LIBRARY_SYNCHRONIZED",
+        "repository": repo_id,
+        "repository_owner": owner,
+        "private": True,
+        "commit_oid": commit_oid,
+        "verified_files": verified,
+        "remote_file_count": len(visible),
+        "remote_row_count": sum(int(row["rows"]) for row in verified),
+        "initialized_file_count": len(plan["missing_paths"]),
+        "preserved_file_count": len(plan["preserved_paths"]),
+        "data_preserved_on_sync": True,
+        "content_sha256": remote_content_sha,
         "secret_values_exposed": False,
     }
     _write_json(output_dir / "sync-receipt.json", receipt)
@@ -353,6 +385,10 @@ def render_receipt(output_dir: Path) -> str:
         lines += [
             f"- Private dataset: `{row['repository']}`",
             f"- Remote numeric files: `{row.get('remote_file_count', 0)}`",
+            f"- Remote numeric rows: `{row.get('remote_row_count', 0)}`",
+            f"- Newly initialized files: `{row.get('initialized_file_count', 0)}`",
+            f"- Preserved existing files: `{row.get('preserved_file_count', 0)}`",
+            f"- Existing data preserved on sync: `{str(bool(row.get('data_preserved_on_sync'))).lower()}`",
         ]
     return "\n".join(lines) + "\n"
 
@@ -378,7 +414,8 @@ def main() -> int:
         _write_json(output_dir / "failure-receipt.json", {
             "status": "NUMERIC_BASELINE_FAILED",
             "error": message.replace("\n", " ")[:1600],
-            "secret_values_exposed": False, "model_calls": 0,
+            "secret_values_exposed": False,
+            "model_calls": 0,
         })
         print(message.replace("\n", " ")[:1600])
         return 1
