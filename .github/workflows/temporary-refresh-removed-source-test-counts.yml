@@ -1,0 +1,53 @@
+name: Temporary Refresh Removed Source Test Counts
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-removed-source-test-counts-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  refresh-counts:
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'remove-keyed-gfw-gie-kpx-20260804'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Restore base tests and update only removed-source counts
+        run: |
+          set -euo pipefail
+          git fetch origin main --depth=1
+          python tools/refresh_removed_source_test_counts.py
+          python -m py_compile \
+            api-center/tests/test_api_catalog.py \
+            api-center/tests/test_capability_maximization.py
+          git diff --check
+
+      - name: Commit corrected test contracts
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            api-center/tests/test_api_catalog.py \
+            api-center/tests/test_capability_maximization.py
+          if git diff --cached --quiet; then
+            echo 'Test counts already current.'
+            exit 0
+          fi
+          git commit -m 'test: align catalog counts after keyed source removal'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
