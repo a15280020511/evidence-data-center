@@ -46,13 +46,13 @@ jobs:
         run: |
           python -m py_compile api-center/managed_provider_runtime.py api-center/open-intelligence-toolkit/open_intelligence_toolkit_task.py api-center/open-intelligence-toolkit/validate_open_intelligence_toolkit.py
           python -m unittest discover -s api-center/open-intelligence-toolkit/tests -p 'test_*.py' -v
-      - name: Validate all 22 operation contracts without network
+      - name: Validate all 20 operation contracts without network
         run: |
           mkdir -p open-toolkit-validation
           for operation in $(python - <<'PY'
           import json
           rows=json.load(open('api-center/open-intelligence-toolkit/provider-catalog.json'))['providers'][0]['operations']
-          assert len(rows)==22
+          assert len(rows)==20
           print(' '.join(row['operation_id'] for row in rows))
           PY
           ); do
@@ -67,7 +67,6 @@ jobs:
           from pathlib import Path
           samples={
             'common-crawl-collinfo':{},
-            'sec-submissions':{'cik':'0000320193'},
             'hackernews-item':{'item_id':8863},
             'ror-search':{'query':'Massachusetts Institute of Technology','limit':2},
             'wikimedia-pageviews':{'project':'en.wikipedia.org','article':'Artificial_intelligence','start':'20260701','end':'20260702'},
@@ -87,9 +86,7 @@ jobs:
                   proc=subprocess.run(['python','api-center/open-intelligence-toolkit/open_intelligence_toolkit_task.py','execute','--ticket',str(ticket),'--output-dir',str(out)],check=False)
                   diagnostics=json.loads((out/'diagnostics.json').read_text())
                   if proc.returncode!=0 or diagnostics['status']!='INTEL_OPEN_TOOLKIT_COMPLETED':
-                      failure={'operation':operation,'returncode':proc.returncode,'diagnostics':diagnostics}
-                      failures.append(failure)
-                      print(json.dumps(failure,ensure_ascii=False,sort_keys=True))
+                      failures.append({'operation':operation,'returncode':proc.returncode,'diagnostics':diagnostics})
                       continue
                   assert diagnostics['metadata']['network_used'] is True
                   assert diagnostics['metadata']['request_count']==1
@@ -111,12 +108,14 @@ jobs:
           import json
           c=json.load(open('api-center/api-catalog.json'))
           p={row['provider_id']:row for row in c['managed_providers']}['open-intelligence-toolkit']
-          assert p['operation_count']==22
+          assert p['operation_count']==20
           assert p['required_secret_environment_variable_name']==''
           assert p['secret_value_exposed'] is False
           assert c['managed_provider_count']==68
-          assert c['managed_operation_count']==758
-          print(json.dumps({'status':'PASS','provider_count':68,'operation_count':758,'toolkit_operations':22}))
+          assert c['managed_operation_count']==756
+          conditional=json.load(open('api-center/open-intelligence-toolkit/source-access-matrix.json'))['conditional_not_directly_invokable']
+          assert any(row['id']=='sec-edgar' for row in conditional)
+          print(json.dumps({'status':'PASS','provider_count':68,'operation_count':756,'toolkit_operations':20,'sec_production':False}))
           PY
           git diff --check
       - name: Upload validation evidence
