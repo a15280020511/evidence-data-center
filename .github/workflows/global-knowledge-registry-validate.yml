@@ -1,0 +1,20 @@
+name: Global Knowledge Registry Validate
+
+on:
+  pull_request:
+    paths:
+      - "api-center/global-knowledge-registry/**"
+      - ".github/workflows/global-knowledge-registry-validate.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate registry and graph contract
+        run: python api-center/global-knowledge-registry/validate_global_knowledge_registry.py
