@@ -1,0 +1,3 @@
+huggingface_hub==1.24.0
+pyarrow==22.0.0
+requests==2.34.2
