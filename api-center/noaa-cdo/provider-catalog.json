@@ -1,0 +1,137 @@
+{
+  "schema_version": "noaa-cdo-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "replaced_legacy_connectors": [],
+  "providers": [
+    {
+      "provider_id": "noaa-cdo",
+      "display_name": "NOAA Climate Data Online 中国历史气象发现",
+      "description": "使用 NOAA CDO Web Services v2 Token 读取数据集、气象指标、中国范围站点元数据和小范围历史观测；与现有 NCEI 无 Key 批量下载接口互补。",
+      "enabled": true,
+      "ticket_prefix": "[intel-noaa-cdo]",
+      "required_secret_environment_variable": "NOAA_CDO_TOKEN",
+      "catalog_policy": "开放5项固定只读能力；仅官方HTTPS主机；禁止任意URL、路径、请求头、客户端Token、自动翻页和写操作。",
+      "execution_policy": "NOAA_CDO_TOKEN仅由GitHub Actions后端注入token请求头；每张票据最多一次GET；每页最多1000条；站点extent必须位于中国范围内。",
+      "official_documentation": "https://www.ncei.noaa.gov/cdo-web/webservices/v2",
+      "official_origin": "https://www.ncei.noaa.gov/cdo-web/api/v2",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "transient_retry_max": 0,
+        "provider_concurrency_max": 1,
+        "timeout_seconds_max": 60,
+        "max_response_bytes": 10000000,
+        "rows_per_request_max": 1000,
+        "fixed_api_host": "www.ncei.noaa.gov",
+        "fixed_api_prefix": "/cdo-web/api/v2",
+        "official_requests_per_second_max": 5,
+        "official_requests_per_day_max": 10000,
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "arbitrary_query_parameters_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "redirects_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false,
+        "authentication_required": true
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地 NOAA CDO 安全能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}, "maxProperties": 0},
+          "result_contract": {"provider": "noaa-cdo", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "datasets",
+          "description": "读取 NOAA CDO 数据集目录，可按日期、站点、位置或指标筛选。",
+          "parameters": ["datasetid", "datatypeid", "locationid", "stationid", "startdate", "enddate", "sortfield", "sortorder", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "datasetid": {"type": "string", "pattern": "^[A-Z0-9_-]{2,32}$"},
+              "datatypeid": {"type": "string", "pattern": "^[A-Z0-9_-]{2,32}$"},
+              "locationid": {"type": "string", "pattern": "^[A-Z_]+:[A-Za-z0-9._-]{1,64}$"},
+              "stationid": {"type": "string", "pattern": "^[A-Z_]+:[A-Za-z0-9._-]{1,64}$"},
+              "startdate": {"type": "string", "format": "date"},
+              "enddate": {"type": "string", "format": "date"},
+              "sortfield": {"type": "string", "enum": ["id", "name", "mindate", "maxdate", "datacoverage"]},
+              "sortorder": {"type": "string", "enum": ["asc", "desc"]},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 1000},
+              "offset": {"type": "integer", "minimum": 1, "maximum": 1000000}
+            }
+          },
+          "result_contract": {"provider": "noaa-cdo", "path": "/datasets", "http_method": "GET", "read_only": true, "credential_mode": "token_header_backend_only"}
+        },
+        {
+          "operation_id": "datatypes",
+          "description": "读取温度、降水、风速等气象指标目录。",
+          "parameters": ["datasetid", "locationid", "stationid", "datacategoryid", "startdate", "enddate", "sortfield", "sortorder", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "properties": {
+              "datasetid": {"type": "string", "pattern": "^[A-Z0-9_-]{2,32}$"},
+              "locationid": {"type": "string", "pattern": "^[A-Z_]+:[A-Za-z0-9._-]{1,64}$"},
+              "stationid": {"type": "string", "pattern": "^[A-Z_]+:[A-Za-z0-9._-]{1,64}$"},
+              "datacategoryid": {"type": "string", "pattern": "^[A-Z0-9_-]{2,32}$"},
+              "startdate": {"type": "string", "format": "date"},
+              "enddate": {"type": "string", "format": "date"},
+              "sortfield": {"type": "string", "enum": ["id", "name", "mindate", "maxdate", "datacoverage"]},
+              "sortorder": {"type": "string", "enum": ["asc", "desc"]},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 1000},
+              "offset": {"type": "integer", "minimum": 1, "maximum": 1000000}
+            }
+          },
+          "result_contract": {"provider": "noaa-cdo", "path": "/datatypes", "http_method": "GET", "read_only": true, "credential_mode": "token_header_backend_only"}
+        },
+        {
+          "operation_id": "stations",
+          "description": "按中国境内经纬度范围发现历史气象站，并核验数据覆盖期与覆盖率。",
+          "parameters": ["datasetid", "extent", "datatypeid", "startdate", "enddate", "sortfield", "sortorder", "limit", "offset"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "required": ["datasetid", "extent"],
+            "properties": {
+              "datasetid": {"type": "string", "enum": ["GHCND", "GSOM", "GSOY"]},
+              "extent": {"type": "string", "pattern": "^-?[0-9]{1,2}(?:\\.[0-9]{1,6})?,-?[0-9]{1,3}(?:\\.[0-9]{1,6})?,-?[0-9]{1,2}(?:\\.[0-9]{1,6})?,-?[0-9]{1,3}(?:\\.[0-9]{1,6})?$"},
+              "datatypeid": {"type": "string", "pattern": "^[A-Z0-9_-]{2,32}$"},
+              "startdate": {"type": "string", "format": "date"},
+              "enddate": {"type": "string", "format": "date"},
+              "sortfield": {"type": "string", "enum": ["id", "name", "mindate", "maxdate", "datacoverage"]},
+              "sortorder": {"type": "string", "enum": ["asc", "desc"]},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 1000},
+              "offset": {"type": "integer", "minimum": 1, "maximum": 1000000}
+            }
+          },
+          "result_contract": {"provider": "noaa-cdo", "path": "/stations", "http_method": "GET", "read_only": true, "credential_mode": "token_header_backend_only"}
+        },
+        {
+          "operation_id": "data",
+          "description": "按一个中国站点、数据集和有界日期范围读取历史观测；适合小范围核验，不替代现有NCEI批量下载接口。",
+          "parameters": ["datasetid", "stationid", "datatypeid", "startdate", "enddate", "units", "sortfield", "sortorder", "limit", "offset", "includemetadata"],
+          "parameter_schema": {
+            "type": "object", "additionalProperties": false,
+            "required": ["datasetid", "stationid", "startdate", "enddate"],
+            "properties": {
+              "datasetid": {"type": "string", "enum": ["GHCND", "GSOM", "GSOY"]},
+              "stationid": {"type": "string", "pattern": "^(?:GHCND|GSOM|GSOY):CH[A-Z0-9]{9}$"},
+              "datatypeid": {"type": "array", "minItems": 1, "maxItems": 20, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Z0-9_-]{2,32}$"}},
+              "startdate": {"type": "string", "format": "date"},
+              "enddate": {"type": "string", "format": "date"},
+              "units": {"type": "string", "enum": ["metric"]},
+              "sortfield": {"type": "string", "enum": ["date", "datatype", "station", "value"]},
+              "sortorder": {"type": "string", "enum": ["asc", "desc"]},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 1000},
+              "offset": {"type": "integer", "minimum": 1, "maximum": 1000000},
+              "includemetadata": {"type": "boolean"}
+            }
+          },
+          "result_contract": {"provider": "noaa-cdo", "path": "/data", "http_method": "GET", "read_only": true, "credential_mode": "token_header_backend_only"}
+        }
+      ]
+    }
+  ]
+}
