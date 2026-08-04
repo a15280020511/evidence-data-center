@@ -78,7 +78,7 @@ jobs:
               Path('china-enterprise-social-validation/quota-consistency-receipt.json').read_text(encoding='utf-8')
           )
           assert receipt['status'] == 'CHINA_ENTERPRISE_SOCIAL_DAILY_CONTROLS_VALIDATED'
-          assert receipt['enterprise_domain_count'] == 20
+          assert receipt['enterprise_domain_count'] == 21
           assert receipt['social_platform_count'] == 5
           assert receipt['social_metric_count'] == 70
           assert receipt['daily_neuron_budget'] == 9800
