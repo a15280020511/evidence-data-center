@@ -29,3 +29,5 @@ This provider supplements the existing keyless NOAA/NCEI China historical-data c
 - data operation accepts only `CH`-prefixed Chinese stations
 
 The CDO layer is intended for dataset, variable, station and coverage discovery plus small validation queries. Long-period China station downloads continue to use the existing NCEI Access Data Service connectors.
+
+The initial China validation target is Fuzhou WMO station `58847`, represented in NCEI station identifiers as `CHM00058847` and in CDO GHCND requests as `GHCND:CHM00058847`.
