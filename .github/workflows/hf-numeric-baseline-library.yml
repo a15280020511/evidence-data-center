@@ -1,41 +1,41 @@
-name: Validate and Sync HF Numeric Compute Baselines
+name: Validate Governance Baseline Export Contract
 
 on:
   pull_request:
     paths:
       - "api-center/huggingface/numeric_baseline_store.py"
+      - "api-center/huggingface/build_governance_baseline_export.py"
       - "api-center/huggingface/numeric-baseline-library/**"
       - "api-center/huggingface/tests/test_numeric_baseline_store.py"
+      - "api-center/huggingface/tests/test_governance_baseline_export.py"
       - "api-center/huggingface/requirements-numeric-baseline.txt"
       - ".github/workflows/hf-numeric-baseline-library.yml"
   push:
     branches: [main]
     paths:
       - "api-center/huggingface/numeric_baseline_store.py"
+      - "api-center/huggingface/build_governance_baseline_export.py"
       - "api-center/huggingface/numeric-baseline-library/**"
       - "api-center/huggingface/tests/test_numeric_baseline_store.py"
+      - "api-center/huggingface/tests/test_governance_baseline_export.py"
       - "api-center/huggingface/requirements-numeric-baseline.txt"
       - ".github/workflows/hf-numeric-baseline-library.yml"
-  issues:
-    types: [opened, reopened]
   workflow_dispatch:
 
 permissions:
   contents: read
-  issues: write
 
 concurrency:
-  group: hf-numeric-baseline-${{ github.event_name }}-${{ github.ref }}-${{ github.event.issue.number }}
-  cancel-in-progress: false
+  group: validate-governance-baseline-export-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  validate-numeric-control-plane:
-    if: >-
-      github.event_name != 'issues' ||
-      (github.actor == github.repository_owner &&
-       startsWith(github.event.issue.title, '[sync-hf-numeric-baseline]'))
+  validate-export-contract:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    env:
+      HF_TOKEN: ""
+      HF_NUMERIC_BASELINE_DATASET_REPO: ""
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -52,107 +52,51 @@ jobs:
       - name: Install pinned numeric dependencies
         run: |
           set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input -r api-center/huggingface/requirements-numeric-baseline.txt
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/huggingface/requirements-numeric-baseline.txt
           python -m pip check
 
-      - name: Compile and validate numeric-only library
+      - name: Compile and validate producer-only control plane
         run: |
           set -euo pipefail
-          python -m py_compile api-center/huggingface/numeric_baseline_store.py
-          python -m unittest api-center/huggingface/tests/test_numeric_baseline_store.py -v
-          python api-center/huggingface/numeric_baseline_store.py validate --output-dir numeric-baseline-validation
+          python -m py_compile \
+            api-center/huggingface/numeric_baseline_store.py \
+            api-center/huggingface/build_governance_baseline_export.py
+          python -m unittest \
+            api-center/huggingface/tests/test_numeric_baseline_store.py \
+            api-center/huggingface/tests/test_governance_baseline_export.py -v
+          python api-center/huggingface/numeric_baseline_store.py validate \
+            --output-dir numeric-baseline-validation
           python - <<'PY'
           import json
           from pathlib import Path
           receipt = json.loads(Path('numeric-baseline-validation/validation-receipt.json').read_text(encoding='utf-8'))
+          role = json.loads(Path('api-center/huggingface/numeric-baseline-library/library-role.json').read_text(encoding='utf-8'))
           assert receipt['status'] == 'NUMERIC_BASELINE_BOOTSTRAP_VALIDATED'
           assert receipt['table_count'] == 31
           assert receipt['operation_count'] == 29
           assert receipt['managed_mode_count'] == 185
           assert receipt['huggingface_payloads_numeric_only'] is True
-          assert receipt['huggingface_control_json_uploaded'] is False
-          assert receipt['compute_runtime_network_allowed'] is False
-          assert receipt['direct_center_connection_allowed'] is False
-          assert receipt['selection_and_relay_owner'] == 'gpts-usage-center'
-          assert len(receipt['content_sha256']) == 64
-          assert len(list(Path('numeric-baseline-validation/data').glob('*.parquet'))) == 31
+          assert role['schema_version'] == 'compute-center-baseline-library-role-v2'
+          assert role['storage_gateway_owner'] == 'a15280020511/decision-system-governance'
+          assert role['data_producer'] == 'a15280020511/evidence-data-center'
+          assert role['intelligence_center_private_dataset_credentials_allowed'] is False
+          assert role['intelligence_center_direct_dataset_read_allowed'] is False
+          assert role['intelligence_center_direct_dataset_write_allowed'] is False
+          assert role['compute_center_direct_dataset_access_allowed'] is False
+          assert role['knowledge_base_storage_allowed'] is False
+          assert role['knowledge_graph_storage_allowed'] is False
           PY
+          if grep -q 'secrets.HF_TOKEN\|--commit-to-hf\| build-hf' .github/workflows/hf-numeric-baseline-library.yml; then
+            echo 'private Hugging Face access is forbidden in evidence baseline workflow' >&2
+            exit 1
+          fi
           git diff --check
 
       - name: Upload validation evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: hf-numeric-baseline-validation-${{ github.run_id }}
+          name: governance-baseline-export-validation-${{ github.run_id }}
           path: numeric-baseline-validation/
           if-no-files-found: error
           retention-days: 30
-
-  sync-private-numeric-library:
-    if: >-
-      always() &&
-      needs.validate-numeric-control-plane.result == 'success' &&
-      ((github.event_name == 'push' && github.ref == 'refs/heads/main') ||
-       github.event_name == 'workflow_dispatch' ||
-       (github.event_name == 'issues' &&
-        github.actor == github.repository_owner &&
-        startsWith(github.event.issue.title, '[sync-hf-numeric-baseline]')))
-    needs: [validate-numeric-control-plane]
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      ISSUE_NUMBER: ${{ github.event.issue.number }}
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      HF_NUMERIC_BASELINE_DATASET_REPO: ${{ vars.HF_NUMERIC_BASELINE_DATASET_REPO }}
-      HF_HUB_DISABLE_TELEMETRY: "1"
-      HF_HUB_DISABLE_PROGRESS_BARS: "1"
-    steps:
-      - name: Checkout pinned source
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          persist-credentials: false
-
-      - name: Set up isolated Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: api-center/huggingface/requirements-numeric-baseline.txt
-
-      - name: Install pinned numeric dependencies
-        run: |
-          set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input -r api-center/huggingface/requirements-numeric-baseline.txt
-          python -m pip check
-
-      - name: Synchronize private numeric-only Dataset
-        id: sync
-        continue-on-error: true
-        run: |
-          set -euo pipefail
-          test -n "$HF_TOKEN"
-          python api-center/huggingface/numeric_baseline_store.py sync --output-dir hf-numeric-baseline-receipt
-
-      - name: Render synchronization receipt
-        if: always()
-        run: |
-          python api-center/huggingface/numeric_baseline_store.py render --output-dir hf-numeric-baseline-receipt > hf-numeric-baseline-comment.md || true
-          cat hf-numeric-baseline-comment.md >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Publish issue receipt
-        if: always() && github.event_name == 'issues'
-        run: |
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@hf-numeric-baseline-comment.md
-
-      - name: Upload synchronization evidence
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: hf-numeric-baseline-sync-${{ github.run_id }}
-          path: hf-numeric-baseline-receipt/
-          if-no-files-found: error
-          retention-days: 90
-
-      - name: Mark synchronization failure
-        if: always() && steps.sync.outcome != 'success'
-        run: exit 1
