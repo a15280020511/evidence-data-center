@@ -52,32 +52,62 @@ jobs:
       - name: Compile provider
         run: python -m py_compile api-center/managed_provider_runtime.py api-center/reality-observation/reality_observation_task.py
 
+      - name: Reject duplicate accepted task ID on the same issue
+        id: admission
+        shell: bash
+        run: |
+          set -euo pipefail
+          task_id="$(jq -r '.issue.body | fromjson | .task_id // empty' "$GITHUB_EVENT_PATH" 2>/dev/null || true)"
+          if [[ -z "$task_id" ]]; then
+            echo "duplicate=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          comments_file="$(mktemp)"
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" --jq '.[].body' > "$comments_file"
+          accepted_needle="Reality Observation API ticket accepted: \`${task_id}\` /"
+          completed_needle="Reality Observation API result: \`INTEL_REALITY_OBSERVATION_COMPLETED\`"
+          if grep -Fq "$accepted_needle" "$comments_file" || grep -Fq "$completed_needle" "$comments_file"; then
+            echo "duplicate=true" >> "$GITHUB_OUTPUT"
+            {
+              echo 'Reality Observation API admission: `ADMISSION_REJECTED_DUPLICATE`'
+              echo
+              echo "- Task ID: \`${task_id}\`"
+              echo '- Reason: this issue already contains an accepted or completed reality-observation receipt.'
+              echo '- New upstream request executed: `false`'
+              echo '- Secret values exposed: `false`'
+            } > duplicate-comment.md
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@duplicate-comment.md
+          else
+            echo "duplicate=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Parse and authorize reality observation ticket
         id: prepare
+        if: steps.admission.outputs.duplicate != 'true'
         continue-on-error: true
         run: python api-center/reality-observation/reality_observation_task.py prepare --event-path "$GITHUB_EVENT_PATH" --output-dir reality-observation-artifacts
 
       - name: Comment accepted ticket
-        if: steps.prepare.outputs.accepted == 'true'
+        if: steps.admission.outputs.duplicate != 'true' && steps.prepare.outputs.accepted == 'true'
         run: |
           python api-center/reality-observation/reality_observation_task.py render --output-dir reality-observation-artifacts --phase accepted > reality-observation-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@reality-observation-comment.md
 
       - name: Comment rejected ticket
-        if: steps.prepare.outputs.accepted != 'true'
+        if: steps.admission.outputs.duplicate != 'true' && steps.prepare.outputs.accepted != 'true'
         run: |
           python api-center/reality-observation/reality_observation_task.py render --output-dir reality-observation-artifacts --phase rejected > reality-observation-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@reality-observation-comment.md
 
       - name: Execute one bounded reality observation request
         id: execute
-        if: steps.prepare.outputs.accepted == 'true'
+        if: steps.admission.outputs.duplicate != 'true' && steps.prepare.outputs.accepted == 'true'
         continue-on-error: true
         run: python api-center/reality-observation/reality_observation_task.py execute --ticket reality-observation-artifacts/ticket.json --output-dir reality-observation-artifacts
 
       - name: Upload reality observation evidence
         id: upload
-        if: always()
+        if: always() && steps.admission.outputs.duplicate != 'true'
         continue-on-error: true
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
@@ -87,16 +117,21 @@ jobs:
           retention-days: 30
 
       - name: Publish verified result or structured failure
-        if: always() && steps.prepare.outputs.accepted == 'true'
+        if: always() && steps.admission.outputs.duplicate != 'true' && steps.prepare.outputs.accepted == 'true'
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
           python api-center/reality-observation/reality_observation_task.py render --output-dir reality-observation-artifacts --phase completed --artifact-url "$ARTIFACT_URL" > reality-observation-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@reality-observation-comment.md
 
+      - name: Mark duplicate admission rejected
+        if: always() && steps.admission.outputs.duplicate == 'true'
+        run: exit 1
+
       - name: Mark rejected or failed execution
         if: >-
           always() &&
+          steps.admission.outputs.duplicate != 'true' &&
           (steps.prepare.outputs.accepted != 'true' ||
            steps.execute.outputs.status != 'INTEL_REALITY_OBSERVATION_COMPLETED' ||
            steps.upload.outcome != 'success')
