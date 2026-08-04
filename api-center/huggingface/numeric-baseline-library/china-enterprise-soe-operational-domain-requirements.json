@@ -1,7 +1,7 @@
 {
   "schema_version": "china-enterprise-soe-operational-domain-requirements-v1",
   "status": "production-control",
-  "domain_count": 20,
+  "domain_count": 21,
   "scope": "中国大陆公开、合法、非个人化的大型企业、中央企业、地方国企、金融机构、产业集团和重点项目运行数值基准",
   "storage_policy": {
     "huggingface_payload_numeric_only": true,
