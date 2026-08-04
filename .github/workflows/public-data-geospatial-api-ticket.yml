@@ -10,10 +10,37 @@ concurrency:
   group: intel-public-data-global
   cancel-in-progress: false
 jobs:
+  reject-retired-faostat:
+    if: >-
+      github.actor == github.repository_owner &&
+      startsWith(github.event.issue.title, '[intel-public-data]') &&
+      contains(github.event.issue.body, 'faostat-definitions')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      ISSUE_NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - name: Reject retired FAOSTAT REST operation
+        run: |
+          cat > retired-comment.md <<'EOF'
+          ## INTEL_PUBLIC_DATA_REJECTED
+
+          - Operation: `faostat-definitions`
+          - Reason: the legacy anonymous REST origin `fenixservices.fao.org` returned HTTP 521 during live acceptance on 2026-08-05 and is not production-stable.
+          - Credential finding: the request was not rejected for a missing API key; this is an upstream availability failure.
+          - Approved alternative: use FAOSTAT bulk-download files or a newly documented official endpoint only after a fresh live acceptance.
+          - Model calls: `0`
+          - Secret values exposed: `false`
+          EOF
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@retired-comment.md
+          exit 1
+
   execute-public-data:
     if: >-
       github.actor == github.repository_owner &&
-      startsWith(github.event.issue.title, '[intel-public-data]')
+      startsWith(github.event.issue.title, '[intel-public-data]') &&
+      !contains(github.event.issue.body, 'faostat-definitions')
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:

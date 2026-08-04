@@ -1,0 +1,144 @@
+{
+  "schema_version": "strategic-intelligence-source-matrix-v1",
+  "generated_on": "2026-08-05",
+  "implemented_pending_live_acceptance": [
+    {
+      "source_id": "openfema",
+      "name": "OpenFEMA",
+      "category": "disaster-declarations",
+      "credential_mode": "none",
+      "protocol": "rest-odata-json",
+      "base_url": "https://www.fema.gov/api/open/v1",
+      "operations": ["openfema-disaster-declarations"],
+      "cost": "free",
+      "promotion_condition": "Merge validation must pass and a real issue ticket must return the expected JSON contract from GitHub Actions.",
+      "license_or_use_note": "US government public data; source field caveats remain applicable."
+    },
+    {
+      "source_id": "ripestat",
+      "name": "RIPEstat Data API",
+      "category": "internet-routing-intelligence",
+      "credential_mode": "none",
+      "protocol": "rest-json",
+      "base_url": "https://stat.ripe.net/data",
+      "operations": ["ripestat-network-info", "ripestat-prefix-overview", "ripestat-as-overview", "ripestat-bgp-state"],
+      "cost": "free",
+      "promotion_condition": "Merge validation must pass and each response family must complete a real GitHub Actions ticket.",
+      "license_or_use_note": "Use conservative request volume and identify sustained projects where required by RIPE NCC policy."
+    },
+    {
+      "source_id": "peeringdb",
+      "name": "PeeringDB",
+      "category": "internet-interconnection",
+      "credential_mode": "anonymous-read",
+      "protocol": "rest-json",
+      "base_url": "https://www.peeringdb.com/api",
+      "operations": ["peeringdb-search", "peeringdb-object"],
+      "cost": "free anonymous read with lower limits",
+      "promotion_condition": "Merge validation and an anonymous GitHub Actions read must pass without redirects or authentication fallback.",
+      "license_or_use_note": "Read-only public interconnection metadata; anonymous queries use lower limits."
+    },
+    {
+      "source_id": "mitre-attack-stix-index",
+      "name": "MITRE ATT&CK STIX Collection Index",
+      "category": "cyber-threat-knowledge",
+      "credential_mode": "none",
+      "protocol": "fixed-json-index",
+      "base_url": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master",
+      "operations": ["mitre-attack-index"],
+      "cost": "free",
+      "promotion_condition": "Merge validation and a real fixed-host index ticket must pass from GitHub Actions.",
+      "license_or_use_note": "ATT&CK terms of use and attribution apply; only the small collection index is fetched by this bounded operation."
+    }
+  ],
+  "production_sources": [],
+  "validated_candidates_not_yet_implemented": [
+    {
+      "source_id": "ocds-data-registry",
+      "name": "Open Contracting Data Registry",
+      "category": "global-public-procurement",
+      "credential_mode": "none",
+      "reason_not_production": "Bulk publisher packages and schemas are verified, but a bounded single-request query contract has not yet been frozen."
+    },
+    {
+      "source_id": "un-consolidated-sanctions",
+      "name": "United Nations Security Council Consolidated List",
+      "category": "official-sanctions",
+      "credential_mode": "none",
+      "reason_not_production": "The official XML link currently redirects to a temporary storage URL; redirect and host pinning must be governed before activation."
+    },
+    {
+      "source_id": "ofac-sanctions-list-service",
+      "name": "OFAC Sanctions List Service",
+      "category": "official-sanctions",
+      "credential_mode": "none-or-registration-dependent",
+      "reason_not_production": "Exact stable read endpoint and response contract still require live acceptance."
+    },
+    {
+      "source_id": "uk-sanctions-list",
+      "name": "UK Sanctions List",
+      "category": "official-sanctions",
+      "credential_mode": "none",
+      "reason_not_production": "Machine-readable download URLs and versioning contract require live acceptance."
+    },
+    {
+      "source_id": "wits",
+      "name": "World Integrated Trade Solution API",
+      "category": "trade-and-tariff",
+      "credential_mode": "endpoint-dependent",
+      "reason_not_production": "Dataset-specific authentication and request limits must be frozen per operation."
+    },
+    {
+      "source_id": "eiti",
+      "name": "Extractive Industries Transparency Initiative API",
+      "category": "extractives-revenue-and-company-payments",
+      "credential_mode": "none-or-endpoint-dependent",
+      "reason_not_production": "Current API version and stable operation contract require live acceptance."
+    }
+  ],
+  "conditional_sources": [
+    {
+      "source_id": "ucdp",
+      "condition": "free_token_required",
+      "category": "armed-conflict-events"
+    },
+    {
+      "source_id": "global-fishing-watch",
+      "condition": "token_required_and_noncommercial_only",
+      "category": "maritime-activity"
+    },
+    {
+      "source_id": "opensanctions",
+      "condition": "noncommercial_or_separate_license",
+      "category": "sanctions-pep-entity-resolution"
+    }
+  ],
+  "standards": [
+    {
+      "standard_id": "bods-0.4",
+      "name": "Beneficial Ownership Data Standard",
+      "purpose": "Normalize person, entity and ownership/control relationships across registries, procurement and sanctions evidence.",
+      "runtime_source": false
+    }
+  ],
+  "governance": {
+    "fixed_hosts_only": true,
+    "requests_per_ticket_max": 1,
+    "automatic_retry_allowed": false,
+    "automatic_pagination_allowed": false,
+    "arbitrary_urls_allowed": false,
+    "arbitrary_headers_allowed": false,
+    "write_operations_allowed": false,
+    "personal_profiling_allowed": false,
+    "real_time_tracking_allowed": false,
+    "secret_values_exposed": false,
+    "promotion_requires_live_acceptance": true
+  },
+  "discovery_evidence": {
+    "tavily_issues": [966, 970, 980],
+    "exa_issues": [967, 971, 981],
+    "serpapi_issues": [968, 972, 982],
+    "baidu_issues": [969, 973, 983],
+    "model_calls": 0
+  }
+}

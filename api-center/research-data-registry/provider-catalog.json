@@ -1,0 +1,56 @@
+{
+  "schema_version": "research-data-registry-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "providers": [
+    {
+      "provider_id": "re3data",
+      "display_name": "re3data全球科研数据仓库目录",
+      "description": "通过re3data官方v40接口读取全球科研数据仓库索引和单条完整记录。",
+      "enabled": true,
+      "ticket_prefix": "[intel-re3data]",
+      "required_secret_environment_variable": "",
+      "catalog_policy": "只允许固定www.re3data.org主机和v40只读端点；禁止任意URL、请求头、重定向、自动翻页、自动重试和写操作。",
+      "execution_policy": "每张票据最多执行一次GET请求；保留原始XML、响应哈希和结构化回执。",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 15000000,
+        "redirects_allowed": false,
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "write_operations_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地能力和安全边界，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "re3data-repositories",
+          "description": "一次读取re3data v40官方仓库索引XML。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
+          "result_contract": {"official_endpoint": "https://www.re3data.org/api/v40/repositories", "http_method": "GET", "read_only": true, "credential_mode": "none", "response": "xml"}
+        },
+        {
+          "operation_id": "re3data-repository",
+          "description": "按re3data标识读取一条完整仓库XML描述。",
+          "parameters": ["repository_id"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["repository_id"],
+            "properties": {"repository_id": {"type": "string", "pattern": "^r3d[0-9]{9,15}$"}}
+          },
+          "result_contract": {"official_endpoint": "https://www.re3data.org/api/v40/repository/{repository_id}", "http_method": "GET", "read_only": true, "credential_mode": "none", "response": "xml"}
+        }
+      ]
+    }
+  ]
+}

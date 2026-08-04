@@ -88,8 +88,13 @@ class ApiArchitectureTests(unittest.TestCase):
         self.assertEqual(catalog["selection_owner"], "gpts-usage-center")
         self.assertEqual(catalog["maintenance_owner"], "web-gpt-github-plugin")
         self.assertFalse(catalog["direct_center_to_center_calls_allowed"])
-        self.assertEqual(orchestration["sole_cross_center_relay"], "custom-gpts")
+        self.assertEqual(
+            orchestration["sole_cross_repository_relay"],
+            "a15280020511/decision-system-governance",
+        )
+        self.assertFalse(orchestration["gpts_direct_control_allowed"])
         self.assertFalse(orchestration["direct_center_to_center_calls_allowed"])
+        self.assertFalse(orchestration["runtime_cross_repository_read"])
 
 
 if __name__ == "__main__":
