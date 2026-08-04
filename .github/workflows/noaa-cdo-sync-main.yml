@@ -1,0 +1,105 @@
+name: Sync NOAA CDO with Main
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.head_ref == 'feat/noaa-cdo-token'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Merge latest main and deterministically restore NOAA CDO registration
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git fetch origin main
+          if git merge-base --is-ancestor origin/main HEAD; then
+            echo 'Branch already contains latest main.'
+            exit 0
+          fi
+          git merge --no-commit --no-ff origin/main || true
+          for path in \
+            api-center/build_catalog_market_search.py \
+            api-center/api-catalog.json \
+            api-center/api-catalog.md \
+            api-center/tests/test_api_catalog.py; do
+            if git ls-files -u -- "$path" | grep -q .; then
+              git checkout --theirs -- "$path"
+              git add "$path"
+            fi
+          done
+          unresolved="$(git diff --name-only --diff-filter=U)"
+          if [[ -n "$unresolved" ]]; then
+            echo "Unresolved merge conflicts:" >&2
+            echo "$unresolved" >&2
+            exit 1
+          fi
+
+          python - <<'PY'
+          from pathlib import Path
+
+          builder = Path('api-center/build_catalog_market_search.py')
+          text = builder.read_text(encoding='utf-8')
+          constant_marker = 'REALITY_OBSERVATION_CATALOG = HERE / "reality-observation/provider-catalog.json"\n'
+          if 'NOAA_CDO_CATALOG = HERE / "noaa-cdo/provider-catalog.json"' not in text:
+              text = text.replace(
+                  constant_marker,
+                  constant_marker + 'NOAA_CDO_CATALOG = HERE / "noaa-cdo/provider-catalog.json"\n',
+                  1,
+              )
+          expected_marker = '    "reality-observation": 25,\n'
+          if '    "noaa-cdo": 5,\n' not in text:
+              text = text.replace(expected_marker, expected_marker + '    "noaa-cdo": 5,\n', 1)
+          tuple_marker = '    REALITY_OBSERVATION_CATALOG,\n'
+          if '    NOAA_CDO_CATALOG,\n' not in text:
+              text = text.replace(tuple_marker, tuple_marker + '    NOAA_CDO_CATALOG,\n', 1)
+          reading_marker = '        "reality-observation/provider-catalog.json",\n'
+          if '        "noaa-cdo/provider-catalog.json",\n' not in text:
+              text = text.replace(
+                  reading_marker,
+                  reading_marker + '        "noaa-cdo/provider-catalog.json",\n',
+                  1,
+              )
+          builder.write_text(text, encoding='utf-8')
+
+          test_path = Path('api-center/tests/test_api_catalog.py')
+          test_text = test_path.read_text(encoding='utf-8')
+          if '    "noaa-cdo": 5,\n' not in test_text:
+              marker = '    "reality-observation": 25,\n'
+              if marker not in test_text:
+                  marker = '    "google-public-intelligence": 9,\n'
+              test_text = test_text.replace(marker, marker + '    "noaa-cdo": 5,\n', 1)
+          test_path.write_text(test_text, encoding='utf-8')
+          PY
+
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/noaa-cdo/requirements.txt
+          python api-center/build_catalog_market_search.py
+          python -m unittest discover -s api-center/noaa-cdo/tests -p 'test_*.py' -v
+          python -m unittest api-center.tests.test_api_catalog -v
+          git diff --check
+          git add \
+            api-center/build_catalog_market_search.py \
+            api-center/api-catalog.json \
+            api-center/api-catalog.md \
+            api-center/tests/test_api_catalog.py
+          git commit -m 'merge: sync NOAA CDO integration with latest main'
+          git push origin HEAD:feat/noaa-cdo-token
