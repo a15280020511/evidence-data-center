@@ -16,7 +16,7 @@ jobs:
   finalize:
     if: >-
       github.actor == github.repository_owner &&
-      github.event.issue.title == '[maintenance] finalize toolkit non-workflow files 20260804'
+      github.event.issue.title == '[maintenance] finalize toolkit ordinary files v2 20260804'
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -29,18 +29,12 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Rebuild, validate and commit non-workflow files
+      - name: Validate and commit ordinary files
         id: finalize
         continue-on-error: true
         run: |
           set +e
           exec > >(tee /tmp/open-toolkit-finalizer.log) 2>&1
-          echo 'STAGE=install_catalog_dependencies'
-          python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt || exit $?
-
-          echo 'STAGE=rebuild'
-          python maintenance/demote_sec_and_rebuild_toolkit.py || exit $?
-
           echo 'STAGE=cleanup_non_workflow'
           rm -f \
             maintenance/apply_open_intelligence_toolkit.py \
@@ -48,14 +42,22 @@ jobs:
             maintenance/demote_sec_and_rebuild_toolkit.py \
             maintenance/open-toolkit-rebuild-diagnostics.txt
 
-          echo 'STAGE=provider_validation'
-          python -m pip install --disable-pip-version-check --no-input -r api-center/open-intelligence-toolkit/requirements.txt || exit $?
+          echo 'STAGE=install'
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/open-intelligence-toolkit/requirements.txt || exit $?
           python -m pip check || exit $?
+
+          echo 'STAGE=validation'
           python -m py_compile api-center/open-intelligence-toolkit/open_intelligence_toolkit_task.py api-center/open-intelligence-toolkit/validate_open_intelligence_toolkit.py || exit $?
           python -m unittest discover -s api-center/open-intelligence-toolkit/tests -p 'test_*.py' -v || exit $?
           python -m unittest discover -s api-center/tests -p 'test_api_catalog.py' -v || exit $?
+          cp api-center/api-catalog.json /tmp/api-catalog.json
+          cp api-center/api-catalog.md /tmp/api-catalog.md
           python api-center/build_config.py || exit $?
           python api-center/build_catalog_market_search.py || exit $?
+          cmp /tmp/api-catalog.json api-center/api-catalog.json || exit $?
+          cmp /tmp/api-catalog.md api-center/api-catalog.md || exit $?
           python - <<'PY'
           import json
           catalog=json.load(open('api-center/api-catalog.json'))
@@ -76,8 +78,8 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add api-center maintenance
-          git diff --cached --quiet && { echo 'No non-workflow finalization changes found'; exit 41; }
-          git commit -m 'feat: finalize 20-operation toolkit contracts' || exit $?
+          git diff --cached --quiet && { echo 'No ordinary-file changes found'; exit 41; }
+          git commit -m 'chore: remove toolkit migration-only ordinary files' || exit $?
           git push origin HEAD:feat/open-intelligence-toolkit-20260804 || exit $?
           exit 0
       - name: Publish diagnostic outcome
