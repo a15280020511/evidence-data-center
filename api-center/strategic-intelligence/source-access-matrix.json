@@ -1,7 +1,7 @@
 {
   "schema_version": "strategic-intelligence-source-matrix-v1",
   "generated_on": "2026-08-05",
-  "production_sources": [
+  "implemented_pending_live_acceptance": [
     {
       "source_id": "openfema",
       "name": "OpenFEMA",
@@ -11,6 +11,7 @@
       "base_url": "https://www.fema.gov/api/open/v1",
       "operations": ["openfema-disaster-declarations"],
       "cost": "free",
+      "promotion_condition": "Merge validation must pass and a real issue ticket must return the expected JSON contract from GitHub Actions.",
       "license_or_use_note": "US government public data; source field caveats remain applicable."
     },
     {
@@ -22,6 +23,7 @@
       "base_url": "https://stat.ripe.net/data",
       "operations": ["ripestat-network-info", "ripestat-prefix-overview", "ripestat-as-overview", "ripestat-bgp-state"],
       "cost": "free",
+      "promotion_condition": "Merge validation must pass and each response family must complete a real GitHub Actions ticket.",
       "license_or_use_note": "Use conservative request volume and identify sustained projects where required by RIPE NCC policy."
     },
     {
@@ -33,6 +35,7 @@
       "base_url": "https://www.peeringdb.com/api",
       "operations": ["peeringdb-search", "peeringdb-object"],
       "cost": "free anonymous read with lower limits",
+      "promotion_condition": "Merge validation and an anonymous GitHub Actions read must pass without redirects or authentication fallback.",
       "license_or_use_note": "Read-only public interconnection metadata; anonymous queries use lower limits."
     },
     {
@@ -44,10 +47,12 @@
       "base_url": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master",
       "operations": ["mitre-attack-index"],
       "cost": "free",
+      "promotion_condition": "Merge validation and a real fixed-host index ticket must pass from GitHub Actions.",
       "license_or_use_note": "ATT&CK terms of use and attribution apply; only the small collection index is fetched by this bounded operation."
     }
   ],
-  "validated_candidates_not_yet_production": [
+  "production_sources": [],
+  "validated_candidates_not_yet_implemented": [
     {
       "source_id": "ocds-data-registry",
       "name": "Open Contracting Data Registry",
@@ -126,7 +131,8 @@
     "write_operations_allowed": false,
     "personal_profiling_allowed": false,
     "real_time_tracking_allowed": false,
-    "secret_values_exposed": false
+    "secret_values_exposed": false,
+    "promotion_requires_live_acceptance": true
   },
   "discovery_evidence": {
     "tavily_issues": [966, 970, 980],
