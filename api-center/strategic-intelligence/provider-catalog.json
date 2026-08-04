@@ -54,7 +54,7 @@
               "skip": {"type": "integer", "minimum": 0, "maximum": 100000}
             }
           },
-          "result_contract": {"official_endpoint": "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries", "http_method": "GET", "read_only": true, "credential_mode": "none"}
+          "result_contract": {"official_endpoint": "https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries", "http_method": "GET", "read_only": true, "credential_mode": "none"}
         },
         {
           "operation_id": "ripestat-network-info",

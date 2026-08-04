@@ -35,7 +35,7 @@ class StrategicIntelligenceTests(unittest.TestCase):
         )
         self.assertEqual(
             url,
-            "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries",
+            "https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries",
         )
         self.assertEqual(kind, "openfema")
         values = dict(query)

@@ -8,10 +8,12 @@
       "category": "disaster-declarations",
       "credential_mode": "none",
       "protocol": "rest-odata-json",
-      "base_url": "https://www.fema.gov/api/open/v1",
+      "base_url": "https://www.fema.gov/api/open/v2",
       "operations": ["openfema-disaster-declarations"],
       "cost": "free",
-      "promotion_condition": "Merge validation must pass and a real issue ticket must return the expected JSON contract from GitHub Actions.",
+      "promotion_condition": "The corrected v2 operation must pass a real GitHub Actions ticket after merge.",
+      "previous_failed_evidence_issue": 989,
+      "previous_failure_reason": "Obsolete v1 endpoint returned HTTP 404; current official distribution is v2.",
       "license_or_use_note": "US government public data; source field caveats remain applicable."
     },
     {
@@ -23,7 +25,8 @@
       "base_url": "https://stat.ripe.net/data",
       "operations": ["ripestat-network-info", "ripestat-prefix-overview", "ripestat-as-overview", "ripestat-bgp-state"],
       "cost": "free",
-      "promotion_condition": "Merge validation must pass and each response family must complete a real GitHub Actions ticket.",
+      "promotion_condition": "A real GitHub Actions ticket must complete; the first submitted run was cancelled by the global serial concurrency group before execution.",
+      "cancelled_evidence_issue": 991,
       "license_or_use_note": "Use conservative request volume and identify sustained projects where required by RIPE NCC policy."
     },
     {
@@ -35,9 +38,12 @@
       "base_url": "https://www.peeringdb.com/api",
       "operations": ["peeringdb-search", "peeringdb-object"],
       "cost": "free anonymous read with lower limits",
-      "promotion_condition": "Merge validation and an anonymous GitHub Actions read must pass without redirects or authentication fallback.",
+      "promotion_condition": "An anonymous GitHub Actions read must complete; the first submitted run was cancelled by the global serial concurrency group before execution.",
+      "cancelled_evidence_issue": 993,
       "license_or_use_note": "Read-only public interconnection metadata; anonymous queries use lower limits."
-    },
+    }
+  ],
+  "production_sources": [
     {
       "source_id": "mitre-attack-stix-index",
       "name": "MITRE ATT&CK STIX Collection Index",
@@ -47,11 +53,11 @@
       "base_url": "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master",
       "operations": ["mitre-attack-index"],
       "cost": "free",
-      "promotion_condition": "Merge validation and a real fixed-host index ticket must pass from GitHub Actions.",
+      "live_acceptance_issue": 994,
+      "live_acceptance_status": "INTEL_STRATEGIC_SOURCE_COMPLETED",
       "license_or_use_note": "ATT&CK terms of use and attribution apply; only the small collection index is fetched by this bounded operation."
     }
   ],
-  "production_sources": [],
   "validated_candidates_not_yet_implemented": [
     {
       "source_id": "ocds-data-registry",

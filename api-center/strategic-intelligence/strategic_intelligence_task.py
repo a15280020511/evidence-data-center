@@ -29,12 +29,14 @@ SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
 SOURCE_MATRIX_PATH = HERE / "source-access-matrix.json"
 
-PREFIX_RE = re.compile(r"^[0-9A-Fa-f:.]+/[0-9]{1,3}$")
 AS_RE = re.compile(r"^(?:AS)?[0-9]{1,10}$", re.IGNORECASE)
 TIMESTAMP_RE = re.compile(r"^(?:[0-9]{10}|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]{5,30})$")
 NAME_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,120}$")
 INCIDENT_RE = re.compile(r"^[A-Za-z0-9 .,&()'/-]{2,80}$")
 PEERING_OBJECTS = {"net", "ix", "fac", "org"}
+OPENFEMA_DECLARATIONS_V2 = (
+    "https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries"
+)
 
 
 def required_text(parameters: Mapping[str, Any], name: str, maximum: int) -> str:
@@ -72,9 +74,17 @@ def build_request(
             raise ValueError("source-access-matrix accepts no parameters")
         return None, [], "source-matrix"
     if operation == "openfema-disaster-declarations":
-        top = bounded_int(parameters.get("top"), default=100, minimum=1, maximum=1000, name="top")
-        skip = bounded_int(parameters.get("skip"), default=0, minimum=0, maximum=100000, name="skip")
-        query: list[tuple[str, str]] = [("$top", str(top)), ("$skip", str(skip)), ("$orderby", "declarationDate desc")]
+        top = bounded_int(
+            parameters.get("top"), default=100, minimum=1, maximum=1000, name="top"
+        )
+        skip = bounded_int(
+            parameters.get("skip"), default=0, minimum=0, maximum=100000, name="skip"
+        )
+        query: list[tuple[str, str]] = [
+            ("$top", str(top)),
+            ("$skip", str(skip)),
+            ("$orderby", "declarationDate desc"),
+        ]
         terms: list[str] = []
         state = str(parameters.get("state") or "").strip().upper()
         if state:
@@ -90,29 +100,53 @@ def build_request(
         year_from = parameters.get("year_from")
         year_to = parameters.get("year_to")
         if year_from is not None:
-            year_from = bounded_int(year_from, default=1953, minimum=1953, maximum=2100, name="year_from")
+            year_from = bounded_int(
+                year_from,
+                default=1953,
+                minimum=1953,
+                maximum=2100,
+                name="year_from",
+            )
             terms.append(f"fyDeclared ge {year_from}")
         if year_to is not None:
-            year_to = bounded_int(year_to, default=2100, minimum=1953, maximum=2100, name="year_to")
+            year_to = bounded_int(
+                year_to,
+                default=2100,
+                minimum=1953,
+                maximum=2100,
+                name="year_to",
+            )
             terms.append(f"fyDeclared le {year_to}")
         if year_from is not None and year_to is not None and year_from > year_to:
             raise ValueError("year_from must not exceed year_to")
         if terms:
             query.append(("$filter", " and ".join(terms)))
-        return "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries", query, "openfema"
+        return OPENFEMA_DECLARATIONS_V2, query, "openfema"
     if operation == "ripestat-network-info":
         resource = validated_ip(required_text(parameters, "resource", 128))
-        return "https://stat.ripe.net/data/network-info/data.json", [("resource", resource)], "ripestat"
+        return (
+            "https://stat.ripe.net/data/network-info/data.json",
+            [("resource", resource)],
+            "ripestat",
+        )
     if operation == "ripestat-prefix-overview":
         resource = validated_ip_or_prefix(required_text(parameters, "resource", 128))
-        return "https://stat.ripe.net/data/prefix-overview/data.json", [("resource", resource)], "ripestat"
+        return (
+            "https://stat.ripe.net/data/prefix-overview/data.json",
+            [("resource", resource)],
+            "ripestat",
+        )
     if operation == "ripestat-as-overview":
         resource = required_text(parameters, "resource", 16).upper()
         if not AS_RE.fullmatch(resource):
             raise ValueError("resource must be an ASN")
         if not resource.startswith("AS"):
             resource = "AS" + resource
-        return "https://stat.ripe.net/data/as-overview/data.json", [("resource", resource)], "ripestat"
+        return (
+            "https://stat.ripe.net/data/as-overview/data.json",
+            [("resource", resource)],
+            "ripestat",
+        )
     if operation == "ripestat-bgp-state":
         raw_resource = required_text(parameters, "resource", 256)
         resource = (
@@ -136,7 +170,9 @@ def build_request(
         name = required_text(parameters, "name", 120)
         if not NAME_RE.fullmatch(name):
             raise ValueError("name is invalid")
-        limit = bounded_int(parameters.get("limit"), default=25, minimum=1, maximum=100, name="limit")
+        limit = bounded_int(
+            parameters.get("limit"), default=25, minimum=1, maximum=100, name="limit"
+        )
         query = [("name__contains", name), ("limit", str(limit))]
         country = str(parameters.get("country") or "").strip().upper()
         if country:
@@ -148,12 +184,22 @@ def build_request(
         object_type = required_text(parameters, "object_type", 8).lower()
         if object_type not in PEERING_OBJECTS:
             raise ValueError("object_type is not allowlisted")
-        object_id = bounded_int(parameters.get("object_id"), default=0, minimum=1, maximum=2147483647, name="object_id")
+        object_id = bounded_int(
+            parameters.get("object_id"),
+            default=0,
+            minimum=1,
+            maximum=2147483647,
+            name="object_id",
+        )
         return f"https://www.peeringdb.com/api/{object_type}/{object_id}", [], "peeringdb"
     if operation == "mitre-attack-index":
         if parameters:
             raise ValueError("mitre-attack-index accepts no parameters")
-        return "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/index.json", [], "mitre-index"
+        return (
+            "https://raw.githubusercontent.com/mitre-attack/attack-stix-data/master/index.json",
+            [],
+            "mitre-index",
+        )
     raise ValueError(f"unsupported operation: {operation}")
 
 
@@ -188,8 +234,20 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
     operation = str(ticket["operation"])
     parameters = dict(ticket.get("parameters") or {})
     acceptance = dict(ticket.get("acceptance") or {})
-    timeout = bounded_int(acceptance.get("timeout_seconds"), default=45, minimum=5, maximum=90, name="timeout_seconds")
-    max_bytes = bounded_int(acceptance.get("max_response_bytes"), default=5_000_000, minimum=1024, maximum=10_000_000, name="max_response_bytes")
+    timeout = bounded_int(
+        acceptance.get("timeout_seconds"),
+        default=45,
+        minimum=5,
+        maximum=90,
+        name="timeout_seconds",
+    )
+    max_bytes = bounded_int(
+        acceptance.get("max_response_bytes"),
+        default=5_000_000,
+        minimum=1024,
+        maximum=10_000_000,
+        name="max_response_bytes",
+    )
     started_at = utc_now()
     started_perf = time.perf_counter()
     status = "INTEL_STRATEGIC_SOURCE_FAILED"
@@ -213,13 +271,18 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
             response = requests.get(
                 str(url),
                 params=query,
-                headers={"Accept": "application/json", "User-Agent": "evidence-data-center-strategic-intelligence/1"},
+                headers={
+                    "Accept": "application/json",
+                    "User-Agent": "evidence-data-center-strategic-intelligence/1",
+                },
                 timeout=timeout,
                 allow_redirects=False,
             )
             raw = response.content
             if len(raw) > max_bytes:
-                raise RuntimeError(f"response exceeds acceptance.max_response_bytes={max_bytes}")
+                raise RuntimeError(
+                    f"response exceeds acceptance.max_response_bytes={max_bytes}"
+                )
             if not response.ok:
                 text = raw[:1000].decode("utf-8", errors="replace")
                 raise RuntimeError(f"upstream HTTP {response.status_code}: {text}")
@@ -230,15 +293,17 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
             row_count = validate_response(kind, data)
             (output_dir / "response.json").write_bytes(raw)
             snapshot = {"provider": kind, "operation": operation, "data": data}
-            metadata.update({
-                "upstream_called": True,
-                "api_origin": urlparse(str(url)).hostname,
-                "http_status": response.status_code,
-                "content_type": response.headers.get("Content-Type", ""),
-                "response_bytes": len(raw),
-                "response_sha256": bytes_sha(raw),
-                "row_count": row_count,
-            })
+            metadata.update(
+                {
+                    "upstream_called": True,
+                    "api_origin": urlparse(str(url)).hostname,
+                    "http_status": response.status_code,
+                    "content_type": response.headers.get("Content-Type", ""),
+                    "response_bytes": len(raw),
+                    "response_sha256": bytes_sha(raw),
+                    "row_count": row_count,
+                }
+            )
         status = "INTEL_STRATEGIC_SOURCE_COMPLETED"
     except Exception as exc:
         failure = {"type": type(exc).__name__, "message": str(exc)[:2000]}
