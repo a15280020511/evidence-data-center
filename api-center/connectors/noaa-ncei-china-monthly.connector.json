@@ -1,0 +1,166 @@
+{
+  "backend": {
+    "allow": [
+      "STATION",
+      "DATE",
+      "LATITUDE",
+      "LONGITUDE",
+      "ELEVATION",
+      "NAME",
+      "REPORT_TYPE",
+      "SOURCE",
+      "PRCP",
+      "PRCP_ATTRIBUTES",
+      "SNOW",
+      "SNOW_ATTRIBUTES",
+      "SNWD",
+      "SNWD_ATTRIBUTES",
+      "TAVG",
+      "TAVG_ATTRIBUTES",
+      "TMAX",
+      "TMAX_ATTRIBUTES",
+      "TMIN",
+      "TMIN_ATTRIBUTES",
+      "AWND",
+      "AWND_ATTRIBUTES",
+      "WDF2",
+      "WDF5",
+      "WSF2",
+      "WSF5",
+      "EMXT",
+      "EMNT",
+      "EMXP",
+      "HTDD",
+      "CLDD",
+      "DP01",
+      "DP10",
+      "DX32",
+      "DX70",
+      "DX90",
+      "DT00",
+      "DT32",
+      "DYFG",
+      "DYTS",
+      "errorMessage",
+      "errorCode",
+      "errors"
+    ],
+    "encoding": "json",
+    "host": "https://www.ncei.noaa.gov",
+    "method": "GET",
+    "resilience": {
+      "circuit_breaker": {
+        "interval": 60,
+        "log_status_change": true,
+        "max_errors": 3,
+        "timeout": 30
+      },
+      "rate_limit": {
+        "capacity": 1,
+        "every": "1s",
+        "max_rate": 1
+      }
+    },
+    "url_pattern": "/access/services/data/v1"
+  },
+  "enabled": true,
+  "endpoint": "/data/noaa/ncei/china/monthly",
+  "id": "noaa-ncei-china-monthly",
+  "input_query_strings": [
+    "dataset",
+    "stations",
+    "startDate",
+    "endDate",
+    "dataTypes",
+    "format",
+    "units",
+    "includeAttributes",
+    "includeStationName",
+    "includeStationLocation"
+  ],
+  "method": "GET",
+  "output_encoding": "json",
+  "parameter_rules": {
+    "properties": {
+      "dataTypes": {
+        "max_length": 1000,
+        "pattern": "^[A-Z0-9,_-]{1,1000}$",
+        "type": "string"
+      },
+      "dataset": {
+        "enum": [
+          "global-summary-of-the-month"
+        ],
+        "type": "string"
+      },
+      "endDate": {
+        "max_length": 10,
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "type": "string"
+      },
+      "format": {
+        "enum": [
+          "json"
+        ],
+        "type": "string"
+      },
+      "includeAttributes": {
+        "type": "boolean"
+      },
+      "includeStationLocation": {
+        "type": "boolean"
+      },
+      "includeStationName": {
+        "type": "boolean"
+      },
+      "startDate": {
+        "max_length": 10,
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "type": "string"
+      },
+      "stations": {
+        "max_length": 119,
+        "pattern": "^CH[A-Z0-9]{9}(?:,CH[A-Z0-9]{9}){0,9}$",
+        "type": "string"
+      },
+      "units": {
+        "enum": [
+          "metric"
+        ],
+        "type": "string"
+      }
+    },
+    "required_any_of": [
+      [
+        "dataset"
+      ],
+      [
+        "stations"
+      ],
+      [
+        "startDate"
+      ],
+      [
+        "endDate"
+      ],
+      [
+        "format"
+      ],
+      [
+        "units"
+      ]
+    ]
+  },
+  "response_contract": {
+    "any_data_paths": [
+      "0"
+    ],
+    "success_when_data_present": true
+  },
+  "response_quality": {
+    "collection_path": "0",
+    "hard_limit": 50000,
+    "recommended_action": "Use one to ten CH-prefixed Chinese station IDs and a bounded date interval; split long periods into smaller tickets."
+  },
+  "timeout": "30s"
+}

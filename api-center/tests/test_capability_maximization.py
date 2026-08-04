@@ -13,8 +13,8 @@ class CapabilityMaximizationTests(unittest.TestCase):
             (ROOT / "connector-manifest.json").read_text(encoding="utf-8")
         )
         rows = manifest["connectors"]
-        self.assertEqual(manifest["connector_count"], 75)
-        self.assertEqual(manifest["enabled_connector_count"], 75)
+        self.assertEqual(manifest["connector_count"], 72)
+        self.assertEqual(manifest["enabled_connector_count"], 72)
         counts = {
             prefix: sum(row["id"].startswith(prefix) for row in rows)
             for prefix in (

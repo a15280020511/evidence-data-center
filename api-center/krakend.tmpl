@@ -2078,7 +2078,181 @@
       ]
     },
     {
-      "endpoint": "/data/noaa/ncei/search",
+      "endpoint": "/data/noaa/ncei/china/daily",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://www.ncei.noaa.gov"
+          ],
+          "url_pattern": "/access/services/data/v1",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-noaa-ncei-china-daily",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "STATION",
+            "DATE",
+            "LATITUDE",
+            "LONGITUDE",
+            "ELEVATION",
+            "NAME",
+            "REPORT_TYPE",
+            "SOURCE",
+            "PRCP",
+            "PRCP_ATTRIBUTES",
+            "SNOW",
+            "SNOW_ATTRIBUTES",
+            "SNWD",
+            "SNWD_ATTRIBUTES",
+            "TAVG",
+            "TAVG_ATTRIBUTES",
+            "TMAX",
+            "TMAX_ATTRIBUTES",
+            "TMIN",
+            "TMIN_ATTRIBUTES",
+            "AWND",
+            "AWND_ATTRIBUTES",
+            "WDF2",
+            "WDF5",
+            "WSF2",
+            "WSF5",
+            "EMXT",
+            "EMNT",
+            "EMXP",
+            "HTDD",
+            "CLDD",
+            "DP01",
+            "DP10",
+            "DX32",
+            "DX70",
+            "DX90",
+            "DT00",
+            "DT32",
+            "DYFG",
+            "DYTS",
+            "errorMessage",
+            "errorCode",
+            "errors"
+          ]
+        }
+      ],
+      "timeout": "30s",
+      "input_query_strings": [
+        "dataset",
+        "stations",
+        "startDate",
+        "endDate",
+        "dataTypes",
+        "format",
+        "units",
+        "includeAttributes",
+        "includeStationName",
+        "includeStationLocation"
+      ]
+    },
+    {
+      "endpoint": "/data/noaa/ncei/china/monthly",
+      "method": "GET",
+      "output_encoding": "json",
+      "backend": [
+        {
+          "host": [
+            "https://www.ncei.noaa.gov"
+          ],
+          "url_pattern": "/access/services/data/v1",
+          "method": "GET",
+          "encoding": "json",
+          "extra_config": {
+            "qos/circuit-breaker": {
+              "interval": 60,
+              "timeout": 30,
+              "max_errors": 3,
+              "name": "cb-noaa-ncei-china-monthly",
+              "log_status_change": true
+            },
+            "qos/ratelimit/proxy": {
+              "max_rate": 1.0,
+              "every": "1s",
+              "capacity": 1
+            }
+          },
+          "allow": [
+            "STATION",
+            "DATE",
+            "LATITUDE",
+            "LONGITUDE",
+            "ELEVATION",
+            "NAME",
+            "REPORT_TYPE",
+            "SOURCE",
+            "PRCP",
+            "PRCP_ATTRIBUTES",
+            "SNOW",
+            "SNOW_ATTRIBUTES",
+            "SNWD",
+            "SNWD_ATTRIBUTES",
+            "TAVG",
+            "TAVG_ATTRIBUTES",
+            "TMAX",
+            "TMAX_ATTRIBUTES",
+            "TMIN",
+            "TMIN_ATTRIBUTES",
+            "AWND",
+            "AWND_ATTRIBUTES",
+            "WDF2",
+            "WDF5",
+            "WSF2",
+            "WSF5",
+            "EMXT",
+            "EMNT",
+            "EMXP",
+            "HTDD",
+            "CLDD",
+            "DP01",
+            "DP10",
+            "DX32",
+            "DX70",
+            "DX90",
+            "DT00",
+            "DT32",
+            "DYFG",
+            "DYTS",
+            "errorMessage",
+            "errorCode",
+            "errors"
+          ]
+        }
+      ],
+      "timeout": "30s",
+      "input_query_strings": [
+        "dataset",
+        "stations",
+        "startDate",
+        "endDate",
+        "dataTypes",
+        "format",
+        "units",
+        "includeAttributes",
+        "includeStationName",
+        "includeStationLocation"
+      ]
+    },
+    {
+      "endpoint": "/data/noaa/ncei/china/stations",
       "method": "GET",
       "output_encoding": "json",
       "backend": [
@@ -2094,7 +2268,7 @@
               "interval": 60,
               "timeout": 30,
               "max_errors": 3,
-              "name": "cb-noaa-ncei-data-search",
+              "name": "cb-noaa-ncei-china-station-search",
               "log_status_change": true
             },
             "qos/ratelimit/proxy": {
@@ -2121,300 +2295,97 @@
         "startDate",
         "endDate",
         "bbox",
-        "stations",
         "dataTypes",
+        "stations",
         "limit",
         "offset"
       ]
     },
     {
-      "endpoint": "/data/noaa/nws/alerts/active",
+      "endpoint": "/data/noaa/ncei/china/yearly",
       "method": "GET",
       "output_encoding": "json",
       "backend": [
         {
           "host": [
-            "https://api.weather.gov"
+            "https://www.ncei.noaa.gov"
           ],
-          "url_pattern": "/alerts/active",
+          "url_pattern": "/access/services/data/v1",
           "method": "GET",
           "encoding": "json",
           "extra_config": {
             "qos/circuit-breaker": {
               "interval": 60,
-              "timeout": 20,
+              "timeout": 30,
               "max_errors": 3,
-              "name": "cb-noaa-nws-alerts-active",
+              "name": "cb-noaa-ncei-china-yearly",
               "log_status_change": true
             },
             "qos/ratelimit/proxy": {
               "max_rate": 1.0,
-              "every": "30s",
+              "every": "1s",
               "capacity": 1
             }
           },
           "allow": [
-            "@context",
-            "id",
-            "type",
-            "geometry",
-            "properties",
-            "features",
-            "pagination",
-            "title",
-            "status",
-            "detail",
-            "instance",
-            "correlationId"
+            "STATION",
+            "DATE",
+            "LATITUDE",
+            "LONGITUDE",
+            "ELEVATION",
+            "NAME",
+            "REPORT_TYPE",
+            "SOURCE",
+            "PRCP",
+            "PRCP_ATTRIBUTES",
+            "SNOW",
+            "SNOW_ATTRIBUTES",
+            "SNWD",
+            "SNWD_ATTRIBUTES",
+            "TAVG",
+            "TAVG_ATTRIBUTES",
+            "TMAX",
+            "TMAX_ATTRIBUTES",
+            "TMIN",
+            "TMIN_ATTRIBUTES",
+            "AWND",
+            "AWND_ATTRIBUTES",
+            "WDF2",
+            "WDF5",
+            "WSF2",
+            "WSF5",
+            "EMXT",
+            "EMNT",
+            "EMXP",
+            "HTDD",
+            "CLDD",
+            "DP01",
+            "DP10",
+            "DX32",
+            "DX70",
+            "DX90",
+            "DT00",
+            "DT32",
+            "DYFG",
+            "DYTS",
+            "errorMessage",
+            "errorCode",
+            "errors"
           ]
         }
       ],
-      "timeout": "20s",
+      "timeout": "30s",
       "input_query_strings": [
-        "area",
-        "point",
-        "region",
-        "zone",
-        "urgency",
-        "severity",
-        "certainty",
-        "status",
-        "message_type",
-        "event",
-        "code"
-      ]
-    },
-    {
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast/hourly",
-      "method": "GET",
-      "output_encoding": "json",
-      "backend": [
-        {
-          "host": [
-            "https://api.weather.gov"
-          ],
-          "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
-          "method": "GET",
-          "encoding": "json",
-          "extra_config": {
-            "qos/circuit-breaker": {
-              "interval": 60,
-              "timeout": 20,
-              "max_errors": 3,
-              "name": "cb-noaa-nws-forecast-hourly",
-              "log_status_change": true
-            },
-            "qos/ratelimit/proxy": {
-              "max_rate": 2.0,
-              "every": "1s",
-              "capacity": 2
-            }
-          },
-          "allow": [
-            "@context",
-            "id",
-            "type",
-            "geometry",
-            "properties",
-            "features",
-            "pagination",
-            "title",
-            "status",
-            "detail",
-            "instance",
-            "correlationId"
-          ]
-        }
-      ],
-      "timeout": "20s",
-      "input_query_strings": [
-        "units"
-      ]
-    },
-    {
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast",
-      "method": "GET",
-      "output_encoding": "json",
-      "backend": [
-        {
-          "host": [
-            "https://api.weather.gov"
-          ],
-          "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast",
-          "method": "GET",
-          "encoding": "json",
-          "extra_config": {
-            "qos/circuit-breaker": {
-              "interval": 60,
-              "timeout": 20,
-              "max_errors": 3,
-              "name": "cb-noaa-nws-forecast",
-              "log_status_change": true
-            },
-            "qos/ratelimit/proxy": {
-              "max_rate": 2.0,
-              "every": "1s",
-              "capacity": 2
-            }
-          },
-          "allow": [
-            "@context",
-            "id",
-            "type",
-            "geometry",
-            "properties",
-            "features",
-            "pagination",
-            "title",
-            "status",
-            "detail",
-            "instance",
-            "correlationId"
-          ]
-        }
-      ],
-      "timeout": "20s",
-      "input_query_strings": [
-        "units"
-      ]
-    },
-    {
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/stations",
-      "method": "GET",
-      "output_encoding": "json",
-      "backend": [
-        {
-          "host": [
-            "https://api.weather.gov"
-          ],
-          "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/stations",
-          "method": "GET",
-          "encoding": "json",
-          "extra_config": {
-            "qos/circuit-breaker": {
-              "interval": 60,
-              "timeout": 20,
-              "max_errors": 3,
-              "name": "cb-noaa-nws-gridpoint-stations",
-              "log_status_change": true
-            },
-            "qos/ratelimit/proxy": {
-              "max_rate": 2.0,
-              "every": "1s",
-              "capacity": 2
-            }
-          },
-          "allow": [
-            "@context",
-            "id",
-            "type",
-            "geometry",
-            "properties",
-            "features",
-            "pagination",
-            "title",
-            "status",
-            "detail",
-            "instance",
-            "correlationId"
-          ]
-        }
-      ],
-      "timeout": "20s",
-      "input_query_strings": [
-        "limit",
-        "cursor"
-      ]
-    },
-    {
-      "endpoint": "/data/noaa/nws/points/{latitude}/{longitude}",
-      "method": "GET",
-      "output_encoding": "json",
-      "backend": [
-        {
-          "host": [
-            "https://api.weather.gov"
-          ],
-          "url_pattern": "/points/{latitude},{longitude}",
-          "method": "GET",
-          "encoding": "json",
-          "extra_config": {
-            "qos/circuit-breaker": {
-              "interval": 60,
-              "timeout": 20,
-              "max_errors": 3,
-              "name": "cb-noaa-nws-points",
-              "log_status_change": true
-            },
-            "qos/ratelimit/proxy": {
-              "max_rate": 2.0,
-              "every": "1s",
-              "capacity": 2
-            }
-          },
-          "allow": [
-            "@context",
-            "id",
-            "type",
-            "geometry",
-            "properties",
-            "features",
-            "pagination",
-            "title",
-            "status",
-            "detail",
-            "instance",
-            "correlationId"
-          ]
-        }
-      ],
-      "timeout": "20s"
-    },
-    {
-      "endpoint": "/data/noaa/nws/stations/{station_id}/observations/latest",
-      "method": "GET",
-      "output_encoding": "json",
-      "backend": [
-        {
-          "host": [
-            "https://api.weather.gov"
-          ],
-          "url_pattern": "/stations/{station_id}/observations/latest",
-          "method": "GET",
-          "encoding": "json",
-          "extra_config": {
-            "qos/circuit-breaker": {
-              "interval": 60,
-              "timeout": 20,
-              "max_errors": 3,
-              "name": "cb-noaa-nws-station-latest",
-              "log_status_change": true
-            },
-            "qos/ratelimit/proxy": {
-              "max_rate": 2.0,
-              "every": "1s",
-              "capacity": 2
-            }
-          },
-          "allow": [
-            "@context",
-            "id",
-            "type",
-            "geometry",
-            "properties",
-            "features",
-            "pagination",
-            "title",
-            "status",
-            "detail",
-            "instance",
-            "correlationId"
-          ]
-        }
-      ],
-      "timeout": "20s",
-      "input_query_strings": [
-        "require_qc"
+        "dataset",
+        "stations",
+        "startDate",
+        "endDate",
+        "dataTypes",
+        "format",
+        "units",
+        "includeAttributes",
+        "includeStationName",
+        "includeStationLocation"
       ]
     },
     {
