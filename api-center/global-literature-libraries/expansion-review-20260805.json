@@ -63,10 +63,11 @@
       "source_id": "re3data",
       "name": "Registry of Research Data Repositories",
       "unique_value": "Global directory of research-data repositories, repository policies, disciplines, certificates, access conditions and persistent identifiers.",
-      "official_interface": "https://www.re3data.org/api/",
+      "official_interface": "https://www.re3data.org/api/v40/repositories",
       "credential_mode": "none",
       "license": "Database entries CC0 where stated; other site content generally CC BY 4.0 unless noted.",
-      "status": "verified-official-api-not-yet-implemented",
+      "status": "implemented-in-research-data-registry-pending-live-acceptance",
+      "operations": ["re3data-repositories", "re3data-repository"],
       "priority": "P0"
     },
     {
