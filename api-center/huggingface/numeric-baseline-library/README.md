@@ -77,3 +77,14 @@ a15280020511/decision-system-governance/compute-baseline-gateway/
 ```
 
 情报中心只负责生产，不负责存储；计算中心只负责使用，不负责联网取数；治理仓库负责验证、入库、转交和审计。
+
+## 后台配置迁移
+
+代码合并不会自动移动、读取或删除 GitHub Secrets。完成迁移后应人工执行：
+
+1. 在治理仓库配置 `HF_TOKEN`；
+2. 在治理仓库配置只允许读取情报中心 Actions Artifact 的 `BASELINE_TRANSFER_TOKEN`；
+3. 可选配置 `HF_NUMERIC_BASELINE_DATASET_REPO=James147258/compute-numeric-baselines`；
+4. 从情报仓库删除私有 Dataset 用途的 `HF_TOKEN` 及相关私有 Dataset Variables；
+5. 确认计算与专家仓库均未配置 `HF_TOKEN`；
+6. 使用治理仓库 `[baseline]` 健康检查取得生产回执后，才可宣称网关已实际联通。
