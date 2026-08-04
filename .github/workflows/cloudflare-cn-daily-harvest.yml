@@ -70,6 +70,26 @@ jobs:
           gh label create cn-harvest-quarantined --color B60205 --description "China numeric harvest requires review" --force
           gh label create cn-harvest-rejected --color 5319E7 --description "China numeric harvest ticket rejected" --force
 
+      - name: Recover interrupted active tickets
+        run: |
+          set -euo pipefail
+          mapfile -t stale_issues < <(
+            gh issue list \
+              --state open \
+              --label cn-harvest-active \
+              --limit 100 \
+              --search 'in:title "[queue-cn-numeric]"' \
+              --json number \
+              --jq '.[].number'
+          )
+          for issue_number in "${stale_issues[@]}"; do
+            gh issue edit "$issue_number" \
+              --remove-label cn-harvest-active \
+              --add-label cn-harvest-deferred-rate-limit >/dev/null
+            gh issue comment "$issue_number" \
+              --body 'Daily harvest recovery: `DEFERRED_AFTER_INTERRUPTED_RUN`; the task will be retried in the current oldest-first queue.' >/dev/null
+          done
+
       - name: Build oldest-first resumable queue
         run: |
           set -euo pipefail
@@ -179,6 +199,7 @@ jobs:
               clear_queue_labels "$issue_number"
               gh issue edit "$issue_number" --add-label cn-harvest-rejected >/dev/null
               gh issue comment "$issue_number" --body 'Daily harvest admission: `ADMISSION_REJECTED_INVALID_JSON`' >/dev/null
+              gh issue close "$issue_number" --reason not-planned >/dev/null
               rejected=$((rejected + 1))
               continue
             fi
@@ -199,7 +220,8 @@ jobs:
             if [[ "$rc" -eq 0 && -f "$task_dir/execution-receipt.json" ]]; then
               post_comment "$issue_number" "$task_dir"
               clear_queue_labels "$issue_number"
-              gh issue edit "$issue_number" --add-label cn-harvest-completed --state closed >/dev/null
+              gh issue edit "$issue_number" --add-label cn-harvest-completed >/dev/null
+              gh issue close "$issue_number" --reason completed >/dev/null
               completed=$((completed + 1))
             else
               post_comment "$issue_number" "$task_dir"
