@@ -73,6 +73,7 @@ jobs:
             'wikimedia-pageviews':{'project':'en.wikipedia.org','article':'Artificial_intelligence','start':'20260701','end':'20260702'},
           }
           results=[]
+          failures=[]
           for index,(operation,parameters) in enumerate(samples.items(),1):
               with tempfile.TemporaryDirectory() as tmp:
                   root=Path(tmp);ticket=root/'ticket.json';out=root/'out'
@@ -84,14 +85,19 @@ jobs:
                       'acceptance':{'timeout_seconds':45,'max_response_bytes':5000000},
                   }),encoding='utf-8')
                   proc=subprocess.run(['python','api-center/open-intelligence-toolkit/open_intelligence_toolkit_task.py','execute','--ticket',str(ticket),'--output-dir',str(out)],check=False)
-                  assert proc.returncode==0,operation
                   diagnostics=json.loads((out/'diagnostics.json').read_text())
-                  assert diagnostics['status']=='INTEL_OPEN_TOOLKIT_COMPLETED',diagnostics
+                  if proc.returncode!=0 or diagnostics['status']!='INTEL_OPEN_TOOLKIT_COMPLETED':
+                      failure={'operation':operation,'returncode':proc.returncode,'diagnostics':diagnostics}
+                      failures.append(failure)
+                      print(json.dumps(failure,ensure_ascii=False,sort_keys=True))
+                      continue
                   assert diagnostics['metadata']['network_used'] is True
                   assert diagnostics['metadata']['request_count']==1
                   assert diagnostics['model_calls']==0
                   results.append({'operation':operation,'status':'PASS','response_sha256':diagnostics['metadata']['response_sha256']})
-          Path('open-toolkit-validation/live-smoke.json').write_text(json.dumps({'status':'PASS','sources':results,'model_calls':0},indent=2)+'\n')
+          evidence={'status':'PASS' if not failures else 'FAIL','sources':results,'failures':failures,'model_calls':0}
+          Path('open-toolkit-validation/live-smoke.json').write_text(json.dumps(evidence,ensure_ascii=False,indent=2)+'\n')
+          assert not failures,evidence
           PY
       - name: Verify deterministic aggregate catalog
         run: |
