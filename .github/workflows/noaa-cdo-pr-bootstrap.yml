@@ -24,7 +24,7 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Build catalog and run provider tests
+      - name: Register provider, rebuild catalog, and run tests
         run: |
           set -euo pipefail
           python -m pip install --disable-pip-version-check --no-input \
@@ -32,14 +32,40 @@ jobs:
             -r api-center/noaa-cdo/requirements.txt
           python - <<'PY'
           from pathlib import Path
-          path = Path('api-center/tests/test_api_catalog.py')
-          text = path.read_text(encoding='utf-8')
-          if '"noaa-cdo": 5,' not in text:
-              marker = '    "google-public-intelligence": 9,\n'
-              if marker not in text:
-                  raise SystemExit('catalog insertion marker missing')
-              text = text.replace(marker, marker + '    "noaa-cdo": 5,\n', 1)
-          path.write_text(text, encoding='utf-8')
+
+          builder = Path('api-center/build_catalog_market_search.py')
+          text = builder.read_text(encoding='utf-8')
+          constant_marker = 'GOOGLE_PUBLIC_INTELLIGENCE_CATALOG = HERE / "google-public-intelligence/provider-catalog.json"\n'
+          if 'NOAA_CDO_CATALOG = HERE / "noaa-cdo/provider-catalog.json"' not in text:
+              text = text.replace(
+                  constant_marker,
+                  constant_marker + 'NOAA_CDO_CATALOG = HERE / "noaa-cdo/provider-catalog.json"\n',
+                  1,
+              )
+          expected_marker = '    "google-public-intelligence": 9,\n'
+          if '    "noaa-cdo": 5,\n' not in text:
+              text = text.replace(expected_marker, expected_marker + '    "noaa-cdo": 5,\n', 1)
+          tuple_marker = '    GOOGLE_PUBLIC_INTELLIGENCE_CATALOG,\n'
+          if '    NOAA_CDO_CATALOG,\n' not in text:
+              text = text.replace(tuple_marker, tuple_marker + '    NOAA_CDO_CATALOG,\n', 1)
+          reading_marker = '        "google-public-intelligence/provider-catalog.json",\n'
+          if '        "noaa-cdo/provider-catalog.json",\n' not in text:
+              text = text.replace(
+                  reading_marker,
+                  reading_marker + '        "noaa-cdo/provider-catalog.json",\n',
+                  1,
+              )
+          builder.write_text(text, encoding='utf-8')
+
+          test_path = Path('api-center/tests/test_api_catalog.py')
+          test_text = test_path.read_text(encoding='utf-8')
+          if '    "noaa-cdo": 5,\n' not in test_text:
+              test_text = test_text.replace(
+                  expected_marker,
+                  expected_marker + '    "noaa-cdo": 5,\n',
+                  1,
+              )
+          test_path.write_text(test_text, encoding='utf-8')
           PY
           python api-center/build_catalog_market_search.py
           python -m unittest discover -s api-center/noaa-cdo/tests -p 'test_*.py' -v
@@ -50,106 +76,182 @@ jobs:
         env:
           NOAA_CDO_TOKEN: ${{ secrets.NOAA_CDO_TOKEN }}
         run: |
+          mkdir -p noaa-cdo-evidence
           python - <<'PY'
-          import json, os, requests
+          import json
+          import os
           from pathlib import Path
+          import requests
+
           token = (os.environ.get('NOAA_CDO_TOKEN') or '').strip()
-          result = {'secret_name':'NOAA_CDO_TOKEN','configured':bool(token),'token_exposed':False}
+          result = {
+              'secret_name': 'NOAA_CDO_TOKEN',
+              'configured': bool(token),
+              'token_exposed': False,
+          }
           if token:
-              headers = {'token':token,'Accept':'application/json','User-Agent':'evidence-data-center-noaa-cdo/1'}
+              headers = {
+                  'token': token,
+                  'Accept': 'application/json',
+                  'User-Agent': 'evidence-data-center-noaa-cdo/1',
+              }
               base = 'https://www.ncei.noaa.gov/cdo-web/api/v2'
-              r1 = requests.get(base + '/datasets', params={'limit':1}, headers=headers, timeout=30, allow_redirects=False)
-              r1.raise_for_status()
-              r2 = requests.get(base + '/stations', params={'datasetid':'GHCND','extent':'25.9,119.0,26.2,119.5','limit':25}, headers=headers, timeout=30, allow_redirects=False)
-              r2.raise_for_status()
-              rows = r2.json().get('results') or []
-              result.update({'status':'PASS','datasets_http_status':r1.status_code,'stations_http_status':r2.status_code,'station_count':len(rows),'station_ids':[row.get('id') for row in rows]})
+              datasets = requests.get(
+                  base + '/datasets', params={'limit': 1}, headers=headers,
+                  timeout=30, allow_redirects=False,
+              )
+              datasets.raise_for_status()
+              stations = requests.get(
+                  base + '/stations',
+                  params={
+                      'datasetid': 'GHCND',
+                      'extent': '25.9,119.0,26.2,119.5',
+                      'limit': 25,
+                  },
+                  headers=headers,
+                  timeout=30,
+                  allow_redirects=False,
+              )
+              stations.raise_for_status()
+              rows = stations.json().get('results') or []
+              result.update({
+                  'status': 'PASS',
+                  'datasets_http_status': datasets.status_code,
+                  'stations_http_status': stations.status_code,
+                  'station_count': len(rows),
+                  'station_ids': [row.get('id') for row in rows],
+              })
           else:
               result['status'] = 'SECRET_NOT_CONFIGURED'
-          Path('/tmp/noaa-cdo-token-test.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+          Path('noaa-cdo-evidence/token-test.json').write_text(
+              json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8'
+          )
           print(json.dumps(result, ensure_ascii=False))
           PY
 
       - name: Analyze Fuzhou 2015-2024 daily climate
         run: |
+          mkdir -p noaa-cdo-evidence
           python - <<'PY'
-          import calendar, json, math, statistics
+          import calendar
+          import json
+          import math
+          import statistics
           from collections import defaultdict
           from datetime import date
           from pathlib import Path
           import requests
 
-          params = {
-              'dataset':'daily-summaries','stations':'CHM00058847',
-              'startDate':'2015-01-01','endDate':'2024-12-31',
-              'dataTypes':'TAVG,TMAX,TMIN,PRCP','format':'json','units':'metric',
-              'includeStationName':'true','includeStationLocation':'true'
-          }
-          response = requests.get('https://www.ncei.noaa.gov/access/services/data/v1', params=params, timeout=120, allow_redirects=False, headers={'User-Agent':'evidence-data-center-fuzhou-analysis/1'})
+          response = requests.get(
+              'https://www.ncei.noaa.gov/access/services/data/v1',
+              params={
+                  'dataset': 'daily-summaries',
+                  'stations': 'CHM00058847',
+                  'startDate': '2015-01-01',
+                  'endDate': '2024-12-31',
+                  'dataTypes': 'TAVG,TMAX,TMIN,PRCP',
+                  'format': 'json',
+                  'units': 'metric',
+                  'includeStationName': 'true',
+                  'includeStationLocation': 'true',
+              },
+              timeout=120,
+              allow_redirects=False,
+              headers={'User-Agent': 'evidence-data-center-fuzhou-analysis/1'},
+          )
           response.raise_for_status()
           raw = response.json()
           if not isinstance(raw, list) or len(raw) < 2500:
-              raise SystemExit(f'insufficient Fuzhou observations: {len(raw) if isinstance(raw,list) else 0}')
+              raise SystemExit(f'insufficient Fuzhou observations: {len(raw) if isinstance(raw, list) else 0}')
 
-          def num(row, key):
+          def number(row, key):
               value = row.get(key)
-              if value in (None, ''): return None
-              try: value = float(value)
-              except (TypeError, ValueError): return None
+              if value in (None, ''):
+                  return None
+              try:
+                  value = float(value)
+              except (TypeError, ValueError):
+                  return None
               return value if math.isfinite(value) else None
 
-          rows = []
-          for item in raw:
-              rows.append({'date':date.fromisoformat(str(item['DATE'])[:10]),'tavg':num(item,'TAVG'),'tmax':num(item,'TMAX'),'tmin':num(item,'TMIN'),'prcp':num(item,'PRCP')})
-          tavg = [r for r in rows if r['tavg'] is not None]
-          tmax = [r for r in rows if r['tmax'] is not None]
-          prcp = [r for r in rows if r['prcp'] is not None]
+          rows = [{
+              'date': date.fromisoformat(str(item['DATE'])[:10]),
+              'tavg': number(item, 'TAVG'),
+              'tmax': number(item, 'TMAX'),
+              'tmin': number(item, 'TMIN'),
+              'prcp': number(item, 'PRCP'),
+          } for item in raw]
+          tavg = [row for row in rows if row['tavg'] is not None]
+          tmax = [row for row in rows if row['tmax'] is not None]
+          prcp = [row for row in rows if row['prcp'] is not None]
           by_month = defaultdict(list)
-          for row in rows: by_month[row['date'].month].append(row)
+          for row in rows:
+              by_month[row['date'].month].append(row)
+
           monthly = []
-          for month in range(1,13):
+          for month in range(1, 13):
               group = by_month[month]
-              a = [r['tavg'] for r in group if r['tavg'] is not None]
-              x = [r['tmax'] for r in group if r['tmax'] is not None]
-              p = [r['prcp'] for r in group if r['prcp'] is not None]
-              years = len({r['date'].year for r in group}) or 1
+              averages = [row['tavg'] for row in group if row['tavg'] is not None]
+              maxima = [row['tmax'] for row in group if row['tmax'] is not None]
+              rainfall = [row['prcp'] for row in group if row['prcp'] is not None]
+              years = len({row['date'].year for row in group}) or 1
               monthly.append({
-                  'month':month,'name':calendar.month_abbr[month],
-                  'mean_tavg_c':round(statistics.fmean(a),2) if a else None,
-                  'mean_tmax_c':round(statistics.fmean(x),2) if x else None,
-                  'mean_monthly_precip_mm':round(sum(p)/years,1) if p else None,
-                  'share_tavg_le_20':round(sum(1 for r in group if r['tavg'] is not None and r['tavg'] <= 20)/max(1,len(a)),3),
-                  'share_tavg_le_15':round(sum(1 for r in group if r['tavg'] is not None and r['tavg'] <= 15)/max(1,len(a)),3),
-                  'share_tmax_ge_30':round(sum(1 for r in group if r['tmax'] is not None and r['tmax'] >= 30)/max(1,len(x)),3),
-                  'share_rain_ge_1mm':round(sum(1 for r in group if r['prcp'] is not None and r['prcp'] >= 1)/max(1,len(p)),3),
-                  'share_rain_ge_10mm':round(sum(1 for r in group if r['prcp'] is not None and r['prcp'] >= 10)/max(1,len(p)),3)
+                  'month': month,
+                  'name': calendar.month_abbr[month],
+                  'mean_tavg_c': round(statistics.fmean(averages), 2) if averages else None,
+                  'mean_tmax_c': round(statistics.fmean(maxima), 2) if maxima else None,
+                  'mean_monthly_precip_mm': round(sum(rainfall) / years, 1) if rainfall else None,
+                  'share_tavg_le_20': round(sum(value <= 20 for value in averages) / max(1, len(averages)), 3),
+                  'share_tavg_le_15': round(sum(value <= 15 for value in averages) / max(1, len(averages)), 3),
+                  'share_tmax_ge_30': round(sum(value >= 30 for value in maxima) / max(1, len(maxima)), 3),
+                  'share_rain_ge_1mm': round(sum(value >= 1 for value in rainfall) / max(1, len(rainfall)), 3),
+                  'share_rain_ge_10mm': round(sum(value >= 10 for value in rainfall) / max(1, len(rainfall)), 3),
               })
-          annual = []
-          for year in sorted({r['date'].year for r in rows}):
-              values = [r['prcp'] for r in rows if r['date'].year == year and r['prcp'] is not None]
-              if values: annual.append(sum(values))
+
+          annual_precipitation = []
+          for year in sorted({row['date'].year for row in rows}):
+              values = [
+                  row['prcp'] for row in rows
+                  if row['date'].year == year and row['prcp'] is not None
+              ]
+              if values:
+                  annual_precipitation.append(sum(values))
+
           result = {
-              'source':'NOAA/NCEI','station':'CHM00058847','period':'2015-2024','row_count':len(raw),
-              'mean_tavg_c':round(statistics.fmean(r['tavg'] for r in tavg),2),
-              'share_days_tavg_le_20':round(sum(r['tavg'] <= 20 for r in tavg)/len(tavg),3),
-              'share_days_tavg_le_15':round(sum(r['tavg'] <= 15 for r in tavg)/len(tavg),3),
-              'share_days_tmax_ge_30':round(sum(r['tmax'] >= 30 for r in tmax)/len(tmax),3),
-              'share_days_tmax_ge_35':round(sum(r['tmax'] >= 35 for r in tmax)/len(tmax),3),
-              'share_rain_days_ge_1mm':round(sum(r['prcp'] >= 1 for r in prcp)/len(prcp),3),
-              'share_heavy_rain_days_ge_10mm':round(sum(r['prcp'] >= 10 for r in prcp)/len(prcp),3),
-              'mean_annual_precip_mm':round(statistics.fmean(annual),1),
-              'coverage':{'tavg':round(len(tavg)/len(rows),3),'tmax':round(len(tmax)/len(rows),3),'prcp':round(len(prcp)/len(rows),3)},
-              'monthly':monthly
+              'source': 'NOAA/NCEI Access Data Service',
+              'station': 'CHM00058847',
+              'period': '2015-2024',
+              'row_count': len(raw),
+              'mean_tavg_c': round(statistics.fmean(row['tavg'] for row in tavg), 2),
+              'share_days_tavg_le_20': round(sum(row['tavg'] <= 20 for row in tavg) / len(tavg), 3),
+              'share_days_tavg_le_15': round(sum(row['tavg'] <= 15 for row in tavg) / len(tavg), 3),
+              'share_days_tmax_ge_30': round(sum(row['tmax'] >= 30 for row in tmax) / len(tmax), 3),
+              'share_days_tmax_ge_35': round(sum(row['tmax'] >= 35 for row in tmax) / len(tmax), 3),
+              'share_rain_days_ge_1mm': round(sum(row['prcp'] >= 1 for row in prcp) / len(prcp), 3),
+              'share_heavy_rain_days_ge_10mm': round(sum(row['prcp'] >= 10 for row in prcp) / len(prcp), 3),
+              'mean_annual_precip_mm': round(statistics.fmean(annual_precipitation), 1),
+              'coverage': {
+                  'tavg': round(len(tavg) / len(rows), 3),
+                  'tmax': round(len(tmax) / len(rows), 3),
+                  'prcp': round(len(prcp) / len(rows), 3),
+              },
+              'monthly': monthly,
           }
-          Path('/tmp/fuzhou-hotpot-climate.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+          Path('noaa-cdo-evidence/fuzhou-hotpot-climate.json').write_text(
+              json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8'
+          )
           print(json.dumps(result, ensure_ascii=False))
           PY
 
-      - name: Commit generated catalog
+      - name: Commit deterministic provider registration and catalog
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add api-center/api-catalog.json api-center/api-catalog.md api-center/tests/test_api_catalog.py
+          git add \
+            api-center/build_catalog_market_search.py \
+            api-center/api-catalog.json \
+            api-center/api-catalog.md \
+            api-center/tests/test_api_catalog.py
           if git diff --cached --quiet; then
             echo 'Generated catalog already current.'
           else
@@ -162,8 +264,6 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: fuzhou-hotpot-climate-${{ github.run_id }}
-          path: |
-            /tmp/noaa-cdo-token-test.json
-            /tmp/fuzhou-hotpot-climate.json
+          path: noaa-cdo-evidence/
           if-no-files-found: warn
           retention-days: 30
