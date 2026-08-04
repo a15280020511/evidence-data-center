@@ -108,6 +108,7 @@ def patch_global_runtime() -> None:
         r"\n\s*\"gfw-events\": \"non-commercial-only\",",
         "",
     )
+    remove_lines(path, REMOVED_GLOBAL)
 
 
 def patch_public_runtime() -> None:
