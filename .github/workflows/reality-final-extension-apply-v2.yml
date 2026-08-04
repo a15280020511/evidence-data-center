@@ -62,14 +62,12 @@ jobs:
           python -m unittest discover -s api-center/copernicus-marine/tests -p 'test_*.py' -v
           python -m unittest api-center.tests.test_api_catalog -v
           git diff --check
-      - name: Commit patched source and generated contracts
+      - name: Commit non-workflow source and generated contracts
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add \
-            .github/workflows/api-catalog-validate.yml \
-            .github/workflows/reality-observation-api-ticket.yml \
             api-center/reality-observation \
             api-center/build_catalog_market_search.py \
             api-center/tests/test_api_catalog.py \
