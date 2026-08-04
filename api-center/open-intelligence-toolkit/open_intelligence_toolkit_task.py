@@ -12,6 +12,7 @@ from managed_provider_runtime import bounded_int,bytes_sha,finish_execution,load
 SCHEMA_PATH=HERE/"ticket.schema.json";CATALOG_PATH=HERE/"provider-catalog.json";MATRIX_PATH=HERE/"source-access-matrix.json";TOOLCHAIN_PATH=HERE/"toolchain-status.json"
 CKAN={"uk":"https://ckan.publishing.service.gov.uk/api/3/action/package_search","hdx":"https://data.humdata.org/api/3/action/package_search","open-africa":"https://open.africa/api/3/action/package_search"}
 SOCRATA={"nyc":"https://data.cityofnewyork.us","cdc":"https://data.cdc.gov","chicago":"https://data.cityofchicago.org"}
+SEC_CONTACT="270211234+a15280020511@users.noreply.github.com"
 
 def text(v:Any,n:str,m:int)->str:
  s=str(v or "").strip()
@@ -22,7 +23,7 @@ def integer(v:Any,n:str,d:int,lo:int,hi:int)->int:
  return bounded_int(v,default=d,minimum=lo,maximum=hi,name=n)
 
 def build(op:str,p:Mapping[str,Any]):
- h={"Accept":"application/json, application/atom+xml;q=0.9, text/html;q=0.7, text/plain;q=0.6","User-Agent":"evidence-data-center/1.0 (https://github.com/a15280020511/evidence-data-center)"};q=[];b=None;m="GET";local=False
+ h={"Accept":"application/json, application/atom+xml;q=0.9, text/html;q=0.7, text/plain;q=0.6","User-Agent":f"a15280020511 evidence-data-center {SEC_CONTACT}","From":SEC_CONTACT};q=[];b=None;m="GET";local=False
  if op in {"catalog-capabilities","source-access-matrix","toolchain-status","html-structure-extract"}:return m,"local",h,q,b,True
  if op=="common-crawl-collinfo":u="https://index.commoncrawl.org/collinfo.json"
  elif op=="common-crawl-index":
