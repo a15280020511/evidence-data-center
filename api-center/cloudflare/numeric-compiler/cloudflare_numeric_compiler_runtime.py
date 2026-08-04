@@ -3,8 +3,8 @@
 
 This module applies the validated response-schema and Arrow-row builders to the
 base implementation, verifies the supplemental China domain control file, and
-renders explicit failure receipts. All production workflows and tests use this
-entry point.
+forces all numeric batches through the governance baseline gateway. Direct
+private Hugging Face commits are rejected even if the legacy CLI flag is used.
 """
 from __future__ import annotations
 
@@ -18,12 +18,14 @@ import pyarrow as pa
 HERE = Path(__file__).resolve().parent
 BASE_PATH = HERE / "cloudflare_numeric_compiler.py"
 DOMAIN_PATH = HERE.parents[1] / "huggingface" / "numeric-baseline-library" / "china-finance-business-domain-requirements.json"
+ROLE_PATH = HERE.parents[1] / "huggingface" / "numeric-baseline-library" / "library-role.json"
 SPEC = importlib.util.spec_from_file_location("cloudflare_numeric_compiler_base", BASE_PATH)
 assert SPEC and SPEC.loader
 BASE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BASE)
 ORIGINAL_VALIDATE_CONFIGURATION = BASE.validate_configuration
 ORIGINAL_RENDER = BASE.render
+ORIGINAL_EXECUTE = BASE.execute
 
 
 def response_schema(profile: Mapping[str, Any]) -> dict[str, Any]:
@@ -166,7 +168,6 @@ def validate_domains() -> dict[str, Any]:
         "huggingface_payload_numeric_only": True,
         "natural_language_payload_allowed": False,
         "control_metadata_location": "github",
-        "selection_and_relay_owner": "gpts-usage-center",
         "compute_runtime_network_allowed": False,
         "direct_center_connection_allowed": False,
         "automatic_trading_allowed": False,
@@ -182,12 +183,47 @@ def validate_domains() -> dict[str, Any]:
         raise BASE.NumericCompilerError("China finance/business domain IDs are invalid")
     if any(not row.get("variable_groups") or not row.get("default_tables") for row in domains):
         raise BASE.NumericCompilerError("China finance/business domain mappings are incomplete")
-    return {"domain_count": 12, "domain_ids": ids}
+    role = json.loads(ROLE_PATH.read_text(encoding="utf-8"))
+    if role.get("schema_version") != "compute-center-baseline-library-role-v2":
+        raise BASE.NumericCompilerError("baseline role contract is outdated")
+    if role.get("storage_gateway_owner") != "a15280020511/decision-system-governance":
+        raise BASE.NumericCompilerError("governance must own baseline storage")
+    if role.get("intelligence_center_direct_dataset_write_allowed") is not False:
+        raise BASE.NumericCompilerError("evidence center direct Dataset writes must be forbidden")
+    return {
+        "domain_count": 12,
+        "domain_ids": ids,
+        "storage_gateway_owner": role["storage_gateway_owner"],
+        "direct_huggingface_write_allowed": False,
+    }
 
 
 def validate_configuration() -> dict[str, Any]:
     receipt = dict(ORIGINAL_VALIDATE_CONFIGURATION())
     receipt.update(validate_domains())
+    receipt["governance_artifact_required"] = True
+    receipt["direct_huggingface_write_allowed"] = False
+    return receipt
+
+
+def execute(
+    ticket_path: Path,
+    output_dir: Path,
+    *,
+    commit_to_hf: bool = False,
+) -> dict[str, Any]:
+    if commit_to_hf:
+        raise BASE.NumericCompilerError(
+            "direct Hugging Face commit is forbidden; export a governance baseline Artifact"
+        )
+    receipt = dict(ORIGINAL_EXECUTE(ticket_path, output_dir, commit_to_hf=False))
+    receipt["storage"] = {
+        "committed_to_hf": False,
+        "governance_artifact_required": True,
+        "storage_gateway_owner": "a15280020511/decision-system-governance",
+    }
+    receipt["gpts_relay_owner"] = "a15280020511/decision-system-governance"
+    BASE._write_json(output_dir / "execution-receipt.json", receipt)
     return receipt
 
 
@@ -203,12 +239,20 @@ def render(output_dir: Path) -> str:
             f"- Raw AI response persisted: `{str(receipt['raw_ai_response_persisted']).lower()}`\n"
             f"- Secret values exposed: `{str(receipt['secret_values_exposed']).lower()}`\n"
         )
-    return ORIGINAL_RENDER(output_dir)
+    text = ORIGINAL_RENDER(output_dir)
+    if execution_path.exists():
+        text += (
+            "- Direct Hugging Face write allowed: `false`\n"
+            "- Governance Artifact required: `true`\n"
+            "- Storage gateway: `a15280020511/decision-system-governance`\n"
+        )
+    return text
 
 
 BASE.response_schema = response_schema
 BASE._table_from_rows = table_from_rows
 BASE.validate_configuration = validate_configuration
+BASE.execute = execute
 BASE.render = render
 
 

@@ -26,10 +26,6 @@ jobs:
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
-      HF_CLOUDFLARE_DATASET_REPO: ${{ vars.HF_CLOUDFLARE_DATASET_REPO }}
-      HF_HUB_DISABLE_TELEMETRY: "1"
-      HF_HUB_DISABLE_PROGRESS_BARS: "1"
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -53,12 +49,16 @@ jobs:
             -r api-center/cloudflare/requirements.txt
           python -m pip check
 
-      - name: Compile provider and archive adapter
+      - name: Compile provider
         run: |
+          set -euo pipefail
           python -m py_compile \
             api-center/managed_provider_runtime.py \
-            api-center/cloudflare/cloudflare_task.py \
-            api-center/cloudflare/hf_archive.py
+            api-center/cloudflare/cloudflare_task.py
+          if grep -q 'secrets.HF_TOKEN\|HF_CLOUDFLARE_DATASET_REPO\|hf_archive.py' .github/workflows/cloudflare-api-ticket.yml; then
+            echo 'private Hugging Face archive is forbidden in evidence center' >&2
+            exit 1
+          fi
 
       - name: Parse and authorize ticket
         id: prepare
@@ -83,13 +83,7 @@ jobs:
         continue-on-error: true
         run: python api-center/cloudflare/cloudflare_task.py execute --ticket cloudflare-artifacts/ticket.json --output-dir cloudflare-artifacts
 
-      - name: Persist completed collection to private Hugging Face dataset
-        id: archive
-        if: steps.execute.outputs.status == 'INTEL_CLOUDFLARE_COMPLETED'
-        continue-on-error: true
-        run: python api-center/cloudflare/hf_archive.py archive --output-dir cloudflare-artifacts
-
-      - name: Upload GitHub fallback evidence
+      - name: Upload immutable GitHub evidence
         id: upload
         if: always()
         continue-on-error: true
@@ -100,25 +94,24 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Publish verified collection result or structured failure
+      - name: Publish verified result or structured failure
         if: always() && steps.prepare.outputs.accepted == 'true'
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
           python api-center/cloudflare/cloudflare_task.py render --output-dir cloudflare-artifacts --phase completed --artifact-url "$ARTIFACT_URL" > provider-comment.md
+          {
+            echo
+            echo '- Private Hugging Face archive executed: `false`'
+            echo '- Long-term private storage authority: `a15280020511/decision-system-governance`'
+            echo '- This Artifact remains evidence-center evidence and is not automatically a compute baseline batch.'
+          } >> provider-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@provider-comment.md
 
-      - name: Publish Hugging Face archive receipt
-        if: always() && steps.execute.outputs.status == 'INTEL_CLOUDFLARE_COMPLETED'
-        run: |
-          python api-center/cloudflare/hf_archive.py render --output-dir cloudflare-artifacts > archive-comment.md || true
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@archive-comment.md
-
-      - name: Mark rejected, failed, unarchived, or unevidenced execution
+      - name: Mark rejected, failed, or unevidenced execution
         if: >-
           always() &&
           (steps.prepare.outputs.accepted != 'true' ||
            steps.execute.outputs.status != 'INTEL_CLOUDFLARE_COMPLETED' ||
-           steps.archive.outcome != 'success' ||
            steps.upload.outcome != 'success')
         run: exit 1
