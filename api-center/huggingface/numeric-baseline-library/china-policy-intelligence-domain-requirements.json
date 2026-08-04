@@ -1,0 +1,596 @@
+{
+  "schema_version": "china-policy-intelligence-domain-requirements-v1",
+  "status": "production-control",
+  "domain_count": 24,
+  "scope": "中国大陆公开、合法、非个人化的政策、监管、产业、社会、公共服务、风险与战略情报数值基准",
+  "storage_policy": {
+    "huggingface_payload_numeric_only": true,
+    "natural_language_payload_allowed": false,
+    "control_metadata_location": "github",
+    "selection_and_relay_owner": "gpts-usage-center",
+    "compute_runtime_network_allowed": false,
+    "direct_center_connection_allowed": false,
+    "public_sources_only": true,
+    "personal_data_allowed": false,
+    "restricted_nonpublic_data_allowed": false,
+    "automatic_policy_judgment_allowed": false
+  },
+  "domains": [
+    {
+      "id": "cn-central-strategy-planning",
+      "priority": "P0",
+      "variable_groups": [
+        "five_year_plan_target_and_progress",
+        "central_economic_work_priorities",
+        "state_council_policy_measures",
+        "national_major_strategy_and_spatial_layout",
+        "reform_task_deadline_and_completion",
+        "policy_target_baseline_and_gap",
+        "cross_ministry_coordination_and_responsibility",
+        "implementation_intensity_and_fiscal_support",
+        "policy_revision_suspension_and_exit",
+        "realized_growth_employment_productivity_and_risk_outcomes"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-macro-fiscal-monetary-policy",
+      "priority": "P0",
+      "variable_groups": [
+        "gdp_prices_employment_income_and_demand",
+        "fiscal_revenue_expenditure_deficit_and_debt",
+        "tax_rate_base_relief_refund_and_collection",
+        "money_credit_social_financing_and_liquidity",
+        "policy_rate_reserve_ratio_and_yield_curve",
+        "exchange_rate_reserves_and_cross_border_flows",
+        "local_central_fiscal_transfer_and_balance",
+        "policy_announcement_effective_time_and_lag",
+        "macro_policy_intensity_coordination_and_regime",
+        "forecast_revision_surprise_and_realized_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-industrial-policy-and-supply-chains",
+      "priority": "P0",
+      "variable_groups": [
+        "industry_plan_target_capacity_and_output",
+        "subsidy_tax_credit_fund_and_procurement_support",
+        "market_access_license_quota_and_standard",
+        "industrial_chain_map_supplier_customer_and_dependency",
+        "critical_equipment_material_software_and_component_gap",
+        "domestic_substitution_rate_cost_and_time",
+        "capacity_expansion_exit_consolidation_and_utilization",
+        "export_control_sanction_and_trade_remedy_exposure",
+        "industrial_park_cluster_and_regional_specialization",
+        "policy_support_productivity_profit_and_resilience_outcomes"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-digital-economy-ai-data-cybersecurity",
+      "priority": "P0",
+      "variable_groups": [
+        "data_center_compute_power_storage_and_utilization",
+        "ai_model_algorithm_filing_and_service_counts",
+        "software_cloud_platform_anddeveloper_activity",
+        "data_element_market_transaction_and_authorization",
+        "network_coverage_traffic_latency_and_outage",
+        "cybersecurity_incident_vulnerability_and_recovery",
+        "platform_regulation_algorithm_governance_and_compliance",
+        "digital_government_service_usage_and_efficiency",
+        "semiconductor_server_network_and_cloud_dependency",
+        "digital_investment_productivity_adoption_and_realized_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-state-owned-assets-soe",
+      "priority": "P0",
+      "variable_groups": [
+        "soe_identity_level_and_controller_codes",
+        "revenue_profit_assets_liabilities_and_roe",
+        "state_capital_injection_transfer_and_dividend",
+        "major_project_investment_capex_and_completion",
+        "merger_restructuring_mixed_ownership_and_listing",
+        "manager_assessment_target_and_completion",
+        "strategic_function_public_service_and_policy_burden",
+        "related_party_guarantee_debt_and_contingent_risk",
+        "state_asset_valuation_disposal_and_loss",
+        "operating_efficiency_innovation_and_realized_return"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-local-government-development-zones",
+      "priority": "P0",
+      "variable_groups": [
+        "administrative_level_population_gdp_and_fiscal_base",
+        "development_zone_area_enterprise_output_and_tax",
+        "investment_promotion_project_contract_and_landing",
+        "local_policy_subsidy_land_energy_and_financing_support",
+        "business_environment_time_cost_andservice_metrics",
+        "local_debt_lgfv_land_finance_and_payment_delay",
+        "urban_infrastructure_public_service_and_capacity",
+        "industrial_cluster_specialization_and_supplier_network",
+        "regional_competition_cooperation_andfactor_flow",
+        "project_completion_employment_tax_andgrowth_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-law-judiciary-enforcement",
+      "priority": "P0",
+      "variable_groups": [
+        "law_regulation_rule_and_judicial_interpretation_codes",
+        "publication_effective_expiry_amendment_and_repeal",
+        "case_type_cause_of_action_andjurisdiction",
+        "filing_trial_enforcement_duration_andbacklog",
+        "judgment_outcome_compensation_fine_andrecovery",
+        "administrative_reconsideration_andlitigation",
+        "bankruptcy_reorganization_liquidation_andcreditor_recovery",
+        "intellectual_property_case_anddamage",
+        "enforcement_frequency_intensity_andregional_difference",
+        "rule_change_compliance_cost_andrealized_behavior"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-market-regulation-competition-quality",
+      "priority": "P0",
+      "variable_groups": [
+        "business_registration_license_andmarket_access",
+        "antitrust_merger_review_andcompetition_enforcement",
+        "price_quality_standard_certification_andinspection",
+        "consumer_complaint_recall_andcompensation",
+        "food_drug_product_safety_andunqualified_rate",
+        "advertising_platform_andfair_competition_enforcement",
+        "credit_supervision_abnormal_operation_andblacklist",
+        "administrative_penalty_amount_type_andfrequency",
+        "industry_concentration_entry_exit_andmarkup",
+        "regulation_compliance_cost_market_quality_andoutcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-public-procurement-major-projects",
+      "priority": "P0",
+      "variable_groups": [
+        "budget_project_bid_contract_andaward",
+        "supplier_bid_count_discount_andcompetition",
+        "construction_service_goods_andppp_category",
+        "schedule_progress_change_order_anddelay",
+        "payment_acceptance_arrears_andsettlement",
+        "project_cost_variance_andphysical_workload",
+        "central_budget_special_bond_andpolicy_bank_funding",
+        "contractor_subcontractor_andguarantee_links",
+        "audit_violation_correction_andaccountability",
+        "project_delivery_utilization_benefit_andoutcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-population-labor-social-security",
+      "priority": "P0",
+      "variable_groups": [
+        "population_age_sex_household_andmigration",
+        "birth_death_fertility_andlife_expectancy",
+        "employment_unemployment_participation_andvacancy",
+        "wage_hours_productivity_andlabor_cost",
+        "industry_occupation_skill_andeducation_transition",
+        "social_insurance_coverage_payment_andfund_balance",
+        "minimum_wage_assistance_pension_andmedical_security",
+        "migrant_worker_andflexible_employment",
+        "regional_population_attraction_andbrain_drain",
+        "policy_intervention_income_employment_andwelfare_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-housing-land-urban-renewal",
+      "priority": "P0",
+      "variable_groups": [
+        "land_supply_transaction_price_anduse",
+        "housing_start_completion_sales_inventory_andprice",
+        "rental_market_vacancy_yield_andaffordability",
+        "urban_village_old_community_andrenewal_projects",
+        "resettlement_compensation_anddelivery",
+        "commercial_office_logistics_andindustrial_property",
+        "developer_financing_presale_escrow_anddebt",
+        "transport_poi_population_andaccessibility",
+        "city_class_region_andpolicy_differentiation",
+        "project_delivery_price_population_andfiscal_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-transport-logistics-ports-aviation",
+      "priority": "P1",
+      "variable_groups": [
+        "road_rail_transit_air_waterway_network",
+        "passenger_freight_volume_turnover_anddistance",
+        "origin_destination_speed_time_delay_andreliability",
+        "port_berth_throughput_dwell_andcapacity",
+        "airport_route_flight_load_andpunctuality",
+        "shipping_route_container_freight_andcongestion",
+        "logistics_warehouse_inventory_delivery_andcost",
+        "vehicle_new_energy_charging_andutilization",
+        "incident_disruption_capacity_andrecovery",
+        "infrastructure_investment_service_andregional_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-energy-power-resources",
+      "priority": "P0",
+      "variable_groups": [
+        "electricity_generation_load_capacity_andprice",
+        "grid_node_line_voltage_frequency_andloss",
+        "coal_oil_gas_production_import_inventory_andprice",
+        "renewable_resource_capacity_factor_andcurtailment",
+        "storage_charge_discharge_efficiency_andduration",
+        "energy_intensity_emission_andcarbon_market",
+        "industrial_residential_transport_energy_demand",
+        "critical_mineral_reserve_mining_refining_anddependency",
+        "outage_failure_restoration_andresilience",
+        "energy_policy_cost_security_andrealized_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-agriculture-rural-revitalization-food",
+      "priority": "P1",
+      "variable_groups": [
+        "crop_area_yield_output_andseason",
+        "livestock_aquaculture_feed_anddisease",
+        "farmland_water_soil_seed_fertilizer_andmachinery",
+        "grain_oil_meat_vegetable_inventory_andprice",
+        "purchase_storage_subsidy_insurance_andcredit",
+        "rural_population_income_consumption_andasset",
+        "county_industry_cooperative_andrural_ecommerce",
+        "food_safety_quality_andtraceability",
+        "weather_disaster_loss_andrecovery",
+        "policy_support_supply_income_andfood_security_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-ecology-climate-water-disaster",
+      "priority": "P1",
+      "variable_groups": [
+        "air_water_soil_quality_andpollutant",
+        "carbon_emission_sink_intensity_andallowance",
+        "river_lake_reservoir_groundwater_andwater_balance",
+        "temperature_precipitation_drought_flood_andstorm",
+        "forest_grassland_wetland_biodiversity_andland_change",
+        "environmental_permit_inspection_penalty_andremediation",
+        "hazard_exposure_vulnerability_andcapacity",
+        "warning_response_evacuation_loss_andrecovery",
+        "green_finance_investment_andproject_progress",
+        "environment_policy_health_growth_andresilience_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-healthcare-public-health-pharma",
+      "priority": "P1",
+      "variable_groups": [
+        "incidence_prevalence_mortality_andburden",
+        "hospital_bed_staff_equipment_andutilization",
+        "visit_admission_length_of_stay_andcost",
+        "basic_medical_insurance_fund_payment_andcoverage",
+        "drug_device_price_procurement_inventory_andshortage",
+        "disease_surveillance_vaccination_andintervention",
+        "primary_care_public_health_andregional_capacity",
+        "pharma_rd_approval_production_andquality",
+        "emergency_response_transmission_andmobility",
+        "policy_intervention_health_cost_andoutcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-education-science-technology-talent",
+      "priority": "P1",
+      "variable_groups": [
+        "school_university_capacity_enrollment_andcompletion",
+        "score_attainment_skill_andemployment",
+        "teacher_staff_ratio_pay_andturnover",
+        "education_budget_cost_andresource_equity",
+        "research_project_funding_publication_patent_andcitation",
+        "researcher_institution_enterprise_andcollaboration_network",
+        "technology_transfer_commercialization_andfailure",
+        "talent_policy_migration_salary_andretention",
+        "laboratory_facility_andmajor_science_project",
+        "policy_investment_capability_andinnovation_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-public-safety-emergency-social-governance",
+      "priority": "P1",
+      "variable_groups": [
+        "incident_type_time_location_frequency_andseverity",
+        "crime_dispute_petition_andmediation",
+        "fire_rescue_emergency_resource_andresponse_time",
+        "workplace_traffic_public_place_andproduction_safety",
+        "hazardous_chemical_mine_construction_andspecial_equipment",
+        "warning_threshold_false_alarm_andmiss_cost",
+        "community_grid_social_service_andgovernance_capacity",
+        "evacuation_shelter_supply_andrecovery",
+        "infrastructure_dependency_andcascade_failure",
+        "policy_intervention_safety_trust_andrealized_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-media-public-opinion-platform-governance",
+      "priority": "P1",
+      "variable_groups": [
+        "topic_entity_event_andmention_volume",
+        "source_type_reliability_andcontradiction",
+        "sentiment_stance_uncertainty_andintensity",
+        "diffusion_network_reach_speed_anddecay",
+        "survey_support_opposition_trust_andbehavior",
+        "rumor_correction_removal_andresponse_time",
+        "platform_content_algorithm_andaccount_governance",
+        "media_attention_policy_response_andagenda",
+        "regional_group_andchannel_difference",
+        "attention_sentiment_behavior_andpolicy_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-foreign-trade-customs-outbound-investment",
+      "priority": "P0",
+      "variable_groups": [
+        "bilateral_trade_value_volume_price_andhs_code",
+        "customs_port_mode_andclearance_time",
+        "tariff_quota_vat_rebate_andtrade_remedy",
+        "export_order_capacity_inventory_andfreight",
+        "foreign_direct_investment_outbound_investment_andproject",
+        "cross_border_ecommerce_service_trade_anddigital_trade",
+        "sanction_export_control_entity_list_andcompliance",
+        "country_market_customer_supplier_anddependency",
+        "exchange_rate_financing_insurance_andpayment_risk",
+        "policy_shock_trade_profit_employment_andresilience_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-national-security-geopolitical-exposure-public",
+      "priority": "P1",
+      "variable_groups": [
+        "public_defense_budget_andindustry_aggregate",
+        "diplomatic_visit_agreement_andinternational_vote",
+        "alliance_partnership_dispute_andsanction_event",
+        "strategic_resource_energy_food_andtechnology_dependency",
+        "border_port_shipping_route_andcritical_infrastructure_exposure",
+        "public_conflict_event_intensity_duration_andceasefire",
+        "economic_financial_trade_andtechnology_coercion",
+        "public_emergency_stockpile_capacity_andmobilization_aggregate",
+        "scenario_probability_loss_range_andrecovery_time",
+        "policy_response_deterrence_resilience_andrealized_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-culture-tourism-sports-services",
+      "priority": "P2",
+      "variable_groups": [
+        "tourist_arrival_overnight_andspending",
+        "hotel_room_occupancy_adr_andrevpar",
+        "scenic_site_museum_library_andvenue_visits",
+        "film_performance_event_andticket_sales",
+        "holiday_season_weather_andtransport_effect",
+        "restaurant_retail_entertainment_andlocal_service",
+        "cultural_enterprise_project_andinvestment",
+        "sports_participation_event_facility_andindustry",
+        "regional_brand_online_attention_andconversion",
+        "policy_support_service_income_employment_andoutcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-telecom-internet-cloud-infrastructure",
+      "priority": "P0",
+      "variable_groups": [
+        "mobile_fixed_broadband_user_andcoverage",
+        "traffic_latency_loss_throughput_andprice",
+        "base_station_fiber_satellite_anddata_center_capacity",
+        "cloud_compute_storage_andutilization",
+        "domain_app_platform_anddigital_service_adoption",
+        "outage_failure_attack_restoration_andredundancy",
+        "capex_opex_energy_andunit_cost",
+        "carrier_cloud_platform_andsupplier_dependency",
+        "regional_digital_divide_andservice_quality",
+        "policy_investment_productivity_andresilience_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    },
+    {
+      "id": "cn-household-consumption-income-living-cost",
+      "priority": "P0",
+      "variable_groups": [
+        "household_income_wage_transfer_andproperty_income",
+        "consumption_food_housing_transport_education_health",
+        "savings_deposit_asset_debt_anddebt_service",
+        "cpi_rent_utility_andliving_cost",
+        "consumer_confidence_expectation_andrisk_preference",
+        "durable_goods_vehicle_home_appliance_andreplacement",
+        "online_offline_payment_credit_andinstallment",
+        "family_structure_elderly_childcare_andcare_burden",
+        "regional_urban_rural_andincome_quantile_difference",
+        "policy_price_income_consumption_andwelfare_outcome"
+      ],
+      "default_tables": [
+        "observations",
+        "econometric_panel",
+        "regime_events",
+        "entity_links",
+        "uncertainty_parameters",
+        "benchmark_outcomes"
+      ]
+    }
+  ]
+}
