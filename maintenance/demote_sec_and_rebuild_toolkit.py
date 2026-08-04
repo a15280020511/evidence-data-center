@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 from pathlib import Path
 
@@ -38,20 +37,25 @@ matrix["licence_and_use_notes"].pop("sec-edgar", None)
 matrix_path.write_text(json.dumps(matrix, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 runtime_path = PKG / "open_intelligence_toolkit_task.py"
-runtime = runtime_path.read_text(encoding="utf-8")n
-runtime = re.sub(
-    r'''\n elif op in \{"sec-submissions","sec-company-facts"\}:\n  cik=text\(p\.get\("cik"\),"cik",10\)\n  if not re\.fullmatch\(r"\[0-9\]\{10\}",cik\):raise ValueError\("cik must contain exactly 10 digits"\)\n  u=f"https://data\.sec\.gov/\{'submissions' if op=='sec-submissions' else 'api/xbrl/companyfacts'\}/CIK\{cik\}\.json"''',
-    "",
-    runtime,
-    count=1,
-)
+runtime = runtime_path.read_text(encoding="utf-8")
+start_marker = '\n elif op in {"sec-submissions","sec-company-facts"}:'
+end_marker = '\n elif op=="bls-series":'
+start = runtime.find(start_marker)
+end = runtime.find(end_marker, start + 1)
+if start < 0 or end < 0:
+    raise SystemExit("SEC runtime branch markers were not found")
+runtime = runtime[:start] + runtime[end:]
 if "sec-submissions" in runtime or "sec-company-facts" in runtime:
     raise SystemExit("SEC runtime branches were not removed cleanly")
 runtime_path.write_text(runtime, encoding="utf-8")
 
 validator_path = PKG / "validate_open_intelligence_toolkit.py"
 validator = validator_path.read_text(encoding="utf-8")
-validator = re.sub(r''',"sec-submissions":\{"cik":"0000320193"\},"sec-company-facts":\{"cik":"0000320193"\}''', "", validator, count=1)
+for fragment in [
+    ',"sec-submissions":{"cik":"0000320193"}',
+    ',"sec-company-facts":{"cik":"0000320193"}',
+]:
+    validator = validator.replace(fragment, "")
 if "sec-submissions" in validator or "sec-company-facts" in validator:
     raise SystemExit("SEC validator samples were not removed cleanly")
 validator_path.write_text(validator, encoding="utf-8")
@@ -62,7 +66,8 @@ test_path.write_text(test, encoding="utf-8")
 
 readme_path = PKG / "README.md"
 readme = readme_path.read_text(encoding="utf-8").replace("22项免Key", "20项免Key")
-readme += "\nSEC EDGAR已验证为GitHub Actions生产出口HTTP 403，因此仅登记为条件能力，不作为可调用生产操作。\n"
+if "SEC EDGAR已验证" not in readme:
+    readme += "\nSEC EDGAR已验证为GitHub Actions生产出口HTTP 403，因此仅登记为条件能力，不作为可调用生产操作。\n"
 readme_path.write_text(readme, encoding="utf-8")
 
 build_path = API / "build_catalog_market_search.py"
