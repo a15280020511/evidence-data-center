@@ -3,9 +3,9 @@
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`72/72` 已启用
 - 托管提供方：`67/67` 已启用
-- 托管操作总数：`733`
-- 已公开参数总数：`2614`
-- 目录 SHA-256：`0355216860d0a1aa6c98816c1f01ec8844db24ae4292ca0f84ae72d62487d746`
+- 托管操作总数：`737`
+- 已公开参数总数：`2622`
+- 目录 SHA-256：`16a3a29eafa55f3ace554ae9a58e508eeeb693f3e6ae8fca302d34f8fd7465a6`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -78,7 +78,7 @@
 | 全球开放文献与资料库 | `global-literature-libraries` | 启用 | `[intel-literature]` | `10` | 否 |
 | 全球文献档案资料库第二波 | `global-knowledge-archives` | 启用 | `[intel-knowledge]` | `9` | 否 |
 | 全球知识织网第三波 | `global-knowledge-fabric` | 启用 | `[intel-knowledge-fabric]` | `9` | 否 |
-| 百度AI搜索与模型摘要 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `4` | 否 |
+| 百度AI搜索、模型摘要与百科 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `8` | 否 |
 | 全球开源软件、安全与开放标准知识层 | `open-software-security-knowledge` | 启用 | `[intel-software-security]` | `11` | 否 |
 | Google公开情报 | `google-public-intelligence` | 启用 | `[intel-google-public]` | `9` | 否 |
 | 现实传感器、空间影像、人流与电力观测 | `reality-observation` | 启用 | `[intel-reality-observation]` | `27` | 否 |
@@ -26002,16 +26002,16 @@
 }
 ```
 
-## 百度AI搜索与模型摘要 (`baidu-ai-cloud`)
+## 百度AI搜索、模型摘要与百科 (`baidu-ai-cloud`)
 
 - 状态：`启用`
-- 说明：当前统一API Key已真实验证可用的百度公开网页搜索与模型搜索摘要。
-- 目录策略：只开放当前Key已实测通过的2项上游高价值能力和2项本地治理能力。
-- 执行策略：每张票据一个操作、最多一次固定HTTPS请求；网页搜索为零模型调用，模型摘要固定记1次模型调用；禁止重试和付费兜底。
+- 说明：当前统一API Key已真实验证可用的百度公开网页搜索、模型搜索摘要与百科结构化知识。
+- 目录策略：只开放当前Key已实测通过的6项上游高价值能力和2项本地治理能力。
+- 执行策略：每张票据一个操作、最多一次固定HTTPS请求；网页搜索和百科读取为零模型调用，模型摘要固定记1次模型调用；禁止重试和付费兜底。
 - 票据前缀：`[intel-baidu-ai]`
 - Secret环境变量名：`BAIDU_AI_CLOUD_API_KEY`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`d483bb189798fe298038d9f4a468895aedfde5819ebb7a8e946886f42386f570`
+- 提供方SHA-256：`e6a986bf8c213df4907192d46f7a8bfca1c9d7e521fbd62096c22f8bf7860bad`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -26119,6 +26119,118 @@
 }
 ```
 
+| `baike-lemma-list` | 按词条名查询百度百科义项列表，返回词条ID、名称、义项说明和公开URL。 | `lemma_title, top_k` |
+
+`baike-lemma-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "lemma_title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "top_k": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "default": 5
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "lemma_title"
+  ]
+}
+```
+
+| `baike-lemma-content` | 按词条名或词条ID读取百度百科结构化正文、摘要、基本信息和关系。 | `search_type, search_key` |
+
+`baike-lemma-content` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search_type": {
+      "type": "string",
+      "enum": [
+        "lemmaTitle",
+        "lemmaId"
+      ],
+      "default": "lemmaTitle"
+    },
+    "search_key": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "search_type",
+    "search_key"
+  ]
+}
+```
+
+| `baike-starmap-list` | 按主题查询百度百科星图列表，返回星图ID和主题名。 | `starmap_title, page` |
+
+`baike-starmap-list` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "starmap_title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    }
+  },
+  "maxProperties": 2
+}
+```
+
+| `baike-starmap-detail` | 按星图ID读取百度百科星图详情和分页实体关系。 | `starmap_id, page` |
+
+`baike-starmap-detail` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "starmap_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    }
+  },
+  "maxProperties": 2,
+  "required": [
+    "starmap_id"
+  ]
+}
+```
+
 限制：
 
 ```json
@@ -26130,11 +26242,16 @@
   "max_response_bytes": 2000000,
   "max_search_results": 20,
   "fixed_api_hosts": [
-    "qianfan.baidubce.com"
+    "qianfan.baidubce.com",
+    "appbuilder.baidu.com"
   ],
   "fixed_paths": [
     "/v2/ai_search/web_search",
-    "/v2/ai_search/web_summary"
+    "/v2/ai_search/web_summary",
+    "/v2/baike/lemma/get_list_by_title",
+    "/v2/baike/lemma/get_content",
+    "/v2/tools/baike/starmap/get_starmap_by_title",
+    "/v2/tools/baike/starmap/get_starmap_by_id"
   ],
   "arbitrary_urls_allowed": false,
   "arbitrary_hosts_allowed": false,
@@ -26150,6 +26267,8 @@
   "generative_model_chat_allowed": false,
   "generative_search_summary_allowed": true,
   "model_calls_per_web_summary": 1,
+  "baike_structured_read_allowed": true,
+  "baike_video_allowed": false,
   "nlp_operations_allowed": false,
   "ocr_operations_allowed": false,
   "image_recognition_operations_allowed": false,

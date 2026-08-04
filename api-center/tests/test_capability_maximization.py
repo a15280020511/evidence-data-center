@@ -77,7 +77,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "browserless": 8,
             "tickflow": 5,
             "serpapi": 4,
-            "baidu-ai-cloud": 4,
+            "baidu-ai-cloud": 8,
             "tushare": 20,
             "baostock": 20,
             "eodhd": 25,

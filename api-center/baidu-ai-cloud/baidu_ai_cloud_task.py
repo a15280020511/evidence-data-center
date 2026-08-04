@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bounded execution for verified Baidu web search and model-search summary."""
+"""Bounded execution for verified Baidu search, model-summary, and Baike reads."""
 from __future__ import annotations
 
 import json
@@ -30,8 +30,13 @@ CATALOG_PATH = HERE / "provider-catalog.json"
 QUOTA_POLICY_PATH = HERE / "free-quota-policy.json"
 
 QIANFAN_ORIGIN = "https://qianfan.baidubce.com"
+APPBUILDER_ORIGIN = "https://appbuilder.baidu.com"
 WEB_SEARCH_PATH = "/v2/ai_search/web_search"
 WEB_SUMMARY_PATH = "/v2/ai_search/web_summary"
+BAIKE_LEMMA_LIST_PATH = "/v2/baike/lemma/get_list_by_title"
+BAIKE_LEMMA_CONTENT_PATH = "/v2/baike/lemma/get_content"
+BAIKE_STARMAP_LIST_PATH = "/v2/tools/baike/starmap/get_starmap_by_title"
+BAIKE_STARMAP_DETAIL_PATH = "/v2/tools/baike/starmap/get_starmap_by_id"
 API_KEY_ENV = "BAIDU_AI_CLOUD_API_KEY"
 
 PHONE_RE = re.compile(r"(?<!\d)1[3-9]\d{9}(?!\d)")
@@ -343,9 +348,87 @@ def _post_web_summary(
     }
 
 
+def _get_baike(
+    operation: str,
+    parameters: Mapping[str, Any],
+    *,
+    timeout: int,
+    max_bytes: int,
+) -> tuple[Mapping[str, Any], dict[str, Any]]:
+    contracts = {
+        "baike-lemma-list": (APPBUILDER_ORIGIN, BAIKE_LEMMA_LIST_PATH),
+        "baike-lemma-content": (APPBUILDER_ORIGIN, BAIKE_LEMMA_CONTENT_PATH),
+        "baike-starmap-list": (QIANFAN_ORIGIN, BAIKE_STARMAP_LIST_PATH),
+        "baike-starmap-detail": (QIANFAN_ORIGIN, BAIKE_STARMAP_DETAIL_PATH),
+    }
+    origin, path = contracts[operation]
+    row = _operation_row(operation)
+    execution = row.get("execution") or {}
+    if execution.get("official_origin") != origin or execution.get("path_template") != path:
+        raise ValueError("provider catalog endpoint is not approved")
+    if operation == "baike-lemma-list":
+        title = str(parameters.get("lemma_title") or "").strip()
+        if not title or len(title) > 200:
+            raise ValueError("lemma_title must contain 1 to 200 characters")
+        query = {"lemma_title": title, "top_k": bounded_int(parameters.get("top_k"), default=5, minimum=1, maximum=20, name="top_k")}
+    elif operation == "baike-lemma-content":
+        search_type = str(parameters.get("search_type") or "lemmaTitle")
+        if search_type not in {"lemmaTitle", "lemmaId"}:
+            raise ValueError("search_type is not allowed")
+        search_key = str(parameters.get("search_key") or "").strip()
+        if not search_key or len(search_key) > 200:
+            raise ValueError("search_key must contain 1 to 200 characters")
+        query = {"search_type": search_type, "search_key": search_key}
+    elif operation == "baike-starmap-list":
+        title = str(parameters.get("starmap_title") or "").strip()
+        if len(title) > 200:
+            raise ValueError("starmap_title is too long")
+        query = {"page": bounded_int(parameters.get("page"), default=1, minimum=1, maximum=100, name="page")}
+        if title:
+            query["starmap_title"] = title
+    else:
+        starmap_id = str(parameters.get("starmap_id") or "").strip()
+        if not starmap_id or len(starmap_id) > 128:
+            raise ValueError("starmap_id must contain 1 to 128 characters")
+        query = {"starmap_id": starmap_id, "page": bounded_int(parameters.get("page"), default=1, minimum=1, maximum=100, name="page")}
+    key = _secret()
+    try:
+        response = requests.get(
+            origin + path,
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {key}",
+                "User-Agent": "evidence-intelligence-center-baidu-baike/1",
+            },
+            params=query,
+            timeout=timeout,
+            allow_redirects=False,
+        )
+    except requests.RequestException as exc:
+        raise BaiduAICloudError("BAIDU_CONNECTION_FAILED", type(exc).__name__, retryable=True) from exc
+    decoded = _decode_json(response, max_bytes=max_bytes)
+    _check_http(response, decoded)
+    if not isinstance(decoded, Mapping):
+        raise BaiduAICloudError("BAIDU_RESULT_INVALID", "upstream response must be a JSON object")
+    return decoded, {
+        "request_origin": origin.removeprefix("https://"),
+        "request_path": path,
+        "http_method": "GET",
+        "credential_mode": "unified-api-key-bearer-backend-only",
+        "credential_environment_variable": API_KEY_ENV,
+        "http_status": response.status_code,
+        "response_bytes": len(response.content),
+        "requests_per_ticket": 1,
+        "upstream_called": True,
+        "paid_fallback_authorized": False,
+        "model_calls": 0,
+        "secret_values_exposed": False,
+    }
+
+
 def _truncate(payload: Mapping[str, Any], max_rows: int) -> Mapping[str, Any]:
     result = dict(payload)
-    for key in ("references", "items", "results"):
+    for key in ("references", "items", "results", "list", "result"):
         value = result.get(key)
         if isinstance(value, list) and len(value) > max_rows:
             result[key] = value[:max_rows]
@@ -388,7 +471,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
     failure: Mapping[str, Any] | None = None
     metadata: dict[str, Any] = {
         "upstream_called": False,
-        "fixed_hosts": ["qianfan.baidubce.com"],
+        "fixed_hosts": ["qianfan.baidubce.com", "appbuilder.baidu.com"],
         "secret_values_exposed": False,
         "direct_personal_identifiers_redacted": True,
         "one_business_operation_per_ticket": True,
@@ -441,6 +524,19 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
                 "operation": operation,
                 "data": _redact(_truncate(payload, max_rows)),
             }
+        elif operation in {"baike-lemma-list", "baike-lemma-content", "baike-starmap-list", "baike-starmap-detail"}:
+            payload, request_metadata = _get_baike(
+                operation,
+                parameters,
+                timeout=timeout,
+                max_bytes=max_bytes,
+            )
+            metadata.update(request_metadata)
+            snapshot = {
+                "provider": "baidu-ai-cloud",
+                "operation": operation,
+                "data": _redact(_truncate(payload, max_rows)),
+            }
         else:
             raise ValueError(f"unsupported Baidu operation: {operation}")
         status = "INTEL_BAIDU_AI_COMPLETED"
@@ -476,6 +572,6 @@ if __name__ == "__main__":
             schema_path=SCHEMA_PATH,
             catalog_path=CATALOG_PATH,
             status_schema="baidu-ai-cloud-ticket-status-v3",
-            display_name="百度AI搜索与模型摘要",
+            display_name="百度AI搜索、模型摘要与百科",
         )
     )

@@ -103,6 +103,25 @@ class MarketSearchTaskTests(unittest.TestCase):
         self.assertEqual(secret_name, "SERPAPI_API_KEY")
         self.assertNotIn("query", metadata)
 
+    def test_serpapi_accepts_simplified_chinese_language_tag(self):
+        captured = []
+
+        def fake_urlopen(request, timeout):
+            captured.append(request.full_url)
+            return FakeResponse({
+                "search_metadata": {"status": "Success"},
+                "organic_results": [{"title": "example"}],
+                "news_results": [{"title": "news"}],
+            })
+
+        with patch.dict(os.environ, {"SERPAPI_API_KEY": "serp-secret"}, clear=False), patch.object(MODULE.urllib.request, "urlopen", side_effect=fake_urlopen):
+            MODULE.serpapi_query("google-search", {"query": "福州", "gl": "cn", "hl": "zh-cn"}, 30, 1000000)
+            MODULE.serpapi_query("google-news", {"query": "福州", "gl": "cn", "hl": "zh-cn"}, 30, 1000000)
+        self.assertEqual(len(captured), 2)
+        self.assertTrue(all("hl=zh-cn" in url for url in captured))
+        self.assertTrue(any("engine=google&" in url or "engine=google%26" in url for url in captured))
+        self.assertTrue(any("engine=google_news" in url for url in captured))
+
     def test_execute_missing_secret_is_structured_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

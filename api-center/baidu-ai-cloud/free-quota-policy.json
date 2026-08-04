@@ -1,11 +1,11 @@
 {
-  "schema_version": "baidu-ai-cloud-free-quota-policy-v2",
+  "schema_version": "baidu-ai-cloud-free-quota-policy-v3",
   "reviewed_at": "2026-08-04",
   "policy": {
     "free_only": true,
     "paid_fallback_authorized": false,
     "remaining_quota_api_available": false,
-    "operator_action": "仅调用已实测通过的百度网页搜索和智能搜索生成；百度控制台不得启用按量后付费。",
+    "operator_action": "仅调用已实测通过的百度网页搜索、智能摘要和百科结构化读取；百度控制台不得启用按量后付费。",
     "quota_exhaustion_behavior": "立即失败，不重试、不切换模型或其他付费接口。"
   },
   "families": [
@@ -16,6 +16,18 @@
         "web-summary"
       ],
       "quota": "使用百度账户当前网页搜索与智能搜索生成免费额度；官方页面口径可能调整，以控制台为最终依据。",
+      "reset": "daily_or_control_plane_defined",
+      "verified_with_current_key": true
+    },
+    {
+      "family": "baidu-baike",
+      "operations": [
+        "baike-lemma-list",
+        "baike-lemma-content",
+        "baike-starmap-list",
+        "baike-starmap-detail"
+      ],
+      "quota": "百度百科正文常规免费额度1500次/月；词条义项和百科星图常规免费额度100次/天，以控制台为最终依据。",
       "reset": "daily_or_control_plane_defined",
       "verified_with_current_key": true
     }
