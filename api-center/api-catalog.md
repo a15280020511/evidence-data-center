@@ -3,9 +3,9 @@
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`72/72` 已启用
 - 托管提供方：`67/67` 已启用
-- 托管操作总数：`737`
-- 已公开参数总数：`2621`
-- 目录 SHA-256：`9fda1693b036308e76b78204f59fde3813043da3054cf4d52edea0d5dce158c0`
+- 托管操作总数：`736`
+- 已公开参数总数：`2619`
+- 目录 SHA-256：`bbe09832f95fb88442c847ccec6dd1a7cf74194fa34d984bf31d3a52d3118a20`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -64,7 +64,7 @@
 | Asian Development Bank KIDB SDMX | `adb` | 启用 | `[intel-adb]` | `8` | 否 |
 | Wolfram|Alpha 计算知识 API | `wolfram-alpha` | 启用 | `[api-wolfram]` | `4` | 否 |
 | LlamaParse 文档解析 API | `llamaparse` | 启用 | `[api-llamaparse]` | `3` | 否 |
-| 全球公共数据、空间地理与中国数据 | `public-data-geospatial` | 启用 | `[intel-public-data]` | `35` | 否 |
+| 全球公共数据、空间地理与中国数据 | `public-data-geospatial` | 启用 | `[intel-public-data]` | `34` | 否 |
 | Cloudflare 情报与云端浏览器 | `cloudflare` | 启用 | `[intel-cloudflare]` | `22` | 否 |
 | FRED 官方经济与金融时间序列 | `fred` | 启用 | `[intel-fred]` | `25` | 否 |
 | Hugging Face Hub 公共模型与数据情报 | `huggingface-hub` | 启用 | `[intel-huggingface]` | `11` | 否 |
@@ -19229,7 +19229,7 @@
 - 票据前缀：`[intel-public-data]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`d5fe5865aa0cc96fb5ff5fe0fd7b41ce39ba53a27011213a2eabb2ee074e0dc4`
+- 提供方SHA-256：`64fc0b873a3cebadc3f2be95cb54063f2572c48bb7ed4a92122b149472f92851`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -20255,31 +20255,6 @@
 }
 ```
 
-| `global-fishing-watch-vessels` | 检索 Global Fishing Watch v3 船舶身份，限非商业用途。 | `query, limit` |
-
-`global-fishing-watch-vessels` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "query": {
-      "type": "string",
-      "maxLength": 100
-    },
-    "limit": {
-      "type": "integer",
-      "minimum": 1,
-      "maximum": 50
-    }
-  },
-  "required": [
-    "query"
-  ]
-}
-```
-
 | `opencharge-map-poi` | 查询 Open Charge Map 全球充电设施点位。 | `latitude, longitude, distance_km, max_results` |
 
 `opencharge-map-poi` 参数Schema：
@@ -20390,13 +20365,10 @@
     "COMPANIES_HOUSE_API_KEY",
     "SAM_GOV_API_KEY",
     "OPENTOPOGRAPHY_API_KEY",
-    "GLOBAL_FISHING_WATCH_API_TOKEN",
     "OPENCHARGEMAP_API_KEY",
     "TRANSITLAND_API_KEY"
   ],
-  "noncommercial_only_operations": [
-    "global-fishing-watch-vessels"
-  ],
+  "noncommercial_only_operations": [],
   "china_first_operations": [
     "china-local-open-data-catalog",
     "china-science-data-centers"

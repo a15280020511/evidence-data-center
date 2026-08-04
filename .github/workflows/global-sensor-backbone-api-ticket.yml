@@ -71,10 +71,6 @@ jobs:
         id: execute
         if: steps.prepare.outputs.accepted == 'true'
         continue-on-error: true
-        env:
-          GLOBAL_FISHING_WATCH_API_TOKEN: ${{ secrets.GLOBAL_FISHING_WATCH_API_TOKEN }}
-          GIE_API_KEY: ${{ secrets.GIE_API_KEY }}
-          KOREA_DATA_GO_KR_SERVICE_KEY: ${{ secrets.KOREA_DATA_GO_KR_SERVICE_KEY }}
         run: python api-center/global-sensor-backbone/global_sensor_backbone_task.py execute --ticket global-sensor-artifacts/ticket.json --output-dir global-sensor-artifacts
 
       - name: Upload global sensor evidence

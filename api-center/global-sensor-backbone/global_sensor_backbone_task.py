@@ -46,18 +46,6 @@ FIXED = {
     "aemo-nemweb-index": "https://visualisations.aemo.com.au/aemo/nemweb/",
     "ecmwf-open-data-index": "https://data.ecmwf.int/forecasts/",
     "entsog-operational-data": "https://transparency.entsog.eu/api/v1/operationalData",
-    "gie-storage": "https://agsi.gie.eu/api",
-    "kpx-current-supply": "https://apis.data.go.kr/B552115/sukub5mMaxDatetime2/getSukub5mMaxDatetime2",
-    "kpx-generation-mix": "https://openapi.kpx.or.kr/openapi/sumperfuel5m/getSumperfuel5m",
-    "gfw-events": "https://gateway.api.globalfishingwatch.org/v3/events",
-}
-
-GFW_DATASETS = {
-    "encounters": "public-global-encounters-events:latest",
-    "loitering": "public-global-loitering-events:latest",
-    "fishing": "public-global-fishing-events:latest",
-    "port-visits": "public-global-port-visits-events:latest",
-    "ais-gaps": "public-global-gaps-events:latest",
 }
 
 
@@ -158,42 +146,6 @@ def build_request(
             query,
             headers,
         )
-    if operation == "gfw-events":
-        token = str(os.getenv("GLOBAL_FISHING_WATCH_API_TOKEN") or "").strip()
-        if not token:
-            raise RuntimeError("GLOBAL_FISHING_WATCH_API_TOKEN is not configured")
-        event_type = str(parameters.get("event_type") or "port-visits")
-        if event_type not in GFW_DATASETS:
-            raise ValueError("unsupported event_type")
-        query = _query(
-            parameters,
-            {
-                "event_type", "start_date", "end_date", "limit", "offset",
-                "vessels", "bounding_box",
-            },
-        )
-        query.pop("event_type", None)
-        query["datasets"] = GFW_DATASETS[event_type]
-        headers["Authorization"] = f"Bearer {token}"
-        return FIXED[operation], query, headers
-    if operation == "gie-storage":
-        token = str(os.getenv("GIE_API_KEY") or "").strip()
-        if not token:
-            raise RuntimeError("GIE_API_KEY is not configured")
-        query = _query(
-            parameters,
-            {"country", "company", "facility", "from", "till", "page", "size"},
-        )
-        headers["x-key"] = token
-        return FIXED[operation], query, headers
-    if operation in {"kpx-current-supply", "kpx-generation-mix"}:
-        token = str(os.getenv("KOREA_DATA_GO_KR_SERVICE_KEY") or "").strip()
-        if not token:
-            raise RuntimeError("KOREA_DATA_GO_KR_SERVICE_KEY is not configured")
-        query = _query(parameters, {"dataType", "pageNo", "numOfRows"})
-        query["serviceKey"] = token
-        query.setdefault("dataType", "json")
-        return FIXED[operation], query, headers
     if operation == "entsog-operational-data":
         return (
             FIXED[operation],
@@ -314,16 +266,7 @@ def _wis2(parameters: Mapping[str, Any], timeout: int) -> dict[str, Any]:
 
 
 def _safe_failure(exc: Exception) -> str:
-    text = str(exc)
-    for name in (
-        "GLOBAL_FISHING_WATCH_API_TOKEN",
-        "GIE_API_KEY",
-        "KOREA_DATA_GO_KR_SERVICE_KEY",
-    ):
-        secret = str(os.getenv(name) or "")
-        if secret:
-            text = text.replace(secret, "[REDACTED]")
-    return text[:2000]
+    return str(exc)[:2000]
 
 
 def execute(ticket_path: Path, output_dir: Path) -> int:
@@ -389,7 +332,6 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
                     "mobilitydatabase-feed-catalog"
                 ],
                 "licence_constraints": {
-                    "gfw-events": "non-commercial-only",
                     "cloudflare-radar": "CC-BY-NC",
                 },
             }

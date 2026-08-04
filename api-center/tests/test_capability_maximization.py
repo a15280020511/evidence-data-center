@@ -106,7 +106,7 @@ class CapabilityMaximizationTests(unittest.TestCase):
             "adb": 8,
             "wolfram-alpha": 4,
             "llamaparse": 3,
-            "public-data-geospatial": 35,
+            "public-data-geospatial": 34,
             "cloudflare": 22,
             "fred": 25,
             "huggingface-hub": 11,

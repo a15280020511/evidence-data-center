@@ -71,13 +71,13 @@
     "noaa-cdo/provider-catalog.json",
     "copernicus-marine/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "26dda6771363f61780574750f8afef358d3f1f23e341778336932f0933e3901d",
+  "managed_provider_catalog_sha256": "61ea33e58a2f2813bd9ca9e7fb9e2f94dabd821e87b574e35232fad46928e7df",
   "connector_count": 72,
   "enabled_connector_count": 72,
   "managed_provider_count": 67,
   "enabled_managed_provider_count": 67,
-  "managed_operation_count": 737,
-  "exposed_parameter_count": 2621,
+  "managed_operation_count": 736,
+  "exposed_parameter_count": 2619,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -23333,7 +23333,7 @@
       "ticket_prefix": "[intel-public-data]",
       "catalog_policy": "仅允许调用代码内固定官方主机和固定只读端点；禁止任意 URL、任意请求头、自动翻页、批量镜像、登录绕过、写入、交易或个人数据查询。",
       "execution_policy": "每张票据最多执行一次上游只读请求；密钥和用户名仅由后端环境注入；无密钥操作可直接运行，有密钥操作缺少相应字段时结构化失败。",
-      "operation_count": 35,
+      "operation_count": 34,
       "operations": [
         {
           "operation_id": "catalog-capabilities",
@@ -24664,40 +24664,6 @@
           }
         },
         {
-          "operation_id": "global-fishing-watch-vessels",
-          "description": "检索 Global Fishing Watch v3 船舶身份，限非商业用途。",
-          "parameter_names": [
-            "query",
-            "limit"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "query": {
-                "type": "string",
-                "maxLength": 100
-              },
-              "limit": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 50
-              }
-            },
-            "required": [
-              "query"
-            ]
-          },
-          "result_contract": {
-            "official_endpoint": "https://gateway.api.globalfishingwatch.org/v3/vessels/search",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation"
-          }
-        },
-        {
           "operation_id": "opencharge-map-poi",
           "description": "查询 Open Charge Map 全球充电设施点位。",
           "parameter_names": [
@@ -24838,13 +24804,10 @@
           "COMPANIES_HOUSE_API_KEY",
           "SAM_GOV_API_KEY",
           "OPENTOPOGRAPHY_API_KEY",
-          "GLOBAL_FISHING_WATCH_API_TOKEN",
           "OPENCHARGEMAP_API_KEY",
           "TRANSITLAND_API_KEY"
         ],
-        "noncommercial_only_operations": [
-          "global-fishing-watch-vessels"
-        ],
+        "noncommercial_only_operations": [],
         "china_first_operations": [
           "china-local-open-data-catalog",
           "china-science-data-centers"
@@ -24862,7 +24825,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "d5fe5865aa0cc96fb5ff5fe0fd7b41ce39ba53a27011213a2eabb2ee074e0dc4",
+      "provider_sha256": "64fc0b873a3cebadc3f2be95cb54063f2572c48bb7ed4a92122b149472f92851",
       "catalog_file": "public-data-geospatial/provider-catalog.json"
     },
     {
@@ -44446,11 +44409,11 @@
       "provider_id": "global-sensor-backbone",
       "display_name": "全球现实传感器主干",
       "ticket_prefix": "[intel-global-sensor]",
-      "operation_count": 21,
+      "operation_count": 17,
       "catalog_path": "global-sensor-backbone/provider-catalog.json",
       "secret_values_exposed": false,
       "directly_invokable": true
     }
   ],
-  "catalog_sha256": "9fda1693b036308e76b78204f59fde3813043da3054cf4d52edea0d5dce158c0"
+  "catalog_sha256": "bbe09832f95fb88442c847ccec6dd1a7cf74194fa34d984bf31d3a52d3118a20"
 }
