@@ -54,7 +54,6 @@ jobs:
             api-center/requirements.txt
             api-center/huggingface/requirements.txt
             api-center/huggingface/requirements-numeric-baseline.txt
-            api-center/huggingface/requirements-knowledge-graph.txt
 
       - name: Install pinned dependencies
         run: |
@@ -62,8 +61,7 @@ jobs:
           python -m pip install --disable-pip-version-check --no-input \
             -r api-center/requirements.txt \
             -r api-center/huggingface/requirements.txt \
-            -r api-center/huggingface/requirements-numeric-baseline.txt \
-            -r api-center/huggingface/requirements-knowledge-graph.txt
+            -r api-center/huggingface/requirements-numeric-baseline.txt
           python -m pip check
 
       - name: Compile and run provider regressions
@@ -73,10 +71,8 @@ jobs:
             api-center/managed_provider_runtime.py \
             api-center/huggingface/huggingface_task.py \
             api-center/huggingface/numeric_baseline_store.py \
-            api-center/huggingface/knowledge_graph_store.py \
             api-center/huggingface/tests/test_huggingface.py \
-            api-center/huggingface/tests/test_numeric_baseline_store.py \
-            api-center/huggingface/tests/test_knowledge_graph_store.py
+            api-center/huggingface/tests/test_numeric_baseline_store.py
           python -m unittest discover -s api-center/huggingface/tests -p 'test_*.py' -v
 
       - name: Verify provider and catalog invariants
