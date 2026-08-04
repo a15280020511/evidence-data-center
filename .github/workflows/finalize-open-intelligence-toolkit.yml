@@ -5,6 +5,7 @@ on:
     branches: [feat/open-intelligence-toolkit-20260804]
     paths:
       - maintenance/demote_sec_and_rebuild_toolkit.py
+      - api-center/open-intelligence-toolkit/validate_open_intelligence_toolkit.py
       - .github/workflows/finalize-open-intelligence-toolkit.yml
   workflow_dispatch:
 
