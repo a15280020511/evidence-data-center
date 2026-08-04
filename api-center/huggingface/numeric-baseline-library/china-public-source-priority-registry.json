@@ -1,0 +1,258 @@
+{
+  "schema_version": "china-public-source-priority-registry-v1",
+  "status": "production-control",
+  "scope": "仅用于公开、合法、非个人化的中国大陆政策与现实情报采集优先级控制",
+  "storage_location": "github-only",
+  "huggingface_upload_allowed": false,
+  "source_classes": [
+    {
+      "source_class_id": 1001,
+      "source_class": "central-government-policy",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.99,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1002,
+      "source_class": "national-legislature-and-rulemaking",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.99,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1003,
+      "source_class": "central-ministry-and-commission",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.98,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1004,
+      "source_class": "national-statistical-system",
+      "authority_tier": "A",
+      "preferred_update_frequency": "release-calendar",
+      "default_quality_weight": 0.99,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1005,
+      "source_class": "central-bank-and-financial-regulator",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.99,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1006,
+      "source_class": "fiscal-tax-customs-system",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.99,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1007,
+      "source_class": "market-securities-and-exchange-regulator",
+      "authority_tier": "A",
+      "preferred_update_frequency": "intraday",
+      "default_quality_weight": 0.99,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1008,
+      "source_class": "judicial-procuratorial-and-enforcement",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.98,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1009,
+      "source_class": "provincial-government-and-department",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.97,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1010,
+      "source_class": "municipal-county-government",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.95,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1011,
+      "source_class": "public-resource-trading-and-procurement",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.97,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1012,
+      "source_class": "state-owned-assets-and-soe-disclosure",
+      "authority_tier": "A",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.96,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1013,
+      "source_class": "listed-company-and-bond-disclosure",
+      "authority_tier": "A",
+      "preferred_update_frequency": "intraday",
+      "default_quality_weight": 0.98,
+      "cross_source_confirmation_required": false,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1014,
+      "source_class": "industry-standard-certification-and-inspection",
+      "authority_tier": "A",
+      "preferred_update_frequency": "weekly",
+      "default_quality_weight": 0.96,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1015,
+      "source_class": "public-utility-transport-energy-operator",
+      "authority_tier": "B",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.94,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1016,
+      "source_class": "official-association-and-chamber",
+      "authority_tier": "B",
+      "preferred_update_frequency": "weekly",
+      "default_quality_weight": 0.9,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1017,
+      "source_class": "public-research-institute-and-university",
+      "authority_tier": "B",
+      "preferred_update_frequency": "weekly",
+      "default_quality_weight": 0.92,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1018,
+      "source_class": "international-organization-china-data",
+      "authority_tier": "A",
+      "preferred_update_frequency": "release-calendar",
+      "default_quality_weight": 0.96,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1019,
+      "source_class": "licensed-financial-market-data",
+      "authority_tier": "B",
+      "preferred_update_frequency": "intraday",
+      "default_quality_weight": 0.94,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1020,
+      "source_class": "commercial-enterprise-public-page",
+      "authority_tier": "B",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.88,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1021,
+      "source_class": "mainstream-news-public-report",
+      "authority_tier": "C",
+      "preferred_update_frequency": "hourly",
+      "default_quality_weight": 0.82,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1022,
+      "source_class": "specialized-industry-media",
+      "authority_tier": "C",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.78,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1023,
+      "source_class": "public-platform-aggregate",
+      "authority_tier": "C",
+      "preferred_update_frequency": "daily",
+      "default_quality_weight": 0.75,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    },
+    {
+      "source_class_id": 1024,
+      "source_class": "social-media-public-aggregate",
+      "authority_tier": "D",
+      "preferred_update_frequency": "hourly",
+      "default_quality_weight": 0.6,
+      "cross_source_confirmation_required": true,
+      "raw_content_persistence_allowed": false,
+      "numeric_baseline_ingestion_allowed": true
+    }
+  ],
+  "quality_rules": {
+    "tier_a_can_supply_direct_observations": true,
+    "tier_b_requires_schema_and_range_validation": true,
+    "tier_c_requires_independent_confirmation": true,
+    "tier_d_only_for_attention_or_diffusion_aggregates": true,
+    "anonymous_or_unattributed_content_allowed": false,
+    "personal_data_allowed": false,
+    "restricted_nonpublic_data_allowed": false
+  }
+}

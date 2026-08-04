@@ -1,0 +1,140 @@
+{
+  "schema_version": "cloudflare-cn-numeric-profiles-v1",
+  "status": "production-control",
+  "default_model": "browser-run-managed-workers-ai",
+  "arbitrary_prompt_allowed": false,
+  "arbitrary_schema_allowed": false,
+  "personal_data_allowed": false,
+  "investment_recommendation_allowed": false,
+  "automatic_trading_allowed": false,
+  "profiles": [
+    {
+      "id": "cn-listed-company-financial-report",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 40,
+      "entity_instruction": "使用交易所与六位证券代码组成实体键，例如 SH:600000 或 SZ:000001；无法确认时返回空记录。",
+      "prompt": "从中国大陆上市公司公开财务报告或公告中提取明确披露的财务数值。不得推测、补全或给出投资建议；保留报告期和公告可得时间，只使用允许的指标及单位。",
+      "allowed_codes": ["REVENUE","OPERATING_COST","GROSS_PROFIT","OPERATING_PROFIT","NET_PROFIT","NET_PROFIT_ATTRIBUTABLE","OPERATING_CASHFLOW","FREE_CASHFLOW","TOTAL_ASSETS","TOTAL_LIABILITIES","TOTAL_EQUITY","INVENTORY","ACCOUNTS_RECEIVABLE","CAPEX","RD_EXPENSE","ROE","ROA","ROIC","GROSS_MARGIN","NET_MARGIN","DEBT_RATIO","INTEREST_COVERAGE"],
+      "allowed_units": ["CNY","CNY_10K","CNY_100M","PERCENT","RATIO"]
+    },
+    {
+      "id": "cn-a-share-market-data",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 30,
+      "entity_instruction": "使用交易所与六位证券代码组成实体键，例如 SH:600000、SZ:000001 或 BJ:430047。",
+      "prompt": "从公开A股行情页面中提取页面明确展示的时点行情和资金指标。不得输出买入、卖出、目标价或收益保证；不得将复权前后口径混合。",
+      "allowed_codes": ["A_SHARE_OPEN","A_SHARE_HIGH","A_SHARE_LOW","A_SHARE_CLOSE","A_SHARE_VOLUME","A_SHARE_TURNOVER","A_SHARE_RETURN","A_SHARE_AMPLITUDE","A_SHARE_TURNOVER_RATE","A_SHARE_LIMIT_STATUS","A_SHARE_FINANCING_BALANCE","A_SHARE_NORTHBOUND_NET_FLOW"],
+      "allowed_units": ["CNY","CNY_10K","CNY_100M","CNY_PER_SHARE","PERCENT","RATIO","SHARES","COUNT"]
+    },
+    {
+      "id": "cn-governance-metrics",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 30,
+      "entity_instruction": "优先使用证券代码；非上市企业使用统一社会信用代码；不得仅凭简称猜测实体。",
+      "prompt": "从公开公司治理、股东、质押、回购、减持、担保和关联交易公告中提取明确数值。主观治理风险分数只有在来源已经公开给出该数值时才允许提取。",
+      "allowed_codes": ["SHAREHOLDER_COUNT","TOP10_HOLDER_RATIO","CONTROLLER_HOLDING_RATIO","PLEDGED_SHARE_RATIO","REPURCHASE_AMOUNT","SHARE_REDUCTION_RATIO","CASH_DIVIDEND_PER_SHARE","RELATED_TRANSACTION_AMOUNT","EXTERNAL_GUARANTEE_AMOUNT","GOVERNANCE_RISK_SCORE"],
+      "allowed_units": ["COUNT","PERSONS","CNY","CNY_10K","CNY_100M","CNY_PER_SHARE","PERCENT","RATIO","SHARES","INDEX"]
+    },
+    {
+      "id": "cn-corporate-events",
+      "kind": "event",
+      "target_table": "regime_events",
+      "max_records": 30,
+      "entity_instruction": "优先使用证券代码或统一社会信用代码；事件必须对应公开公告。",
+      "prompt": "提取公开披露的停复牌、业绩预告修正、分红、回购、减持、质押、并购重组、问询处罚、违约重组、补贴中标、扩产退出和项目进度事件。不得推测尚未发生的事件。",
+      "allowed_codes": ["LIMIT_UP","LIMIT_DOWN","SUSPENSION","RESUMPTION","EARNINGS_FORECAST","EARNINGS_REVISION","DIVIDEND","REPURCHASE","SHARE_REDUCTION","PLEDGE","M_AND_A","RESTRUCTURING","REGULATORY_INQUIRY","REGULATORY_PENALTY","DEFAULT","RESTRUCTURED_DEBT","SUBSIDY_AWARD","PROCUREMENT_AWARD","CAPACITY_EXPANSION","CAPACITY_EXIT","PROJECT_START","PROJECT_DELAY","PROJECT_COMPLETION"]
+    },
+    {
+      "id": "cn-ownership-business-links",
+      "kind": "link",
+      "target_table": "entity_links",
+      "max_records": 50,
+      "entity_instruction": "实体键优先使用证券代码或统一社会信用代码；关系双方均必须在页面中明确出现。",
+      "prompt": "从公开股权、供应链、客户、担保、关联交易、采购、融资和投资披露中提取实体关系。不得推断隐藏关系，不得提取自然人敏感信息。",
+      "allowed_codes": ["CONTROLS","HOLDS_SHARES","PLEDGES_TO","SUPPLIES","CUSTOMER_OF","GUARANTEES","RELATED_PARTY","SUBSIDIARY_OF","PROCURES_FROM","FINANCES","INVESTS_IN","COMPETES_WITH"]
+    },
+    {
+      "id": "cn-business-operations",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 40,
+      "entity_instruction": "使用统一社会信用代码、证券代码或来源明确提供的项目编号作为实体键。",
+      "prompt": "从企业公告、经营数据、招股书、门店或项目资料中提取经营规模、产能、订单、单价、成本、利润、库存和投资回报相关的已披露数值。不得自行估值或生成盈利预测。",
+      "allowed_codes": ["STORE_COUNT","FACTORY_COUNT","CAPACITY","OUTPUT","CAPACITY_UTILIZATION","ORDER_BACKLOG","UNIT_PRICE","UNIT_COST","CONTRIBUTION_MARGIN","BREAK_EVEN_QUANTITY","INVENTORY_DAYS","CASH_CONVERSION_CYCLE","PAYBACK_MONTHS","PROJECT_IRR","PROJECT_NPV"],
+      "allowed_units": ["COUNT","CNY","CNY_10K","CNY_100M","PERCENT","RATIO","DAYS","MONTHS","TONNES","VEHICLES","ORDERS","SQM","CNY_PER_TONNE"]
+    },
+    {
+      "id": "cn-retail-platform",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 40,
+      "entity_instruction": "使用平台、门店、品牌或项目的公开唯一编号；无编号时使用规范全称作为临时实体键。",
+      "prompt": "从公开零售、电商、本地生活和平台经营材料中提取GMV、订单、用户、访问、转化、复购、流失、客单价、佣金、获客、履约等明确数值。不得提取个人账户或个人轨迹。",
+      "allowed_codes": ["GMV","ORDER_COUNT","ACTIVE_USERS","VISIT_COUNT","CONVERSION_RATE","AVERAGE_ORDER_VALUE","REPURCHASE_RATE","CHURN_RATE","TAKE_RATE","CUSTOMER_ACQUISITION_COST","CUSTOMER_LIFETIME_VALUE","FULFILLMENT_TIME","FULFILLMENT_COST"],
+      "allowed_units": ["COUNT","CNY","CNY_10K","CNY_100M","PERCENT","RATIO","ORDERS","VISITS","PERSONS","DAYS"]
+    },
+    {
+      "id": "cn-real-estate",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 40,
+      "entity_instruction": "使用土地宗地号、项目备案号、楼盘编号或企业统一代码作为实体键；同时返回公开行政区代码。",
+      "prompt": "从公开土地、住房、商业地产、施工和项目资料中提取成交价、溢价、开工、竣工、销售、库存、价格、租金、空置、去化、客流和租售比。不得推断未披露的成交或收益。",
+      "allowed_codes": ["LAND_TRANSACTION_PRICE","LAND_PREMIUM_RATE","NEW_START_AREA","COMPLETION_AREA","SALES_AREA","PROPERTY_INVENTORY_AREA","PROPERTY_SALE_PRICE","PROPERTY_RENT","VACANCY_RATE","ABSORPTION_MONTHS","COMMERCIAL_FOOTFALL","RENT_TO_SALES_RATIO"],
+      "allowed_units": ["COUNT","CNY","CNY_10K","CNY_100M","CNY_PER_SQM","PERCENT","RATIO","MONTHS","SQM","VISITS"]
+    },
+    {
+      "id": "cn-banking-credit-wealth",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 40,
+      "entity_instruction": "使用金融机构代码、债券代码、证券代码或公开统一代码作为实体键。",
+      "prompt": "从公开银行、信用、债券、保险和财富管理资料中提取余额、利率、不良、逾期、拨备、息差、资本、利差、违约、回收和家庭偿债指标。不得输出个体信用或个性化投资建议。",
+      "allowed_codes": ["LOAN_BALANCE","DEPOSIT_BALANCE","LOAN_RATE","NPL_RATIO","OVERDUE_RATIO","PROVISION_COVERAGE","NET_INTEREST_MARGIN","CAPITAL_ADEQUACY_RATIO","CREDIT_SPREAD","DEFAULT_RATE","RECOVERY_RATE","HOUSEHOLD_DEBT_SERVICE_RATIO"],
+      "allowed_units": ["CNY","CNY_10K","CNY_100M","PERCENT","RATIO","BPS"]
+    },
+    {
+      "id": "cn-tax-procurement-subsidy",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 40,
+      "entity_instruction": "使用采购项目编号、合同编号、企业统一社会信用代码或政府机构代码作为实体键。",
+      "prompt": "从公开税收、发票汇总、政府采购、合同、中标和补贴资料中提取税基、税负、发票金额、预算、合同额、补贴和折扣率。不得提取纳税人个人信息或非公开发票明细。",
+      "allowed_codes": ["TAXABLE_AMOUNT","EFFECTIVE_TAX_RATE","INVOICE_SALES_AMOUNT","INVOICE_PURCHASE_AMOUNT","PROCUREMENT_BUDGET","CONTRACT_AMOUNT","SUBSIDY_AMOUNT","BID_DISCOUNT_RATE"],
+      "allowed_units": ["CNY","CNY_10K","CNY_100M","PERCENT","RATIO"]
+    },
+    {
+      "id": "cn-local-government-finance",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 40,
+      "entity_instruction": "使用六位行政区代码或公开地方融资平台统一代码作为实体键，并返回行政区代码。",
+      "prompt": "从地方财政预算决算、政府债务、专项债、土地出让和项目进度材料中提取明确数值。必须区分一般公共预算、政府性基金、土地收入、法定债务和融资平台债务。",
+      "allowed_codes": ["PUBLIC_BUDGET_REVENUE","PUBLIC_BUDGET_EXPENDITURE","GOVERNMENT_FUND_REVENUE","LAND_SALE_REVENUE","LOCAL_GOVERNMENT_DEBT","LGFV_INTEREST_EXPENSE","SPECIAL_BOND_ISSUANCE","SPECIAL_BOND_PROJECT_PROGRESS","FISCAL_SELF_SUFFICIENCY","DEBT_SERVICE_PRESSURE"],
+      "allowed_units": ["CNY","CNY_10K","CNY_100M","PERCENT","RATIO"]
+    },
+    {
+      "id": "cn-manufacturing-capacity",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 40,
+      "entity_instruction": "使用企业统一代码、证券代码、工厂或项目备案编号作为实体键。",
+      "prompt": "从公开制造业、关键材料和项目资料中提取产能、产量、良率、利用率、能耗、交付周期、缺陷、停机、进口依赖和替代周期。不得推断军事或受限制设施的非公开能力。",
+      "allowed_codes": ["INDUSTRIAL_CAPACITY","INDUSTRIAL_OUTPUT","INDUSTRIAL_YIELD","INDUSTRIAL_UTILIZATION","ENERGY_CONSUMPTION","DELIVERY_CYCLE_DAYS","DEFECT_RATE","DOWNTIME_HOURS","IMPORT_DEPENDENCY","SUBSTITUTION_MONTHS"],
+      "allowed_units": ["COUNT","CNY","CNY_10K","CNY_100M","PERCENT","RATIO","DAYS","MONTHS","TONNES","KWH","VEHICLES","SQM"]
+    },
+    {
+      "id": "cn-sme-profitability",
+      "kind": "metric",
+      "target_table": "observations",
+      "max_records": 30,
+      "entity_instruction": "使用企业统一代码、门店编号或项目编号作为实体键；不得使用个人身份证、手机号或住址。",
+      "prompt": "从公开中小企业、门店、加盟、平台经营和项目材料中提取收入、成本、净利润、现金、租金、工时、时薪、存活概率、资本回报和回本周期。只提取来源明确给出的数值，不生成赚钱承诺。",
+      "allowed_codes": ["SME_REVENUE","SME_OPERATING_COST","SME_NET_PROFIT","SME_CASH_BALANCE","SME_RENT","SME_LABOR_HOURS","SME_OWNER_HOURLY_INCOME","SME_SURVIVAL_PROBABILITY","SME_RETURN_ON_CAPITAL","SME_PAYBACK_MONTHS"],
+      "allowed_units": ["CNY","CNY_10K","CNY_100M","PERCENT","RATIO","DAYS","MONTHS","COUNT"]
+    }
+  ]
+}
