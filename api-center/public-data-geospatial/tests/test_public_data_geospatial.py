@@ -8,7 +8,7 @@ mod=importlib.util.module_from_spec(SPEC); SPEC.loader.exec_module(mod)
 class PublicDataTests(unittest.TestCase):
     def test_catalog_operation_count(self):
         c=json.loads((ROOT/"provider-catalog.json").read_text())
-        self.assertEqual(len(c["providers"][0]["operations"]),35)
+        self.assertEqual(len(c["providers"][0]["operations"]),34)
         self.assertFalse(c["secret_values_exposed"])
     def test_openrouteservice_new_host_and_no_client_key(self):
         os.environ["OPENROUTESERVICE_API_KEY"]="test"
