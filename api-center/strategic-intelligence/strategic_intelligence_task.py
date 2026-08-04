@@ -2,11 +2,13 @@
 """Bounded, fixed-host strategic intelligence open-data provider."""
 from __future__ import annotations
 
+import ipaddress
 import re
 import sys
 import time
 from pathlib import Path
 from typing import Any, Mapping
+from urllib.parse import urlparse
 
 import requests
 
@@ -27,8 +29,7 @@ SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
 SOURCE_MATRIX_PATH = HERE / "source-access-matrix.json"
 
-RESOURCE_RE = re.compile(r"^[A-Za-z0-9:./,-]{2,256}$")
-IP_RE = re.compile(r"^[0-9A-Fa-f:.]{3,128}$")
+PREFIX_RE = re.compile(r"^[0-9A-Fa-f:.]+/[0-9]{1,3}$")
 AS_RE = re.compile(r"^(?:AS)?[0-9]{1,10}$", re.IGNORECASE)
 TIMESTAMP_RE = re.compile(r"^(?:[0-9]{10}|[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.+-]{5,30})$")
 NAME_RE = re.compile(r"^[^\x00-\x1f\x7f]{1,120}$")
@@ -41,6 +42,22 @@ def required_text(parameters: Mapping[str, Any], name: str, maximum: int) -> str
     if not value or len(value) > maximum or any(ord(ch) < 32 for ch in value):
         raise ValueError(f"{name} is invalid")
     return value
+
+
+def validated_ip(value: str) -> str:
+    try:
+        return str(ipaddress.ip_address(value))
+    except ValueError as exc:
+        raise ValueError("resource must be an IP address") from exc
+
+
+def validated_ip_or_prefix(value: str) -> str:
+    try:
+        if "/" in value:
+            return str(ipaddress.ip_network(value, strict=False))
+        return str(ipaddress.ip_address(value))
+    except ValueError as exc:
+        raise ValueError("resource must be an IP address or prefix") from exc
 
 
 def build_request(
@@ -68,7 +85,8 @@ def build_request(
         if incident:
             if not INCIDENT_RE.fullmatch(incident):
                 raise ValueError("incident_type is invalid")
-            terms.append(f"incidentType eq '{incident.replace(chr(39), chr(39) * 2)}'")
+            escaped = incident.replace("'", "''")
+            terms.append(f"incidentType eq '{escaped}'")
         year_from = parameters.get("year_from")
         year_to = parameters.get("year_to")
         if year_from is not None:
@@ -83,14 +101,10 @@ def build_request(
             query.append(("$filter", " and ".join(terms)))
         return "https://www.fema.gov/api/open/v1/DisasterDeclarationsSummaries", query, "openfema"
     if operation == "ripestat-network-info":
-        resource = required_text(parameters, "resource", 128)
-        if not IP_RE.fullmatch(resource):
-            raise ValueError("resource must be an IP address")
+        resource = validated_ip(required_text(parameters, "resource", 128))
         return "https://stat.ripe.net/data/network-info/data.json", [("resource", resource)], "ripestat"
     if operation == "ripestat-prefix-overview":
-        resource = required_text(parameters, "resource", 128)
-        if not RESOURCE_RE.fullmatch(resource):
-            raise ValueError("resource is invalid")
+        resource = validated_ip_or_prefix(required_text(parameters, "resource", 128))
         return "https://stat.ripe.net/data/prefix-overview/data.json", [("resource", resource)], "ripestat"
     if operation == "ripestat-as-overview":
         resource = required_text(parameters, "resource", 16).upper()
@@ -100,9 +114,14 @@ def build_request(
             resource = "AS" + resource
         return "https://stat.ripe.net/data/as-overview/data.json", [("resource", resource)], "ripestat"
     if operation == "ripestat-bgp-state":
-        resource = required_text(parameters, "resource", 256)
-        if not RESOURCE_RE.fullmatch(resource):
-            raise ValueError("resource is invalid")
+        raw_resource = required_text(parameters, "resource", 256)
+        resource = (
+            raw_resource.upper()
+            if AS_RE.fullmatch(raw_resource)
+            else validated_ip_or_prefix(raw_resource)
+        )
+        if AS_RE.fullmatch(resource) and not resource.startswith("AS"):
+            resource = "AS" + resource
         query = [("resource", resource)]
         timestamp = str(parameters.get("timestamp") or "").strip()
         if timestamp:
@@ -152,9 +171,9 @@ def validate_response(kind: str, data: Any) -> int | None:
         return len(rows)
     if kind == "openfema":
         rows = data.get("DisasterDeclarationsSummaries")
-        if rows is not None and not isinstance(rows, list):
+        if not isinstance(rows, list):
             raise RuntimeError("OpenFEMA response contract failed")
-        return len(rows or [])
+        return len(rows)
     if kind == "mitre-index":
         if not isinstance(data.get("collections"), list):
             raise RuntimeError("MITRE ATT&CK index contract failed")
@@ -213,7 +232,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
             snapshot = {"provider": kind, "operation": operation, "data": data}
             metadata.update({
                 "upstream_called": True,
-                "api_origin": requests.utils.urlparse(str(url)).hostname,
+                "api_origin": urlparse(str(url)).hostname,
                 "http_status": response.status_code,
                 "content_type": response.headers.get("Content-Type", ""),
                 "response_bytes": len(raw),
