@@ -108,11 +108,16 @@ class ComputeMaterialPackagerTests(unittest.TestCase):
                 output_dir=second,
                 source_repository_reference="hf-dataset:James147258/cloudflare-intelligence-archive",
             )
-            self.assertEqual(one["package_sha256"], two["package_sha256"])
+            self.assertEqual(one["content_sha256"], two["content_sha256"])
             self.assertEqual(one["file_count"], 1)
+            self.assertEqual(
+                one["status"], "COMPUTE_MATERIAL_PACKAGE_BUILT_AWAITING_GPTS_RELAY"
+            )
+            self.assertTrue(one["gpts_relay_attestation_required"])
             envelope = json.loads((first / "envelope.json").read_text(encoding="utf-8"))
             manifest = json.loads((first / "manifest.json").read_text(encoding="utf-8"))
             self.assertEqual(envelope["gpts_validation"]["status"], "PASS")
+            self.assertNotIn("approved_manifest_sha256", envelope["gpts_validation"])
             self.assertEqual(envelope["manifest_sha256"], file_sha(first / "manifest.json"))
             self.assertEqual(manifest["total_bytes"], one["total_bytes"])
             payload_file = first / envelope["files"][0]["path"]
@@ -175,6 +180,48 @@ class ComputeMaterialPackagerTests(unittest.TestCase):
             }]
             record_path.write_text(json.dumps(record), encoding="utf-8")
             with self.assertRaises(MODULE.ComputeMaterialPackagerError):
+                MODULE.build_package(
+                    selection=selection,
+                    source_root=root,
+                    output_dir=root / "out",
+                    source_repository_reference="hf-dataset:test/repo",
+                )
+
+    def test_duplicate_record_ids_are_blocked(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            selection, record_path = self.fixture(root)
+            second_path = root / "domain-benchmarks/v1/records/duplicate.json"
+            second_path.parent.mkdir(parents=True, exist_ok=True)
+            second = json.loads(record_path.read_text(encoding="utf-8"))
+            second["source_root"] = "domain-benchmarks/v1"
+            source = root / "domain-benchmarks/v1/data/sample.csv"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text("period,value\n2026-01,2\n", encoding="utf-8")
+            second["files"] = [{
+                "path": "domain-benchmarks/v1/data/sample.csv",
+                "sha256": file_sha(source),
+                "bytes": source.stat().st_size,
+                "media_type": "text/csv",
+            }]
+            second_path.write_text(json.dumps(second), encoding="utf-8")
+            selection_base = dict(selection)
+            selection_base.pop("gpts_validation")
+            selection_base["record_paths"] = [
+                "external-reality/v1/records/macro-sample-001.json",
+                "domain-benchmarks/v1/records/duplicate.json",
+            ]
+            selection = {
+                **selection_base,
+                "gpts_validation": {
+                    "status": "PASS",
+                    "validator": "gpts-usage-center",
+                    "validated_at": "2026-08-04T00:01:00Z",
+                    "task_id": "task-000001",
+                    "selection_sha256": MODULE._canonical_sha(selection_base),
+                },
+            }
+            with self.assertRaisesRegex(MODULE.ComputeMaterialPackagerError, "duplicate source record_id"):
                 MODULE.build_package(
                     selection=selection,
                     source_root=root,
