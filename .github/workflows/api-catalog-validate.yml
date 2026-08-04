@@ -169,7 +169,8 @@ jobs:
               'bis': 8,
               'oecd': 6,
               'adb': 8,
-              'reality-observation': 25,
+              'reality-observation': 27,
+              'copernicus-marine': 3,
           }.items():
               assert provider_id in providers
               assert len(providers[provider_id]['operations']) == expected_count
@@ -181,8 +182,14 @@ jobs:
           assert reality['limits']['device_control_allowed'] is False
           assert reality['limits']['individual_tracking_allowed'] is False
           assert set(reality['limits']['optional_secret_environment_variables']) == {
-              'FIRMS_MAP_KEY', 'FINGRID_API_KEY', 'ENTSOE_API_TOKEN'
+              'FIRMS_MAP_KEY', 'FINGRID_API_KEY', 'ENTSOE_API_TOKEN', 'MAPILLARY_ACCESS_TOKEN'
           }
+
+          marine = providers['copernicus-marine']
+          assert marine['ticket_prefix'] == '[intel-copernicus-marine]'
+          assert marine['limits']['requests_per_ticket_max'] == 1
+          assert marine['limits']['whole_dataset_get_allowed'] is False
+          assert marine['limits']['write_operations_allowed'] is False
 
           print(json.dumps({
               'status': 'PASS',
@@ -191,6 +198,7 @@ jobs:
               'managed_operations': catalog['managed_operation_count'],
               'public_data_geospatial_operations': len(public_data['operations']),
               'reality_observation_operations': len(reality['operations']),
+              'copernicus_marine_operations': len(marine['operations']),
               'nbs_direct_operations_exposed': False,
           }))
           PY
