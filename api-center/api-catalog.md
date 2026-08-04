@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`72/72` 已启用
-- 托管提供方：`67/67` 已启用
-- 托管操作总数：`736`
-- 已公开参数总数：`2619`
-- 目录 SHA-256：`bbe09832f95fb88442c847ccec6dd1a7cf74194fa34d984bf31d3a52d3118a20`
+- 托管提供方：`68/68` 已启用
+- 托管操作总数：`758`
+- 已公开参数总数：`2668`
+- 目录 SHA-256：`62550c251c25ef50856e9eec81a8ad92b47643a00bc602a96eb593bec825d8fd`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -84,6 +84,7 @@
 | 现实传感器、空间影像、人流与电力观测 | `reality-observation` | 启用 | `[intel-reality-observation]` | `27` | 否 |
 | NOAA Climate Data Online 中国历史气象发现 | `noaa-cdo` | 启用 | `[intel-noaa-cdo]` | `5` | 否 |
 | Copernicus Marine 海洋现实观测 | `copernicus-marine` | 启用 | `[intel-copernicus-marine]` | `3` | 否 |
+| 开放情报采集与解析工具包 | `open-intelligence-toolkit` | 启用 | `[intel-open-toolkit]` | `22` | 否 |
 
 ## 普通连接器
 
@@ -28641,6 +28642,628 @@
     "COPERNICUSMARINE_SERVICE_USERNAME",
     "COPERNICUSMARINE_SERVICE_PASSWORD"
   ]
+}
+```
+
+## 开放情报采集与解析工具包 (`open-intelligence-toolkit`)
+
+- 状态：`启用`
+- 说明：统一提供免Key公共情报API、固定门户检索和离线HTML正文/结构化数据提取；重型浏览与文档服务仅注册状态，不伪报联通。
+- 目录策略：只允许22项固定只读或本地操作；禁止任意主机、任意URL、登录、Cookie、验证码绕过、自动分页、自动重试、持续流、个人画像、写入和交易。
+- 执行策略：每票最多一次上游请求；固定端点或固定门户枚举；HTML解析完全离线；所有结果生成哈希、诊断和Artifact回执。
+- 票据前缀：`[intel-open-toolkit]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`f639eaaa4542f0007d77907ef7552882872e0e1e70391b50f17ff18603da9bdc`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地开放情报工具包能力目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `source-access-matrix` | 读取来源、费用、许可和生产状态矩阵。 | `无` |
+
+`source-access-matrix` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `toolchain-status` | 读取浏览、解析、索引和条件工具状态。 | `无` |
+
+`toolchain-status` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `common-crawl-collinfo` | 读取 Common Crawl 可用索引集合。 | `无` |
+
+`common-crawl-collinfo` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `common-crawl-index` | 在指定 Common Crawl 索引中查找历史网页记录。 | `index, url, match_type, limit` |
+
+`common-crawl-index` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "index": {
+      "type": "string",
+      "pattern": "^CC-MAIN-[0-9]{4}-[0-9]{2}$"
+    },
+    "url": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "match_type": {
+      "enum": [
+        "exact",
+        "prefix",
+        "host",
+        "domain"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "index",
+    "url"
+  ]
+}
+```
+
+| `gdacs-events` | 读取 GDACS 当前全球灾害事件 GeoJSON。 | `无` |
+
+`gdacs-events` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `sec-submissions` | 读取 SEC EDGAR 公司提交记录。 | `cik` |
+
+`sec-submissions` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cik": {
+      "type": "string",
+      "pattern": "^[0-9]{10}$"
+    }
+  },
+  "required": [
+    "cik"
+  ]
+}
+```
+
+| `sec-company-facts` | 读取 SEC EDGAR XBRL Company Facts。 | `cik` |
+
+`sec-company-facts` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "cik": {
+      "type": "string",
+      "pattern": "^[0-9]{10}$"
+    }
+  },
+  "required": [
+    "cik"
+  ]
+}
+```
+
+| `bls-series` | 读取美国 BLS v1 时间序列。 | `series_ids, start_year, end_year` |
+
+`bls-series` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "series_ids": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 25,
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9._-]{1,80}$"
+      }
+    },
+    "start_year": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "end_year": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    }
+  },
+  "required": [
+    "series_ids"
+  ]
+}
+```
+
+| `ecb-sdmx-data` | 读取 ECB Data Portal SDMX 数据。 | `flow, key, start_period, end_period, format` |
+
+`ecb-sdmx-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "flow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{1,100}$"
+    },
+    "key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.+-]{1,500}$"
+    },
+    "start_period": {
+      "type": "string",
+      "maxLength": 30
+    },
+    "end_period": {
+      "type": "string",
+      "maxLength": 30
+    },
+    "format": {
+      "enum": [
+        "csvdata",
+        "jsondata"
+      ]
+    }
+  },
+  "required": [
+    "flow",
+    "key"
+  ]
+}
+```
+
+| `wikimedia-pageviews` | 读取 Wikimedia 聚合页面浏览量。 | `project, access, agent, article, granularity, start, end` |
+
+`wikimedia-pageviews` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "project": {
+      "type": "string",
+      "pattern": "^[a-z0-9.-]{1,80}$"
+    },
+    "access": {
+      "enum": [
+        "all-access",
+        "desktop",
+        "mobile-app",
+        "mobile-web"
+      ]
+    },
+    "agent": {
+      "enum": [
+        "all-agents",
+        "user",
+        "spider",
+        "automated"
+      ]
+    },
+    "article": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "granularity": {
+      "enum": [
+        "daily",
+        "monthly"
+      ]
+    },
+    "start": {
+      "type": "string",
+      "pattern": "^[0-9]{8}(?:[0-9]{2})?$"
+    },
+    "end": {
+      "type": "string",
+      "pattern": "^[0-9]{8}(?:[0-9]{2})?$"
+    }
+  },
+  "required": [
+    "project",
+    "article",
+    "start",
+    "end"
+  ]
+}
+```
+
+| `hackernews-topstories` | 读取 Hacker News 热门条目编号。 | `limit` |
+
+`hackernews-topstories` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 500
+    }
+  }
+}
+```
+
+| `hackernews-item` | 读取单个 Hacker News 条目。 | `item_id` |
+
+`hackernews-item` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "item_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    }
+  },
+  "required": [
+    "item_id"
+  ]
+}
+```
+
+| `ror-search` | 搜索 ROR v2 全球研究机构。 | `query, limit` |
+
+`ror-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `uk-legislation-search` | 搜索英国 legislation.gov.uk 机器可读法规目录。 | `title, year, number, type, limit` |
+
+`uk-legislation-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 2100
+    },
+    "number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999999
+    },
+    "type": {
+      "type": "string",
+      "pattern": "^[a-z-]{1,60}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 50
+    }
+  },
+  "required": [
+    "title"
+  ]
+}
+```
+
+| `ted-search` | 搜索欧盟 TED 公共采购公告。 | `query, limit` |
+
+`ted-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `ckan-package-search` | 在固定 CKAN 开放数据门户中搜索数据集。 | `portal, query, limit` |
+
+`ckan-package-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "portal": {
+      "enum": [
+        "uk",
+        "hdx",
+        "open-africa"
+      ]
+    },
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "portal",
+    "query"
+  ]
+}
+```
+
+| `socrata-dataset-rows` | 读取固定 Socrata 门户的公开数据集行。 | `portal, dataset_id, query, limit` |
+
+`socrata-dataset-rows` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "portal": {
+      "enum": [
+        "nyc",
+        "cdc",
+        "chicago"
+      ]
+    },
+    "dataset_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]{4}-[a-z0-9]{4}$"
+    },
+    "query": {
+      "type": "string",
+      "maxLength": 200
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    }
+  },
+  "required": [
+    "portal",
+    "dataset_id"
+  ]
+}
+```
+
+| `stackexchange-search` | 搜索 Stack Exchange 技术问答。 | `query, site, tagged, sort, limit` |
+
+`stackexchange-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "site": {
+      "type": "string",
+      "pattern": "^[a-z0-9.-]{1,80}$"
+    },
+    "tagged": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9+#_.;-]{1,200}$"
+    },
+    "sort": {
+      "enum": [
+        "activity",
+        "creation",
+        "votes",
+        "relevance"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `bluesky-search-posts` | 通过 Bluesky 公共 AppView 搜索公开帖子。 | `query, sort, limit` |
+
+`bluesky-search-posts` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "sort": {
+      "enum": [
+        "top",
+        "latest"
+      ]
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100
+    }
+  },
+  "required": [
+    "query"
+  ]
+}
+```
+
+| `cas-data-centers` | 读取中国科学院科学数据中心公开目录页。 | `无` |
+
+`cas-data-centers` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `html-structure-extract` | 离线提取给定 HTML 的正文、可读内容和结构化元数据。 | `html, base_url` |
+
+`html-structure-extract` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "html": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200000
+    },
+    "base_url": {
+      "type": "string",
+      "pattern": "^https://[^\\s]{1,500}$"
+    }
+  },
+  "required": [
+    "html"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 90,
+  "max_response_bytes": 5000000,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "redirects_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "client_supplied_credentials_allowed": false,
+  "login_allowed": false,
+  "cookie_persistence_allowed": false,
+  "captcha_bypass_allowed": false,
+  "write_operations_allowed": false,
+  "personal_profiling_allowed": false,
+  "model_calls": 0,
+  "secret_values_exposed": false
 }
 ```
 

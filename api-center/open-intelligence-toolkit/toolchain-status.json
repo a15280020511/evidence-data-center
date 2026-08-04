@@ -1,0 +1,51 @@
+{
+  "schema_version": "open-intelligence-toolchain-status-v1",
+  "production_local": [
+    {
+      "id": "trafilatura",
+      "role": "main text and metadata extraction",
+      "network": false
+    },
+    {
+      "id": "extruct",
+      "role": "JSON-LD, Microdata, RDFa and OpenGraph extraction",
+      "network": false
+    },
+    {
+      "id": "readability-lxml",
+      "role": "readable article fallback",
+      "network": false
+    }
+  ],
+  "production_remote_fixed": [
+    "common-crawl",
+    "gdacs",
+    "sec-edgar",
+    "bls",
+    "ecb",
+    "wikimedia",
+    "hacker-news",
+    "ror",
+    "uk-legislation",
+    "ted",
+    "ckan-allowlist",
+    "socrata-allowlist",
+    "stack-exchange",
+    "bluesky",
+    "casdc"
+  ],
+  "conditional": [
+    "browsertrix",
+    "crawl4ai",
+    "playwright-mcp",
+    "searxng",
+    "docling",
+    "grobid",
+    "apache-tika",
+    "opensearch",
+    "scrapy"
+  ],
+  "arbitrary_code_allowed": false,
+  "arbitrary_url_allowed": false,
+  "model_calls": 0
+}
