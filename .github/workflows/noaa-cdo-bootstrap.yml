@@ -1,0 +1,224 @@
+name: Bootstrap NOAA CDO and Assess Fuzhou Climate
+
+on:
+  push:
+    branches: [feat/noaa-cdo-token]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bootstrap-noaa-cdo
+  cancel-in-progress: true
+
+jobs:
+  build-test-assess:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feat/noaa-cdo-token
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --disable-pip-version-check --no-input \
+            -r api-center/requirements.txt \
+            -r api-center/noaa-cdo/requirements.txt
+          python -m pip check
+
+      - name: Register provider and rebuild deterministic catalog
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('api-center/tests/test_api_catalog.py')
+          text = path.read_text(encoding='utf-8')
+          if '"noaa-cdo": 5,' not in text:
+              marker = '    "google-public-intelligence": 9,\n'
+              if marker not in text:
+                  raise SystemExit('EXPECTED_OPERATION_COUNTS insertion marker not found')
+              text = text.replace(marker, marker + '    "noaa-cdo": 5,\n', 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          python api-center/build_catalog_market_search.py
+          python -m py_compile api-center/noaa-cdo/noaa_cdo_task.py api-center/noaa-cdo/tests/test_noaa_cdo.py
+          python -m unittest discover -s api-center/noaa-cdo/tests -p 'test_*.py' -v
+          python -m unittest api-center.tests.test_api_catalog -v
+          git diff --check
+
+      - name: Verify CDO token when configured
+        env:
+          NOAA_CDO_TOKEN: ${{ secrets.NOAA_CDO_TOKEN }}
+        run: |
+          python - <<'PY'
+          import json, os, requests
+          from pathlib import Path
+          token = (os.environ.get('NOAA_CDO_TOKEN') or '').strip()
+          result = {'secret_name':'NOAA_CDO_TOKEN','configured':bool(token),'token_exposed':False}
+          if token:
+              headers = {'token': token, 'Accept':'application/json', 'User-Agent':'evidence-data-center-noaa-cdo/1'}
+              base = 'https://www.ncei.noaa.gov/cdo-web/api/v2'
+              datasets = requests.get(base + '/datasets', params={'limit':1}, headers=headers, timeout=30, allow_redirects=False)
+              datasets.raise_for_status()
+              stations = requests.get(
+                  base + '/stations',
+                  params={'datasetid':'GHCND','extent':'25.9,119.0,26.2,119.5','limit':10},
+                  headers=headers,
+                  timeout=30,
+                  allow_redirects=False,
+              )
+              stations.raise_for_status()
+              payload = stations.json()
+              result.update({
+                  'status':'PASS',
+                  'datasets_http_status':datasets.status_code,
+                  'stations_http_status':stations.status_code,
+                  'fuzhou_station_result_count':len(payload.get('results') or []),
+              })
+          else:
+              result.update({'status':'SECRET_NOT_CONFIGURED'})
+          Path('/tmp/noaa-cdo-token-test.json').write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding='utf-8')
+          print(json.dumps(result, ensure_ascii=False))
+          PY
+
+      - name: Download and assess Fuzhou daily history
+        run: |
+          python - <<'PY'
+          import calendar
+          import json
+          import math
+          import statistics
+          from collections import defaultdict
+          from datetime import date
+          from pathlib import Path
+          import requests
+
+          url = 'https://www.ncei.noaa.gov/access/services/data/v1'
+          params = {
+              'dataset':'daily-summaries',
+              'stations':'CHM00058847',
+              'startDate':'2015-01-01',
+              'endDate':'2024-12-31',
+              'dataTypes':'TAVG,TMAX,TMIN,PRCP',
+              'format':'json',
+              'units':'metric',
+              'includeStationName':'true',
+              'includeStationLocation':'true',
+          }
+          response = requests.get(url, params=params, timeout=120, allow_redirects=False, headers={'User-Agent':'evidence-data-center-fuzhou-analysis/1'})
+          response.raise_for_status()
+          rows = response.json()
+          if not isinstance(rows, list) or len(rows) < 2500:
+              raise SystemExit(f'insufficient Fuzhou rows: {type(rows).__name__} {len(rows) if isinstance(rows,list) else 0}')
+
+          def number(row, name):
+              value = row.get(name)
+              if value in (None, ''):
+                  return None
+              try:
+                  x = float(value)
+              except (TypeError, ValueError):
+                  return None
+              return x if math.isfinite(x) else None
+
+          records = []
+          for row in rows:
+              d = date.fromisoformat(str(row['DATE'])[:10])
+              records.append({
+                  'date':d,
+                  'tavg':number(row,'TAVG'),
+                  'tmax':number(row,'TMAX'),
+                  'tmin':number(row,'TMIN'),
+                  'prcp':number(row,'PRCP'),
+              })
+
+          valid_tavg = [r for r in records if r['tavg'] is not None]
+          valid_tmax = [r for r in records if r['tmax'] is not None]
+          valid_prcp = [r for r in records if r['prcp'] is not None]
+          by_month = defaultdict(list)
+          for r in records:
+              by_month[r['date'].month].append(r)
+
+          monthly = []
+          for month in range(1,13):
+              group = by_month[month]
+              tavgs = [r['tavg'] for r in group if r['tavg'] is not None]
+              tmaxs = [r['tmax'] for r in group if r['tmax'] is not None]
+              prcps = [r['prcp'] for r in group if r['prcp'] is not None]
+              years = len({r['date'].year for r in group}) or 1
+              monthly.append({
+                  'month':month,
+                  'month_name':calendar.month_abbr[month],
+                  'mean_tavg_c':round(statistics.fmean(tavgs),2) if tavgs else None,
+                  'mean_tmax_c':round(statistics.fmean(tmaxs),2) if tmaxs else None,
+                  'mean_monthly_precip_mm':round(sum(prcps)/years,1) if prcps else None,
+                  'share_days_tavg_le_20':round(sum(1 for r in group if r['tavg'] is not None and r['tavg'] <= 20)/max(1,len(tavgs)),3),
+                  'share_days_tavg_le_15':round(sum(1 for r in group if r['tavg'] is not None and r['tavg'] <= 15)/max(1,len(tavgs)),3),
+                  'share_days_tmax_ge_30':round(sum(1 for r in group if r['tmax'] is not None and r['tmax'] >= 30)/max(1,len(tmaxs)),3),
+                  'share_rain_days_ge_1mm':round(sum(1 for r in group if r['prcp'] is not None and r['prcp'] >= 1)/max(1,len(prcps)),3),
+                  'share_heavy_rain_days_ge_10mm':round(sum(1 for r in group if r['prcp'] is not None and r['prcp'] >= 10)/max(1,len(prcps)),3),
+              })
+
+          years = sorted({r['date'].year for r in records})
+          annual_precip = []
+          for year in years:
+              vals = [r['prcp'] for r in records if r['date'].year == year and r['prcp'] is not None]
+              if vals:
+                  annual_precip.append(sum(vals))
+
+          summary = {
+              'source':'NOAA/NCEI Access Data Service',
+              'station_id':'CHM00058847',
+              'station_name':next((row.get('NAME') for row in rows if row.get('NAME')), 'FUZHOU, CH'),
+              'period':'2015-01-01/2024-12-31',
+              'row_count':len(rows),
+              'valid_tavg_days':len(valid_tavg),
+              'valid_tmax_days':len(valid_tmax),
+              'valid_precip_days':len(valid_prcp),
+              'mean_tavg_c':round(statistics.fmean(r['tavg'] for r in valid_tavg),2),
+              'cool_days_tavg_le_20_share':round(sum(1 for r in valid_tavg if r['tavg'] <= 20)/len(valid_tavg),3),
+              'cold_days_tavg_le_15_share':round(sum(1 for r in valid_tavg if r['tavg'] <= 15)/len(valid_tavg),3),
+              'hot_days_tmax_ge_30_share':round(sum(1 for r in valid_tmax if r['tmax'] >= 30)/len(valid_tmax),3),
+              'very_hot_days_tmax_ge_35_share':round(sum(1 for r in valid_tmax if r['tmax'] >= 35)/len(valid_tmax),3),
+              'rain_days_ge_1mm_share':round(sum(1 for r in valid_prcp if r['prcp'] >= 1)/len(valid_prcp),3),
+              'heavy_rain_days_ge_10mm_share':round(sum(1 for r in valid_prcp if r['prcp'] >= 10)/len(valid_prcp),3),
+              'mean_annual_precip_mm':round(statistics.fmean(annual_precip),1),
+              'monthly':monthly,
+              'data_quality':{
+                  'tavg_coverage':round(len(valid_tavg)/len(records),3),
+                  'tmax_coverage':round(len(valid_tmax)/len(records),3),
+                  'precip_coverage':round(len(valid_prcp)/len(records),3),
+              },
+          }
+          Path('/tmp/fuzhou-hotpot-climate.json').write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding='utf-8')
+          print(json.dumps(summary, ensure_ascii=False))
+          PY
+
+      - name: Commit deterministic catalog outputs
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add api-center/api-catalog.json api-center/api-catalog.md api-center/tests/test_api_catalog.py
+          if git diff --cached --quiet; then
+            echo 'Catalog outputs already committed.'
+          else
+            git commit -m 'feat: register NOAA CDO provider in intelligence catalog'
+            git push origin HEAD:feat/noaa-cdo-token
+          fi
+
+      - name: Upload Fuzhou climate evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: fuzhou-hotpot-climate-${{ github.run_id }}
+          path: |
+            /tmp/noaa-cdo-token-test.json
+            /tmp/fuzhou-hotpot-climate.json
+          if-no-files-found: warn
+          retention-days: 30
