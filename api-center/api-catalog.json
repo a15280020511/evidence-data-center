@@ -142,6 +142,7 @@
     "reality-observation/provider-catalog.json",
     "noaa-cdo/provider-catalog.json",
     "copernicus-marine/provider-catalog.json",
+    "global-sensor-backbone/provider-catalog.json",
     "catalog-metadata.json",
     "connector-manifest.json",
     "connectors/<connector>.connector.json"
@@ -44440,5 +44441,16 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "f73699873d53cba454b97cff33267839c7c999f0a7f5e7def0f9c7cf818ac5e1"
+  "standalone_managed_provider_catalogs": [
+    {
+      "provider_id": "global-sensor-backbone",
+      "display_name": "全球现实传感器主干",
+      "ticket_prefix": "[intel-global-sensor]",
+      "operation_count": 21,
+      "catalog_path": "global-sensor-backbone/provider-catalog.json",
+      "secret_values_exposed": false,
+      "directly_invokable": true
+    }
+  ],
+  "catalog_sha256": "9fda1693b036308e76b78204f59fde3813043da3054cf4d52edea0d5dce158c0"
 }
