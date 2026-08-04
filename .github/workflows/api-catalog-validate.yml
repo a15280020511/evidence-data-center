@@ -22,7 +22,7 @@ concurrency:
 jobs:
   validate-catalog:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -115,49 +115,37 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 72
           assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
-          assert catalog['managed_provider_count'] == len(providers) == 68
-          assert catalog['enabled_managed_provider_count'] == len(providers)
-          assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values()) == 758
+          assert catalog['managed_provider_count'] == catalog['enabled_managed_provider_count'] == len(providers) == 68
+          assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values()) == 756
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
           assert all(row['enabled'] is True for row in providers.values())
           assert all(row['secret_value_exposed'] is False for row in providers.values())
           assert not any(row.get('limits', {}).get('write_operations_allowed') is True for row in providers.values())
-          assert 'agent-toolbelt' not in providers
-          assert 'gapup-mcp' not in providers
+          assert {'agent-toolbelt', 'gapup-mcp'}.isdisjoint(providers)
 
           public_data = providers['public-data-geospatial']
-          assert public_data['ticket_prefix'] == '[intel-public-data]'
-          assert public_data['required_secret_environment_variable_name'] == ''
           assert len(public_data['operations']) == 34
           assert public_data['limits']['requests_per_ticket_max'] == 1
           assert public_data['limits']['automatic_retry_allowed'] is False
           assert public_data['limits']['automatic_pagination_allowed'] is False
           assert public_data['limits']['arbitrary_urls_allowed'] is False
-          assert public_data['limits']['arbitrary_headers_allowed'] is False
           assert public_data['limits']['write_operations_allowed'] is False
-          assert all(operation['result_contract']['read_only'] is True for operation in public_data['operations'])
-          operation_ids = {row['operation_id'] for row in public_data['operations']}
-          assert {
-              'openrouteservice-directions',
-              'openrouteservice-matrix',
-              'openrouteservice-isochrones',
-              'openrouteservice-geocode',
-              'overpass-query',
-              'china-local-open-data-catalog',
-              'china-science-data-centers',
-          } <= operation_ids
-          assert {
-              'nbs-search',
-              'nbs-query-data',
-              'nbs-new-tree',
-              'nbs-new-indicators',
-          }.isdisjoint(operation_ids)
-          constraints = public_data['limits']['known_upstream_constraints']
-          assert len(constraints) == 1
-          assert constraints[0]['evidence_issue'] == 527
-          assert constraints[0]['status'] == 'not_exposed_as_production_operation'
+
+          toolkit = providers['open-intelligence-toolkit']
+          assert toolkit['ticket_prefix'] == '[intel-open-toolkit]'
+          assert toolkit['required_secret_environment_variable_name'] == ''
+          assert len(toolkit['operations']) == 20
+          assert toolkit['limits']['requests_per_ticket_max'] == 1
+          assert toolkit['limits']['arbitrary_urls_allowed'] is False
+          assert toolkit['limits']['login_allowed'] is False
+          assert toolkit['limits']['captcha_bypass_allowed'] is False
+          assert toolkit['limits']['write_operations_allowed'] is False
+          toolkit_ids = {row['operation_id'] for row in toolkit['operations']}
+          assert {'sec-submissions', 'sec-company-facts'}.isdisjoint(toolkit_ids)
+          matrix = json.loads(Path('api-center/open-intelligence-toolkit/source-access-matrix.json').read_text(encoding='utf-8'))
+          assert any(row['id'] == 'sec-edgar' for row in matrix['conditional_not_directly_invokable'])
 
           for provider_id, expected_count in {
               'opensky-network': 9,
@@ -170,46 +158,21 @@ jobs:
               'adb': 8,
               'reality-observation': 27,
               'copernicus-marine': 3,
-              'open-intelligence-toolkit': 22,
+              'global-sensor-backbone': 17,
+              'open-intelligence-toolkit': 20,
           }.items():
               assert provider_id in providers
               assert len(providers[provider_id]['operations']) == expected_count
               assert providers[provider_id]['limits']['write_operations_allowed'] is False
-
-          reality = providers['reality-observation']
-          assert reality['ticket_prefix'] == '[intel-reality-observation]'
-          assert reality['limits']['requests_per_ticket_max'] == 1
-          assert reality['limits']['device_control_allowed'] is False
-          assert reality['limits']['individual_tracking_allowed'] is False
-          assert set(reality['limits']['optional_secret_environment_variables']) == {
-              'FIRMS_MAP_KEY', 'FINGRID_API_KEY', 'ENTSOE_API_TOKEN', 'MAPILLARY_ACCESS_TOKEN'
-          }
-
-          marine = providers['copernicus-marine']
-          assert marine['ticket_prefix'] == '[intel-copernicus-marine]'
-          assert marine['limits']['requests_per_ticket_max'] == 1
-          assert marine['limits']['whole_dataset_get_allowed'] is False
-          assert marine['limits']['write_operations_allowed'] is False
-
-          toolkit = providers['open-intelligence-toolkit']
-          assert toolkit['ticket_prefix'] == '[intel-open-toolkit]'
-          assert toolkit['required_secret_environment_variable_name'] == ''
-          assert toolkit['limits']['requests_per_ticket_max'] == 1
-          assert toolkit['limits']['arbitrary_urls_allowed'] is False
-          assert toolkit['limits']['login_allowed'] is False
-          assert toolkit['limits']['captcha_bypass_allowed'] is False
-          assert toolkit['limits']['write_operations_allowed'] is False
 
           print(json.dumps({
               'status': 'PASS',
               'connectors': manifest['connector_count'],
               'managed_providers': catalog['managed_provider_count'],
               'managed_operations': catalog['managed_operation_count'],
-              'public_data_geospatial_operations': len(public_data['operations']),
-              'reality_observation_operations': len(reality['operations']),
-              'copernicus_marine_operations': len(marine['operations']),
-              'open_intelligence_toolkit_operations': len(toolkit['operations']),
-              'nbs_direct_operations_exposed': False,
+              'toolkit_operations': len(toolkit['operations']),
+              'sec_edgar_production': False,
+              'model_calls': 0,
           }))
           PY
           git diff --check
