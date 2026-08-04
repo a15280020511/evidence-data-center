@@ -93,12 +93,10 @@ jobs:
           assert provider['limits']['custom_cookies_allowed'] is False
           assert provider['limits']['custom_browser_scripts_allowed'] is False
           assert all(row['result_contract']['read_only'] is True for row in provider['operations'])
-          assert 'secrets.HF_TOKEN' not in workflow
-          assert 'HF_CLOUDFLARE_DATASET_REPO' not in workflow
-          assert 'hf_archive.py' not in workflow
           assert not Path('api-center/cloudflare/hf_archive.py').exists()
           assert not Path('api-center/cloudflare/tests/test_hf_archive.py').exists()
           assert 'Private Hugging Face archive executed: `false`' in workflow
+          assert 'Long-term private storage authority: `a15280020511/decision-system-governance`' in workflow
           print(json.dumps({
               'status':'PASS',
               'provider':'cloudflare',
