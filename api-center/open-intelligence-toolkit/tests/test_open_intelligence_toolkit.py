@@ -6,7 +6,7 @@ import open_intelligence_toolkit_task as runtime
 class ToolkitTests(unittest.TestCase):
  def test_catalog_is_no_key_and_bounded(self):
   c=json.loads((HERE/"provider-catalog.json").read_text());p=c["providers"][0]
-  self.assertEqual(len(p["operations"]),22);self.assertEqual(p["required_secret_environment_variable"],"");self.assertFalse(p["limits"]["arbitrary_urls_allowed"]);self.assertFalse(p["limits"]["write_operations_allowed"])
+  self.assertEqual(len(p["operations"]),20);self.assertEqual(p["required_secret_environment_variable"],"");self.assertFalse(p["limits"]["arbitrary_urls_allowed"]);self.assertFalse(p["limits"]["write_operations_allowed"])
  def test_fixed_portal_allowlists(self):
   for op,p in [("ckan-package-search",{"portal":"uk","query":"x"}),("socrata-dataset-rows",{"portal":"cdc","dataset_id":"9mfq-cb36"})]:
    _,u,_,_,_,_=runtime.build(op,p);self.assertTrue(u.startswith("https://"))

@@ -83,7 +83,7 @@ EXPECTED_OPERATION_COUNTS = {
     "reality-observation": 27,
     "copernicus-marine": 3,
     "noaa-cdo": 5,
-    "open-intelligence-toolkit": 22,
+    "open-intelligence-toolkit": 20,
 }
 
 

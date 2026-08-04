@@ -3,9 +3,9 @@
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`72/72` 已启用
 - 托管提供方：`68/68` 已启用
-- 托管操作总数：`758`
-- 已公开参数总数：`2668`
-- 目录 SHA-256：`62550c251c25ef50856e9eec81a8ad92b47643a00bc602a96eb593bec825d8fd`
+- 托管操作总数：`756`
+- 已公开参数总数：`2666`
+- 目录 SHA-256：`61d15137e06c71a274d48001ca34eb620c912b24f734bd4a4091ad600717e0ac`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -84,7 +84,7 @@
 | 现实传感器、空间影像、人流与电力观测 | `reality-observation` | 启用 | `[intel-reality-observation]` | `27` | 否 |
 | NOAA Climate Data Online 中国历史气象发现 | `noaa-cdo` | 启用 | `[intel-noaa-cdo]` | `5` | 否 |
 | Copernicus Marine 海洋现实观测 | `copernicus-marine` | 启用 | `[intel-copernicus-marine]` | `3` | 否 |
-| 开放情报采集与解析工具包 | `open-intelligence-toolkit` | 启用 | `[intel-open-toolkit]` | `22` | 否 |
+| 开放情报采集与解析工具包 | `open-intelligence-toolkit` | 启用 | `[intel-open-toolkit]` | `20` | 否 |
 
 ## 普通连接器
 
@@ -28654,7 +28654,7 @@
 - 票据前缀：`[intel-open-toolkit]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`f639eaaa4542f0007d77907ef7552882872e0e1e70391b50f17ff18603da9bdc`
+- 提供方SHA-256：`724f6e69467389f5b3d7c2421289ff5e65ff8a1458ff588c85a7afda70fc4db7`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -28754,46 +28754,6 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {}
-}
-```
-
-| `sec-submissions` | 读取 SEC EDGAR 公司提交记录。 | `cik` |
-
-`sec-submissions` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "cik": {
-      "type": "string",
-      "pattern": "^[0-9]{10}$"
-    }
-  },
-  "required": [
-    "cik"
-  ]
-}
-```
-
-| `sec-company-facts` | 读取 SEC EDGAR XBRL Company Facts。 | `cik` |
-
-`sec-company-facts` 参数Schema：
-
-```json
-{
-  "type": "object",
-  "additionalProperties": false,
-  "properties": {
-    "cik": {
-      "type": "string",
-      "pattern": "^[0-9]{10}$"
-    }
-  },
-  "required": [
-    "cik"
-  ]
 }
 ```
 

@@ -168,60 +168,6 @@
           }
         },
         {
-          "operation_id": "sec-submissions",
-          "description": "读取 SEC EDGAR 公司提交记录。",
-          "parameters": [
-            "cik"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "cik": {
-                "type": "string",
-                "pattern": "^[0-9]{10}$"
-              }
-            },
-            "required": [
-              "cik"
-            ]
-          },
-          "result_contract": {
-            "source": "open-intelligence-toolkit",
-            "official_endpoint": "https://data.sec.gov/submissions/CIK{cik}.json",
-            "http_method": "GET",
-            "read_only": true,
-            "credential_mode": "none"
-          }
-        },
-        {
-          "operation_id": "sec-company-facts",
-          "description": "读取 SEC EDGAR XBRL Company Facts。",
-          "parameters": [
-            "cik"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "cik": {
-                "type": "string",
-                "pattern": "^[0-9]{10}$"
-              }
-            },
-            "required": [
-              "cik"
-            ]
-          },
-          "result_contract": {
-            "source": "open-intelligence-toolkit",
-            "official_endpoint": "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json",
-            "http_method": "GET",
-            "read_only": true,
-            "credential_mode": "none"
-          }
-        },
-        {
           "operation_id": "bls-series",
           "description": "读取美国 BLS v1 时间序列。",
           "parameters": [

@@ -31,10 +31,6 @@ def build(op:str,p:Mapping[str,Any]):
   if not re.fullmatch(r"CC-MAIN-[0-9]{4}-[0-9]{2}",idx):raise ValueError("invalid Common Crawl index")
   u=f"https://index.commoncrawl.org/{idx}-index";q=[("url",text(p.get("url"),"url",500)),("output","json"),("matchType",str(p.get("match_type") or "exact")),("pageSize",str(integer(p.get("limit"),"limit",20,1,100)))]
  elif op=="gdacs-events":u="https://www.gdacs.org/contentdata/xml/gdacsAPP_Home.geojson"
- elif op in {"sec-submissions","sec-company-facts"}:
-  cik=text(p.get("cik"),"cik",10)
-  if not re.fullmatch(r"[0-9]{10}",cik):raise ValueError("cik must contain exactly 10 digits")
-  u=f"https://data.sec.gov/{'submissions' if op=='sec-submissions' else 'api/xbrl/companyfacts'}/CIK{cik}.json"
  elif op=="bls-series":
   ids=p.get("series_ids")
   if not isinstance(ids,list) or not 1<=len(ids)<=25:raise ValueError("series_ids must contain 1 to 25 values")

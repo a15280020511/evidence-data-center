@@ -72,13 +72,13 @@
     "copernicus-marine/provider-catalog.json",
     "open-intelligence-toolkit/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "d3031611d294a28d28d75db8181838ddba68ccc5585599701bf6db26b3a5a1a0",
+  "managed_provider_catalog_sha256": "c1f878c25773062da530680a8dbc950a32fbe16792567edd9ad4bb63ca60023e",
   "connector_count": 72,
   "enabled_connector_count": 72,
   "managed_provider_count": 68,
   "enabled_managed_provider_count": 68,
-  "managed_operation_count": 758,
-  "exposed_parameter_count": 2668,
+  "managed_operation_count": 756,
+  "exposed_parameter_count": 2666,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -35154,7 +35154,7 @@
       "ticket_prefix": "[intel-open-toolkit]",
       "catalog_policy": "只允许22项固定只读或本地操作；禁止任意主机、任意URL、登录、Cookie、验证码绕过、自动分页、自动重试、持续流、个人画像、写入和交易。",
       "execution_policy": "每票最多一次上游请求；固定端点或固定门户枚举；HTML解析完全离线；所有结果生成哈希、诊断和Artifact回执。",
-      "operation_count": 22,
+      "operation_count": 20,
       "operations": [
         {
           "operation_id": "catalog-capabilities",
@@ -35285,60 +35285,6 @@
           "result_contract": {
             "source": "open-intelligence-toolkit",
             "official_endpoint": "https://www.gdacs.org/contentdata/xml/gdacsAPP_Home.geojson",
-            "http_method": "GET",
-            "read_only": true,
-            "credential_mode": "none"
-          }
-        },
-        {
-          "operation_id": "sec-submissions",
-          "description": "读取 SEC EDGAR 公司提交记录。",
-          "parameter_names": [
-            "cik"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "cik": {
-                "type": "string",
-                "pattern": "^[0-9]{10}$"
-              }
-            },
-            "required": [
-              "cik"
-            ]
-          },
-          "result_contract": {
-            "source": "open-intelligence-toolkit",
-            "official_endpoint": "https://data.sec.gov/submissions/CIK{cik}.json",
-            "http_method": "GET",
-            "read_only": true,
-            "credential_mode": "none"
-          }
-        },
-        {
-          "operation_id": "sec-company-facts",
-          "description": "读取 SEC EDGAR XBRL Company Facts。",
-          "parameter_names": [
-            "cik"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "cik": {
-                "type": "string",
-                "pattern": "^[0-9]{10}$"
-              }
-            },
-            "required": [
-              "cik"
-            ]
-          },
-          "result_contract": {
-            "source": "open-intelligence-toolkit",
-            "official_endpoint": "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json",
             "http_method": "GET",
             "read_only": true,
             "credential_mode": "none"
@@ -35940,7 +35886,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "f639eaaa4542f0007d77907ef7552882872e0e1e70391b50f17ff18603da9bdc",
+      "provider_sha256": "724f6e69467389f5b3d7c2421289ff5e65ff8a1458ff588c85a7afda70fc4db7",
       "catalog_file": "open-intelligence-toolkit/provider-catalog.json"
     }
   ],
@@ -45214,5 +45160,5 @@
       "directly_invokable": true
     }
   ],
-  "catalog_sha256": "62550c251c25ef50856e9eec81a8ad92b47643a00bc602a96eb593bec825d8fd"
+  "catalog_sha256": "61d15137e06c71a274d48001ca34eb620c912b24f734bd4a4091ad600717e0ac"
 }
