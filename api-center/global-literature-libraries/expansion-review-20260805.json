@@ -1,0 +1,141 @@
+{
+  "schema_version": "literature-database-expansion-review-v1",
+  "reviewed_on": "2026-08-05",
+  "scope": [
+    "scholarly literature",
+    "library catalogs",
+    "archives",
+    "research data repositories",
+    "government and policy publications",
+    "China national knowledge portals"
+  ],
+  "existing_coverage_summary": {
+    "fixed_source_families": [
+      "OpenAlex",
+      "Crossref",
+      "DataCite",
+      "OpenCitations",
+      "Unpaywall",
+      "arXiv",
+      "PubMed/PMC",
+      "Europe PMC",
+      "Semantic Scholar",
+      "CORE",
+      "OpenAIRE",
+      "BASE",
+      "Zenodo",
+      "OSF",
+      "Figshare",
+      "Dryad",
+      "Harvard Dataverse",
+      "OpenML",
+      "ERIC",
+      "NIH RePORTER",
+      "ClinicalTrials.gov",
+      "UKRI Gateway to Research",
+      "Library of Congress",
+      "Open Library",
+      "Google Books",
+      "Europeana",
+      "DPLA",
+      "CiNii",
+      "Gallica",
+      "German National Library",
+      "Japan National Diet Library",
+      "UN Digital Library",
+      "USGS Publications",
+      "OSTI",
+      "NASA ADS/NTRS",
+      "DOAJ",
+      "EconBiz/EconStor",
+      "HAL",
+      "NBER metadata",
+      "RCSB PDB",
+      "UniProt",
+      "ChEMBL",
+      "IETF Datatracker",
+      "EU CELLAR"
+    ],
+    "principle": "Do not add another runtime merely because a source appears in search results when equivalent normalized coverage already exists."
+  },
+  "recommended_next_integrations": [
+    {
+      "source_id": "re3data",
+      "name": "Registry of Research Data Repositories",
+      "unique_value": "Global directory of research-data repositories, repository policies, disciplines, certificates, access conditions and persistent identifiers.",
+      "official_interface": "https://www.re3data.org/api/",
+      "credential_mode": "none",
+      "license": "Database entries CC0 where stated; other site content generally CC BY 4.0 unless noted.",
+      "status": "verified-official-api-not-yet-implemented",
+      "priority": "P0"
+    },
+    {
+      "source_id": "hathitrust-data-api",
+      "name": "HathiTrust Data API and Extracted Features",
+      "unique_value": "Large-scale bibliographic and non-expressive computational features for books, including lawful analysis of in-copyright holdings under HathiTrust rules.",
+      "credential_mode": "endpoint-and-use-case-dependent",
+      "status": "official-documentation-found-requires-current-contract-and-rights-review",
+      "priority": "P1"
+    },
+    {
+      "source_id": "smithsonian-open-access",
+      "name": "Smithsonian Open Access",
+      "unique_value": "Museum, archive, scientific and cultural-heritage objects beyond the Met and Art Institute coverage.",
+      "credential_mode": "to-be-verified",
+      "status": "official-open-access-program-confirmed-api-contract-pending",
+      "priority": "P1"
+    },
+    {
+      "source_id": "hepdata",
+      "name": "HEPData",
+      "unique_value": "Curated high-energy physics publication data and tabular measurements not replaced by general scholarly metadata.",
+      "credential_mode": "none-expected-but-not-accepted",
+      "status": "candidate-requires-official-api-and-live-acceptance",
+      "priority": "P1"
+    }
+  ],
+  "mapped_or_deferred": [
+    {
+      "source_id": "library-of-congress-apis",
+      "decision": "already-covered",
+      "reason": "The Library of Congress is already an active fixed source; do not create a second connector."
+    },
+    {
+      "source_id": "openreview",
+      "decision": "conditional-existing-candidate",
+      "reason": "Official API exists, but anonymous search behavior already remains pending dedicated production acceptance in the knowledge fabric matrix."
+    },
+    {
+      "source_id": "opendoar",
+      "decision": "defer",
+      "reason": "Unique directory value is partly overlapped by re3data and no current stable official fixed API contract was verified in this round."
+    },
+    {
+      "source_id": "nstl",
+      "decision": "conditional-manual-approval",
+      "reason": "NSTL offers Web Service and data services, but access requires application materials, email review and approved operating instructions; it is not an anonymous public API."
+    },
+    {
+      "source_id": "china-national-library",
+      "decision": "portal-and-catalog-only-until-contract-verified",
+      "reason": "Public digital-library and catalog access exists, but no stable anonymous API/OAI/SRU production contract was confirmed in this round."
+    },
+    {
+      "source_id": "ncpssd",
+      "decision": "portal-only-until-contract-verified",
+      "reason": "Public literature service exists, but no stable anonymous machine API contract was confirmed."
+    },
+    {
+      "source_id": "commercial-fulltext-indexes",
+      "decision": "do-not-integrate-without-license",
+      "members": ["CNKI", "Wanfang", "Scopus", "Web of Science", "ProQuest", "EBSCO", "JSTOR full text"],
+      "reason": "Licensed access, institutional entitlements or commercial terms are required."
+    }
+  ],
+  "search_evidence": {
+    "broad_search_issues": [980, 981, 982, 983],
+    "targeted_search_issues": [985, 986],
+    "model_calls": 0,
+    "secret_values_exposed": false
+  }
+}
