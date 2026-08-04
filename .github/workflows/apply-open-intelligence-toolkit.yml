@@ -1,0 +1,71 @@
+name: Apply Open Intelligence Toolkit
+
+on:
+  push:
+    branches: [feat/open-intelligence-toolkit-20260804]
+    paths:
+      - maintenance/apply_open_intelligence_toolkit.py
+      - .github/workflows/apply-open-intelligence-toolkit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-open-intelligence-toolkit
+  cancel-in-progress: false
+
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: true
+          ref: feat/open-intelligence-toolkit-20260804
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install generator dependencies
+        run: python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
+      - name: Apply deterministic migration
+        run: python maintenance/apply_open_intelligence_toolkit.py
+      - name: Install and validate new provider
+        run: |
+          python -m pip install --disable-pip-version-check --no-input -r api-center/open-intelligence-toolkit/requirements.txt
+          python -m pip check
+          python -m py_compile api-center/open-intelligence-toolkit/open_intelligence_toolkit_task.py api-center/open-intelligence-toolkit/validate_open_intelligence_toolkit.py
+          python -m unittest discover -s api-center/open-intelligence-toolkit/tests -p 'test_*.py' -v
+          mkdir -p validation-artifacts
+          for operation in $(python - <<'PY'
+          import json
+          rows=json.load(open('api-center/open-intelligence-toolkit/provider-catalog.json'))['providers'][0]['operations']
+          print(' '.join(row['operation_id'] for row in rows))
+          PY
+          ); do
+            python api-center/open-intelligence-toolkit/validate_open_intelligence_toolkit.py --operation "$operation" --output "validation-artifacts/${operation}.json"
+          done
+          python api-center/build_config.py
+          python api-center/build_catalog_market_search.py
+          git diff --check
+      - name: Commit formal production files
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add api-center
+          if git diff --cached --quiet; then
+            echo 'No production changes generated'
+            exit 1
+          fi
+          git commit -m 'feat: add no-key open intelligence toolkit'
+          git push origin HEAD:feat/open-intelligence-toolkit-20260804
+      - name: Upload migration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: open-intelligence-toolkit-migration-${{ github.run_id }}
+          path: validation-artifacts/
+          if-no-files-found: warn
+          retention-days: 30
