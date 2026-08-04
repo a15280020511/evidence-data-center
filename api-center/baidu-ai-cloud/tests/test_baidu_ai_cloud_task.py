@@ -46,7 +46,7 @@ class BaiduAICloudTaskTests(unittest.TestCase):
             },
         }
 
-    def test_catalog_registers_four_verified_operations(self):
+    def test_catalog_registers_eight_verified_operations(self):
         module.validate_ticket(
             self.ticket(),
             schema_path=module.SCHEMA_PATH,
@@ -58,12 +58,12 @@ class BaiduAICloudTaskTests(unittest.TestCase):
         }
         self.assertEqual(
             operation_ids,
-            {"catalog-capabilities", "quota-policy", "web-search", "web-summary"},
+            {"catalog-capabilities", "quota-policy", "web-search", "web-summary", "baike-lemma-list", "baike-lemma-content", "baike-starmap-list", "baike-starmap-detail"},
         )
-        self.assertEqual(len(provider["operations"]), 4)
+        self.assertEqual(len(provider["operations"]), 8)
         limits = provider["limits"]
-        self.assertEqual(limits["fixed_api_hosts"], ["qianfan.baidubce.com"])
-        self.assertEqual(limits["fixed_paths"], ["/v2/ai_search/web_search", "/v2/ai_search/web_summary"])
+        self.assertEqual(limits["fixed_api_hosts"], ["qianfan.baidubce.com", "appbuilder.baidu.com"])
+        self.assertEqual(limits["fixed_paths"], ["/v2/ai_search/web_search", "/v2/ai_search/web_summary", "/v2/baike/lemma/get_list_by_title", "/v2/baike/lemma/get_content", "/v2/tools/baike/starmap/get_starmap_by_title", "/v2/tools/baike/starmap/get_starmap_by_id"])
         self.assertFalse(limits["paid_fallback_authorized"])
         self.assertFalse(limits["generative_model_chat_allowed"])
         self.assertFalse(limits["nlp_operations_allowed"])
@@ -152,6 +152,35 @@ class BaiduAICloudTaskTests(unittest.TestCase):
         self.assertEqual(metadata["requests_per_ticket"], 1)
         self.assertEqual(metadata["model_calls"], 1)
         self.assertIn("choices", payload)
+
+    def test_baike_operations_use_fixed_get_endpoints_without_model_calls(self):
+        captured = []
+
+        def fake_get(url, **kwargs):
+            captured.append((url, kwargs))
+            if url.endswith("get_list_by_title"):
+                return FakeResponse({"code": "0", "result": [{"lemma_id": 1, "lemma_title": "福州"}]})
+            if url.endswith("get_content"):
+                return FakeResponse({"code": "0", "result": {"lemma_id": 1, "lemma_title": "福州"}})
+            if url.endswith("get_starmap_by_title"):
+                return FakeResponse({"code": "0", "list": [{"encodeId": "abc", "name": "节日"}]})
+            return FakeResponse({"code": "0", "list": [{"lemmaId": 1}]})
+
+        cases = [
+            ("baike-lemma-list", {"lemma_title": "福州", "top_k": 3}),
+            ("baike-lemma-content", {"search_type": "lemmaTitle", "search_key": "福州"}),
+            ("baike-starmap-list", {"starmap_title": "节日", "page": 1}),
+            ("baike-starmap-detail", {"starmap_id": "abc", "page": 1}),
+        ]
+        with mock.patch.dict(os.environ, {module.API_KEY_ENV: "backend-unified-key"}, clear=True), mock.patch.object(module.requests, "get", side_effect=fake_get):
+            for operation, parameters in cases:
+                payload, metadata = module._get_baike(operation, parameters, timeout=20, max_bytes=500000)
+                self.assertIsInstance(payload, dict)
+                self.assertEqual(metadata["requests_per_ticket"], 1)
+                self.assertEqual(metadata["model_calls"], 0)
+        self.assertEqual(len(captured), 4)
+        self.assertTrue(all(row[1]["headers"]["Authorization"] == "Bearer backend-unified-key" for row in captured))
+        self.assertTrue(all(row[1]["allow_redirects"] is False for row in captured))
 
     def test_local_operations_need_no_network_or_secret(self):
         for operation in ("catalog-capabilities", "quota-policy"):

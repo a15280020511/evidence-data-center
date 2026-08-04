@@ -1,12 +1,12 @@
 {
-  "schema_version": "baidu-ai-cloud-provider-catalog-v4",
+  "schema_version": "baidu-ai-cloud-provider-catalog-v5",
   "secret_values_exposed": false,
   "replaced_legacy_connectors": [],
   "providers": [
     {
       "provider_id": "baidu-ai-cloud",
-      "display_name": "百度AI搜索与模型摘要",
-      "description": "当前统一API Key已真实验证可用的百度公开网页搜索与模型搜索摘要。",
+      "display_name": "百度AI搜索、模型摘要与百科",
+      "description": "当前统一API Key已真实验证可用的百度公开网页搜索、模型搜索摘要与百科结构化知识。",
       "enabled": true,
       "ticket_prefix": "[intel-baidu-ai]",
       "required_secret_environment_variable": "BAIDU_AI_CLOUD_API_KEY",
@@ -20,12 +20,25 @@
         "web-summary": [
           "BAIDU_AI_CLOUD_API_KEY"
         ],
+        "baike-lemma-list": [
+          "BAIDU_AI_CLOUD_API_KEY"
+        ],
+        "baike-lemma-content": [
+          "BAIDU_AI_CLOUD_API_KEY"
+        ],
+        "baike-starmap-list": [
+          "BAIDU_AI_CLOUD_API_KEY"
+        ],
+        "baike-starmap-detail": [
+          "BAIDU_AI_CLOUD_API_KEY"
+        ],
         "local-governance": []
       },
-      "catalog_policy": "只开放当前Key已实测通过的2项上游高价值能力和2项本地治理能力。",
-      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；网页搜索为零模型调用，模型摘要固定记1次模型调用；禁止重试和付费兜底。",
+      "catalog_policy": "只开放当前Key已实测通过的6项上游高价值能力和2项本地治理能力。",
+      "execution_policy": "每张票据一个操作、最多一次固定HTTPS请求；网页搜索和百科读取为零模型调用，模型摘要固定记1次模型调用；禁止重试和付费兜底。",
       "official_origins": [
-        "https://qianfan.baidubce.com"
+        "https://qianfan.baidubce.com",
+        "https://appbuilder.baidu.com"
       ],
       "limits": {
         "requests_per_ticket_max": 1,
@@ -35,11 +48,16 @@
         "max_response_bytes": 2000000,
         "max_search_results": 20,
         "fixed_api_hosts": [
-          "qianfan.baidubce.com"
+          "qianfan.baidubce.com",
+          "appbuilder.baidu.com"
         ],
         "fixed_paths": [
           "/v2/ai_search/web_search",
-          "/v2/ai_search/web_summary"
+          "/v2/ai_search/web_summary",
+          "/v2/baike/lemma/get_list_by_title",
+          "/v2/baike/lemma/get_content",
+          "/v2/tools/baike/starmap/get_starmap_by_title",
+          "/v2/tools/baike/starmap/get_starmap_by_id"
         ],
         "arbitrary_urls_allowed": false,
         "arbitrary_hosts_allowed": false,
@@ -55,6 +73,8 @@
         "generative_model_chat_allowed": false,
         "generative_search_summary_allowed": true,
         "model_calls_per_web_summary": 1,
+        "baike_structured_read_allowed": true,
+        "baike_video_allowed": false,
         "nlp_operations_allowed": false,
         "ocr_operations_allowed": false,
         "image_recognition_operations_allowed": false,
@@ -234,6 +254,190 @@
             "provider": "baidu-ai-cloud",
             "official_origin": "https://qianfan.baidubce.com",
             "http_method": "POST",
+            "read_only": true,
+            "credential_mode": "unified-api-key-bearer",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": true
+          }
+        },
+        {
+          "operation_id": "baike-lemma-list",
+          "description": "按词条名查询百度百科义项列表，返回词条ID、名称、义项说明和公开URL。",
+          "parameters": [
+            "lemma_title",
+            "top_k"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lemma_title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "top_k": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20,
+                "default": 5
+              }
+            },
+            "maxProperties": 2,
+            "required": [
+              "lemma_title"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v2/baike/lemma/get_list_by_title",
+            "http_method": "GET",
+            "credential_mode": "unified-api-key-bearer",
+            "content_type": "application/json",
+            "official_origin": "https://appbuilder.baidu.com"
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "https://appbuilder.baidu.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "unified-api-key-bearer",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": true
+          }
+        },
+        {
+          "operation_id": "baike-lemma-content",
+          "description": "按词条名或词条ID读取百度百科结构化正文、摘要、基本信息和关系。",
+          "parameters": [
+            "search_type",
+            "search_key"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "search_type": {
+                "type": "string",
+                "enum": [
+                  "lemmaTitle",
+                  "lemmaId"
+                ],
+                "default": "lemmaTitle"
+              },
+              "search_key": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            },
+            "maxProperties": 2,
+            "required": [
+              "search_type",
+              "search_key"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v2/baike/lemma/get_content",
+            "http_method": "GET",
+            "credential_mode": "unified-api-key-bearer",
+            "content_type": "application/json",
+            "official_origin": "https://appbuilder.baidu.com"
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "https://appbuilder.baidu.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "unified-api-key-bearer",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": true
+          }
+        },
+        {
+          "operation_id": "baike-starmap-list",
+          "description": "按主题查询百度百科星图列表，返回星图ID和主题名。",
+          "parameters": [
+            "starmap_title",
+            "page"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "starmap_title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 1
+              }
+            },
+            "maxProperties": 2
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v2/tools/baike/starmap/get_starmap_by_title",
+            "http_method": "GET",
+            "credential_mode": "unified-api-key-bearer",
+            "content_type": "application/json",
+            "official_origin": "https://qianfan.baidubce.com"
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "https://qianfan.baidubce.com",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "unified-api-key-bearer",
+            "secret_values_exposed": false,
+            "direct_personal_identifiers_redacted": true
+          }
+        },
+        {
+          "operation_id": "baike-starmap-detail",
+          "description": "按星图ID读取百度百科星图详情和分页实体关系。",
+          "parameters": [
+            "starmap_id",
+            "page"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "starmap_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 1
+              }
+            },
+            "maxProperties": 2,
+            "required": [
+              "starmap_id"
+            ]
+          },
+          "execution": {
+            "local": false,
+            "path_template": "/v2/tools/baike/starmap/get_starmap_by_id",
+            "http_method": "GET",
+            "credential_mode": "unified-api-key-bearer",
+            "content_type": "application/json",
+            "official_origin": "https://qianfan.baidubce.com"
+          },
+          "result_contract": {
+            "provider": "baidu-ai-cloud",
+            "official_origin": "https://qianfan.baidubce.com",
+            "http_method": "GET",
             "read_only": true,
             "credential_mode": "unified-api-key-bearer",
             "secret_values_exposed": false,

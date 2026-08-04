@@ -64,7 +64,7 @@ jobs:
           PYTHONPATH=api-center python -m unittest discover \
             -s api-center/baidu-ai-cloud/tests \
             -p 'test_*.py'
-      - name: Validate bounded search and model-summary contract
+      - name: Validate bounded free search and Baike contract
         run: |
           python - <<'PY'
           import json
@@ -73,18 +73,30 @@ jobs:
           provider=json.loads(Path('api-center/baidu-ai-cloud/provider-catalog.json').read_text())['providers'][0]
           quota=json.loads(Path('api-center/baidu-ai-cloud/free-quota-policy.json').read_text())
           operation_ids={row['operation_id'] for row in provider['operations']}
+          expected={
+              'catalog-capabilities','quota-policy','web-search','web-summary',
+              'baike-lemma-list','baike-lemma-content',
+              'baike-starmap-list','baike-starmap-detail',
+          }
           assert provider['provider_id']=='baidu-ai-cloud'
           assert provider['enabled'] is True
-          assert operation_ids=={'catalog-capabilities','quota-policy','web-search','web-summary'}
-          assert len(provider['operations'])==4
+          assert operation_ids==expected
+          assert len(provider['operations'])==8
           limits=provider['limits']
           assert limits['requests_per_ticket_max']==1
-          assert limits['fixed_api_hosts']==['qianfan.baidubce.com']
-          assert limits['fixed_paths']==['/v2/ai_search/web_search','/v2/ai_search/web_summary']
+          assert limits['fixed_api_hosts']==['qianfan.baidubce.com','appbuilder.baidu.com']
+          assert limits['fixed_paths']==[
+              '/v2/ai_search/web_search','/v2/ai_search/web_summary',
+              '/v2/baike/lemma/get_list_by_title','/v2/baike/lemma/get_content',
+              '/v2/tools/baike/starmap/get_starmap_by_title',
+              '/v2/tools/baike/starmap/get_starmap_by_id',
+          ]
           assert limits['paid_fallback_authorized'] is False
           assert limits['generative_model_chat_allowed'] is False
           assert limits['generative_search_summary_allowed'] is True
           assert limits['model_calls_per_web_summary']==1
+          assert limits['baike_structured_read_allowed'] is True
+          assert limits['baike_video_allowed'] is False
           assert limits['nlp_operations_allowed'] is False
           assert limits['ocr_operations_allowed'] is False
           assert limits['image_recognition_operations_allowed'] is False
@@ -97,6 +109,11 @@ jobs:
           assert quota['policy']['paid_fallback_authorized'] is False
           families={row['family']:row for row in quota['families']}
           assert families['baidu-ai-search']['operations']==['web-search','web-summary']
+          assert families['baidu-baike']['operations']==[
+              'baike-lemma-list','baike-lemma-content',
+              'baike-starmap-list','baike-starmap-detail',
+          ]
+          assert families['baidu-baike']['verified_with_current_key'] is True
           PY
           git diff --check
       - name: Generate authoritative aggregate catalog artifact
@@ -111,7 +128,7 @@ jobs:
 
           catalog=json.loads(Path('baidu-ai-catalog-artifact/api-catalog.json').read_text())
           rows={row['provider_id']:row for row in catalog['managed_providers']}
-          assert rows['baidu-ai-cloud']['operation_count']==4
+          assert rows['baidu-ai-cloud']['operation_count']==8
           assert rows['baidu-ai-cloud']['secret_value_exposed'] is False
           assert catalog['managed_provider_count']==len(rows)
           assert catalog['managed_operation_count']==sum(row['operation_count'] for row in rows.values())

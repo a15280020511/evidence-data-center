@@ -159,10 +159,17 @@ def required_text(value: Any, name: str, maximum: int) -> str:
     return text
 
 
-def optional_code(value: Any, name: str) -> str:
+def optional_country_code(value: Any, name: str) -> str:
     text = str(value or "").strip().lower()
     if text and (len(text) != 2 or not text.isalpha()):
-        raise ValueError(f"{name} must be a two-letter code")
+        raise ValueError(f"{name} must be a two-letter country code")
+    return text
+
+
+def optional_language_code(value: Any, name: str) -> str:
+    text = str(value or "").strip().lower()
+    if text and not re.fullmatch(r"[a-z]{2}(?:-[a-z]{2})?", text):
+        raise ValueError(f"{name} must be a supported language code")
     return text
 
 
@@ -310,7 +317,7 @@ def serpapi_query(operation: str, parameters: Mapping[str, Any], timeout: int, m
         "output": "json",
         "async": "false",
     }
-    hl = optional_code(parameters.get("hl"), "hl")
+    hl = optional_language_code(parameters.get("hl"), "hl")
     if hl:
         query["hl"] = hl
     if parameters.get("start") is not None:
@@ -321,7 +328,7 @@ def serpapi_query(operation: str, parameters: Mapping[str, Any], timeout: int, m
             if len(location) > 200:
                 raise ValueError("location is too long")
             query["location"] = location
-        gl = optional_code(parameters.get("gl"), "gl")
+        gl = optional_country_code(parameters.get("gl"), "gl")
         if gl:
             query["gl"] = gl
         device = str(parameters.get("device") or "desktop")
@@ -336,7 +343,7 @@ def serpapi_query(operation: str, parameters: Mapping[str, Any], timeout: int, m
         if time_range:
             query["tbs"] = f"qdr:{TIME_RANGES[time_range]}"
     elif operation == "google-news":
-        gl = optional_code(parameters.get("gl"), "gl")
+        gl = optional_country_code(parameters.get("gl"), "gl")
         if gl:
             query["gl"] = gl
         if bool(parameters.get("sort_by_date", False)):
