@@ -5,7 +5,7 @@
 - 托管提供方：`68/68` 已启用
 - 托管操作总数：`756`
 - 已公开参数总数：`2666`
-- 目录 SHA-256：`61d15137e06c71a274d48001ca34eb620c912b24f734bd4a4091ad600717e0ac`
+- 目录 SHA-256：`7fa3b49ded194a038927a826e4986bc5af410e96f19871e17e23458a8b2dcd48`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -25661,12 +25661,12 @@
 
 - 状态：`启用`
 - 说明：固定接入科研机构与作者标识、计算机科学书目、研究对象关系、科研数据集、政府资助与法规、欧盟出版物、生命科学知识和技术标准。
-- 目录策略：仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。
+- 目录策略：仅开放9项固定只读操作和14个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。
 - 执行策略：每票最多一次上游请求；只取首批结果；不自动翻页、不使用cursor、不自动重试、不跟随重定向；凭证仅后端注入；保留来源权利和响应哈希。
 - 票据前缀：`[intel-knowledge-fabric]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`f237e8794b12cf3aa8ccc907e0a190e6528565273dddb308fac8ecf38228282c`
+- 提供方SHA-256：`b38f51a1bd04f41f560b018fe31c42dc56cb22607b4605ea026483e82090aa15`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -25742,7 +25742,6 @@
     "source_id": {
       "type": "string",
       "enum": [
-        "dblp-publication",
         "dblp-venue"
       ]
     },
@@ -25948,7 +25947,7 @@
 
 ```json
 {
-  "source_count": 15,
+  "source_count": 14,
   "requests_per_ticket_max": 1,
   "timeout_seconds_max": 75,
   "max_response_bytes": 5000000,

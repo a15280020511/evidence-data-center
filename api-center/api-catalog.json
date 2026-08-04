@@ -72,7 +72,7 @@
     "copernicus-marine/provider-catalog.json",
     "open-intelligence-toolkit/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "c1f878c25773062da530680a8dbc950a32fbe16792567edd9ad4bb63ca60023e",
+  "managed_provider_catalog_sha256": "04ab6a79cf168cfd6fe06deda11de75ad7357b19599c8e9c21122ba0da27e33b",
   "connector_count": 72,
   "enabled_connector_count": 72,
   "managed_provider_count": 68,
@@ -31441,7 +31441,7 @@
       "description": "固定接入科研机构与作者标识、计算机科学书目、研究对象关系、科研数据集、政府资助与法规、欧盟出版物、生命科学知识和技术标准。",
       "enabled": true,
       "ticket_prefix": "[intel-knowledge-fabric]",
-      "catalog_policy": "仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。",
+      "catalog_policy": "仅开放9项固定只读操作和14个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不使用cursor、不自动重试、不跟随重定向；凭证仅后端注入；保留来源权利和响应哈希。",
       "operation_count": 9,
       "operations": [
@@ -31551,7 +31551,6 @@
               "source_id": {
                 "type": "string",
                 "enum": [
-                  "dblp-publication",
                   "dblp-venue"
                 ]
               },
@@ -31829,7 +31828,7 @@
         }
       ],
       "limits": {
-        "source_count": 15,
+        "source_count": 14,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 75,
         "max_response_bytes": 5000000,
@@ -31855,7 +31854,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "f237e8794b12cf3aa8ccc907e0a190e6528565273dddb308fac8ecf38228282c",
+      "provider_sha256": "b38f51a1bd04f41f560b018fe31c42dc56cb22607b4605ea026483e82090aa15",
       "catalog_file": "global-knowledge-fabric/provider-catalog.json"
     },
     {
@@ -45160,5 +45159,5 @@
       "directly_invokable": true
     }
   ],
-  "catalog_sha256": "61d15137e06c71a274d48001ca34eb620c912b24f734bd4a4091ad600717e0ac"
+  "catalog_sha256": "7fa3b49ded194a038927a826e4986bc5af410e96f19871e17e23458a8b2dcd48"
 }

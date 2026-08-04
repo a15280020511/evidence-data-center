@@ -15,10 +15,10 @@
         "DATA_GOV_API_KEY",
         "ROR_CLIENT_ID"
       ],
-      "catalog_policy": "仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。",
+      "catalog_policy": "仅开放9项固定只读操作和14个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端凭证、任意SPARQL、动态Provider、写入和付费墙绕过。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不使用cursor、不自动重试、不跟随重定向；凭证仅后端注入；保留来源权利和响应哈希。",
       "limits": {
-        "source_count": 15,
+        "source_count": 14,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 75,
         "max_response_bytes": 5000000,
@@ -147,7 +147,6 @@
               "source_id": {
                 "type": "string",
                 "enum": [
-                  "dblp-publication",
                   "dblp-venue"
                 ]
               },

@@ -1,6 +1,6 @@
 {
   "schema_version": "global-knowledge-fabric-source-matrix-v1",
-  "active_source_count": 15,
+  "active_source_count": 14,
   "sources": [
     {
       "source_id": "ror",
@@ -31,20 +31,6 @@
       "credential_env": "ORCID_PUBLIC_API_TOKEN",
       "license_policy": "Public ORCID record data only; no profiling or restricted fields.",
       "cost": "free public API credentials for non-commercial public-data access"
-    },
-    {
-      "source_id": "dblp-publication",
-      "name": "dblp Publications",
-      "category": "computer-science",
-      "protocol": "rest-search",
-      "base_url": "https://dblp.org/search/publ/api",
-      "operations": [
-        "scholarly-search"
-      ],
-      "credential_mode": "none",
-      "credential_env": "",
-      "license_policy": "CC0 bibliographic metadata; source full text rights remain external.",
-      "cost": "free"
     },
     {
       "source_id": "dblp-author",
@@ -320,6 +306,10 @@
     {
       "source_id": "crossref-events",
       "reason": "The documented public Event Data API host failed a bounded 45-second production connection acceptance on 2026-08-03. Core Crossref Works metadata, DataCite, OpenCitations and existing citation providers remain active; Event Data is deferred until the endpoint is reliably reachable."
+    },
+    {
+      "source_id": "dblp-publication",
+      "reason": "The official publication-search endpoint returned HTTP 500 in three bounded GitHub Actions production probes using two fixed queries on 2026-08-04. DBLP author and venue search remain active; OpenAlex, Crossref, DataCite and other existing literature providers cover production publication discovery until this endpoint is reliable."
     }
   ]
 }
