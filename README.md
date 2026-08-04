@@ -12,27 +12,32 @@
 
 `api-center/api-catalog.json`
 
+## 治理 4.x 唯一入口
+
+- 网页 GPTs 不得直接控制本仓库，只能向 `a15280020511/decision-system-governance` 提交治理票据并读取治理回执。
+- `a15280020511/decision-system-governance` 是唯一外部控制器和唯一跨仓库中继。
+- 本仓库不得直接调用计算中心或专家中心，也不得读取其运行目录、Artifact 或 Secret。
+- 情报采集允许按 Provider 白名单访问外部数据源；该网络权限不构成跨中心通信权限。
+- 私有 Hugging Face 基准库存储归治理仓库所有；本仓库只保留免认证、只读的公共 Hugging Face Provider。
+
 ## 隔离边界
 
 - 本仓库只运行本中心任务。
-- GPTs 是三个业务中心之间唯一的控制与证据中继。
 - 禁止中心间直接调用、运行时导入、Artifact 互取和共享业务 Secret。
 - 原业务目录 `api-center/` 暂时保留，避免迁移与路径重构同时发生。
 - 迁移源仓库只作为回滚与审计来源，不是治理仓库，也不是运行时依赖。
 
 ## 迁移证据
 
-查看 `MIGRATION_MANIFEST.json`、`MIGRATION_PROVENANCE.json`、`MIGRATION.md` 和 `governance-compatibility.json`。
+查看 `MIGRATION_MANIFEST.json`、`MIGRATION_PROVENANCE.json`、`MIGRATION.md`、`CONTROL_TOPOLOGY.md` 和 `governance-compatibility.json`。
 
 ## V3 data quality controls
 
 Connector status is classified as PRODUCTION / DEGRADED / BLOCKED / RETIRED. Formal outputs require immutable snapshot metadata and a source-comparison report; correlated sources may not be naively averaged.
 
-
 ### WHO GHO OData
 
 情报中心新增免密、只读的 WHO Global Health Observatory OData Provider，固定开放 8 项受控操作并保留官方接口迁移监测。
-
 
 ## 证据标准化能力层
 
