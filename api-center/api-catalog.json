@@ -72,7 +72,7 @@
     "copernicus-marine/provider-catalog.json",
     "open-intelligence-toolkit/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "8bc687a7a9bc28b6513eb928c55f32fffa11e0ae193c2a28613f2fed9839ddec",
+  "managed_provider_catalog_sha256": "cc48b1221467e98d4ce95e74d43a2c84fe0e1bd1355dead4645552ca2d7528df",
   "connector_count": 72,
   "enabled_connector_count": 72,
   "managed_provider_count": 68,
@@ -31005,7 +31005,7 @@
       "description": "固定接入教育研究、开放专著、国家图书馆目录、博物馆开放馆藏、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据；需要Key的来源仅Google Books与BHL。",
       "enabled": true,
       "ticket_prefix": "[intel-knowledge]",
-      "catalog_policy": "仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "catalog_policy": "仅开放9项固定只读操作和14个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。",
       "operation_count": 9,
       "operations": [
@@ -31073,7 +31073,6 @@
                   "nih-reporter",
                   "clinicaltrials-gov",
                   "usgs-publications",
-                  "federal-register",
                   "met-museum",
                   "art-institute-chicago",
                   "digitalnz",
@@ -31126,7 +31125,6 @@
                 "enum": [
                   "ukri-gtr",
                   "clinicaltrials-gov",
-                  "federal-register",
                   "met-museum",
                   "art-institute-chicago",
                   "digitalnz",
@@ -31404,7 +31402,7 @@
         }
       ],
       "limits": {
-        "source_count": 15,
+        "source_count": 14,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 90,
         "max_response_bytes": 15000000,
@@ -31429,7 +31427,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "f4cee505fb0c49009d6a4e6aeda40462ef4b2b2ce22c9b336380ea18c5fb6c49",
+      "provider_sha256": "2a5e8bc5afa9ccec33979eddcd20d5f7b8122f26bd210990c1ccf332c78f9ec3",
       "catalog_file": "global-knowledge-archives/provider-catalog.json"
     },
     {
@@ -45156,5 +45154,5 @@
       "directly_invokable": true
     }
   ],
-  "catalog_sha256": "6853abc7d4e1179e48de0177d55046719d2624ccfd649f49e7ab4319ce21a69e"
+  "catalog_sha256": "49274c7a7a96b15984034c89dd03044da3498f97f5f8ba0070bb1ddc7bf6ec20"
 }

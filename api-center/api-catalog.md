@@ -5,7 +5,7 @@
 - 托管提供方：`68/68` 已启用
 - 托管操作总数：`756`
 - 已公开参数总数：`2666`
-- 目录 SHA-256：`6853abc7d4e1179e48de0177d55046719d2624ccfd649f49e7ab4319ce21a69e`
+- 目录 SHA-256：`49274c7a7a96b15984034c89dd03044da3498f97f5f8ba0070bb1ddc7bf6ec20`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -25333,12 +25333,12 @@
 
 - 状态：`启用`
 - 说明：固定接入教育研究、开放专著、国家图书馆目录、博物馆开放馆藏、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据；需要Key的来源仅Google Books与BHL。
-- 目录策略：仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
+- 目录策略：仅开放9项固定只读操作和14个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。
 - 执行策略：每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。
 - 票据前缀：`[intel-knowledge]`
 - Secret环境变量名：`无`（仅名称）
 - Repository Variable名：`无`（仅名称）
-- 提供方SHA-256：`f4cee505fb0c49009d6a4e6aeda40462ef4b2b2ce22c9b336380ea18c5fb6c49`
+- 提供方SHA-256：`2a5e8bc5afa9ccec33979eddcd20d5f7b8122f26bd210990c1ccf332c78f9ec3`
 
 | 操作 | 说明 | 参数 |
 |---|---|---|
@@ -25385,7 +25385,6 @@
         "nih-reporter",
         "clinicaltrials-gov",
         "usgs-publications",
-        "federal-register",
         "met-museum",
         "art-institute-chicago",
         "digitalnz",
@@ -25426,7 +25425,6 @@
       "enum": [
         "ukri-gtr",
         "clinicaltrials-gov",
-        "federal-register",
         "met-museum",
         "art-institute-chicago",
         "digitalnz",
@@ -25631,7 +25629,7 @@
 
 ```json
 {
-  "source_count": 15,
+  "source_count": 14,
   "requests_per_ticket_max": 1,
   "timeout_seconds_max": 90,
   "max_response_bytes": 15000000,

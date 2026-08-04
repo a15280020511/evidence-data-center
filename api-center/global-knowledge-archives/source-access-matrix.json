@@ -1,6 +1,6 @@
 {
   "schema_version": "global-knowledge-archives-source-matrix-v1",
-  "active_source_count": 15,
+  "active_source_count": 14,
   "sources": [
     {
       "source_id": "eric",
@@ -72,21 +72,6 @@
       "credential_mode": "none",
       "credential_env": "",
       "license_policy": "Official USGS publication metadata and lawful document links; external publisher rights remain external.",
-      "cost": "free"
-    },
-    {
-      "source_id": "federal-register",
-      "name": "Federal Register",
-      "category": "regulatory-publications",
-      "protocol": "rest-search-record",
-      "base_url": "https://www.federalregister.gov/api/v1",
-      "operations": [
-        "knowledge-search",
-        "knowledge-record"
-      ],
-      "credential_mode": "none",
-      "credential_env": "",
-      "license_policy": "FederalRegister.gov metadata is a discovery layer; authoritative legal reliance should use the linked official publication edition.",
       "cost": "free"
     },
     {
@@ -329,6 +314,10 @@
     {
       "source_id": "doab-oai",
       "reason": "The official DOAB OAI-PMH Identify endpoint returned HTTP 520 in repeated bounded GitHub Actions production probes on 2026-08-04. The connector remains registered as a conditional capability; existing OpenAlex, Crossref, DataCite, Open Library and other literature sources cover production discovery until the endpoint is reliable."
+    },
+    {
+      "source_id": "federal-register",
+      "reason": "The official FederalRegister.gov API returned HTTP 403 from the GitHub Actions production execution platform during a bounded single-request acceptance on 2026-08-04. The connector remains a conditional capability; authoritative regulatory discovery can use existing Congress.gov, GovInfo, legal and general web evidence providers until this endpoint is reliably reachable."
     }
   ],
   "governance": {
