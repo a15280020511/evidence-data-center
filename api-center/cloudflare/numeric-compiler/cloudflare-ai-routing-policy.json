@@ -1,0 +1,111 @@
+{
+  "schema_version": "cloudflare-ai-numeric-routing-policy-v1",
+  "status": "production-control",
+  "goal": "以最低成本把公开中国大陆资料转换为可复现的纯数值基准，同时避免模型成为最终裁决者",
+  "default_strategy": "deterministic_first",
+  "tiers": [
+    {
+      "tier_id": 0,
+      "name": "deterministic-parser",
+      "use_for": [
+        "api_json",
+        "csv",
+        "xlsx",
+        "standard_html_table",
+        "exchange_market_data",
+        "official_statistical_table"
+      ],
+      "ai_model_used": false,
+      "priority": 0,
+      "decision": "default"
+    },
+    {
+      "tier_id": 1,
+      "name": "cloudflare-managed-ai",
+      "use_for": [
+        "policy_text",
+        "announcement_text",
+        "report_narrative",
+        "project_progress_text",
+        "judicial_or_regulatory_text"
+      ],
+      "ai_model_used": true,
+      "provider": "cloudflare-browser-run-json",
+      "model_binding": "browser-run-managed-workers-ai",
+      "custom_model_allowed": false,
+      "priority": 1,
+      "decision": "default-semantic-extractor"
+    },
+    {
+      "tier_id": 2,
+      "name": "external-chinese-structured-model",
+      "use_for": [
+        "cloudflare_quota_exhausted",
+        "complex_long_document",
+        "cloudflare_schema_failure",
+        "independent_second_pass"
+      ],
+      "ai_model_used": true,
+      "provider": "unbound-until-benchmark-pass",
+      "custom_model_allowed": true,
+      "priority": 2,
+      "decision": "prepared-disabled",
+      "activation_requires": [
+        "web_gpt_approval",
+        "free_or_explicitly_authorized_budget",
+        "benchmark_pass",
+        "strict_json_schema_support",
+        "public_data_only"
+      ]
+    },
+    {
+      "tier_id": 3,
+      "name": "quarantine",
+      "use_for": [
+        "low_confidence",
+        "source_conflict",
+        "numeric_mismatch",
+        "unknown_entity",
+        "unsupported_unit",
+        "model_disagreement"
+      ],
+      "ai_model_used": false,
+      "priority": 3,
+      "decision": "fail-closed-no-ingestion"
+    }
+  ],
+  "external_model_policy": {
+    "enabled_by_default": false,
+    "automatic_paid_fallback_allowed": false,
+    "automatic_provider_switch_allowed": false,
+    "raw_page_persistence_allowed": false,
+    "raw_model_response_persistence_allowed": false,
+    "personal_data_allowed": false,
+    "tool_use_allowed": false,
+    "selection_owner": "gpts-usage-center",
+    "execution_owner": "evidence-data-center-github-actions",
+    "minimum_acceptance": {
+      "json_schema_valid_rate": 1.0,
+      "numeric_exact_match_rate": 0.995,
+      "date_unit_exact_match_rate": 0.999,
+      "entity_resolution_precision": 0.99,
+      "unsupported_claim_rate_max": 0.001
+    }
+  },
+  "quota_policy": {
+    "cloudflare_free_allocation_is_primary_semantic_budget": true,
+    "reserve_fraction_for_high_value_pages": 0.25,
+    "stop_new_ai_jobs_at_utilization": 0.9,
+    "overflow_action": "queue-or-approved-external-tier",
+    "standard_numeric_sources_must_not_consume_ai_quota": true
+  },
+  "ingestion_gate": {
+    "model_output_is_intermediate_only": true,
+    "github_deterministic_validation_required": true,
+    "cross_source_validation_required_for_subjective_scores": true,
+    "minimum_confidence": 0.8,
+    "numeric_parquet_only": true,
+    "huggingface_control_metadata_uploaded": false,
+    "direct_center_connection_allowed": false
+  }
+}
