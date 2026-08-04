@@ -20,7 +20,7 @@ class ChinaIntelligenceControlTests(unittest.TestCase):
     def test_all_controls_validate(self) -> None:
         receipt = MODULE.validate_all()
         self.assertEqual(receipt["status"], "CHINA_ENTERPRISE_SOCIAL_DAILY_CONTROLS_VALIDATED")
-        self.assertEqual(receipt["enterprise_domain_count"], 20)
+        self.assertEqual(receipt["enterprise_domain_count"], 21)
         self.assertEqual(receipt["social_platform_count"], 5)
         self.assertEqual(receipt["social_metric_count"], 70)
         self.assertEqual(receipt["daily_neuron_budget"], 9800)
