@@ -1,16 +1,16 @@
 name: NOAA Live Diagnostic
 
 on:
-  push:
-    branches: [feat/noaa-official-data]
-    paths:
-      - ".github/workflows/noaa-live-diagnostic.yml"
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: read
 
 jobs:
   diagnose:
+    if: github.head_ref == 'feat/noaa-official-data'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
