@@ -2,10 +2,10 @@
 
 - 开放模式：`maximum-safe-readonly`
 - 普通连接器：`72/72` 已启用
-- 托管提供方：`64/64` 已启用
-- 托管操作总数：`698`
-- 已公开参数总数：`2486`
-- 目录 SHA-256：`6e5685ec21716e5baf7937ec12284eb0e8e8b84636f6bf815c8ef328ef9ee18c`
+- 托管提供方：`65/65` 已启用
+- 托管操作总数：`723`
+- 已公开参数总数：`2558`
+- 目录 SHA-256：`ac50159a1f63372099dfdb459971c8449a72ebbef9e12d16e6fce6fa052c1332`
 - 选择者：`GPTs 使用中心`
 - 维修者：`普通网页 GPT + GitHub 插件`
 - Secret/Authorization 值：`不暴露`
@@ -81,6 +81,7 @@
 | 百度AI搜索与模型摘要 | `baidu-ai-cloud` | 启用 | `[intel-baidu-ai]` | `4` | 否 |
 | 全球开源软件、安全与开放标准知识层 | `open-software-security-knowledge` | 启用 | `[intel-software-security]` | `11` | 否 |
 | Google公开情报 | `google-public-intelligence` | 启用 | `[intel-google-public]` | `9` | 否 |
+| 现实传感器、空间影像、人流与电力观测 | `reality-observation` | 启用 | `[intel-reality-observation]` | `25` | 否 |
 
 ## 普通连接器
 
@@ -27085,6 +27086,923 @@
   "secret_values_exposed": false,
   "direct_personal_identifiers_redacted": true,
   "public_https_targets_only": true
+}
+```
+
+## 现实传感器、空间影像、人流与电力观测 (`reality-observation`)
+
+- 状态：`启用`
+- 说明：统一读取公开现实世界观测：高精度航空/街景影像元数据、卫星与火点、海洋与航空气象、地震与空间天气、辐射与社区传感器、城市人流以及电力系统实测数据。
+- 目录策略：仅开放固定官方/公益主机和固定只读操作；禁止任意URL、持续流、设备控制、个人跟踪、登录绕过、批量镜像和写入。
+- 执行策略：每张票据最多一次受控上游请求；参数、空间范围、时间范围和结果上限均受Schema限制；凭证仅由GitHub Actions后端注入。
+- 票据前缀：`[intel-reality-observation]`
+- Secret环境变量名：`无`（仅名称）
+- Repository Variable名：`无`（仅名称）
+- 提供方SHA-256：`3f89ff844957d15c89d741cbb7d5afdca38e64312e116985a43387b40580f18c`
+
+| 操作 | 说明 | 参数 |
+|---|---|---|
+| `catalog-capabilities` | 读取本地现实观测能力目录。 | `无` |
+
+`catalog-capabilities` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `planetary-stac-search` | 在Microsoft Planetary Computer公开STAC中搜索受控卫星、航空影像和环境数据。 | `collections, bbox, datetime, limit` |
+
+`planetary-stac-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "collections": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "naip",
+          "sentinel-2-l2a",
+          "landsat-c2-l2",
+          "3dep-seamless",
+          "io-lulc-9-class"
+        ]
+      }
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "datetime": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 80
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  },
+  "required": [
+    "collections",
+    "bbox"
+  ]
+}
+```
+
+| `earth-search-stac-search` | 在Element84 Earth Search公开STAC中搜索Sentinel、Landsat等开放影像。 | `collections, bbox, datetime, limit` |
+
+`earth-search-stac-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "collections": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "sentinel-2-l2a",
+          "landsat-c2-l2",
+          "cop-dem-glo-30"
+        ]
+      }
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "datetime": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 80
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  },
+  "required": [
+    "collections",
+    "bbox"
+  ]
+}
+```
+
+| `nasa-firms-area` | 查询NASA FIRMS近实时火点区域CSV；免费MAP Key由后端注入。 | `source, bbox, day_range, date` |
+
+`nasa-firms-area` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "source": {
+      "type": "string",
+      "enum": [
+        "VIIRS_SNPP_NRT",
+        "VIIRS_NOAA20_NRT",
+        "MODIS_NRT"
+      ]
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "day_range": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "default": 1
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    }
+  },
+  "required": [
+    "source",
+    "bbox"
+  ]
+}
+```
+
+| `nasa-eonet-events` | 查询NASA EONET近实时自然事件。 | `category, status, days, limit, bbox` |
+
+`nasa-eonet-events` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "category": {
+      "type": "string",
+      "maxLength": 80,
+      "pattern": "^[A-Za-z0-9_-]{1,80}$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed",
+        "all"
+      ],
+      "default": "open"
+    },
+    "days": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 365,
+      "default": 30
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 200,
+      "default": 50
+    },
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    }
+  }
+}
+```
+
+| `celestrak-gp` | 查询CelesTrak公开卫星轨道要素。 | `group, catalog_number` |
+
+`celestrak-gp` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "group": {
+      "type": "string",
+      "enum": [
+        "active",
+        "stations",
+        "weather",
+        "resource",
+        "science",
+        "geo",
+        "gnss",
+        "starlink",
+        "oneweb",
+        "planet"
+      ]
+    },
+    "catalog_number": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 999999
+    }
+  }
+}
+```
+
+| `openaerialmap-search` | 搜索OpenAerialMap公开航空/无人机影像元数据。 | `bbox, limit` |
+
+`openaerialmap-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 20
+    }
+  },
+  "required": [
+    "bbox"
+  ]
+}
+```
+
+| `kartaview-nearby-photos` | 按坐标读取KartaView公开街景照片与采集时间、方向和序列元数据。 | `latitude, longitude, radius_m, zoom_level` |
+
+`kartaview-nearby-photos` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "radius_m": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 2000,
+      "default": 250
+    },
+    "zoom_level": {
+      "type": "integer",
+      "minimum": 12,
+      "maximum": 20,
+      "default": 18
+    }
+  },
+  "required": [
+    "latitude",
+    "longitude"
+  ]
+}
+```
+
+| `ioos-erddap-search` | 搜索IOOS ERDDAP海洋浮标、岸站、滑翔机和雷达数据集。 | `search_for, page, items_per_page` |
+
+`ioos-erddap-search` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "search_for": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 1
+    },
+    "items_per_page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 25
+    }
+  },
+  "required": [
+    "search_for"
+  ]
+}
+```
+
+| `aviationweather-metar` | 读取全球机场METAR现实气象观测。 | `ids, hours` |
+
+`aviationweather-metar` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ids": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{4}(?:,[A-Z0-9]{4}){0,19}$",
+      "maxLength": 99
+    },
+    "hours": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 24,
+      "default": 2
+    }
+  },
+  "required": [
+    "ids"
+  ]
+}
+```
+
+| `aviationweather-taf` | 读取全球机场TAF预报。 | `ids` |
+
+`aviationweather-taf` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "ids": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{4}(?:,[A-Z0-9]{4}){0,19}$",
+      "maxLength": 99
+    }
+  },
+  "required": [
+    "ids"
+  ]
+}
+```
+
+| `earthscope-stations` | 按空间和时间范围查询EarthScope/FDSN地震台站元数据。 | `bbox, start_time, end_time, limit` |
+
+`earthscope-stations` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "start_time": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "end_time": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2000,
+      "default": 500
+    }
+  },
+  "required": [
+    "bbox"
+  ]
+}
+```
+
+| `noaa-swpc-kp` | 读取NOAA SWPC行星K指数观测。 | `无` |
+
+`noaa-swpc-kp` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {}
+}
+```
+
+| `noaa-swpc-solar-wind` | 读取NOAA SWPC太阳风等离子体或磁场观测。 | `product` |
+
+`noaa-swpc-solar-wind` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "product": {
+      "type": "string",
+      "enum": [
+        "plasma-7-day",
+        "mag-7-day"
+      ],
+      "default": "plasma-7-day"
+    }
+  }
+}
+```
+
+| `safecast-measurements` | 查询Safecast公开辐射测量。 | `latitude, longitude, distance_km, page, per_page` |
+
+`safecast-measurements` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "latitude": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "longitude": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "distance_km": {
+      "type": "number",
+      "minimum": 0.1,
+      "maximum": 100,
+      "default": 10
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 1
+    },
+    "per_page": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 50
+    }
+  }
+}
+```
+
+| `opensensemap-boxes` | 按边界框查询openSenseMap社区环境传感器。 | `bbox, minimal` |
+
+`opensensemap-boxes` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "type": "number",
+        "minimum": -180,
+        "maximum": 180
+      }
+    },
+    "minimal": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "bbox"
+  ]
+}
+```
+
+| `noaa-ndbc-latest` | 读取NOAA NDBC固定浮标最新标准气象海况文本。 | `station` |
+
+`noaa-ndbc-latest` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "station": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{4,8}$"
+    }
+  },
+  "required": [
+    "station"
+  ]
+}
+```
+
+| `noaa-coops-data` | 读取NOAA CO-OPS潮位、潮汐、海流或港口气象观测。 | `station, product, begin_date, end_date, interval` |
+
+`noaa-coops-data` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "station": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]{4,10}$"
+    },
+    "product": {
+      "type": "string",
+      "enum": [
+        "water_level",
+        "air_temperature",
+        "water_temperature",
+        "wind",
+        "currents",
+        "predictions"
+      ]
+    },
+    "begin_date": {
+      "type": "string",
+      "pattern": "^\\d{8}$"
+    },
+    "end_date": {
+      "type": "string",
+      "pattern": "^\\d{8}$"
+    },
+    "interval": {
+      "type": "string",
+      "enum": [
+        "h",
+        "hilo",
+        "6",
+        "15",
+        "60"
+      ]
+    }
+  },
+  "required": [
+    "station",
+    "product",
+    "begin_date",
+    "end_date"
+  ]
+}
+```
+
+| `melbourne-pedestrian-latest` | 读取墨尔本最近一小时分钟级双向行人传感器并计算活动汇总。 | `location_id, limit` |
+
+`melbourne-pedestrian-latest` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "location_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    }
+  }
+}
+```
+
+| `melbourne-pedestrian-history` | 读取墨尔本历史逐小时行人传感器数据。 | `date_from, date_to, location_id, limit` |
+
+`melbourne-pedestrian-history` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "date_from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "date_to": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "location_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 100,
+      "default": 100
+    }
+  },
+  "required": [
+    "date_from",
+    "date_to"
+  ]
+}
+```
+
+| `neso-generation-mix` | 读取英国NESO当前或指定时段发电结构与碳强度。 | `from_time, to_time` |
+
+`neso-generation-mix` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from_time": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T"
+    },
+    "to_time": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T"
+    }
+  }
+}
+```
+
+| `elexon-generation-summary` | 读取Elexon英国实测发电结构汇总。 | `start_time, end_time` |
+
+`elexon-generation-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "start_time": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T"
+    },
+    "end_time": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T"
+    }
+  },
+  "required": [
+    "start_time",
+    "end_time"
+  ]
+}
+```
+
+| `elexon-demand-summary` | 读取Elexon英国系统需求汇总。 | `from_time, to_time, resolution` |
+
+`elexon-demand-summary` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "from_time": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T"
+    },
+    "to_time": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T"
+    },
+    "resolution": {
+      "type": "string",
+      "enum": [
+        "minute",
+        "hourly",
+        "daily",
+        "weekly"
+      ],
+      "default": "hourly"
+    }
+  },
+  "required": [
+    "from_time",
+    "to_time"
+  ]
+}
+```
+
+| `fingrid-dataset` | 读取Fingrid公开电力实时数据集；免费Key由后端注入。 | `dataset_id, start_time, end_time, page_size` |
+
+`fingrid-dataset` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "dataset_id": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "start_time": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T"
+    },
+    "end_time": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 40,
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T"
+    },
+    "page_size": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100
+    }
+  },
+  "required": [
+    "dataset_id"
+  ]
+}
+```
+
+| `entsoe-document` | 读取ENTSO-E透明平台负荷、发电、跨境流量等XML文档；免费Token由后端注入。 | `document_type, period_start, period_end, in_domain, out_domain, process_type` |
+
+`entsoe-document` 参数Schema：
+
+```json
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "document_type": {
+      "type": "string",
+      "pattern": "^[A-Z][0-9]{2}$"
+    },
+    "period_start": {
+      "type": "string",
+      "pattern": "^\\d{12}$"
+    },
+    "period_end": {
+      "type": "string",
+      "pattern": "^\\d{12}$"
+    },
+    "in_domain": {
+      "type": "string",
+      "pattern": "^[0-9A-Z-]{16}$"
+    },
+    "out_domain": {
+      "type": "string",
+      "pattern": "^[0-9A-Z-]{16}$"
+    },
+    "process_type": {
+      "type": "string",
+      "pattern": "^[A-Z][0-9]{2}$"
+    }
+  },
+  "required": [
+    "document_type",
+    "period_start",
+    "period_end"
+  ]
+}
+```
+
+限制：
+
+```json
+{
+  "requests_per_ticket_max": 1,
+  "timeout_seconds_max": 120,
+  "max_response_bytes": 20000000,
+  "provider_concurrency_max": 1,
+  "transient_retry_max": 0,
+  "automatic_retry_allowed": false,
+  "automatic_pagination_allowed": false,
+  "arbitrary_urls_allowed": false,
+  "arbitrary_hosts_allowed": false,
+  "arbitrary_paths_allowed": false,
+  "arbitrary_headers_allowed": false,
+  "redirects_allowed": false,
+  "write_operations_allowed": false,
+  "device_control_allowed": false,
+  "individual_tracking_allowed": false,
+  "bulk_mirroring_allowed": false,
+  "secret_values_exposed": false,
+  "optional_secret_environment_variables": [
+    "FIRMS_MAP_KEY",
+    "FINGRID_API_KEY",
+    "ENTSOE_API_TOKEN"
+  ],
+  "fixed_api_hosts": [
+    "planetarycomputer.microsoft.com",
+    "earth-search.aws.element84.com",
+    "firms.modaps.eosdis.nasa.gov",
+    "eonet.gsfc.nasa.gov",
+    "celestrak.org",
+    "api.openaerialmap.org",
+    "api.openstreetcam.org",
+    "erddap.ioos.us",
+    "aviationweather.gov",
+    "service.earthscope.org",
+    "services.swpc.noaa.gov",
+    "api.safecast.org",
+    "api.opensensemap.org",
+    "www.ndbc.noaa.gov",
+    "api.tidesandcurrents.noaa.gov",
+    "data.melbourne.vic.gov.au",
+    "api.carbonintensity.org.uk",
+    "data.elexon.co.uk",
+    "data.fingrid.fi",
+    "web-api.tp.entsoe.eu"
+  ],
+  "known_limitations": [
+    "不存在全球完整、近期、免费、亚米级地面俯视影像API；NAIP仅覆盖美国，OpenAerialMap和KartaView覆盖取决于社区采集。",
+    "公开客流传感器通常是城市级，不能推断个人身份或提供中国任意商场实时客流。",
+    "电力数据表示电网和市场测量/估算，不等同于任意建筑或个人电表读数。",
+    "社区传感器必须保留来源和质量标记，不能单独作为权威告警。"
+  ]
 }
 ```
 

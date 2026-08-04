@@ -80,6 +80,7 @@ EXPECTED_OPERATION_COUNTS = {
     "baidu-ai-cloud": 4,
     "open-software-security-knowledge": 11,
     "google-public-intelligence": 9,
+    "reality-observation": 25,
 }
 
 
