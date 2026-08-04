@@ -22,6 +22,8 @@ SPEC = importlib.util.spec_from_file_location("cloudflare_numeric_compiler_base"
 assert SPEC and SPEC.loader
 BASE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BASE)
+ORIGINAL_VALIDATE_CONFIGURATION = BASE.validate_configuration
+ORIGINAL_RENDER = BASE.render
 
 
 def response_schema(profile: Mapping[str, Any]) -> dict[str, Any]:
@@ -184,9 +186,8 @@ def validate_domains() -> dict[str, Any]:
 
 
 def validate_configuration() -> dict[str, Any]:
-    receipt = dict(BASE.validate_configuration())
-    domains = validate_domains()
-    receipt.update(domains)
+    receipt = dict(ORIGINAL_VALIDATE_CONFIGURATION())
+    receipt.update(validate_domains())
     return receipt
 
 
@@ -202,7 +203,7 @@ def render(output_dir: Path) -> str:
             f"- Raw AI response persisted: `{str(receipt['raw_ai_response_persisted']).lower()}`\n"
             f"- Secret values exposed: `{str(receipt['secret_values_exposed']).lower()}`\n"
         )
-    return BASE.render(output_dir)
+    return ORIGINAL_RENDER(output_dir)
 
 
 BASE.response_schema = response_schema
