@@ -1,0 +1,17 @@
+{
+  "schema_version": "compute-center-baseline-library-role-v1",
+  "status": "production-control",
+  "library_id": "compute-numeric-baselines",
+  "library_role": "compute-center-baseline-library",
+  "owner_center": "computation-simulation-center",
+  "storage_platform": "hugging-face-private-dataset",
+  "payload_scope": "pure-numeric-parquet-only",
+  "knowledge_base_storage_allowed": false,
+  "knowledge_graph_storage_allowed": false,
+  "raw_text_storage_allowed": false,
+  "document_storage_allowed": false,
+  "intelligence_center_general_storage_allowed": false,
+  "direct_center_to_center_access_allowed": false,
+  "selection_and_relay_owner": "gpts-usage-center",
+  "note": "This Hugging Face Dataset is exclusively the external numeric baseline library for the offline computation and simulation center. It must not be used as a general knowledge base, document library, intelligence archive, or knowledge graph store."
+}
