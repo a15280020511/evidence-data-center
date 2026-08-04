@@ -22,13 +22,13 @@ class RealityObservationProviderTests(unittest.TestCase):
         provider = catalog["providers"][0]
         self.assertEqual(provider["provider_id"], "reality-observation")
         self.assertEqual(provider["required_secret_environment_variable"], "")
-        self.assertEqual(len(provider["operations"]), 25)
+        self.assertEqual(len(provider["operations"]), 27)
         self.assertFalse(provider["limits"]["write_operations_allowed"])
         self.assertFalse(provider["limits"]["device_control_allowed"])
         self.assertFalse(provider["limits"]["individual_tracking_allowed"])
         self.assertEqual(
             set(provider["limits"]["optional_secret_environment_variables"]),
-            {"FIRMS_MAP_KEY", "FINGRID_API_KEY", "ENTSOE_API_TOKEN"},
+            {"FIRMS_MAP_KEY", "FINGRID_API_KEY", "ENTSOE_API_TOKEN", "MAPILLARY_ACCESS_TOKEN"},
         )
 
     def test_stac_search_is_fixed_and_bounded(self) -> None:
@@ -154,6 +154,34 @@ class RealityObservationProviderTests(unittest.TestCase):
         )
         self.assertEqual(result["sensor_count"], 2)
         self.assertEqual(result["sum_total_of_directions"], 30)
+
+    def test_mapillary_metadata_request_is_bounded(self) -> None:
+        spec = module.build_request(
+            "mapillary-image-search",
+            {"bbox": [119.25, 26.04, 119.30, 26.09], "limit": 10},
+            environ={"MAPILLARY_ACCESS_TOKEN": "secret-mapillary"},
+        )
+        self.assertEqual(spec["url"], "https://graph.mapillary.com/images")
+        self.assertEqual(spec["params"]["limit"], "10")
+        self.assertNotIn("secret-mapillary", spec["safe_path"])
+        self.assertIn("OAuth", spec["headers"]["Authorization"])
+
+    def test_transport_activity_endpoint_and_summary(self) -> None:
+        spec = module.build_request(
+            "melbourne-transport-activity-latest", {"limit": 20}, environ={}
+        )
+        self.assertIn("transport-activity-counts", spec["url"])
+        self.assertEqual(spec["params"]["order_by"], "from desc")
+        summary = module._summarize_transport_activity(
+            {
+                "results": [
+                    {"countlineid": 1, "from": "2026-08-01T00:00:00Z", "class": "Pedestrian", "count": 5},
+                    {"countlineid": 1, "from": "2026-08-01T00:05:00Z", "class": "Car", "count": 3},
+                ]
+            }
+        )
+        self.assertEqual(summary["total_activity_count"], 8)
+        self.assertEqual(summary["activity_by_class"]["Pedestrian"], 5)
 
 
 if __name__ == "__main__":

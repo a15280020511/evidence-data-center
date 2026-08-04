@@ -80,7 +80,8 @@ EXPECTED_OPERATION_COUNTS = {
     "baidu-ai-cloud": 4,
     "open-software-security-knowledge": 11,
     "google-public-intelligence": 9,
-    "reality-observation": 25,
+    "reality-observation": 27,
+    "copernicus-marine": 3,
     "noaa-cdo": 5,
 }
 

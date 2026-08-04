@@ -25,3 +25,4 @@ This managed provider exposes fixed, read-only reality-data operations for the I
 - `FIRMS_MAP_KEY`
 - `FINGRID_API_KEY`
 - `ENTSOE_API_TOKEN`
+- `MAPILLARY_ACCESS_TOKEN`

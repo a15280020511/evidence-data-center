@@ -47,7 +47,9 @@
         "elexon-generation-summary",
         "elexon-demand-summary",
         "fingrid-dataset",
-        "entsoe-document"
+        "entsoe-document",
+        "mapillary-image-search",
+        "melbourne-transport-activity-latest"
       ]
     },
     "objective": {
