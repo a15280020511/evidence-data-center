@@ -1,7 +1,8 @@
 {
   "schema_version": "strategic-intelligence-source-matrix-v1",
   "generated_on": "2026-08-05",
-  "implemented_pending_live_acceptance": [
+  "implemented_pending_live_acceptance": [],
+  "production_sources": [
     {
       "source_id": "openfema",
       "name": "OpenFEMA",
@@ -11,9 +12,11 @@
       "base_url": "https://www.fema.gov/api/open/v2",
       "operations": ["openfema-disaster-declarations"],
       "cost": "free",
-      "promotion_condition": "The corrected v2 operation must pass a real GitHub Actions ticket after merge.",
+      "live_acceptance_issue": 997,
+      "live_acceptance_status": "INTEL_STRATEGIC_SOURCE_COMPLETED",
+      "live_acceptance_duration_ms": 223,
       "previous_failed_evidence_issue": 989,
-      "previous_failure_reason": "Obsolete v1 endpoint returned HTTP 404; current official distribution is v2.",
+      "previous_failure_reason": "The obsolete v1 path returned HTTP 404 and was replaced by the current official v2 distribution.",
       "license_or_use_note": "US government public data; source field caveats remain applicable."
     },
     {
@@ -25,8 +28,9 @@
       "base_url": "https://stat.ripe.net/data",
       "operations": ["ripestat-network-info", "ripestat-prefix-overview", "ripestat-as-overview", "ripestat-bgp-state"],
       "cost": "free",
-      "promotion_condition": "A real GitHub Actions ticket must complete; the first submitted run was cancelled by the global serial concurrency group before execution.",
-      "cancelled_evidence_issue": 991,
+      "live_acceptance_issue": 998,
+      "live_acceptance_status": "INTEL_STRATEGIC_SOURCE_COMPLETED",
+      "live_acceptance_duration_ms": 507,
       "license_or_use_note": "Use conservative request volume and identify sustained projects where required by RIPE NCC policy."
     },
     {
@@ -38,12 +42,11 @@
       "base_url": "https://www.peeringdb.com/api",
       "operations": ["peeringdb-search", "peeringdb-object"],
       "cost": "free anonymous read with lower limits",
-      "promotion_condition": "An anonymous GitHub Actions read must complete; the first submitted run was cancelled by the global serial concurrency group before execution.",
-      "cancelled_evidence_issue": 993,
+      "live_acceptance_issue": 999,
+      "live_acceptance_status": "INTEL_STRATEGIC_SOURCE_COMPLETED",
+      "live_acceptance_duration_ms": 241,
       "license_or_use_note": "Read-only public interconnection metadata; anonymous queries use lower limits."
-    }
-  ],
-  "production_sources": [
+    },
     {
       "source_id": "mitre-attack-stix-index",
       "name": "MITRE ATT&CK STIX Collection Index",
@@ -55,6 +58,7 @@
       "cost": "free",
       "live_acceptance_issue": 994,
       "live_acceptance_status": "INTEL_STRATEGIC_SOURCE_COMPLETED",
+      "live_acceptance_duration_ms": 39,
       "license_or_use_note": "ATT&CK terms of use and attribution apply; only the small collection index is fetched by this bounded operation."
     }
   ],
@@ -138,7 +142,8 @@
     "personal_profiling_allowed": false,
     "real_time_tracking_allowed": false,
     "secret_values_exposed": false,
-    "promotion_requires_live_acceptance": true
+    "promotion_requires_live_acceptance": true,
+    "serial_acceptance_required": true
   },
   "discovery_evidence": {
     "tavily_issues": [966, 970, 980],
