@@ -3,6 +3,9 @@ name: NOAA CDO V3 Bootstrap
 on:
   push:
     branches: [feat/noaa-cdo-token-v3]
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -13,6 +16,7 @@ concurrency:
 
 jobs:
   bootstrap:
+    if: github.event_name == 'push' || github.head_ref == 'feat/noaa-cdo-token-v3'
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
