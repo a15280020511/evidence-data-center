@@ -1,0 +1,146 @@
+{
+  "schema_version": "global-knowledge-registry-index-v1",
+  "generated_at": "2026-08-04",
+  "purpose": "A governed discovery and identity backbone for a global cross-domain knowledge graph. Registration does not imply unrestricted content copying or live connector activation.",
+  "principles": [
+    "Prefer registries-of-registries and official knowledge graphs before adding duplicate source-specific connectors.",
+    "Separate source registration, live connector activation, bulk ingestion, and controlled-access application.",
+    "Preserve canonical identifiers, provenance, licenses, rights statements, and temporal validity.",
+    "Never treat free web access as permission for bulk copying, commercial reuse, personal profiling, or patient-level exposure.",
+    "Do not re-enable sources explicitly removed by governance without a new user directive.",
+    "GPTs remains the sole cross-center relay; no center-to-center direct calls."
+  ],
+  "source_count": 249,
+  "category_file_count": 7,
+  "integration_state_counts": {
+    "application-required": 4,
+    "backbone-candidate": 15,
+    "catalog-only": 126,
+    "conditional-free": 11,
+    "deferred": 5,
+    "existing-active": 86,
+    "web-only": 2
+  },
+  "top_domain_counts": {
+    "scholarly": 19,
+    "software": 12,
+    "economics": 11,
+    "culture": 10,
+    "books": 10,
+    "archives": 10,
+    "materials": 9,
+    "genomics": 8,
+    "security": 8,
+    "research-data": 7,
+    "law": 7,
+    "packages": 7,
+    "standards": 6,
+    "biomedical": 6,
+    "art": 6,
+    "literature": 6,
+    "chemistry": 6,
+    "earth-observation": 6,
+    "entities": 5,
+    "open-access": 5,
+    "ontologies": 5,
+    "agriculture": 5,
+    "genetics": 5,
+    "geospatial": 5,
+    "biodiversity": 5,
+    "climate": 5,
+    "finance": 5,
+    "statistics": 5,
+    "government-data": 5,
+    "all-domains": 5
+  },
+  "region_counts": {
+    "global": 193,
+    "china": 32,
+    "usa": 20,
+    "europe": 10,
+    "japan": 4,
+    "france": 3,
+    "latin-america": 3,
+    "uk": 3,
+    "asia": 3,
+    "south-korea": 2,
+    "new-zealand": 1,
+    "australia": 1,
+    "germany": 1,
+    "global-south": 1
+  },
+  "category_files": [
+    {
+      "path": "api-center/global-knowledge-registry/backbone-identifiers-ontologies.json",
+      "source_count": 25
+    },
+    {
+      "path": "api-center/global-knowledge-registry/literature-libraries-archives.json",
+      "source_count": 43
+    },
+    {
+      "path": "api-center/global-knowledge-registry/science-medicine-engineering.json",
+      "source_count": 45
+    },
+    {
+      "path": "api-center/global-knowledge-registry/earth-environment-agriculture.json",
+      "source_count": 29
+    },
+    {
+      "path": "api-center/global-knowledge-registry/economics-government-law-business.json",
+      "source_count": 38
+    },
+    {
+      "path": "api-center/global-knowledge-registry/culture-language-software-security.json",
+      "source_count": 34
+    },
+    {
+      "path": "api-center/global-knowledge-registry/china-and-asia.json",
+      "source_count": 35
+    }
+  ],
+  "canonical_identifier_families": [
+    "DOI",
+    "ORCID",
+    "ROR",
+    "ISNI",
+    "VIAF",
+    "QID",
+    "PMID",
+    "PMCID",
+    "NCT ID",
+    "arXiv ID",
+    "ISBN",
+    "ISSN",
+    "LCCN",
+    "ARK",
+    "Handle",
+    "SWHID",
+    "CVE",
+    "CWE",
+    "LEI",
+    "CIK",
+    "FIGI",
+    "CELEX",
+    "ELI",
+    "GeoNames ID",
+    "GBIF key",
+    "AphiaID",
+    "PDB ID",
+    "UniProt accession",
+    "ChEMBL ID",
+    "Ensembl ID",
+    "NCBI accession",
+    "OPTIMADE provider ID",
+    "STAC ID"
+  ],
+  "integration_states": {
+    "existing-active": "Already represented by an existing managed provider or governed source family.",
+    "backbone-candidate": "High-value registry, ontology, federated catalog, or discovery API prioritized for direct bounded activation.",
+    "catalog-only": "Registered for discovery and graph mapping; no new direct runtime connector is asserted.",
+    "conditional-free": "Free or metadata-free only under an account, key, eligibility rule, or limited-use license.",
+    "application-required": "Requires institutional, research, data-use, or manual approval.",
+    "web-only": "Official public web source with no stable verified programmatic contract.",
+    "deferred": "Potentially useful but blocked by endpoint, security, duplication, or governance issues."
+  }
+}
