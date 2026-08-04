@@ -1,0 +1,68 @@
+name: Temporary Remove Keyed Sensor Sources
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temporary-remove-keyed-sources-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  remove-keyed-sources:
+    if: >-
+      github.actor == github.repository_owner &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.head_ref == 'remove-keyed-gfw-gie-kpx-20260804'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.head_ref }}
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Apply deterministic source removal
+        run: |
+          set -euo pipefail
+          python tools/remove_keyed_sensor_sources.py
+          python api-center/build_catalog_market_search.py
+          python -m py_compile \
+            api-center/global-sensor-backbone/global_sensor_backbone_task.py \
+            api-center/public-data-geospatial/public_data_geospatial_task.py \
+            api-center/global-sensor-backbone/tests/test_global_sensor_backbone_task.py
+          python -m unittest discover \
+            -s api-center/global-sensor-backbone/tests \
+            -p 'test_*.py' -v
+          grep -R -n -E \
+            'GLOBAL_FISHING_WATCH_API_TOKEN|GIE_API_KEY|KOREA_DATA_GO_KR_SERVICE_KEY|gfw-events|gie-storage|kpx-current-supply|kpx-generation-mix|global-fishing-watch-vessels' \
+            api-center .github/workflows \
+            --exclude='temporary-remove-keyed-sensor-sources.yml' \
+            --exclude='remove_keyed_sensor_sources.py' \
+            && exit 1 || true
+          git diff --check
+
+      - name: Commit removal and generated catalogs
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'Removal is already applied.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            api-center/global-sensor-backbone \
+            api-center/public-data-geospatial \
+            api-center/build_catalog_market_search.py \
+            api-center/api-catalog.json \
+            api-center/api-catalog.md \
+            .github/workflows/global-sensor-backbone-api-ticket.yml \
+            .github/workflows/public-data-geospatial-api-ticket.yml
+          git commit -m 'remove: delete keyed GFW GIE and KPX sources'
+          git push origin "HEAD:${GITHUB_HEAD_REF}"
