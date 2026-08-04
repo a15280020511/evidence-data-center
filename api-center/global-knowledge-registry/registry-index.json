@@ -11,7 +11,7 @@
     "GPTs remains the sole cross-center relay; no center-to-center direct calls."
   ],
   "source_count": 249,
-  "category_file_count": 7,
+  "category_file_count": 14,
   "integration_state_counts": {
     "application-required": 4,
     "backbone-candidate": 15,
@@ -22,11 +22,11 @@
     "web-only": 2
   },
   "top_domain_counts": {
-    "scholarly": 19,
+    "scholarly": 18,
     "software": 12,
+    "books": 11,
     "economics": 11,
     "culture": 10,
-    "books": 10,
     "archives": 10,
     "materials": 9,
     "genomics": 8,
@@ -54,7 +54,7 @@
     "all-domains": 5
   },
   "region_counts": {
-    "global": 193,
+    "global": 194,
     "china": 32,
     "usa": 20,
     "europe": 10,
@@ -75,28 +75,56 @@
       "source_count": 25
     },
     {
-      "path": "api-center/global-knowledge-registry/literature-libraries-archives.json",
-      "source_count": 43
+      "path": "api-center/global-knowledge-registry/literature-libraries-archives-part-01.json",
+      "source_count": 20
     },
     {
-      "path": "api-center/global-knowledge-registry/science-medicine-engineering.json",
-      "source_count": 45
+      "path": "api-center/global-knowledge-registry/literature-libraries-archives-part-02.json",
+      "source_count": 20
     },
     {
-      "path": "api-center/global-knowledge-registry/earth-environment-agriculture.json",
-      "source_count": 29
+      "path": "api-center/global-knowledge-registry/literature-libraries-archives-part-03.json",
+      "source_count": 3
     },
     {
-      "path": "api-center/global-knowledge-registry/economics-government-law-business.json",
-      "source_count": 38
+      "path": "api-center/global-knowledge-registry/science-medicine-engineering-part-01.json",
+      "source_count": 20
     },
     {
-      "path": "api-center/global-knowledge-registry/culture-language-software-security.json",
-      "source_count": 34
+      "path": "api-center/global-knowledge-registry/science-medicine-engineering-compact-rest.json",
+      "source_count": 25
     },
     {
-      "path": "api-center/global-knowledge-registry/china-and-asia.json",
-      "source_count": 35
+      "path": "api-center/global-knowledge-registry/earth-environment-agriculture-compact-part-01.json",
+      "source_count": 15
+    },
+    {
+      "path": "api-center/global-knowledge-registry/earth-environment-agriculture-compact-part-02.json",
+      "source_count": 14
+    },
+    {
+      "path": "api-center/global-knowledge-registry/economics-government-law-business-compact-part-01.json",
+      "source_count": 19
+    },
+    {
+      "path": "api-center/global-knowledge-registry/economics-government-law-business-compact-part-02.json",
+      "source_count": 19
+    },
+    {
+      "path": "api-center/global-knowledge-registry/culture-language-software-security-compact-part-01.json",
+      "source_count": 17
+    },
+    {
+      "path": "api-center/global-knowledge-registry/culture-language-software-security-compact-part-02.json",
+      "source_count": 17
+    },
+    {
+      "path": "api-center/global-knowledge-registry/china-and-asia-compact-part-01.json",
+      "source_count": 18
+    },
+    {
+      "path": "api-center/global-knowledge-registry/china-and-asia-compact-part-02.json",
+      "source_count": 17
     }
   ],
   "canonical_identifier_families": [
