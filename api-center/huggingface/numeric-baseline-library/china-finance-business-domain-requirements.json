@@ -1,0 +1,222 @@
+{
+  "schema_version": "china-finance-business-domain-requirements-v1",
+  "status": "production-control",
+  "domain_count": 12,
+  "scope": "中国大陆公开、合法、非个人化的金融、商业、经营与财富形成数据",
+  "storage_policy": {
+    "huggingface_payload_numeric_only": true,
+    "natural_language_payload_allowed": false,
+    "control_metadata_location": "github",
+    "selection_and_relay_owner": "gpts-usage-center",
+    "compute_runtime_network_allowed": false,
+    "direct_center_connection_allowed": false,
+    "automatic_trading_allowed": false,
+    "personalized_investment_advice_allowed": false
+  },
+  "domains": [
+    {
+      "id": "cn-a-share-market",
+      "priority": "P0",
+      "variable_groups": [
+        "exchange_board_and_security_codes",
+        "point_in_time_ohlcv_and_adjustment_factors",
+        "limit_up_limit_down_suspension_and_reopening",
+        "turnover_liquidity_spread_and_amplitude",
+        "market_breadth_new_high_low_and_advance_decline",
+        "northbound_financing_securities_lending_and_block_trades",
+        "index_constituents_weights_and_rebalances",
+        "industry_style_size_value_momentum_quality_factors",
+        "dividend_split_rights_issue_and_delisting_events",
+        "realized_return_drawdown_tail_loss_and_transaction_cost"
+      ],
+      "default_tables": ["financial_panel", "observations", "regime_events", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-listed-company-fundamentals",
+      "priority": "P0",
+      "variable_groups": [
+        "report_period_publication_time_and_revision_vintage",
+        "revenue_cost_gross_profit_operating_profit_and_net_profit",
+        "operating_investing_financing_cashflows",
+        "assets_liabilities_equity_and_working_capital",
+        "receivables_inventory_contract_assets_and_impairment",
+        "capital_expenditure_depreciation_rd_and_employee_cost",
+        "segment_region_customer_and_product_concentration",
+        "roe_roa_roic_margin_turnover_leverage_and_interest_coverage",
+        "earnings_quality_cash_conversion_and_accruals",
+        "forecast_guidance_actual_surprise_and_realized_outcome"
+      ],
+      "default_tables": ["observations", "financial_panel", "econometric_panel", "entity_links", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-market-microstructure",
+      "priority": "P1",
+      "variable_groups": [
+        "tick_trade_price_volume_and_direction",
+        "level1_level2_bid_ask_depth_and_imbalance",
+        "auction_open_close_and_call_auction_indicators",
+        "order_arrival_cancellation_and_execution_rates",
+        "effective_realized_and_quoted_spreads",
+        "price_impact_resiliency_and_intraday_volatility",
+        "large_order_small_order_and_active_buy_sell_flow",
+        "liquidity_regime_and_abnormal_trading_events",
+        "corporate_event_window_returns",
+        "data_timestamp_latency_and_market_session_codes"
+      ],
+      "default_tables": ["financial_panel", "event_log", "observations", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-corporate-actions-governance",
+      "priority": "P0",
+      "variable_groups": [
+        "controller_major_shareholder_and_ownership_chain",
+        "shareholder_count_concentration_and_float_structure",
+        "pledge_freeze_lending_repurchase_and_reduction",
+        "board_supervisor_management_composition_and_changes",
+        "related_party_transactions_and_guarantees",
+        "merger_acquisition_restructuring_spin_off_and_asset_sale",
+        "private_placement_convertible_bond_and_refinancing",
+        "dividend_commitment_and_capital_allocation",
+        "audit_opinion_penalty_investigation_and_exchange_inquiry",
+        "governance_event_market_reaction_and_long_term_outcome"
+      ],
+      "default_tables": ["entity_links", "regime_events", "event_log", "observations", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-business-operations-profitability",
+      "priority": "P0",
+      "variable_groups": [
+        "store_factory_project_product_and_channel_counts",
+        "capacity_output_utilization_inventory_and_backlog",
+        "unit_price_unit_cost_contribution_margin_and_break_even",
+        "orders_sales_volume_conversion_repurchase_and_customer_value",
+        "same_store_same_product_and_same_customer_growth",
+        "labor_energy_logistics_rent_marketing_and_platform_cost",
+        "supplier_customer_channel_and_region_concentration",
+        "cash_conversion_cycle_working_capital_and_free_cashflow",
+        "project_investment_payback_npv_irr_and_real_option",
+        "business_model_resilience_scalability_and_realized_profit"
+      ],
+      "default_tables": ["observations", "econometric_panel", "resource_parameters", "optimization_coefficients", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-retail-consumer-platform-economy",
+      "priority": "P0",
+      "variable_groups": [
+        "retail_sales_orders_gmv_and_payment_amount",
+        "traffic_users_visits_dau_mau_and_session_duration",
+        "conversion_cart_abandonment_repurchase_and_churn",
+        "average_order_value_take_rate_commission_and_subsidy",
+        "sku_price_discount_promotion_elasticity_and_inventory",
+        "store_poi_delivery_radius_fulfillment_time_and_cost",
+        "merchant_driver_courier_and_capacity_supply",
+        "customer_acquisition_cost_lifetime_value_and_cohort_retention",
+        "platform_network_effect_market_share_and_multihoming",
+        "consumption_income_price_and_holiday_sensitivity"
+      ],
+      "default_tables": ["observations", "econometric_panel", "agent_population", "spatial_points", "transport_demand", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-real-estate-construction",
+      "priority": "P0",
+      "variable_groups": [
+        "land_supply_auction_price_premium_and_floor_price",
+        "new_start_construction_completion_sales_and_inventory",
+        "residential_office_retail_logistics_and_industrial_property",
+        "price_rent_vacancy_yield_and_absorption_period",
+        "mortgage_rate_down_payment_and_household_affordability",
+        "developer_debt_presale_cash_escrow_and_delivery",
+        "construction_material_labor_financing_and_unit_cost",
+        "commercial_footfall_tenant_mix_sales_and_rent_to_sales",
+        "urban_population_transport_poi_and_accessibility",
+        "project_default_restructuring_delivery_and_realized_return"
+      ],
+      "default_tables": ["observations", "spatial_points", "raster_cells", "econometric_panel", "resource_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-banking-credit-insurance-wealth",
+      "priority": "P0",
+      "variable_groups": [
+        "loan_deposit_balance_growth_and_pricing",
+        "corporate_household_mortgage_consumer_and_sme_credit",
+        "nonperforming_overdue_restructured_and_provision_ratios",
+        "capital_adequacy_liquidity_net_interest_margin_and_cost_income",
+        "bond_credit_rating_spread_default_and_recovery",
+        "insurance_premium_claim_loss_ratio_and_reserve",
+        "fund_wealth_management_trust_and_asset_management_products",
+        "household_income_assets_debt_savings_and_debt_service",
+        "regional_social_financing_guarantee_and_microcredit",
+        "credit_cycle_stress_loss_distribution_and_realized_recovery"
+      ],
+      "default_tables": ["observations", "financial_panel", "econometric_panel", "transition_matrix", "uncertainty_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-tax-invoice-procurement-subsidy",
+      "priority": "P1",
+      "variable_groups": [
+        "tax_type_rate_base_deduction_and_effective_tax_burden",
+        "invoice_sales_purchase_input_output_and_concentration",
+        "government_procurement_budget_bid_contract_and_supplier",
+        "subsidy_grant_rebate_award_and_disbursement",
+        "project_amount_schedule_delivery_acceptance_and_payment",
+        "bid_count_discount_rate_competition_and_single_source_share",
+        "tax_penalty_arrears_abnormal_invoice_and_compliance_event",
+        "supplier_customer_government_and_related_entity_links",
+        "regional_industry_and_enterprise_policy_benefit_intensity",
+        "fiscal_support_business_response_and_realized_outcome"
+      ],
+      "default_tables": ["event_log", "observations", "entity_links", "regime_events", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-local-government-land-finance",
+      "priority": "P0",
+      "variable_groups": [
+        "general_public_budget_revenue_expenditure_and_balance",
+        "government_fund_land_sale_and_special_bond_revenue",
+        "local_debt_lgfv_debt_maturity_interest_and_refinancing",
+        "special_bond_projects_progress_and_physical_workload",
+        "transfer_payment_tax_source_and_fiscal_self_sufficiency",
+        "land_inventory_supply_transaction_and_unsold_parcels",
+        "infrastructure_investment_and_public_private_projects",
+        "regional_gdp_population_income_property_and_industry_base",
+        "fiscal_stress_payment_delay_and_debt_restructuring_events",
+        "policy_support_growth_employment_and_asset_price_outcomes"
+      ],
+      "default_tables": ["observations", "econometric_panel", "regime_events", "entity_links", "resource_parameters", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-manufacturing-capacity-critical-materials",
+      "priority": "P0",
+      "variable_groups": [
+        "factory_line_equipment_and_nameplate_capacity",
+        "output_yield_utilization_energy_and_unit_cost",
+        "orders_backlog_delivery_cycle_and_inventory_days",
+        "semiconductor_battery_solar_robotics_machine_tool_and_auto_chains",
+        "critical_mineral_reserve_mining_refining_and_processing_capacity",
+        "import_dependency_export_control_and_substitution_time",
+        "supplier_customer_bom_and_key_component_dependencies",
+        "quality_defect_rework_downtime_and_maintenance",
+        "capital_expenditure_ramp_up_and_learning_curve",
+        "price_cycle_margin_capacity_exit_and_realized_return"
+      ],
+      "default_tables": ["observations", "input_output_matrix", "network_edges", "resource_parameters", "state_space", "benchmark_outcomes"]
+    },
+    {
+      "id": "cn-sme-entrepreneurship-franchise-income",
+      "priority": "P0",
+      "variable_groups": [
+        "business_registration_survival_exit_and_owner_change",
+        "startup_capital_revenue_cost_profit_and_cash_balance",
+        "store_area_rent_staff_hours_and_utilization",
+        "franchise_fee_royalty_supply_margin_and_payback",
+        "platform_commission_ad_spend_traffic_orders_and_refunds",
+        "local_demand_population_income_competition_and_footfall",
+        "credit_tax_social_security_and_compliance_cost",
+        "owner_labor_income_opportunity_cost_and_household_risk",
+        "business_failure_recovery_pivot_and_secondary_income",
+        "realized_profit_hourly_income_return_on_capital_and_survival"
+      ],
+      "default_tables": ["observations", "econometric_panel", "spatial_points", "resource_parameters", "decision_matrix", "benchmark_outcomes"]
+    }
+  ]
+}
