@@ -9,6 +9,7 @@ import os
 import re
 import shutil
 import sys
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -88,18 +89,30 @@ def build(
     if not source.is_dir():
         raise ExportError("input directory does not exist")
     parquet_files = sorted(path for path in source.rglob("*.parquet") if path.is_file())
-    if not 1 <= len(parquet_files) <= 64:
-        raise ExportError("export must contain 1 to 64 Parquet files")
+    if not 1 <= len(parquet_files) <= 256:
+        raise ExportError("export must contain 1 to 256 Parquet parts")
+
+    grouped: dict[str, list[pa.Table]] = defaultdict(list)
+    part_count: dict[str, int] = defaultdict(int)
+    for source_path in parquet_files:
+        table_id = source_path.stem
+        if not TABLE_ID_RE.fullmatch(table_id):
+            raise ExportError(f"invalid table id: {table_id}")
+        table, _ = _validate_numeric(source_path)
+        if grouped[table_id] and grouped[table_id][0].schema != table.schema:
+            raise ExportError(f"schema mismatch between parts for table: {table_id}")
+        grouped[table_id].append(table)
+        part_count[table_id] += 1
+    if len(grouped) > 64:
+        raise ExportError("export must contain at most 64 unique tables")
+
     if output_dir.exists():
         shutil.rmtree(output_dir)
     output_dir.mkdir(parents=True)
     rows: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for source_path in parquet_files:
-        table_id = source_path.stem
-        if not TABLE_ID_RE.fullmatch(table_id) or table_id in seen:
-            raise ExportError(f"invalid or duplicate table id: {table_id}")
-        table, meta = _validate_numeric(source_path)
+    for table_id in sorted(grouped):
+        tables = grouped[table_id]
+        table = tables[0] if len(tables) == 1 else pa.concat_tables(tables, promote_options="none")
         target = output_dir / f"{table_id}.parquet"
         pq.write_table(
             table,
@@ -119,9 +132,9 @@ def build(
                 "rows": normalized["rows"],
                 "columns": normalized["columns"],
                 "bytes": normalized["bytes"],
+                "source_part_count": part_count[table_id],
             }
         )
-        seen.add(table_id)
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "producer_repository": PRODUCER_REPOSITORY,
@@ -142,6 +155,7 @@ def build(
         "source_run_id": source_run_id,
         "batch_id": batch_id,
         "mode": mode,
+        "source_part_count": len(parquet_files),
         "file_count": len(rows),
         "row_count": sum(row["rows"] for row in rows),
         "manifest_sha256": _sha(manifest_path),
@@ -152,7 +166,14 @@ def build(
         "model_calls": 0,
     }
     _dump(output_dir.parent / f"{output_dir.name}-receipt.json", receipt)
-    for key in ("manifest_sha256", "artifact_name", "batch_id", "file_count", "row_count"):
+    for key in (
+        "manifest_sha256",
+        "artifact_name",
+        "batch_id",
+        "source_part_count",
+        "file_count",
+        "row_count",
+    ):
         _write_output(key, receipt[key])
     return receipt
 
