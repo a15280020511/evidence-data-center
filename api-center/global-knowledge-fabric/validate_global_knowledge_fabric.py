@@ -45,7 +45,7 @@ def parameters_for(operation: str, source_id: str) -> dict:
     row = dict(SEARCH_PARAMS[operation])
     row["source_id"] = source_id
     if operation == "scholarly-search":
-        row["query"] = "graph neural networks"
+        row["query"] = "database"
     return row
 
 
@@ -98,7 +98,7 @@ def validate_registry() -> dict:
 
 LIVE_CASES = {
     "ror": ("entity-search", {"source_id": "ror", "query": "University of Oxford", "limit": 2}),
-    "dblp-publication": ("scholarly-search", {"source_id": "dblp-publication", "query": "graph neural networks", "limit": 2}),
+    "dblp-publication": ("scholarly-search", {"source_id": "dblp-publication", "query": "database", "limit": 2}),
     "dblp-author": ("entity-search", {"source_id": "dblp-author", "query": "Barbara Liskov", "limit": 2}),
     "dblp-venue": ("scholarly-search", {"source_id": "dblp-venue", "query": "SIGIR", "limit": 2}),
     "harvard-dataverse": ("dataset-search", {"source_id": "harvard-dataverse", "query": "climate", "limit": 2}),
