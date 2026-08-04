@@ -1,5 +1,18 @@
 # Hugging Face 纯数值计算基准库
 
+> **专用角色标记：本 Hugging Face 私有 Dataset 是计算中心的外部基准库。禁止将其用作通用知识库、知识图谱、文献库、情报档案库或原始资料库。**
+
+机器可读边界见 `library-role.json`：
+
+```text
+owner_center=computation-simulation-center
+library_role=compute-center-baseline-library
+knowledge_base_storage_allowed=false
+knowledge_graph_storage_allowed=false
+raw_text_storage_allowed=false
+document_storage_allowed=false
+```
+
 本目录定义计算中心的外部纯数值基准库。Hugging Face 私有 Dataset 只保存数值型 Parquet 数据，不保存原始网页、PDF、正文、摘要、URL、自然语言说明或 JSON 控制文件。
 
 ## 架构边界
@@ -18,6 +31,7 @@
 - 计算中心保持 `network=deny`。
 - Hugging Face 仅是外部数值基准存储，不承担推理、模型调用或中心间调度。
 - GitHub 仅保存字段定义、代码表、转换规则、质量门和版本控制；这些控制资料不上传到 Hugging Face 数值库。
+- 情报中心发现的资料、知识、文献和图谱不得直接写入该 Dataset；只有完成清洗、数值化、编码、质量验证且满足既定表结构的数据才能进入。
 
 ## 覆盖范围
 
@@ -59,6 +73,6 @@ Hugging Face 数据文件必须满足：
 
 ## 当前状态
 
-控制合同、29 项操作需求矩阵、31 类纯数值表、生成器、验证器、同步工作流和测试已经建立。独立私有 Dataset `compute-numeric-baselines` 已初始化31个零行数值 Parquet 模板，保证库内没有文字分析载荷。同步器采用“只补缺失表、已有表只校验不覆盖”的策略，以便后续安全积累真实数值快照。
+控制合同、29 项操作需求矩阵、31 类纯数值表、生成器、验证器、同步工作流和测试已经建立。独立私有 Dataset `compute-numeric-baselines` 已初始化31个零行数值 Parquet模板，保证库内没有文字分析载荷。同步器采用“只补缺失表、已有表只校验不覆盖”的策略，以便后续安全积累真实数值快照。
 
 真实长期数据仍需由后续采集、清洗、数值化和验证任务持续填充；空模板不能替代真实基准。
