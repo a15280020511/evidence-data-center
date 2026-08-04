@@ -2,7 +2,7 @@ name: One-time Federal Register Downgrade
 
 on:
   issues:
-    types: [opened]
+    types: [opened, reopened]
 
 permissions:
   contents: write
