@@ -71,7 +71,8 @@ jobs:
             -r api-center/adb/requirements.txt \
             -r api-center/public-data-geospatial/requirements.txt \
             -r api-center/huggingface/requirements.txt \
-            -r api-center/reality-observation/requirements.txt
+            -r api-center/reality-observation/requirements.txt \
+            -r api-center/open-intelligence-toolkit/requirements.txt
           python -m pip check
 
       - name: Preserve committed generated contracts
@@ -114,11 +115,9 @@ jobs:
 
           assert manifest['connector_count'] == manifest['enabled_connector_count'] == 72
           assert sum(row['id'].startswith('worldbank-') for row in manifest['connectors']) == 9
-          assert catalog['managed_provider_count'] == len(providers)
+          assert catalog['managed_provider_count'] == len(providers) == 68
           assert catalog['enabled_managed_provider_count'] == len(providers)
-          assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values())
-          assert catalog['managed_provider_count'] >= 49
-          assert catalog['managed_operation_count'] >= 547
+          assert catalog['managed_operation_count'] == sum(len(row['operations']) for row in providers.values()) == 758
           assert catalog['center_display_name_zh'] == '情报中心'
           assert catalog['center_display_name_en'] == 'Intelligence Center'
           assert catalog['secret_values_exposed'] is False
@@ -171,6 +170,7 @@ jobs:
               'adb': 8,
               'reality-observation': 27,
               'copernicus-marine': 3,
+              'open-intelligence-toolkit': 22,
           }.items():
               assert provider_id in providers
               assert len(providers[provider_id]['operations']) == expected_count
@@ -191,6 +191,15 @@ jobs:
           assert marine['limits']['whole_dataset_get_allowed'] is False
           assert marine['limits']['write_operations_allowed'] is False
 
+          toolkit = providers['open-intelligence-toolkit']
+          assert toolkit['ticket_prefix'] == '[intel-open-toolkit]'
+          assert toolkit['required_secret_environment_variable_name'] == ''
+          assert toolkit['limits']['requests_per_ticket_max'] == 1
+          assert toolkit['limits']['arbitrary_urls_allowed'] is False
+          assert toolkit['limits']['login_allowed'] is False
+          assert toolkit['limits']['captcha_bypass_allowed'] is False
+          assert toolkit['limits']['write_operations_allowed'] is False
+
           print(json.dumps({
               'status': 'PASS',
               'connectors': manifest['connector_count'],
@@ -199,6 +208,7 @@ jobs:
               'public_data_geospatial_operations': len(public_data['operations']),
               'reality_observation_operations': len(reality['operations']),
               'copernicus_marine_operations': len(marine['operations']),
+              'open_intelligence_toolkit_operations': len(toolkit['operations']),
               'nbs_direct_operations_exposed': False,
           }))
           PY
