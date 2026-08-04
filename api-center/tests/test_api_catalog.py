@@ -81,6 +81,7 @@ EXPECTED_OPERATION_COUNTS = {
     "open-software-security-knowledge": 11,
     "google-public-intelligence": 9,
     "reality-observation": 25,
+    "noaa-cdo": 5,
 }
 
 
