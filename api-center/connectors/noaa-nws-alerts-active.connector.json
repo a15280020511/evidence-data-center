@@ -25,9 +25,9 @@
         "timeout": 20
       },
       "rate_limit": {
-        "capacity": 2,
-        "every": "1s",
-        "max_rate": 2
+        "capacity": 1,
+        "every": "30s",
+        "max_rate": 1
       }
     },
     "url_pattern": "/alerts/active"
@@ -46,11 +46,7 @@
     "status",
     "message_type",
     "event",
-    "code",
-    "limit",
-    "cursor",
-    "start",
-    "end"
+    "code"
   ],
   "method": "GET",
   "output_encoding": "json",
@@ -69,22 +65,9 @@
         "max_length": 100,
         "type": "string"
       },
-      "cursor": {
-        "max_length": 256,
-        "type": "string"
-      },
-      "end": {
-        "max_length": 40,
-        "type": "string"
-      },
       "event": {
         "max_length": 200,
         "type": "string"
-      },
-      "limit": {
-        "maximum": 500,
-        "minimum": 1,
-        "type": "integer"
       },
       "message_type": {
         "max_length": 100,
@@ -102,10 +85,6 @@
       },
       "severity": {
         "max_length": 100,
-        "type": "string"
-      },
-      "start": {
-        "max_length": 40,
         "type": "string"
       },
       "status": {
