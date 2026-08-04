@@ -30,7 +30,6 @@ jobs:
       - name: Restore base tests and update only removed-source counts
         run: |
           set -euo pipefail
-          git fetch origin main --depth=1
           python tools/refresh_removed_source_test_counts.py
           python -m py_compile \
             api-center/tests/test_api_catalog.py \
