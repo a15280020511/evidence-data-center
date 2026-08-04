@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "compute-material-source-record-v1",
+  "title": "Compute Material Source Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_id",
+    "version",
+    "material_type",
+    "status",
+    "quality_status",
+    "source_center",
+    "source_root",
+    "title",
+    "valid_from",
+    "valid_to",
+    "geographic_scope",
+    "time_range",
+    "license",
+    "files",
+    "contains_personal_data",
+    "review_due_at"
+  ],
+  "properties": {
+    "record_id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{2,199}$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "material_type": {
+      "enum": [
+        "sample_snapshot",
+        "factor_definition_snapshot",
+        "domain_rule_snapshot",
+        "baseline_evidence_snapshot",
+        "metric_threshold_snapshot",
+        "ontology_crosswalk_snapshot",
+        "regime_event_snapshot",
+        "outcome_feedback_snapshot",
+        "benchmark_manifest"
+      ]
+    },
+    "status": {
+      "const": "verified"
+    },
+    "quality_status": {
+      "const": "pass"
+    },
+    "source_center": {
+      "const": "intelligence-center"
+    },
+    "source_root": {
+      "enum": [
+        "external-reality/v1",
+        "domain-benchmarks/v1"
+      ]
+    },
+    "title": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 500
+    },
+    "valid_from": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "valid_to": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "geographic_scope": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 120
+      }
+    },
+    "time_range": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": {
+          "type": ["string", "null"],
+          "maxLength": 80
+        },
+        "end": {
+          "type": ["string", "null"],
+          "maxLength": 80
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "reviewed",
+        "redistribution_allowed",
+        "commercial_use_allowed",
+        "attribution_required",
+        "use_scope"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "reviewed": {
+          "const": true
+        },
+        "redistribution_allowed": {
+          "type": ["boolean", "null"]
+        },
+        "commercial_use_allowed": {
+          "type": ["boolean", "null"]
+        },
+        "attribution_required": {
+          "type": ["boolean", "null"]
+        },
+        "use_scope": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "compute-analysis",
+              "internal-research",
+              "publication",
+              "redistribution"
+            ]
+          }
+        }
+      }
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "bytes", "media_type"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "media_type": {
+            "enum": [
+              "application/json",
+              "application/x-ndjson",
+              "text/csv",
+              "application/vnd.apache.parquet",
+              "application/vnd.apache.arrow.file",
+              "application/geo+json",
+              "application/geopackage+sqlite3"
+            ]
+          }
+        }
+      }
+    },
+    "contains_personal_data": {
+      "const": false
+    },
+    "review_due_at": {
+      "type": "string",
+      "format": "date"
+    },
+    "point_in_time_safe": {
+      "type": ["boolean", "null"]
+    },
+    "publication_date": {
+      "type": ["string", "null"],
+      "format": "date"
+    },
+    "revision_vintage": {
+      "type": ["string", "null"],
+      "maxLength": 100
+    },
+    "known_limitations": {
+      "type": "array",
+      "maxItems": 100,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "source_manifest_path": {
+      "type": ["string", "null"],
+      "maxLength": 1000
+    }
+  }
+}
