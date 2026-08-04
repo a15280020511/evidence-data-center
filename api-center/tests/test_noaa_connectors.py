@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import unittest
 from pathlib import Path
@@ -6,74 +8,74 @@ from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[1]
 CONNECTORS = ROOT / "connectors"
-SCHEMA = json.loads(
-    (ROOT / "connector.schema.json").read_text(encoding="utf-8")
-)
-NOAA_IDS = {
-    "noaa-nws-points",
-    "noaa-nws-forecast",
-    "noaa-nws-forecast-hourly",
-    "noaa-nws-gridpoint-stations",
-    "noaa-nws-station-latest",
-    "noaa-nws-alerts-active",
-    "noaa-ncei-data-search",
-}
+SCHEMA = json.loads((ROOT / "connector.schema.json").read_text(encoding="utf-8"))
 
 
-class NoaaConnectorTests(unittest.TestCase):
-    def load(self, connector_id):
+class NoaaChinaHistoricalConnectorTests(unittest.TestCase):
+    def load(self, connector_id: str) -> dict:
         return json.loads(
             (CONNECTORS / f"{connector_id}.connector.json").read_text(
                 encoding="utf-8"
             )
         )
 
-    def test_all_noaa_connectors_validate(self):
+    def test_only_four_china_historical_noaa_connectors_exist(self) -> None:
+        paths = sorted(CONNECTORS.glob("noaa-*.connector.json"))
+        self.assertEqual(
+            [path.stem.removesuffix(".connector") for path in paths],
+            [
+                "noaa-ncei-china-daily",
+                "noaa-ncei-china-monthly",
+                "noaa-ncei-china-station-search",
+                "noaa-ncei-china-yearly",
+            ],
+        )
+        self.assertFalse(any("nws" in path.name for path in paths))
+
+    def test_all_connectors_validate_and_use_only_ncei(self) -> None:
         validator = Draft202012Validator(SCHEMA)
-        for connector_id in NOAA_IDS:
-            connector = self.load(connector_id)
-            self.assertEqual(connector_id, connector["id"])
-            self.assertTrue(connector["enabled"])
-            self.assertEqual("GET", connector["method"])
-            self.assertFalse(list(validator.iter_errors(connector)), connector_id)
+        for path in CONNECTORS.glob("noaa-*.connector.json"):
+            doc = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(list(validator.iter_errors(doc)), [])
+            self.assertEqual(doc["method"], "GET")
+            self.assertEqual(doc["backend"]["host"], "https://www.ncei.noaa.gov")
+            self.assertNotIn("secret_header", doc)
+            self.assertNotIn("secret_query", doc)
 
-    def test_only_official_fixed_hosts_and_no_secrets(self):
-        expected_hosts = {
-            "https://api.weather.gov",
-            "https://www.ncei.noaa.gov",
+    def test_station_search_is_fixed_to_china_bbox(self) -> None:
+        doc = self.load("noaa-ncei-china-station-search")
+        rules = doc["parameter_rules"]["properties"]
+        self.assertEqual(rules["bbox"]["enum"], ["53.56,73.50,18.10,134.77"])
+        self.assertEqual(
+            rules["dataset"]["enum"],
+            [
+                "daily-summaries",
+                "global-summary-of-the-month",
+                "global-summary-of-the-year",
+            ],
+        )
+        self.assertEqual(
+            doc["backend"]["url_pattern"],
+            "/access/services/search/v1/data",
+        )
+
+    def test_data_connectors_require_china_stations_json_and_metric(self) -> None:
+        expected = {
+            "noaa-ncei-china-daily": "daily-summaries",
+            "noaa-ncei-china-monthly": "global-summary-of-the-month",
+            "noaa-ncei-china-yearly": "global-summary-of-the-year",
         }
-        for connector_id in NOAA_IDS:
-            connector = self.load(connector_id)
-            self.assertIn(connector["backend"]["host"], expected_hosts)
-            self.assertTrue(connector["backend"]["url_pattern"].startswith("/"))
-            self.assertNotIn("secret_header", connector)
-            self.assertNotIn("secret_query", connector)
-
-    def test_alerts_use_only_verified_parameters_and_bounded_filter(self):
-        connector = self.load("noaa-nws-alerts-active")
-        query_parameters = set(connector["input_query_strings"])
-        self.assertFalse({"limit", "cursor", "start", "end"} & query_parameters)
-        self.assertEqual(
-            [["area", "point", "region", "zone", "event", "code"]],
-            connector["parameter_rules"]["required_any_of"],
-        )
-        self.assertEqual(
-            {"max_rate": 1, "every": "30s", "capacity": 1},
-            connector["backend"]["resilience"]["rate_limit"],
-        )
-
-    def test_ncei_requires_bounds_and_uses_official_bbox_name(self):
-        connector = self.load("noaa-ncei-data-search")
-        self.assertEqual(
-            [["dataset"], ["startDate"], ["endDate"]],
-            connector["parameter_rules"]["required_any_of"],
-        )
-        self.assertIn("bbox", connector["input_query_strings"])
-        self.assertIn("bbox", connector["parameter_rules"]["properties"])
-        self.assertNotIn("boundingBox", connector["input_query_strings"])
-        self.assertNotIn(
-            "boundingBox", connector["parameter_rules"]["properties"]
-        )
+        for connector_id, dataset in expected.items():
+            doc = self.load(connector_id)
+            rules = doc["parameter_rules"]["properties"]
+            self.assertEqual(rules["dataset"]["enum"], [dataset])
+            self.assertEqual(rules["format"]["enum"], ["json"])
+            self.assertEqual(rules["units"]["enum"], ["metric"])
+            self.assertIn("^CH", rules["stations"]["pattern"])
+            self.assertEqual(
+                doc["backend"]["url_pattern"],
+                "/access/services/data/v1",
+            )
 
 
 if __name__ == "__main__":

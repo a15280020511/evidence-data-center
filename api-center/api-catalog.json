@@ -8,8 +8,8 @@
   "source_manifest_file": "connector-manifest.json",
   "source_metadata_file": "catalog-metadata.json",
   "source_manifest_version": 4,
-  "source_manifest_sha256": "b2b9124c41e3c1b619c8f9cba5d875461d328a67ee7d3c8f03d731eac2586746",
-  "source_metadata_sha256": "92673427a1937047aeaddb5d3ee768e0eef75413e4207b8def43edb39d324310",
+  "source_manifest_sha256": "069c7d3fcf29989715f3d68d11e783877e1a0d746970f765e76e719c3e6c7d83",
+  "source_metadata_sha256": "db78d65aa1e3c2da012044d75e8e4d7990d346b58f89ef9f4196aea6a9613653",
   "managed_provider_catalog_file": "managed-provider-index",
   "managed_provider_catalog_files": [
     "google-cloud/provider-catalog.json",
@@ -69,12 +69,12 @@
     "google-public-intelligence/provider-catalog.json"
   ],
   "managed_provider_catalog_sha256": "2ffc993570c51511413c807e5d983bf452606e78945ec03daf6ae791b1acfea3",
-  "connector_count": 75,
-  "enabled_connector_count": 75,
+  "connector_count": 72,
+  "enabled_connector_count": 72,
   "managed_provider_count": 64,
   "enabled_managed_provider_count": 64,
   "managed_operation_count": 698,
-  "exposed_parameter_count": 2484,
+  "exposed_parameter_count": 2486,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -38117,17 +38117,507 @@
       "connector_sha256": "03a4fce728dbf80a6c7b87e774e72f350d5cf5562a52de366ced920ba5a05e35"
     },
     {
-      "connector_id": "noaa-ncei-data-search",
-      "display_name": "NOAA/NCEI 历史气象数据检索",
-      "description": "通过 NCEI Common Access Search Service 按数据集、日期、站点、数据类型或范围发现历史气象与气候数据记录。",
-      "data_category": "historical-weather-climate-discovery",
+      "connector_id": "noaa-ncei-china-daily",
+      "display_name": "NOAA/NCEI 中国历史逐日气象观测",
+      "description": "按 CH 前缀中国站点编号读取 NOAA/NCEI 的中国历史逐日气象观测，仅输出 JSON 和公制单位。",
+      "data_category": "china-historical-weather-climate",
       "use_cases": [
-        "历史气象数据发现",
-        "气候数据集与文件检索",
-        "站点和日期范围核验"
+        "中国历史温度分析",
+        "中国历史降水分析",
+        "气候趋势与商业风险建模"
       ],
       "enabled": true,
-      "endpoint": "/data/noaa/ncei/search",
+      "endpoint": "/data/noaa/ncei/china/daily",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "30s",
+      "write_approved": false,
+      "parameter_names": [
+        "dataset",
+        "stations",
+        "startDate",
+        "endDate",
+        "dataTypes",
+        "format",
+        "units",
+        "includeAttributes",
+        "includeStationName",
+        "includeStationLocation"
+      ],
+      "request_contract": {
+        "path_parameter_names": [],
+        "path_parameters": {},
+        "query_parameter_names": [
+          "dataset",
+          "stations",
+          "startDate",
+          "endDate",
+          "dataTypes",
+          "format",
+          "units",
+          "includeAttributes",
+          "includeStationName",
+          "includeStationLocation"
+        ],
+        "parameter_rules": {
+          "properties": {
+            "dataTypes": {
+              "max_length": 1000,
+              "pattern": "^[A-Z0-9,_-]{1,1000}$",
+              "type": "string"
+            },
+            "dataset": {
+              "enum": [
+                "daily-summaries"
+              ],
+              "type": "string"
+            },
+            "endDate": {
+              "max_length": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "format": {
+              "enum": [
+                "json"
+              ],
+              "type": "string"
+            },
+            "includeAttributes": {
+              "type": "boolean"
+            },
+            "includeStationLocation": {
+              "type": "boolean"
+            },
+            "includeStationName": {
+              "type": "boolean"
+            },
+            "startDate": {
+              "max_length": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "stations": {
+              "max_length": 119,
+              "pattern": "^CH[A-Z0-9]{9}(?:,CH[A-Z0-9]{9}){0,9}$",
+              "type": "string"
+            },
+            "units": {
+              "enum": [
+                "metric"
+              ],
+              "type": "string"
+            }
+          },
+          "required_any_of": [
+            [
+              "dataset"
+            ],
+            [
+              "stations"
+            ],
+            [
+              "startDate"
+            ],
+            [
+              "endDate"
+            ],
+            [
+              "format"
+            ],
+            [
+              "units"
+            ]
+          ]
+        },
+        "parameter_notes": {
+          "dataset": "固定为 daily-summaries",
+          "stations": "必填；CH 开头的中国站点编号，最多 10 个",
+          "startDate": "必填；YYYY-MM-DD",
+          "endDate": "必填；YYYY-MM-DD",
+          "format": "固定 json",
+          "units": "固定 metric",
+          "dataTypes": "可选；例如 TAVG,TMAX,TMIN,PRCP"
+        },
+        "example_parameters": {
+          "dataset": "daily-summaries",
+          "stations": "CHM00054511",
+          "startDate": "2024-01-01",
+          "endDate": "2024-01-07",
+          "dataTypes": "TAVG,TMAX,TMIN,PRCP",
+          "format": "json",
+          "units": "metric",
+          "includeStationName": true,
+          "includeStationLocation": true
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "0"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {
+        "collection_path": "0",
+        "hard_limit": 50000,
+        "recommended_action": "Use one to ten CH-prefixed Chinese station IDs and a bounded date interval; split long periods into smaller tickets."
+      },
+      "backend_contract": {
+        "host": "https://www.ncei.noaa.gov",
+        "url_pattern": "/access/services/data/v1",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "STATION",
+          "DATE",
+          "LATITUDE",
+          "LONGITUDE",
+          "ELEVATION",
+          "NAME",
+          "REPORT_TYPE",
+          "SOURCE",
+          "PRCP",
+          "PRCP_ATTRIBUTES",
+          "SNOW",
+          "SNOW_ATTRIBUTES",
+          "SNWD",
+          "SNWD_ATTRIBUTES",
+          "TAVG",
+          "TAVG_ATTRIBUTES",
+          "TMAX",
+          "TMAX_ATTRIBUTES",
+          "TMIN",
+          "TMIN_ATTRIBUTES",
+          "AWND",
+          "AWND_ATTRIBUTES",
+          "WDF2",
+          "WDF5",
+          "WSF2",
+          "WSF5",
+          "EMXT",
+          "EMNT",
+          "EMXP",
+          "HTDD",
+          "CLDD",
+          "DP01",
+          "DP10",
+          "DX32",
+          "DX70",
+          "DX90",
+          "DT00",
+          "DT32",
+          "DYFG",
+          "DYTS",
+          "errorMessage",
+          "errorCode",
+          "errors"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 30
+          },
+          "rate_limit": {
+            "capacity": 1,
+            "every": "1s",
+            "max_rate": 1
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "dataset": "daily-summaries",
+        "stations": "CHM00054511",
+        "startDate": "2024-01-01",
+        "endDate": "2024-01-07",
+        "dataTypes": "TAVG,TMAX,TMIN,PRCP",
+        "format": "json",
+        "units": "metric",
+        "includeStationName": true,
+        "includeStationLocation": true
+      },
+      "geographic_coverage": "仅允许 CH 前缀的中国站点编号；单票最多 10 个站点",
+      "freshness": "取决于 NCEI 对相应全球数据集的更新周期",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "NCEI 是全球历史气象资料汇编，不等同于中国气象局完整原始站网",
+        "不同站点、年代和变量的覆盖完整度不同",
+        "必须检查缺测值、质量标识、站点迁移和观测制度变化",
+        "长时间跨度应拆分查询，禁止批量镜像整个档案"
+      ],
+      "detail_file": "connectors/noaa-ncei-china-daily.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-ncei-china-daily",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "179ca5b8835c1fcf117f6538cee6e53e71036112d966f508cfc40184a8052894"
+    },
+    {
+      "connector_id": "noaa-ncei-china-monthly",
+      "display_name": "NOAA/NCEI 中国历史月度气象汇总",
+      "description": "按 CH 前缀中国站点编号读取 NOAA/NCEI 的中国历史月度气象汇总，仅输出 JSON 和公制单位。",
+      "data_category": "china-historical-weather-climate",
+      "use_cases": [
+        "中国历史温度分析",
+        "中国历史降水分析",
+        "气候趋势与商业风险建模"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/ncei/china/monthly",
+      "method": "GET",
+      "output_encoding": "json",
+      "timeout": "30s",
+      "write_approved": false,
+      "parameter_names": [
+        "dataset",
+        "stations",
+        "startDate",
+        "endDate",
+        "dataTypes",
+        "format",
+        "units",
+        "includeAttributes",
+        "includeStationName",
+        "includeStationLocation"
+      ],
+      "request_contract": {
+        "path_parameter_names": [],
+        "path_parameters": {},
+        "query_parameter_names": [
+          "dataset",
+          "stations",
+          "startDate",
+          "endDate",
+          "dataTypes",
+          "format",
+          "units",
+          "includeAttributes",
+          "includeStationName",
+          "includeStationLocation"
+        ],
+        "parameter_rules": {
+          "properties": {
+            "dataTypes": {
+              "max_length": 1000,
+              "pattern": "^[A-Z0-9,_-]{1,1000}$",
+              "type": "string"
+            },
+            "dataset": {
+              "enum": [
+                "global-summary-of-the-month"
+              ],
+              "type": "string"
+            },
+            "endDate": {
+              "max_length": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "format": {
+              "enum": [
+                "json"
+              ],
+              "type": "string"
+            },
+            "includeAttributes": {
+              "type": "boolean"
+            },
+            "includeStationLocation": {
+              "type": "boolean"
+            },
+            "includeStationName": {
+              "type": "boolean"
+            },
+            "startDate": {
+              "max_length": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            },
+            "stations": {
+              "max_length": 119,
+              "pattern": "^CH[A-Z0-9]{9}(?:,CH[A-Z0-9]{9}){0,9}$",
+              "type": "string"
+            },
+            "units": {
+              "enum": [
+                "metric"
+              ],
+              "type": "string"
+            }
+          },
+          "required_any_of": [
+            [
+              "dataset"
+            ],
+            [
+              "stations"
+            ],
+            [
+              "startDate"
+            ],
+            [
+              "endDate"
+            ],
+            [
+              "format"
+            ],
+            [
+              "units"
+            ]
+          ]
+        },
+        "parameter_notes": {
+          "dataset": "固定为 global-summary-of-the-month",
+          "stations": "必填；CH 开头的中国站点编号，最多 10 个",
+          "startDate": "必填；YYYY-MM-DD",
+          "endDate": "必填；YYYY-MM-DD",
+          "format": "固定 json",
+          "units": "固定 metric",
+          "dataTypes": "可选；例如 TAVG,TMAX,TMIN,PRCP"
+        },
+        "example_parameters": {
+          "dataset": "global-summary-of-the-month",
+          "stations": "CHM00054511",
+          "startDate": "2024-01-01",
+          "endDate": "2024-01-07",
+          "dataTypes": "TAVG,TMAX,TMIN,PRCP",
+          "format": "json",
+          "units": "metric",
+          "includeStationName": true,
+          "includeStationLocation": true
+        },
+        "input_headers": [],
+        "additional_parameters_allowed": false
+      },
+      "response_contract": {
+        "any_data_paths": [
+          "0"
+        ],
+        "success_when_data_present": true
+      },
+      "response_quality": {
+        "collection_path": "0",
+        "hard_limit": 50000,
+        "recommended_action": "Use one to ten CH-prefixed Chinese station IDs and a bounded date interval; split long periods into smaller tickets."
+      },
+      "backend_contract": {
+        "host": "https://www.ncei.noaa.gov",
+        "url_pattern": "/access/services/data/v1",
+        "method": "GET",
+        "encoding": "json",
+        "allowed_response_fields": [
+          "STATION",
+          "DATE",
+          "LATITUDE",
+          "LONGITUDE",
+          "ELEVATION",
+          "NAME",
+          "REPORT_TYPE",
+          "SOURCE",
+          "PRCP",
+          "PRCP_ATTRIBUTES",
+          "SNOW",
+          "SNOW_ATTRIBUTES",
+          "SNWD",
+          "SNWD_ATTRIBUTES",
+          "TAVG",
+          "TAVG_ATTRIBUTES",
+          "TMAX",
+          "TMAX_ATTRIBUTES",
+          "TMIN",
+          "TMIN_ATTRIBUTES",
+          "AWND",
+          "AWND_ATTRIBUTES",
+          "WDF2",
+          "WDF5",
+          "WSF2",
+          "WSF5",
+          "EMXT",
+          "EMNT",
+          "EMXP",
+          "HTDD",
+          "CLDD",
+          "DP01",
+          "DP10",
+          "DX32",
+          "DX70",
+          "DX90",
+          "DT00",
+          "DT32",
+          "DYFG",
+          "DYTS",
+          "errorMessage",
+          "errorCode",
+          "errors"
+        ],
+        "resilience": {
+          "circuit_breaker": {
+            "interval": 60,
+            "log_status_change": true,
+            "max_errors": 3,
+            "timeout": 30
+          },
+          "rate_limit": {
+            "capacity": 1,
+            "every": "1s",
+            "max_rate": 1
+          }
+        },
+        "rate_limit_enabled": true,
+        "circuit_breaker_enabled": true,
+        "ssrf_static_policy": "public-host-or-loopback-test-only"
+      },
+      "credential_contract": {
+        "injection": "none",
+        "value_exposed": false
+      },
+      "example_parameters": {
+        "dataset": "global-summary-of-the-month",
+        "stations": "CHM00054511",
+        "startDate": "2024-01-01",
+        "endDate": "2024-01-07",
+        "dataTypes": "TAVG,TMAX,TMIN,PRCP",
+        "format": "json",
+        "units": "metric",
+        "includeStationName": true,
+        "includeStationLocation": true
+      },
+      "geographic_coverage": "仅允许 CH 前缀的中国站点编号；单票最多 10 个站点",
+      "freshness": "取决于 NCEI 对相应全球数据集的更新周期",
+      "cost_class": "free-public-no-key",
+      "limitations": [
+        "NCEI 是全球历史气象资料汇编，不等同于中国气象局完整原始站网",
+        "不同站点、年代和变量的覆盖完整度不同",
+        "必须检查缺测值、质量标识、站点迁移和观测制度变化",
+        "长时间跨度应拆分查询，禁止批量镜像整个档案"
+      ],
+      "detail_file": "connectors/noaa-ncei-china-monthly.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-ncei-china-monthly",
+      "secret_environment_variable_name": null,
+      "secret_value_exposed": false,
+      "connector_sha256": "742a115e7485fa82cf277528c5e23e4a6640a404b9ef5f8ec84806dd7139dc01"
+    },
+    {
+      "connector_id": "noaa-ncei-china-station-search",
+      "display_name": "NOAA/NCEI 中国历史气象站点检索",
+      "description": "在固定中国范围框内发现 NOAA/NCEI 的中国历史气象站点与可用数据文件。",
+      "data_category": "china-historical-weather-station-discovery",
+      "use_cases": [
+        "中国历史气象站点发现",
+        "站点编号与时间覆盖核验",
+        "日月年数据下载前置检索"
+      ],
+      "enabled": true,
+      "endpoint": "/data/noaa/ncei/china/stations",
       "method": "GET",
       "output_encoding": "json",
       "timeout": "30s",
@@ -38137,8 +38627,8 @@
         "startDate",
         "endDate",
         "bbox",
-        "stations",
         "dataTypes",
+        "stations",
         "limit",
         "offset"
       ],
@@ -38150,26 +38640,30 @@
           "startDate",
           "endDate",
           "bbox",
-          "stations",
           "dataTypes",
+          "stations",
           "limit",
           "offset"
         ],
         "parameter_rules": {
           "properties": {
             "bbox": {
-              "max_length": 80,
-              "pattern": "^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$",
+              "enum": [
+                "53.56,73.50,18.10,134.77"
+              ],
               "type": "string"
             },
             "dataTypes": {
               "max_length": 1000,
-              "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+              "pattern": "^[A-Z0-9,_-]{1,1000}$",
               "type": "string"
             },
             "dataset": {
-              "max_length": 80,
-              "pattern": "^[a-z0-9-]{3,80}$",
+              "enum": [
+                "daily-summaries",
+                "global-summary-of-the-month",
+                "global-summary-of-the-year"
+              ],
               "type": "string"
             },
             "endDate": {
@@ -38193,8 +38687,8 @@
               "type": "string"
             },
             "stations": {
-              "max_length": 1000,
-              "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+              "max_length": 119,
+              "pattern": "^CH[A-Z0-9]{9}(?:,CH[A-Z0-9]{9}){0,9}$",
               "type": "string"
             }
           },
@@ -38207,24 +38701,26 @@
             ],
             [
               "endDate"
+            ],
+            [
+              "bbox"
             ]
           ]
         },
         "parameter_notes": {
-          "dataTypes": "可选；数据类型列表",
-          "dataset": "必填；例如 daily-summaries",
-          "endDate": "必填；YYYY-MM-DD",
-          "limit": "可选；最多 1000",
+          "dataset": "日、月或年历史数据集",
+          "bbox": "固定中国范围框 53.56,73.50,18.10,134.77",
           "startDate": "必填；YYYY-MM-DD",
-          "stations": "可选；站点 ID 列表",
-          "bbox": "可选；北,西,南,东"
+          "endDate": "必填；YYYY-MM-DD",
+          "stations": "可选；CH 开头的中国站点编号，最多 10 个",
+          "limit": "可选；最多 1000"
         },
         "example_parameters": {
           "dataset": "daily-summaries",
-          "endDate": "2024-01-07",
-          "limit": 20,
           "startDate": "2024-01-01",
-          "stations": "USW00094728"
+          "endDate": "2024-01-31",
+          "bbox": "53.56,73.50,18.10,134.77",
+          "limit": 20
         },
         "input_headers": [],
         "additional_parameters_allowed": false
@@ -38238,7 +38734,7 @@
       "response_quality": {
         "collection_path": "results",
         "hard_limit": 1000,
-        "recommended_action": "Use a narrow dataset, date interval, station list or bbox; do not use this connector for bulk archive mirroring."
+        "recommended_action": "Use the fixed China bounding box, a narrow date interval, and pagination to discover CH-prefixed Chinese stations before retrieving observations."
       },
       "backend_contract": {
         "host": "https://www.ncei.noaa.gov",
@@ -38278,181 +38774,233 @@
       },
       "example_parameters": {
         "dataset": "daily-summaries",
-        "endDate": "2024-01-07",
-        "limit": 20,
         "startDate": "2024-01-01",
-        "stations": "USW00094728"
+        "endDate": "2024-01-31",
+        "bbox": "53.56,73.50,18.10,134.77",
+        "limit": 20
       },
-      "geographic_coverage": "全球；具体范围取决于所选 NCEI 数据集",
-      "freshness": "随 NCEI 数据集更新；不同数据集延迟不同",
+      "geographic_coverage": "中国陆地区域固定范围框：53.56N,73.50E,18.10N,134.77E",
+      "freshness": "随 NCEI 全球历史数据集更新；日数据持续更新，月年汇总按周期更新",
       "cost_class": "free-public-no-key",
       "limitations": [
-        "这是数据发现接口，不是无界整库镜像工具",
-        "结果中的数据集、时间、单位、站点和质量标识必须保留",
-        "具体记录下载和格式能力依数据集而异",
-        "大范围或长期批量任务应拆分并遵守公平使用"
+        "仅发现中国范围内 NCEI 已收录的站点和文件，不代表中国全部国家气象站",
+        "必须保留站点、日期、单位、质量标识与来源信息",
+        "禁止无界全球检索和整库镜像"
       ],
-      "detail_file": "connectors/noaa-ncei-data-search.connector.json",
-      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-ncei-data-search",
+      "detail_file": "connectors/noaa-ncei-china-station-search.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-ncei-china-station-search",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "96338d92596ab58c7c265385fa1a3962870350b593652649d75d5e266cc835de"
+      "connector_sha256": "57dcb365b1012cb8743bd13cbe79299e663c35f41a78e597f8f50fe69d69675d"
     },
     {
-      "connector_id": "noaa-nws-alerts-active",
-      "display_name": "NOAA/NWS 活动天气警报",
-      "description": "按州、坐标、区域、预警区或事件筛选当前有效的官方天气警报。",
-      "data_category": "weather-alerts",
+      "connector_id": "noaa-ncei-china-yearly",
+      "display_name": "NOAA/NCEI 中国历史年度气象汇总",
+      "description": "按 CH 前缀中国站点编号读取 NOAA/NCEI 的中国历史年度气象汇总，仅输出 JSON 和公制单位。",
+      "data_category": "china-historical-weather-climate",
       "use_cases": [
-        "灾害天气预警",
-        "运营和出行风险",
-        "应急态势核验"
+        "中国历史温度分析",
+        "中国历史降水分析",
+        "气候趋势与商业风险建模"
       ],
       "enabled": true,
-      "endpoint": "/data/noaa/nws/alerts/active",
+      "endpoint": "/data/noaa/ncei/china/yearly",
       "method": "GET",
       "output_encoding": "json",
-      "timeout": "20s",
+      "timeout": "30s",
       "write_approved": false,
       "parameter_names": [
-        "area",
-        "point",
-        "region",
-        "zone",
-        "urgency",
-        "severity",
-        "certainty",
-        "status",
-        "message_type",
-        "event",
-        "code"
+        "dataset",
+        "stations",
+        "startDate",
+        "endDate",
+        "dataTypes",
+        "format",
+        "units",
+        "includeAttributes",
+        "includeStationName",
+        "includeStationLocation"
       ],
       "request_contract": {
         "path_parameter_names": [],
         "path_parameters": {},
         "query_parameter_names": [
-          "area",
-          "point",
-          "region",
-          "zone",
-          "urgency",
-          "severity",
-          "certainty",
-          "status",
-          "message_type",
-          "event",
-          "code"
+          "dataset",
+          "stations",
+          "startDate",
+          "endDate",
+          "dataTypes",
+          "format",
+          "units",
+          "includeAttributes",
+          "includeStationName",
+          "includeStationLocation"
         ],
         "parameter_rules": {
           "properties": {
-            "area": {
-              "max_length": 80,
-              "pattern": "^[A-Z]{2}(?:,[A-Z]{2})*$",
+            "dataTypes": {
+              "max_length": 1000,
+              "pattern": "^[A-Z0-9,_-]{1,1000}$",
               "type": "string"
             },
-            "certainty": {
-              "max_length": 100,
+            "dataset": {
+              "enum": [
+                "global-summary-of-the-year"
+              ],
               "type": "string"
             },
-            "code": {
-              "max_length": 100,
+            "endDate": {
+              "max_length": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
               "type": "string"
             },
-            "event": {
-              "max_length": 200,
+            "format": {
+              "enum": [
+                "json"
+              ],
               "type": "string"
             },
-            "message_type": {
-              "max_length": 100,
+            "includeAttributes": {
+              "type": "boolean"
+            },
+            "includeStationLocation": {
+              "type": "boolean"
+            },
+            "includeStationName": {
+              "type": "boolean"
+            },
+            "startDate": {
+              "max_length": 10,
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
               "type": "string"
             },
-            "point": {
-              "max_length": 24,
-              "pattern": "^-?[0-9]{1,2}(?:\\.[0-9]{1,6})?,-?[0-9]{1,3}(?:\\.[0-9]{1,6})?$",
+            "stations": {
+              "max_length": 119,
+              "pattern": "^CH[A-Z0-9]{9}(?:,CH[A-Z0-9]{9}){0,9}$",
               "type": "string"
             },
-            "region": {
-              "max_length": 8,
-              "pattern": "^[A-Z]{2,8}$",
-              "type": "string"
-            },
-            "severity": {
-              "max_length": 100,
-              "type": "string"
-            },
-            "status": {
-              "max_length": 100,
-              "type": "string"
-            },
-            "urgency": {
-              "max_length": 100,
-              "type": "string"
-            },
-            "zone": {
-              "max_length": 220,
-              "pattern": "^[A-Z0-9-]{3,20}(?:,[A-Z0-9-]{3,20})*$",
+            "units": {
+              "enum": [
+                "metric"
+              ],
               "type": "string"
             }
           },
           "required_any_of": [
             [
-              "area",
-              "point",
-              "region",
-              "zone",
-              "event",
-              "code"
+              "dataset"
+            ],
+            [
+              "stations"
+            ],
+            [
+              "startDate"
+            ],
+            [
+              "endDate"
+            ],
+            [
+              "format"
+            ],
+            [
+              "units"
             ]
           ]
         },
         "parameter_notes": {
-          "area": "州或领地两位代码，可逗号分隔",
-          "event": "事件名称",
-          "point": "纬度,经度",
-          "zone": "预警区代码"
+          "dataset": "固定为 global-summary-of-the-year",
+          "stations": "必填；CH 开头的中国站点编号，最多 10 个",
+          "startDate": "必填；YYYY-MM-DD",
+          "endDate": "必填；YYYY-MM-DD",
+          "format": "固定 json",
+          "units": "固定 metric",
+          "dataTypes": "可选；例如 TAVG,TMAX,TMIN,PRCP"
         },
         "example_parameters": {
-          "area": "DC"
+          "dataset": "global-summary-of-the-year",
+          "stations": "CHM00054511",
+          "startDate": "2024-01-01",
+          "endDate": "2024-01-07",
+          "dataTypes": "TAVG,TMAX,TMIN,PRCP",
+          "format": "json",
+          "units": "metric",
+          "includeStationName": true,
+          "includeStationLocation": true
         },
         "input_headers": [],
         "additional_parameters_allowed": false
       },
       "response_contract": {
         "any_data_paths": [
-          "features"
+          "0"
         ],
         "success_when_data_present": true
       },
-      "response_quality": {},
+      "response_quality": {
+        "collection_path": "0",
+        "hard_limit": 50000,
+        "recommended_action": "Use one to ten CH-prefixed Chinese station IDs and a bounded date interval; split long periods into smaller tickets."
+      },
       "backend_contract": {
-        "host": "https://api.weather.gov",
-        "url_pattern": "/alerts/active",
+        "host": "https://www.ncei.noaa.gov",
+        "url_pattern": "/access/services/data/v1",
         "method": "GET",
         "encoding": "json",
         "allowed_response_fields": [
-          "@context",
-          "id",
-          "type",
-          "geometry",
-          "properties",
-          "features",
-          "pagination",
-          "title",
-          "status",
-          "detail",
-          "instance",
-          "correlationId"
+          "STATION",
+          "DATE",
+          "LATITUDE",
+          "LONGITUDE",
+          "ELEVATION",
+          "NAME",
+          "REPORT_TYPE",
+          "SOURCE",
+          "PRCP",
+          "PRCP_ATTRIBUTES",
+          "SNOW",
+          "SNOW_ATTRIBUTES",
+          "SNWD",
+          "SNWD_ATTRIBUTES",
+          "TAVG",
+          "TAVG_ATTRIBUTES",
+          "TMAX",
+          "TMAX_ATTRIBUTES",
+          "TMIN",
+          "TMIN_ATTRIBUTES",
+          "AWND",
+          "AWND_ATTRIBUTES",
+          "WDF2",
+          "WDF5",
+          "WSF2",
+          "WSF5",
+          "EMXT",
+          "EMNT",
+          "EMXP",
+          "HTDD",
+          "CLDD",
+          "DP01",
+          "DP10",
+          "DX32",
+          "DX70",
+          "DX90",
+          "DT00",
+          "DT32",
+          "DYFG",
+          "DYTS",
+          "errorMessage",
+          "errorCode",
+          "errors"
         ],
         "resilience": {
           "circuit_breaker": {
             "interval": 60,
             "log_status_change": true,
             "max_errors": 3,
-            "timeout": 20
+            "timeout": 30
           },
           "rate_limit": {
             "capacity": 1,
-            "every": "30s",
+            "every": "1s",
             "max_rate": 1
           }
         },
@@ -38465,666 +39013,30 @@
         "value_exposed": false
       },
       "example_parameters": {
-        "area": "DC"
+        "dataset": "global-summary-of-the-year",
+        "stations": "CHM00054511",
+        "startDate": "2024-01-01",
+        "endDate": "2024-01-07",
+        "dataTypes": "TAVG,TMAX,TMIN,PRCP",
+        "format": "json",
+        "units": "metric",
+        "includeStationName": true,
+        "includeStationLocation": true
       },
-      "geographic_coverage": "美国及 NWS 服务区域",
-      "freshness": "活动警报实时更新；以响应 sent、effective、expires 字段为准",
+      "geographic_coverage": "仅允许 CH 前缀的中国站点编号；单票最多 10 个站点",
+      "freshness": "取决于 NCEI 对相应全球数据集的更新周期",
       "cost_class": "free-public-no-key",
       "limitations": [
-        "必须至少提供一个地域或事件过滤条件，禁止无界拉取全部警报",
-        "警报正文应结合发布时间和失效时间解释",
-        "该端点不包含部分 SPC Tornado Watch 的 SEL 产品原文",
-        "NWS 建议活动警报请求频率不超过每 30 秒一次"
+        "NCEI 是全球历史气象资料汇编，不等同于中国气象局完整原始站网",
+        "不同站点、年代和变量的覆盖完整度不同",
+        "必须检查缺测值、质量标识、站点迁移和观测制度变化",
+        "长时间跨度应拆分查询，禁止批量镜像整个档案"
       ],
-      "detail_file": "connectors/noaa-nws-alerts-active.connector.json",
-      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-alerts-active",
+      "detail_file": "connectors/noaa-ncei-china-yearly.connector.json",
+      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-ncei-china-yearly",
       "secret_environment_variable_name": null,
       "secret_value_exposed": false,
-      "connector_sha256": "430a81a7434066ada571ac0720c666805159469e946b2cb3612a6e32fef42803"
-    },
-    {
-      "connector_id": "noaa-nws-forecast-hourly",
-      "display_name": "NOAA/NWS 官方逐小时预报",
-      "description": "按 NWS 网格取得逐小时官方天气预报。",
-      "data_category": "weather-hourly-forecast",
-      "use_cases": [
-        "逐小时运营安排",
-        "短时天气风险",
-        "出行和活动计划"
-      ],
-      "enabled": true,
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast/hourly",
-      "method": "GET",
-      "output_encoding": "json",
-      "timeout": "20s",
-      "write_approved": false,
-      "parameter_names": [
-        "grid_x",
-        "grid_y",
-        "office",
-        "units"
-      ],
-      "request_contract": {
-        "path_parameter_names": [
-          "grid_x",
-          "grid_y",
-          "office"
-        ],
-        "path_parameters": {
-          "grid_x": {
-            "max_length": 3,
-            "pattern": "^[0-9]{1,3}$"
-          },
-          "grid_y": {
-            "max_length": 3,
-            "pattern": "^[0-9]{1,3}$"
-          },
-          "office": {
-            "max_length": 3,
-            "pattern": "^[A-Z]{3}$"
-          }
-        },
-        "query_parameter_names": [
-          "units"
-        ],
-        "parameter_rules": {
-          "properties": {
-            "units": {
-              "enum": [
-                "us",
-                "si"
-              ],
-              "type": "string"
-            }
-          }
-        },
-        "parameter_notes": {
-          "grid_x": "必填；网格 X",
-          "grid_y": "必填；网格 Y",
-          "office": "必填；三位 NWS 办公室代码",
-          "units": "可选；us 或 si"
-        },
-        "example_parameters": {
-          "grid_x": "97",
-          "grid_y": "71",
-          "office": "LWX",
-          "units": "si"
-        },
-        "input_headers": [],
-        "additional_parameters_allowed": false
-      },
-      "response_contract": {
-        "any_data_paths": [
-          "properties.periods"
-        ],
-        "success_when_data_present": true
-      },
-      "response_quality": {},
-      "backend_contract": {
-        "host": "https://api.weather.gov",
-        "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast/hourly",
-        "method": "GET",
-        "encoding": "json",
-        "allowed_response_fields": [
-          "@context",
-          "id",
-          "type",
-          "geometry",
-          "properties",
-          "features",
-          "pagination",
-          "title",
-          "status",
-          "detail",
-          "instance",
-          "correlationId"
-        ],
-        "resilience": {
-          "circuit_breaker": {
-            "interval": 60,
-            "log_status_change": true,
-            "max_errors": 3,
-            "timeout": 20
-          },
-          "rate_limit": {
-            "capacity": 2,
-            "every": "1s",
-            "max_rate": 2
-          }
-        },
-        "rate_limit_enabled": true,
-        "circuit_breaker_enabled": true,
-        "ssrf_static_policy": "public-host-or-loopback-test-only"
-      },
-      "credential_contract": {
-        "injection": "none",
-        "value_exposed": false
-      },
-      "example_parameters": {
-        "grid_x": "97",
-        "grid_y": "71",
-        "office": "LWX",
-        "units": "si"
-      },
-      "geographic_coverage": "美国及 NWS 服务区域",
-      "freshness": "随对应 NWS 预报办公室更新",
-      "cost_class": "free-public-no-key",
-      "limitations": [
-        "只覆盖 NWS 服务区域",
-        "逐小时预报仍需结合官方警报和现场观测"
-      ],
-      "detail_file": "connectors/noaa-nws-forecast-hourly.connector.json",
-      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-forecast-hourly",
-      "secret_environment_variable_name": null,
-      "secret_value_exposed": false,
-      "connector_sha256": "63e19e73ecec712b64385a2c13910feb5c1aa1bd937779d7f7201f9396d3a728"
-    },
-    {
-      "connector_id": "noaa-nws-forecast",
-      "display_name": "NOAA/NWS 官方分时预报",
-      "description": "按 NWS 办公室和网格坐标取得约 12 小时时段的官方文字与要素预报。",
-      "data_category": "weather-forecast",
-      "use_cases": [
-        "美国天气决策",
-        "风险与运营计划",
-        "官方预报交叉核验"
-      ],
-      "enabled": true,
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/forecast",
-      "method": "GET",
-      "output_encoding": "json",
-      "timeout": "20s",
-      "write_approved": false,
-      "parameter_names": [
-        "grid_x",
-        "grid_y",
-        "office",
-        "units"
-      ],
-      "request_contract": {
-        "path_parameter_names": [
-          "grid_x",
-          "grid_y",
-          "office"
-        ],
-        "path_parameters": {
-          "grid_x": {
-            "max_length": 3,
-            "pattern": "^[0-9]{1,3}$"
-          },
-          "grid_y": {
-            "max_length": 3,
-            "pattern": "^[0-9]{1,3}$"
-          },
-          "office": {
-            "max_length": 3,
-            "pattern": "^[A-Z]{3}$"
-          }
-        },
-        "query_parameter_names": [
-          "units"
-        ],
-        "parameter_rules": {
-          "properties": {
-            "units": {
-              "enum": [
-                "us",
-                "si"
-              ],
-              "type": "string"
-            }
-          }
-        },
-        "parameter_notes": {
-          "grid_x": "必填；网格 X",
-          "grid_y": "必填；网格 Y",
-          "office": "必填；三位 NWS 办公室代码",
-          "units": "可选；us 或 si"
-        },
-        "example_parameters": {
-          "grid_x": "97",
-          "grid_y": "71",
-          "office": "LWX",
-          "units": "si"
-        },
-        "input_headers": [],
-        "additional_parameters_allowed": false
-      },
-      "response_contract": {
-        "any_data_paths": [
-          "properties.periods"
-        ],
-        "success_when_data_present": true
-      },
-      "response_quality": {},
-      "backend_contract": {
-        "host": "https://api.weather.gov",
-        "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/forecast",
-        "method": "GET",
-        "encoding": "json",
-        "allowed_response_fields": [
-          "@context",
-          "id",
-          "type",
-          "geometry",
-          "properties",
-          "features",
-          "pagination",
-          "title",
-          "status",
-          "detail",
-          "instance",
-          "correlationId"
-        ],
-        "resilience": {
-          "circuit_breaker": {
-            "interval": 60,
-            "log_status_change": true,
-            "max_errors": 3,
-            "timeout": 20
-          },
-          "rate_limit": {
-            "capacity": 2,
-            "every": "1s",
-            "max_rate": 2
-          }
-        },
-        "rate_limit_enabled": true,
-        "circuit_breaker_enabled": true,
-        "ssrf_static_policy": "public-host-or-loopback-test-only"
-      },
-      "credential_contract": {
-        "injection": "none",
-        "value_exposed": false
-      },
-      "example_parameters": {
-        "grid_x": "97",
-        "grid_y": "71",
-        "office": "LWX",
-        "units": "si"
-      },
-      "geographic_coverage": "美国及 NWS 服务区域",
-      "freshness": "随对应 NWS 预报办公室更新",
-      "cost_class": "free-public-no-key",
-      "limitations": [
-        "网格参数必须先由 NOAA/NWS points 解析",
-        "预报存在不确定性，不能视为观测事实"
-      ],
-      "detail_file": "connectors/noaa-nws-forecast.connector.json",
-      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-forecast",
-      "secret_environment_variable_name": null,
-      "secret_value_exposed": false,
-      "connector_sha256": "0608c942ed429156cda0e7fed76ca7eb74dea800b92ac8b9818fcd31962f9f1c"
-    },
-    {
-      "connector_id": "noaa-nws-gridpoint-stations",
-      "display_name": "NOAA/NWS 网格观测站列表",
-      "description": "取得指定 NWS 网格附近可用的官方观测站。",
-      "data_category": "weather-stations",
-      "use_cases": [
-        "查找附近观测站",
-        "为最新观测准备站点 ID",
-        "观测覆盖核验"
-      ],
-      "enabled": true,
-      "endpoint": "/data/noaa/nws/gridpoints/{office}/{grid_x}/{grid_y}/stations",
-      "method": "GET",
-      "output_encoding": "json",
-      "timeout": "20s",
-      "write_approved": false,
-      "parameter_names": [
-        "grid_x",
-        "grid_y",
-        "office",
-        "limit",
-        "cursor"
-      ],
-      "request_contract": {
-        "path_parameter_names": [
-          "grid_x",
-          "grid_y",
-          "office"
-        ],
-        "path_parameters": {
-          "grid_x": {
-            "max_length": 3,
-            "pattern": "^[0-9]{1,3}$"
-          },
-          "grid_y": {
-            "max_length": 3,
-            "pattern": "^[0-9]{1,3}$"
-          },
-          "office": {
-            "max_length": 3,
-            "pattern": "^[A-Z]{3}$"
-          }
-        },
-        "query_parameter_names": [
-          "limit",
-          "cursor"
-        ],
-        "parameter_rules": {
-          "properties": {
-            "cursor": {
-              "max_length": 256,
-              "type": "string"
-            },
-            "limit": {
-              "maximum": 100,
-              "minimum": 1,
-              "type": "integer"
-            }
-          }
-        },
-        "parameter_notes": {
-          "cursor": "可选；分页游标",
-          "grid_x": "必填",
-          "grid_y": "必填",
-          "limit": "可选；最多 100",
-          "office": "必填；NWS 办公室代码"
-        },
-        "example_parameters": {
-          "grid_x": "97",
-          "grid_y": "71",
-          "limit": 20,
-          "office": "LWX"
-        },
-        "input_headers": [],
-        "additional_parameters_allowed": false
-      },
-      "response_contract": {
-        "any_data_paths": [
-          "features"
-        ],
-        "success_when_data_present": true
-      },
-      "response_quality": {},
-      "backend_contract": {
-        "host": "https://api.weather.gov",
-        "url_pattern": "/gridpoints/{office}/{grid_x},{grid_y}/stations",
-        "method": "GET",
-        "encoding": "json",
-        "allowed_response_fields": [
-          "@context",
-          "id",
-          "type",
-          "geometry",
-          "properties",
-          "features",
-          "pagination",
-          "title",
-          "status",
-          "detail",
-          "instance",
-          "correlationId"
-        ],
-        "resilience": {
-          "circuit_breaker": {
-            "interval": 60,
-            "log_status_change": true,
-            "max_errors": 3,
-            "timeout": 20
-          },
-          "rate_limit": {
-            "capacity": 2,
-            "every": "1s",
-            "max_rate": 2
-          }
-        },
-        "rate_limit_enabled": true,
-        "circuit_breaker_enabled": true,
-        "ssrf_static_policy": "public-host-or-loopback-test-only"
-      },
-      "credential_contract": {
-        "injection": "none",
-        "value_exposed": false
-      },
-      "example_parameters": {
-        "grid_x": "97",
-        "grid_y": "71",
-        "limit": 20,
-        "office": "LWX"
-      },
-      "geographic_coverage": "美国及 NWS 服务区域",
-      "freshness": "请求时返回站点目录",
-      "cost_class": "free-public-no-key",
-      "limitations": [
-        "站点可用性和报告频率不一致",
-        "站点目录不等同于该站点当前有有效观测"
-      ],
-      "detail_file": "connectors/noaa-nws-gridpoint-stations.connector.json",
-      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-gridpoint-stations",
-      "secret_environment_variable_name": null,
-      "secret_value_exposed": false,
-      "connector_sha256": "95bc94a26157b847efb986663730177c0da7060a8b671f8d56f9de6c472d29e0"
-    },
-    {
-      "connector_id": "noaa-nws-points",
-      "display_name": "NOAA/NWS 坐标网格解析",
-      "description": "把美国境内经纬度解析为 NWS 预报办公室、网格坐标、预报端点和观测站入口。",
-      "data_category": "weather-location-resolution",
-      "use_cases": [
-        "美国地点预报准备",
-        "确定 NWS 办公室与网格",
-        "衔接官方预报和观测"
-      ],
-      "enabled": true,
-      "endpoint": "/data/noaa/nws/points/{latitude}/{longitude}",
-      "method": "GET",
-      "output_encoding": "json",
-      "timeout": "20s",
-      "write_approved": false,
-      "parameter_names": [
-        "latitude",
-        "longitude"
-      ],
-      "request_contract": {
-        "path_parameter_names": [
-          "latitude",
-          "longitude"
-        ],
-        "path_parameters": {
-          "latitude": {
-            "max_length": 10,
-            "pattern": "^-?[0-9]{1,2}(?:\\.[0-9]{1,6})?$"
-          },
-          "longitude": {
-            "max_length": 11,
-            "pattern": "^-?[0-9]{1,3}(?:\\.[0-9]{1,6})?$"
-          }
-        },
-        "query_parameter_names": [],
-        "parameter_rules": {},
-        "parameter_notes": {
-          "latitude": "必填；十进制度纬度",
-          "longitude": "必填；十进制度经度"
-        },
-        "example_parameters": {
-          "latitude": "38.8977",
-          "longitude": "-77.0365"
-        },
-        "input_headers": [],
-        "additional_parameters_allowed": false
-      },
-      "response_contract": {
-        "any_data_paths": [
-          "properties"
-        ],
-        "success_when_data_present": true
-      },
-      "response_quality": {},
-      "backend_contract": {
-        "host": "https://api.weather.gov",
-        "url_pattern": "/points/{latitude},{longitude}",
-        "method": "GET",
-        "encoding": "json",
-        "allowed_response_fields": [
-          "@context",
-          "id",
-          "type",
-          "geometry",
-          "properties",
-          "features",
-          "pagination",
-          "title",
-          "status",
-          "detail",
-          "instance",
-          "correlationId"
-        ],
-        "resilience": {
-          "circuit_breaker": {
-            "interval": 60,
-            "log_status_change": true,
-            "max_errors": 3,
-            "timeout": 20
-          },
-          "rate_limit": {
-            "capacity": 2,
-            "every": "1s",
-            "max_rate": 2
-          }
-        },
-        "rate_limit_enabled": true,
-        "circuit_breaker_enabled": true,
-        "ssrf_static_policy": "public-host-or-loopback-test-only"
-      },
-      "credential_contract": {
-        "injection": "none",
-        "value_exposed": false
-      },
-      "example_parameters": {
-        "latitude": "38.8977",
-        "longitude": "-77.0365"
-      },
-      "geographic_coverage": "美国及 NWS 服务区域",
-      "freshness": "请求时实时返回服务元数据",
-      "cost_class": "free-public-no-key",
-      "limitations": [
-        "主要面向美国及 NWS 服务区域",
-        "先调用本连接器取得 office、gridX 和 gridY，再调用预报连接器",
-        "NWS 要求合理限速并使用可识别的 User-Agent；网关采用保守限速"
-      ],
-      "detail_file": "connectors/noaa-nws-points.connector.json",
-      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-points",
-      "secret_environment_variable_name": null,
-      "secret_value_exposed": false,
-      "connector_sha256": "62fb86a28e3422cdd1f322b74daeca87efe01c36458ca111a9e6dca5cdb433bf"
-    },
-    {
-      "connector_id": "noaa-nws-station-latest",
-      "display_name": "NOAA/NWS 站点最新观测",
-      "description": "按官方观测站 ID 取得最新天气观测及质量控制字段。",
-      "data_category": "weather-observations",
-      "use_cases": [
-        "当前天气观测",
-        "预报与实况比较",
-        "短时风险核验"
-      ],
-      "enabled": true,
-      "endpoint": "/data/noaa/nws/stations/{station_id}/observations/latest",
-      "method": "GET",
-      "output_encoding": "json",
-      "timeout": "20s",
-      "write_approved": false,
-      "parameter_names": [
-        "station_id",
-        "require_qc"
-      ],
-      "request_contract": {
-        "path_parameter_names": [
-          "station_id"
-        ],
-        "path_parameters": {
-          "station_id": {
-            "max_length": 16,
-            "pattern": "^[A-Z0-9-]{3,16}$"
-          }
-        },
-        "query_parameter_names": [
-          "require_qc"
-        ],
-        "parameter_rules": {
-          "properties": {
-            "require_qc": {
-              "type": "boolean"
-            }
-          }
-        },
-        "parameter_notes": {
-          "require_qc": "可选；是否要求质量控制通过",
-          "station_id": "必填；官方站点 ID"
-        },
-        "example_parameters": {
-          "require_qc": true,
-          "station_id": "KDCA"
-        },
-        "input_headers": [],
-        "additional_parameters_allowed": false
-      },
-      "response_contract": {
-        "any_data_paths": [
-          "properties"
-        ],
-        "success_when_data_present": true
-      },
-      "response_quality": {},
-      "backend_contract": {
-        "host": "https://api.weather.gov",
-        "url_pattern": "/stations/{station_id}/observations/latest",
-        "method": "GET",
-        "encoding": "json",
-        "allowed_response_fields": [
-          "@context",
-          "id",
-          "type",
-          "geometry",
-          "properties",
-          "features",
-          "pagination",
-          "title",
-          "status",
-          "detail",
-          "instance",
-          "correlationId"
-        ],
-        "resilience": {
-          "circuit_breaker": {
-            "interval": 60,
-            "log_status_change": true,
-            "max_errors": 3,
-            "timeout": 20
-          },
-          "rate_limit": {
-            "capacity": 2,
-            "every": "1s",
-            "max_rate": 2
-          }
-        },
-        "rate_limit_enabled": true,
-        "circuit_breaker_enabled": true,
-        "ssrf_static_policy": "public-host-or-loopback-test-only"
-      },
-      "credential_contract": {
-        "injection": "none",
-        "value_exposed": false
-      },
-      "example_parameters": {
-        "require_qc": true,
-        "station_id": "KDCA"
-      },
-      "geographic_coverage": "NWS/MADIS 可用站点",
-      "freshness": "取决于站点最新报告时间",
-      "cost_class": "free-public-no-key",
-      "limitations": [
-        "部分字段可能为空",
-        "官方文档记录部分非中部时区站点的 24 小时最高/最低温字段存在上游缺失问题"
-      ],
-      "detail_file": "connectors/noaa-nws-station-latest.connector.json",
-      "metadata_pointer": "catalog-metadata.json#/connectors/noaa-nws-station-latest",
-      "secret_environment_variable_name": null,
-      "secret_value_exposed": false,
-      "connector_sha256": "fb32d4e9a46aec714dc866fca94c7b1af3f8cc2ae19506b9083d9c8dd2167ebb"
+      "connector_sha256": "91a3646e0f81ab19b02066a51b9b2609f88cd5d7a5a4896f1aff912098780eba"
     },
     {
       "connector_id": "openmeteo-air-quality",
@@ -42567,5 +42479,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "c858bead3e72310585cb072164d2adeff7c9552dacd08d7cc432b8018a85f280"
+  "catalog_sha256": "6e5685ec21716e5baf7937ec12284eb0e8e8b84636f6bf815c8ef328ef9ee18c"
 }

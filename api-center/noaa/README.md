@@ -1,21 +1,18 @@
-# NOAA official-data integration
+# NOAA/NCEI China historical-weather integration
 
-This package exposes seven read-only NOAA capabilities through the Intelligence Center gateway.
+This package intentionally excludes U.S.-only NWS forecast, observation, and alert endpoints.
 
-- NWS point-to-grid resolution
-- NWS period forecast
-- NWS hourly forecast
-- NWS gridpoint station discovery
-- NWS latest station observation
-- NWS active alerts
-- NCEI historical weather/climate data discovery
+It exposes four read-only China historical-data capabilities:
 
-No NOAA secret is required. All endpoints are fixed to official HTTPS hosts, use conservative gateway rate limits, forbid arbitrary URLs, and remain isolated from the compute and expert repositories.
+- discover NCEI records and CH-prefixed stations inside a fixed China bounding box;
+- retrieve daily station observations from `daily-summaries`;
+- retrieve monthly summaries from `global-summary-of-the-month`;
+- retrieve yearly summaries from `global-summary-of-the-year`.
+
+No NOAA key is required. Data retrieval is limited to one to ten CH-prefixed station identifiers, JSON output, metric units, fixed official HTTPS hosts, and bounded ticket execution. NCEI coverage is global-source archival coverage and is not equivalent to the complete China Meteorological Administration station network.
 
 Official references:
 
-- `https://www.weather.gov/documentation/services-web-api`
-- `https://api.weather.gov/openapi.json`
-- `https://www.ncei.noaa.gov/support/access-search-service-api-user-documentation`
-
-The NWS API primarily covers the United States and NWS service areas. NCEI coverage depends on the selected dataset and can be global.
+- `https://www.ncei.noaa.gov/access/search/documentation/data-service/`
+- `https://www.ncei.noaa.gov/access/search/documentation/search-service/`
+- `https://www.ncei.noaa.gov/products/land-based-station/global-historical-climatology-network-daily`

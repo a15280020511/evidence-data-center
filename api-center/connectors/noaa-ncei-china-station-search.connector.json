@@ -29,15 +29,15 @@
     "url_pattern": "/access/services/search/v1/data"
   },
   "enabled": true,
-  "endpoint": "/data/noaa/ncei/search",
-  "id": "noaa-ncei-data-search",
+  "endpoint": "/data/noaa/ncei/china/stations",
+  "id": "noaa-ncei-china-station-search",
   "input_query_strings": [
     "dataset",
     "startDate",
     "endDate",
     "bbox",
-    "stations",
     "dataTypes",
+    "stations",
     "limit",
     "offset"
   ],
@@ -46,18 +46,22 @@
   "parameter_rules": {
     "properties": {
       "bbox": {
-        "max_length": 80,
-        "pattern": "^-?[0-9.]+,-?[0-9.]+,-?[0-9.]+,-?[0-9.]+$",
+        "enum": [
+          "53.56,73.50,18.10,134.77"
+        ],
         "type": "string"
       },
       "dataTypes": {
         "max_length": 1000,
-        "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+        "pattern": "^[A-Z0-9,_-]{1,1000}$",
         "type": "string"
       },
       "dataset": {
-        "max_length": 80,
-        "pattern": "^[a-z0-9-]{3,80}$",
+        "enum": [
+          "daily-summaries",
+          "global-summary-of-the-month",
+          "global-summary-of-the-year"
+        ],
         "type": "string"
       },
       "endDate": {
@@ -81,8 +85,8 @@
         "type": "string"
       },
       "stations": {
-        "max_length": 1000,
-        "pattern": "^[A-Za-z0-9,_-]{1,1000}$",
+        "max_length": 119,
+        "pattern": "^CH[A-Z0-9]{9}(?:,CH[A-Z0-9]{9}){0,9}$",
         "type": "string"
       }
     },
@@ -95,6 +99,9 @@
       ],
       [
         "endDate"
+      ],
+      [
+        "bbox"
       ]
     ]
   },
@@ -107,7 +114,7 @@
   "response_quality": {
     "collection_path": "results",
     "hard_limit": 1000,
-    "recommended_action": "Use a narrow dataset, date interval, station list or bbox; do not use this connector for bulk archive mirroring."
+    "recommended_action": "Use the fixed China bounding box, a narrow date interval, and pagination to discover CH-prefixed Chinese stations before retrieving observations."
   },
   "timeout": "30s"
 }
