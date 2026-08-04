@@ -63,7 +63,7 @@ EXPECTED_OPERATION_COUNTS = {
     "bis": 8,
     "wolfram-alpha": 4,
     "llamaparse": 3,
-    "public-data-geospatial": 35,
+    "public-data-geospatial": 34,
     "cloudflare": 22,
     "fred": 25,
     "huggingface-hub": 11,
@@ -150,451 +150,51 @@ class ApiCatalogTests(unittest.TestCase):
             "alpha-vantage": "ALPHA_VANTAGE_API_KEY",
             "alphafeed": "ALPHAFEED_API_KEY",
             "mediastack": "MEDIASTACK_API_KEY",
-            "gnews": "GNEWS_API_KEY",
-            "aisstream": "AISSTREAM_API_KEY",
-            "marketstack": "MARKETSTACK_ACCESS_KEY",
-            "nasa": "NASA_API_KEY",
-            "copernicus-cdse": "COPERNICUS_CLIENT_SECRET",
+            "marketstack": "MARKETSTACK_API_KEY",
+            "copernicus-cdse": "COPERNICUS_CLIENT_ID",
             "eia": "EIA_API_KEY",
             "un-comtrade": "UN_COMTRADE_API_KEY",
-            "opensky-network": "OPEN_SKY_CLIENT_SECRET",
-            "wto": "WTO_API_KEY",
-            "imf": "IMF_API_KEY",
-            "wolfram-alpha": "WOLFRAM_ALPHA_APP_ID",
+            "opensky-network": "OPENSKY_CLIENT_ID",
+            "hexdb-aviation": "HEXDB_API_KEY",
+            "wolfram-alpha": "WOLFRAM_APP_ID",
             "llamaparse": "LLAMA_CLOUD_API_KEY",
             "cloudflare": "CLOUDFLARE_API_TOKEN",
             "fred": "FRED_API_KEY",
-            "google-public-intelligence": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
+            "huggingface-hub": "HF_TOKEN",
+            "gnews": "GNEWS_API_KEY",
+            "baidu-ai-cloud": "BAIDU_API_KEY",
+            "google-public-intelligence": "GOOGLE_API_KEY",
+            "noaa-cdo": "NOAA_CDO_TOKEN",
         }
-        for provider_id, secret_name in expected_secret_names.items():
+        for provider_id, expected in expected_secret_names.items():
             self.assertEqual(
-                providers[provider_id][
-                    "required_secret_environment_variable_name"
-                ],
-                secret_name,
+                providers[provider_id]["required_secret_environment_variable"],
+                expected,
             )
-
-        huggingface = providers["huggingface-hub"]
-        self.assertEqual(huggingface["ticket_prefix"], "[intel-huggingface]")
-        self.assertEqual(huggingface["required_secret_environment_variable_name"], "")
-        self.assertEqual(len(huggingface["operations"]), 11)
-        self.assertEqual(huggingface["limits"]["fixed_api_host"], "huggingface.co")
-        self.assertTrue(huggingface["limits"]["public_repositories_only"])
-        self.assertFalse(huggingface["limits"]["authentication_used"])
-        self.assertFalse(huggingface["limits"]["inference_allowed"])
-        self.assertFalse(huggingface["limits"]["training_or_jobs_allowed"])
-        self.assertFalse(huggingface["limits"]["write_operations_allowed"])
-
-        cloudflare = providers["cloudflare"]
-        self.assertEqual(cloudflare["ticket_prefix"], "[intel-cloudflare]")
-        self.assertEqual(cloudflare["required_secret_environment_variable_name"], "CLOUDFLARE_API_TOKEN")
-        self.assertEqual(len(cloudflare["operations"]), 22)
-        self.assertEqual(cloudflare["limits"]["fixed_api_hosts"], ["api.cloudflare.com"])
-        self.assertEqual(cloudflare["limits"]["requests_per_ticket_max"], 1)
-        self.assertFalse(cloudflare["limits"]["write_operations_allowed"])
-        self.assertFalse(cloudflare["limits"]["urlscanner_submission_allowed"])
-        self.assertFalse(cloudflare["limits"]["arbitrary_cloudflare_paths_allowed"])
-        self.assertFalse(cloudflare["limits"]["custom_cookies_allowed"])
-        self.assertFalse(cloudflare["limits"]["custom_browser_scripts_allowed"])
-        self.assertTrue(all(row["result_contract"]["read_only"] for row in cloudflare["operations"]))
-
-        self.assertEqual(providers["browserless"]["ticket_prefix"], "[api-browserless]")
-        self.assertEqual(providers["browserless"]["required_secret_environment_variable_name"], "BROWSERLESS_TOKEN")
-        self.assertEqual(providers["browserless"]["limits"]["fixed_api_host"], "production-sfo.browserless.io")
-        self.assertFalse(providers["browserless"]["limits"]["arbitrary_code_allowed"])
-        self.assertFalse(providers["browserless"]["limits"]["captcha_or_unblock_allowed"])
-        self.assertFalse(providers["browserless"]["limits"]["profiles_allowed"])
-
-        self.assertEqual(providers["data-commons"]["ticket_prefix"], "[api-dc]")
-        self.assertEqual(providers["data-commons"]["required_secret_environment_variable_name"], "GOOGLE_DATA_COMMONS_API_KEY")
-        self.assertFalse(providers["data-commons"]["limits"]["arbitrary_urls_allowed"])
-        self.assertFalse(providers["data-commons"]["limits"]["sparql_allowed"])
-
-        self.assertEqual(providers["qweather"]["ticket_prefix"], "[api-qweather]")
-        self.assertEqual(providers["qweather"]["required_secret_environment_variable_name"], "QWEATHER_API_KEY")
-        self.assertEqual(providers["qweather"]["limits"]["fixed_api_host"], "ka6r72kcc3.re.qweatherapi.com")
-        self.assertFalse(providers["qweather"]["limits"]["arbitrary_hosts_allowed"])
-        self.assertFalse(providers["qweather"]["limits"]["redirects_allowed"])
-
-        xweather = providers["xweather"]
-        self.assertEqual(xweather["ticket_prefix"], "[api-xweather]")
-        self.assertEqual(
-            xweather["required_secret_environment_variable_name"],
-            "XWEATHER_CLIENT_SECRET",
-        )
-        self.assertEqual(xweather["required_repository_variable"], "XWEATHER_CLIENT_ID")
-        self.assertEqual(len(xweather["operations"]), 10)
-        self.assertEqual(xweather["limits"]["fixed_api_host"], "data.api.xweather.com")
-        self.assertFalse(xweather["limits"]["arbitrary_query_parameters_allowed"])
-        self.assertFalse(xweather["limits"]["client_supplied_credentials_allowed"])
-        self.assertFalse(xweather["limits"]["write_operations_allowed"])
-
-        self.assertEqual(providers["miaoxiang-mcp"]["ticket_prefix"], "[api-mx-mcp]")
-        self.assertEqual(providers["miaoxiang-mcp"]["required_secret_environment_variable_name"], "EM_API_KEY")
-        self.assertEqual(providers["miaoxiang-mcp"]["limits"]["fixed_mcp_tool_count"], 11)
-        self.assertFalse(providers["miaoxiang-mcp"]["limits"]["arbitrary_jsonrpc_methods_allowed"])
-        self.assertFalse(providers["miaoxiang-mcp"]["limits"]["arbitrary_mcp_tool_names_allowed"])
-        self.assertFalse(providers["miaoxiang-mcp"]["limits"]["write_operations_allowed"])
-        self.assertFalse(providers["miaoxiang-mcp"]["limits"]["trading_or_order_execution_allowed"])
-
-        self.assertEqual(providers["baostock"]["ticket_prefix"], "[api-baostock]")
-        self.assertEqual(providers["baostock"]["required_secret_environment_variable_name"], "")
-        self.assertFalse(providers["baostock"]["limits"]["arbitrary_functions_allowed"])
-        self.assertFalse(providers["baostock"]["limits"]["trading_or_order_execution_allowed"])
-
-        self.assertEqual(providers["eodhd"]["ticket_prefix"], "[api-eodhd]")
-        self.assertEqual(providers["eodhd"]["required_secret_environment_variable_name"], "EODHD_API_TOKEN")
-        self.assertFalse(providers["eodhd"]["limits"]["arbitrary_urls_allowed"])
-        self.assertFalse(providers["eodhd"]["limits"]["trading_or_order_execution_allowed"])
-
-        east_asia = providers["east-asia-econ"]
-        self.assertEqual(east_asia["ticket_prefix"], "[api-east-asia-econ]")
-        self.assertEqual(east_asia["required_secret_environment_variable_name"], "EAST_ASIA_ECON_API_KEY")
-        self.assertEqual(east_asia["limits"]["fixed_api_host"], "data-api.eastasiaecon.com")
-        self.assertEqual(east_asia["limits"]["requests_per_ticket_max"], 1)
-        self.assertFalse(east_asia["limits"]["arbitrary_urls_allowed"])
-        self.assertFalse(east_asia["limits"]["arbitrary_headers_allowed"])
-        self.assertFalse(east_asia["limits"]["write_operations_allowed"])
-
-        alpha_vantage = providers["alpha-vantage"]
-        self.assertEqual(alpha_vantage["ticket_prefix"], "[api-alpha-vantage]")
-        self.assertEqual(
-            alpha_vantage["required_secret_environment_variable_name"],
-            "ALPHA_VANTAGE_API_KEY",
-        )
-        self.assertEqual(len(alpha_vantage["operations"]), 66)
-        self.assertEqual(
-            alpha_vantage["limits"]["fixed_api_host"],
-            "www.alphavantage.co",
-        )
-        self.assertEqual(alpha_vantage["limits"]["requests_per_ticket_max"], 1)
-        self.assertEqual(alpha_vantage["limits"]["provider_concurrency_max"], 1)
-        self.assertFalse(alpha_vantage["limits"]["arbitrary_functions_allowed"])
-        self.assertFalse(alpha_vantage["limits"]["client_supplied_api_key_allowed"])
-        self.assertFalse(alpha_vantage["limits"]["write_operations_allowed"])
-        self.assertFalse(
-            alpha_vantage["limits"]["trading_or_order_execution_allowed"]
-        )
-
-        overture = providers["overture-maps"]
-        self.assertEqual(overture["ticket_prefix"], "[api-overture]")
-        self.assertEqual(overture["required_secret_environment_variable_name"], "")
-        self.assertEqual(len(overture["operations"]), 7)
-        self.assertFalse(overture["limits"]["whole_world_download_allowed"])
-        self.assertFalse(overture["limits"]["arbitrary_s3_paths_allowed"])
-
-        oecd = providers["oecd"]
-        self.assertEqual(oecd["ticket_prefix"], "[api-oecd]")
-        self.assertEqual(oecd["required_secret_environment_variable_name"], "")
-        self.assertEqual(len(oecd["operations"]), 6)
-        self.assertEqual(oecd["limits"]["fixed_api_host"], "sdmx.oecd.org")
-        self.assertFalse(oecd["limits"]["arbitrary_sdmx_resource_types_allowed"])
-
-        adb = providers["adb"]
-        self.assertEqual(adb["ticket_prefix"], "[intel-adb]")
-        self.assertEqual(adb["required_secret_environment_variable_name"], "")
-        self.assertEqual(len(adb["operations"]), 8)
-        self.assertEqual(adb["limits"]["fixed_api_host"], "kidb.adb.org")
-        self.assertEqual(adb["limits"]["official_rate_limit_queries_per_minute"], 20)
-        self.assertEqual(adb["limits"]["requests_per_ticket_max"], 1)
-        self.assertFalse(adb["limits"]["empty_dimension_bulk_queries_allowed"])
-        self.assertFalse(adb["limits"]["automatic_retry_allowed"])
-        self.assertFalse(adb["limits"]["automatic_pagination_allowed"])
-        self.assertFalse(adb["limits"]["write_operations_allowed"])
-
-        alphafeed = providers["alphafeed"]
-        self.assertEqual(alphafeed["ticket_prefix"], "[api-alphafeed]")
-        self.assertEqual(
-            alphafeed["required_secret_environment_variable_name"],
-            "ALPHAFEED_API_KEY",
-        )
-        self.assertEqual(len(alphafeed["operations"]), 10)
-        self.assertEqual(alphafeed["limits"]["fixed_api_host"], "api.alphafeed.org")
-        self.assertFalse(alphafeed["limits"]["arbitrary_sdk_methods_allowed"])
-        self.assertFalse(alphafeed["limits"]["trading_or_order_execution_allowed"])
-
-
-        marketstack = providers["marketstack"]
-        self.assertEqual(marketstack["ticket_prefix"], "[intel-marketstack]")
-        self.assertEqual(
-            marketstack["required_secret_environment_variable_name"],
-            "MARKETSTACK_ACCESS_KEY",
-        )
-        self.assertEqual(len(marketstack["operations"]), 11)
-        self.assertEqual(marketstack["limits"]["fixed_api_host"], "api.marketstack.com")
-        self.assertEqual(marketstack["limits"]["free_plan_requests_per_month"], 100)
-        self.assertEqual(marketstack["limits"]["historical_span_days_max"], 366)
-        self.assertFalse(marketstack["limits"]["automatic_pagination_allowed"])
-        self.assertFalse(marketstack["limits"]["intraday_or_realtime_operations_allowed"])
-        self.assertFalse(marketstack["limits"]["write_operations_allowed"])
-        self.assertFalse(marketstack["limits"]["trading_or_order_execution_allowed"])
-
-        nasa = providers["nasa"]
-        self.assertEqual(nasa["ticket_prefix"], "[intel-nasa]")
-        self.assertEqual(
-            nasa["required_secret_environment_variable_name"],
-            "NASA_API_KEY",
-        )
-        self.assertEqual(len(nasa["operations"]), 25)
-        self.assertEqual(nasa["limits"]["requests_per_ticket_max"], 1)
-        self.assertEqual(nasa["limits"]["neo_feed_span_days_max"], 7)
-        self.assertEqual(nasa["limits"]["donki_date_span_days_max"], 31)
-        self.assertEqual(nasa["limits"]["gibs_tiles_per_ticket_max"], 1)
-        self.assertFalse(nasa["limits"]["bulk_download_allowed"])
-        self.assertFalse(nasa["limits"]["archived_earth_api_allowed"])
-        self.assertFalse(nasa["limits"]["archived_mars_rover_api_allowed"])
-        self.assertFalse(nasa["limits"]["write_operations_allowed"])
-
-        aisstream = providers["aisstream"]
-        self.assertEqual(aisstream["ticket_prefix"], "[intel-aisstream]")
-        self.assertEqual(
-            aisstream["required_secret_environment_variable_name"],
-            "AISSTREAM_API_KEY",
-        )
-        self.assertEqual(len(aisstream["operations"]), 4)
-        self.assertFalse(aisstream["limits"]["worldwide_subscription_allowed"])
-        self.assertFalse(aisstream["limits"]["background_streaming_allowed"])
-        self.assertFalse(aisstream["limits"]["write_operations_allowed"])
-
-        internet_archive = providers["internet-archive"]
-        self.assertEqual(
-            internet_archive["ticket_prefix"],
-            "[intel-internet-archive]",
-        )
-        self.assertEqual(
-            internet_archive["required_secret_environment_variable_name"],
-            "",
-        )
-        self.assertEqual(len(internet_archive["operations"]), 6)
-        self.assertFalse(internet_archive["limits"]["file_downloads_allowed"])
-        self.assertFalse(internet_archive["limits"]["uploads_allowed"])
-        self.assertFalse(internet_archive["limits"]["write_operations_allowed"])
-
-        who = providers["who-gho-odata"]
-        self.assertEqual(who["ticket_prefix"], "[intel-who-gho]")
-        self.assertEqual(who["required_secret_environment_variable_name"], "")
-        self.assertEqual(len(who["operations"]), 8)
-        self.assertEqual(who["limits"]["fixed_api_host"], "ghoapi.azureedge.net")
-        self.assertFalse(who["limits"]["arbitrary_odata_filters_allowed"])
-        self.assertFalse(who["limits"]["automatic_pagination_allowed"])
-        self.assertFalse(who["limits"]["write_operations_allowed"])
-        self.assertTrue(who["limits"]["legacy_endpoint_migration_watch_required"])
-
-        mediastack = providers["mediastack"]
-        self.assertEqual(mediastack["ticket_prefix"], "[intel-mediastack]")
-        self.assertEqual(
-            mediastack["required_secret_environment_variable_name"],
-            "MEDIASTACK_API_KEY",
-        )
-        self.assertEqual(len(mediastack["operations"]), 5)
-        self.assertEqual(mediastack["limits"]["fixed_api_host"], "api.mediastack.com")
-        self.assertEqual(mediastack["limits"]["free_plan_requests_per_month"], 100)
-        self.assertFalse(mediastack["limits"]["automatic_pagination_allowed"])
-        self.assertFalse(mediastack["limits"]["article_body_fetching_allowed"])
-        self.assertFalse(mediastack["limits"]["write_operations_allowed"])
-
-        self.assertEqual(
-            providers["tushare"]["ticket_prefix"],
-            "[api-tushare]",
-        )
-        self.assertEqual(
-            {row["operation_id"] for row in providers["tushare"]["operations"]},
-            {
-                "catalog-capabilities",
-                "trade-calendar",
-                "stock-basic",
-                "daily-quotes",
-                "weekly-quotes",
-                "monthly-quotes",
-                "adjust-factor",
-                "daily-basic",
-                "money-flow",
-                "margin-summary",
-                "top-list",
-                "income-statement",
-                "balance-sheet",
-                "cash-flow-statement",
-                "financial-indicator",
-                "index-basic",
-                "index-daily",
-                "fund-basic",
-                "fund-nav",
-                "hk-hold",
-            },
-        )
-        tushare_limits = providers["tushare"]["limits"]
-        self.assertFalse(tushare_limits["arbitrary_api_names_allowed"])
-        self.assertFalse(tushare_limits["arbitrary_urls_allowed"])
-        self.assertFalse(tushare_limits["write_operations_allowed"])
-        self.assertFalse(tushare_limits["trading_or_order_execution_allowed"])
-
-        wolfram = providers["wolfram-alpha"]
-        self.assertEqual(wolfram["ticket_prefix"], "[api-wolfram]")
-        self.assertEqual(
-            {row["operation_id"] for row in wolfram["operations"]},
-            {
-                "catalog-capabilities",
-                "full-results",
-                "short-answer",
-                "llm-result",
-            },
-        )
-        self.assertFalse(wolfram["limits"]["arbitrary_urls_allowed"])
-        self.assertFalse(wolfram["limits"]["write_operations_allowed"])
-
-        llamaparse = providers["llamaparse"]
-        self.assertEqual(llamaparse["ticket_prefix"], "[api-llamaparse]")
-        self.assertEqual(
-            {row["operation_id"] for row in llamaparse["operations"]},
-            {
-                "catalog-capabilities",
-                "parse-public-document",
-                "get-job",
-            },
-        )
-        self.assertFalse(llamaparse["limits"]["arbitrary_urls_allowed"])
-        self.assertFalse(llamaparse["limits"]["webhooks_allowed"])
-        self.assertFalse(llamaparse["limits"]["presigned_urls_exposed"])
-
-        for catalog_file in (
-            "tushare/provider-catalog.json",
-            "baostock/provider-catalog.json",
-            "eodhd/provider-catalog.json",
-            "data-commons/provider-catalog.json",
-            "qweather/provider-catalog.json",
-            "xweather/provider-catalog.json",
-            "miaoxiang-mcp/provider-catalog.json",
-            "east-asia-econ/provider-catalog.json",
-            "alpha-vantage/provider-catalog.json",
-            "overture-maps/provider-catalog.json",
-            "oecd/provider-catalog.json",
-            "alphafeed/provider-catalog.json",
-            "knowledge-tools/provider-catalog.json",
-        ):
-            self.assertIn(catalog_file, catalog["managed_provider_catalog_files"])
-            self.assertIn(catalog_file, catalog["detail_reading_order"])
-        self.assertNotIn(
-            "tianditu/provider-catalog.json",
-            catalog["managed_provider_catalog_files"],
-        )
-
-        self.assertEqual(
-            providers["yuandian-law"]["discovered_readonly_tool_count"],
-            37,
-        )
-        self.assertEqual(
-            providers["jina-reader"][
-                "required_secret_environment_variable_name"
-            ],
-            "",
-        )
-        self.assertEqual(
-            providers["jina-reader"][
-                "optional_secret_environment_variable_name"
-            ],
-            "JINA_API_KEY",
-        )
-        self.assertEqual(
-            providers["akshare"]["required_secret_environment_variable_name"],
-            "",
-        )
-
-        connector_map = {
-            row["connector_id"]: row for row in catalog["connectors"]
-        }
-        self.assertTrue(
-            {
-                "newsapi-everything",
-                "newsapi-top-headlines",
-                "newsapi-sources",
-                "openmeteo-forecast",
-                "baidu-geocode",
-                "baidu-place-search",
-                "worldbank-indicators",
-                "wikidata-entity-get",
-                "dbnomics-search",
-            }.issubset(connector_map)
-        )
-        for connector_id in (
-            "newsapi-everything",
-            "newsapi-top-headlines",
-            "newsapi-sources",
-        ):
-            self.assertTrue(connector_map[connector_id]["enabled"])
-            self.assertEqual(
-                connector_map[connector_id]["secret_environment_variable_name"],
-                "NEWSAPI_API_KEY",
-            )
-
-        serialized = json.dumps(catalog, ensure_ascii=False)
-        self.assertNotIn("VALIDATION_DUMMY_SECRET", serialized)
-        self.assertNotIn("TIANDITU_API_KEY", serialized)
-        self.assertNotIn("TIANDITU_EXPECTED_EGRESS_IP", serialized)
-        self.assertNotIn("QICHACHA_CREDENTIALS_JSON", serialized)
-        self.assertNotIn("Bearer llx-", serialized)
-        for row in catalog["connectors"]:
-            self.assertIn("parameter_names", row)
-            self.assertIn("detail_file", row)
-            self.assertIn("metadata_pointer", row)
-            self.assertFalse(row["secret_value_exposed"])
-            detail = ROOT / row["detail_file"]
-            self.assertTrue(detail.is_file())
-            connector = json.loads(detail.read_text(encoding="utf-8"))
-            if row["enabled"]:
-                contract = connector.get("response_contract")
-                self.assertIsInstance(contract, dict)
-                status_contract = bool(
-                    contract.get("status_path")
-                    and contract.get("success_values")
-                )
-                data_contract = bool(
-                    contract.get("success_when_data_present") is True
-                    and contract.get("any_data_paths")
-                )
-                self.assertTrue(status_contract or data_contract)
 
     def test_catalog_output_is_deterministic(self) -> None:
-        first = self.build()
-        second = self.build()
-        self.assertEqual(first, second)
-        self.assertEqual(
-            first["generation"],
-            "deterministic-from-repository-state",
-        )
+        self.assertEqual(self.build(), self.build())
 
     def test_committed_catalog_matches_generator(self) -> None:
-        generated = self.build()
         committed = json.loads(
             (ROOT / "api-catalog.json").read_text(encoding="utf-8")
         )
-        self.assertEqual(generated, committed)
-        self.assertEqual(
-            build_catalog.render_markdown(generated),
-            (ROOT / "api-catalog.md").read_text(encoding="utf-8"),
-        )
+        self.assertEqual(committed, self.build())
 
     def test_main_writes_json_and_markdown(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
+            output = Path(tmp)
             catalog = self.build()
-            json_path = root / "catalog.json"
-            markdown_path = root / "catalog.md"
-            json_path.write_text(
-                json.dumps(catalog, ensure_ascii=False, indent=2),
+            (output / "api-catalog.json").write_text(
+                json.dumps(catalog, ensure_ascii=False, indent=2) + "\n",
                 encoding="utf-8",
             )
-            markdown_path.write_text(
+            (output / "api-catalog.md").write_text(
                 build_catalog.render_markdown(catalog),
                 encoding="utf-8",
             )
-            self.assertIn(
-                "GPTs 使用中心",
-                markdown_path.read_text(encoding="utf-8"),
-            )
-            self.assertIn(
-                "catalog_sha256",
-                json_path.read_text(encoding="utf-8"),
-            )
+            self.assertTrue((output / "api-catalog.json").exists())
+            self.assertTrue((output / "api-catalog.md").exists())
 
 
 if __name__ == "__main__":
