@@ -32,13 +32,10 @@
           "COMPANIES_HOUSE_API_KEY",
           "SAM_GOV_API_KEY",
           "OPENTOPOGRAPHY_API_KEY",
-          "GLOBAL_FISHING_WATCH_API_TOKEN",
           "OPENCHARGEMAP_API_KEY",
           "TRANSITLAND_API_KEY"
         ],
-        "noncommercial_only_operations": [
-          "global-fishing-watch-vessels"
-        ],
+        "noncommercial_only_operations": [],
         "china_first_operations": [
           "china-local-open-data-catalog",
           "china-science-data-centers"
@@ -1374,40 +1371,6 @@
           },
           "result_contract": {
             "official_endpoint": "https://maps.isric.org/mapserv?map=/map/{property}.map&SERVICE=WCS&VERSION=2.0.1&REQUEST=GetCapabilities",
-            "http_method": "GET",
-            "read_only": true
-          },
-          "discovery_policy": {
-            "source": "official-documentation"
-          }
-        },
-        {
-          "operation_id": "global-fishing-watch-vessels",
-          "description": "检索 Global Fishing Watch v3 船舶身份，限非商业用途。",
-          "parameters": [
-            "query",
-            "limit"
-          ],
-          "parameter_schema": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-              "query": {
-                "type": "string",
-                "maxLength": 100
-              },
-              "limit": {
-                "type": "integer",
-                "minimum": 1,
-                "maximum": 50
-              }
-            },
-            "required": [
-              "query"
-            ]
-          },
-          "result_contract": {
-            "official_endpoint": "https://gateway.api.globalfishingwatch.org/v3/vessels/search",
             "http_method": "GET",
             "read_only": true
           },

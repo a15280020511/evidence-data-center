@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
-import os
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
@@ -41,15 +39,6 @@ class GlobalSensorBackboneTests(unittest.TestCase):
             module.build_request(
                 "portwatch-items", {"collection_id": "../private"}
             )
-
-    def test_secret_operations_fail_when_unconfigured(self) -> None:
-        with patch.dict(os.environ, {}, clear=True):
-            with self.assertRaisesRegex(RuntimeError, "GIE_API_KEY"):
-                module.build_request("gie-storage", {})
-            with self.assertRaisesRegex(RuntimeError, "GLOBAL_FISHING_WATCH"):
-                module.build_request("gfw-events", {})
-            with self.assertRaisesRegex(RuntimeError, "KOREA_DATA"):
-                module.build_request("kpx-current-supply", {})
 
     def test_nasa_power_rejects_unknown_temporal_mode(self) -> None:
         with self.assertRaisesRegex(ValueError, "temporal"):

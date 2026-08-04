@@ -195,9 +195,6 @@ def build(operation:str,p:Mapping[str,Any])->Spec|dict[str,Any]:
         return Spec('GET',f'https://www.geoboundaries.org/api/current/{product}/{iso}/{adm}/')
     if operation=='soilgrids-wcs-capabilities':
         prop=text(p,'property',20,True); return Spec('GET','https://maps.isric.org/mapserv',params=[('map',f'/map/{prop}.map'),('SERVICE','WCS'),('VERSION','2.0.1'),('REQUEST','GetCapabilities')],response_kind='text')
-    if operation=='global-fishing-watch-vessels':
-        key=secret('GLOBAL_FISHING_WATCH_API_TOKEN'); q=[('query',text(p,'query',100,True)),('limit',str(integer(p,'limit',20,1,50)))]
-        return Spec('GET','https://gateway.api.globalfishingwatch.org/v3/vessels/search',params=q,headers={'Authorization':f'Bearer {key}'},credential_mode='bearer-token')
     if operation=='opencharge-map-poi':
         q=[('latitude',str(float(p['latitude']))),('longitude',str(float(p['longitude']))),('distance',str(float(p.get('distance_km') or 25))),('distanceunit','KM'),('maxresults',str(integer(p,'max_results',50,1,100))),('compact','true'),('verbose','false')]
         key=secret('OPENCHARGEMAP_API_KEY',False); headers={'X-API-Key':key} if key else {}

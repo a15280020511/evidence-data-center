@@ -104,7 +104,7 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "adb": 8,
     "wolfram-alpha": 4,
     "llamaparse": 3,
-    "public-data-geospatial": 35,
+    "public-data-geospatial": 34,
     "cloudflare": 22,
     "fred": 25,
     "huggingface-hub": 11,
@@ -204,7 +204,7 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
         raise ValueError("global sensor standalone provider catalog is invalid")
     sensor = rows[0]
     operations = sensor.get("operations")
-    if sensor.get("provider_id") != "global-sensor-backbone" or not isinstance(operations, list) or len(operations) != 21:
+    if sensor.get("provider_id") != "global-sensor-backbone" or not isinstance(operations, list) or len(operations) != 17:
         raise ValueError("global sensor standalone provider invariant failed")
     if standalone.get("secret_values_exposed") is not False:
         raise ValueError("global sensor standalone provider exposes secret values")
