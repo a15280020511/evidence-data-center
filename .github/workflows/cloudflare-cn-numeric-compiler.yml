@@ -21,8 +21,8 @@ permissions:
   issues: write
 
 concurrency:
-  group: cloudflare-cn-numeric-compiler-global
-  cancel-in-progress: false
+  group: cloudflare-cn-numeric-compiler-${{ github.event_name == 'issues' && 'execution-global' || github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'issues' }}
 
 jobs:
   validate:
