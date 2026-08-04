@@ -1,0 +1,54 @@
+name: NOAA Live Diagnostic
+
+on:
+  push:
+    branches: [feat/noaa-official-data]
+    paths:
+      - ".github/workflows/noaa-live-diagnostic.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Probe official NOAA endpoints independently
+        shell: bash
+        run: |
+          set -u
+          ua='decision-system-intelligence-center/1.0 (https://github.com/a15280020511/evidence-data-center)'
+          mkdir -p noaa-live
+          probe() {
+            name="$1"
+            url="$2"
+            accept="$3"
+            code="$(curl -L --max-time 30 -A "$ua" -H "Accept: $accept" -sS -o "noaa-live/${name}.json" -w '%{http_code}' "$url" || true)"
+            printf '%s=%s\n' "$name" "$code" | tee -a noaa-live/status.txt
+            printf '%s body: ' "$name"
+            head -c 800 "noaa-live/${name}.json" 2>/dev/null || true
+            printf '\n'
+          }
+          probe points 'https://api.weather.gov/points/39.7456,-97.0892' 'application/geo+json'
+          probe alerts_no_limit 'https://api.weather.gov/alerts/active?area=KS' 'application/geo+json'
+          probe alerts_limit 'https://api.weather.gov/alerts/active?area=KS&limit=1' 'application/geo+json'
+          probe ncei_basic 'https://www.ncei.noaa.gov/access/services/search/v1/data?dataset=daily-summaries&startDate=2024-01-01&endDate=2024-01-02' 'application/json'
+          probe ncei_station 'https://www.ncei.noaa.gov/access/services/search/v1/data?dataset=daily-summaries&startDate=2024-01-01&endDate=2024-01-02&stations=USW00094728&limit=1' 'application/json'
+          python - <<'PY'
+          from pathlib import Path
+          rows = dict(line.strip().split('=', 1) for line in Path('noaa-live/status.txt').read_text().splitlines())
+          required = ['points', 'alerts_no_limit', 'ncei_basic']
+          failed = [name for name in required if rows.get(name) != '200']
+          print(rows)
+          if failed:
+              raise SystemExit(f'required probes failed: {failed}')
+          PY
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: noaa-live-diagnostic-${{ github.run_id }}
+          path: noaa-live
+          if-no-files-found: error
+          retention-days: 30
