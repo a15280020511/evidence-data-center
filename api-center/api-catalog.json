@@ -72,7 +72,7 @@
     "copernicus-marine/provider-catalog.json",
     "open-intelligence-toolkit/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "04ab6a79cf168cfd6fe06deda11de75ad7357b19599c8e9c21122ba0da27e33b",
+  "managed_provider_catalog_sha256": "8bc687a7a9bc28b6513eb928c55f32fffa11e0ae193c2a28613f2fed9839ddec",
   "connector_count": 72,
   "enabled_connector_count": 72,
   "managed_provider_count": 68,
@@ -31005,7 +31005,7 @@
       "description": "固定接入教育研究、开放专著、国家图书馆目录、博物馆开放馆藏、科研资助、临床试验、地学报告、监管文件和经济工作论文元数据；需要Key的来源仅Google Books与BHL。",
       "enabled": true,
       "ticket_prefix": "[intel-knowledge]",
-      "catalog_policy": "仅开放9项固定只读操作和16个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
+      "catalog_policy": "仅开放9项固定只读操作和15个固定HTTPS来源；禁止任意URL、主机、路径、Header、客户端Key、动态Provider、付费墙绕过和未授权全文复制。",
       "execution_policy": "每票最多一次上游请求；只取首批结果；不自动翻页、不追随OAI resumptionToken、不自动重试、不跟随重定向；Key仅后端注入；保留权利字段与响应哈希。",
       "operation_count": 9,
       "operations": [
@@ -31172,7 +31172,6 @@
                 "type": "string",
                 "enum": [
                   "hal-oai",
-                  "doab-oai",
                   "rijksmuseum-oai"
                 ]
               }
@@ -31211,7 +31210,6 @@
                 "type": "string",
                 "enum": [
                   "hal-oai",
-                  "doab-oai",
                   "rijksmuseum-oai"
                 ]
               },
@@ -31266,7 +31264,6 @@
                 "type": "string",
                 "enum": [
                   "hal-oai",
-                  "doab-oai",
                   "rijksmuseum-oai"
                 ]
               },
@@ -31407,7 +31404,7 @@
         }
       ],
       "limits": {
-        "source_count": 16,
+        "source_count": 15,
         "requests_per_ticket_max": 1,
         "timeout_seconds_max": 90,
         "max_response_bytes": 15000000,
@@ -31432,7 +31429,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "eee324982647c9bcfa40c380c8204dcd2548c820ef23e9280c6e901e31274999",
+      "provider_sha256": "f4cee505fb0c49009d6a4e6aeda40462ef4b2b2ce22c9b336380ea18c5fb6c49",
       "catalog_file": "global-knowledge-archives/provider-catalog.json"
     },
     {
@@ -45159,5 +45156,5 @@
       "directly_invokable": true
     }
   ],
-  "catalog_sha256": "7fa3b49ded194a038927a826e4986bc5af410e96f19871e17e23458a8b2dcd48"
+  "catalog_sha256": "6853abc7d4e1179e48de0177d55046719d2624ccfd649f49e7ab4319ce21a69e"
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": "global-knowledge-archives-source-matrix-v1",
-  "active_source_count": 16,
+  "active_source_count": 15,
   "sources": [
     {
       "source_id": "eric",
@@ -195,22 +195,6 @@
       "cost": "free"
     },
     {
-      "source_id": "doab-oai",
-      "name": "Directory of Open Access Books",
-      "category": "open-access-books",
-      "protocol": "oai-pmh",
-      "base_url": "https://directory.doabooks.org/oai/request",
-      "operations": [
-        "oai-identify",
-        "oai-list-records",
-        "oai-get-record"
-      ],
-      "credential_mode": "none",
-      "credential_env": "",
-      "license_policy": "Open-access book metadata; preserve book and chapter license information.",
-      "cost": "free"
-    },
-    {
       "source_id": "rijksmuseum-oai",
       "name": "Rijksmuseum OAI-PMH",
       "category": "museum-collections",
@@ -341,6 +325,10 @@
     {
       "source_id": "oapen-oai",
       "reason": "The documented OAI endpoint closed the connection without returning an Identify response during the bounded production acceptance on 2026-08-03. DOAB remains active for open-book discovery; OAPEN is deferred until a current stable endpoint is verified."
+    },
+    {
+      "source_id": "doab-oai",
+      "reason": "The official DOAB OAI-PMH Identify endpoint returned HTTP 520 in repeated bounded GitHub Actions production probes on 2026-08-04. The connector remains registered as a conditional capability; existing OpenAlex, Crossref, DataCite, Open Library and other literature sources cover production discovery until the endpoint is reliable."
     }
   ],
   "governance": {
