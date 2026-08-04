@@ -1,0 +1,199 @@
+{
+  "schema_version": "china-social-platform-access-policy-v1",
+  "status": "production-control",
+  "platform_count": 5,
+  "scope": "中国大陆主要社交与内容平台的公开、合法、非个人化情报采集边界",
+  "global_policy": {
+    "official_api_first": true,
+    "browser_public_page_fallback_allowed": true,
+    "login_bypass_allowed": false,
+    "captcha_bypass_allowed": false,
+    "anti_bot_evasion_allowed": false,
+    "mobile_private_api_reverse_engineering_allowed": false,
+    "user_cookie_pool_allowed": false,
+    "private_message_collection_allowed": false,
+    "personal_profile_building_allowed": false,
+    "raw_content_persistence_allowed": false,
+    "raw_comment_persistence_allowed": false,
+    "numeric_aggregate_only": true,
+    "enterprise_policy_topic_focus": true,
+    "copyrighted_video_download_allowed": false,
+    "deleted_or_restricted_content_recovery_allowed": false
+  },
+  "platforms": [
+    {
+      "platform_id": 1001,
+      "id": "weibo",
+      "name": "微博",
+      "access_class": "conditional-official-api-and-public-web",
+      "preferred_channel": "official-open-platform-or-weibo-cli",
+      "official_capabilities": [
+        "authorized_account_data",
+        "keyword_search_subject_to_plan_and_permission",
+        "hot_topic_and_trend_data_subject_to_plan",
+        "public_content_metrics_subject_to_permission"
+      ],
+      "browser_run_allowed_for": [
+        "public_hot_search_pages",
+        "public_topic_pages",
+        "public_verified_enterprise_or_agency_posts",
+        "public_search_result_pages_when_accessible_without_login"
+      ],
+      "browser_run_forbidden_for": [
+        "login_only_content",
+        "private_accounts",
+        "private_messages",
+        "personal_follower_graphs",
+        "mass_comment_archiving",
+        "circumventing_rate_limits_or_challenges"
+      ],
+      "expected_stability": "medium",
+      "collection_decision": "official-api-first-browser-bounded-fallback",
+      "source_priority": "C-unless-official-account-or-platform-trend",
+      "notes": "免费官方能力可能仅覆盖本人数据或低频调用；全网检索与趋势能力可能需要权限或订阅。"
+    },
+    {
+      "platform_id": 1002,
+      "id": "douyin",
+      "name": "抖音",
+      "access_class": "conditional-official-api-and-limited-public-web",
+      "preferred_channel": "douyin-open-platform",
+      "official_capabilities": [
+        "topic_billboard_subject_to_scope",
+        "authorized_user_public_video_metrics",
+        "authorized_account_public_information",
+        "selected_data_open_services_subject_to_application"
+      ],
+      "browser_run_allowed_for": [
+        "public_share_pages_when_directly_accessible",
+        "public_topic_or_rank_pages_when_directly_accessible",
+        "public_verified_enterprise_or_agency_content_metadata"
+      ],
+      "browser_run_forbidden_for": [
+        "mobile_private_api_calls",
+        "signature_or_device_fingerprint_bypass",
+        "mass_video_download",
+        "personal_behavior_tracking",
+        "login_or_captcha_bypass",
+        "unauthorized_creator_analytics"
+      ],
+      "expected_stability": "low-to-medium",
+      "collection_decision": "official-api-preferred-public-web-opportunistic-only",
+      "source_priority": "C-unless-official-billboard-or-verified-account",
+      "notes": "公开网页高度动态且存在登录、风控和签名限制，不应作为稳定全量采集主通道。"
+    },
+    {
+      "platform_id": 1003,
+      "id": "bilibili",
+      "name": "哔哩哔哩",
+      "access_class": "conditional-official-api-and-public-web",
+      "preferred_channel": "bilibili-open-platform",
+      "official_capabilities": [
+        "authorized_user_public_information",
+        "authorized_manuscript_and_content_data",
+        "authorized_live_data",
+        "open_platform_webhooks_subject_to_application"
+      ],
+      "browser_run_allowed_for": [
+        "public_video_pages",
+        "public_rank_and_search_pages_when_accessible",
+        "public_verified_enterprise_or_agency_accounts",
+        "public_video_engagement_counters"
+      ],
+      "browser_run_forbidden_for": [
+        "mass_video_or_audio_download",
+        "login_only_member_data",
+        "private_messages",
+        "personal_watch_history",
+        "anti_bot_or_rate_limit_bypass",
+        "full_comment_or_danmaku_archiving"
+      ],
+      "expected_stability": "medium",
+      "collection_decision": "official-api-first-browser-bounded-fallback",
+      "source_priority": "C-unless-official-account-or-platform-rank",
+      "notes": "开放平台通常需要身份认证、应用审核或用户授权；公共页面可做有限聚合观测。"
+    },
+    {
+      "platform_id": 1004,
+      "id": "zhihu",
+      "name": "知乎",
+      "access_class": "conditional-developer-api-and-public-web",
+      "preferred_channel": "zhihu-developer-platform",
+      "official_capabilities": [
+        "search_subject_to_access_secret_and_permission",
+        "global_search_subject_to_permission",
+        "hot_list_subject_to_permission",
+        "structured_content_services_subject_to_invitation_or_commercial_terms"
+      ],
+      "browser_run_allowed_for": [
+        "public_question_pages",
+        "public_topic_pages",
+        "public_hot_list_pages",
+        "public_verified_enterprise_or_institution_accounts"
+      ],
+      "browser_run_forbidden_for": [
+        "login_only_answers_or_comments",
+        "private_messages",
+        "personal_profile_enrichment",
+        "mass_answer_archiving",
+        "captcha_or_rate_limit_bypass"
+      ],
+      "expected_stability": "medium",
+      "collection_decision": "developer-api-first-browser-bounded-fallback",
+      "source_priority": "C-unless-official-institution-account",
+      "notes": "开放平台处于申请或邀测模式时，应以获批权限为准；公开网页只做低频聚合提取。"
+    },
+    {
+      "platform_id": 1005,
+      "id": "wechat-channels",
+      "name": "微信视频号",
+      "access_class": "authorized-own-or-associated-account-only",
+      "preferred_channel": "video-accounts-assistant-or-authorized-associated-capability",
+      "official_capabilities": [
+        "own_or_authorized_channel_management_and_statistics",
+        "same_or_associated_subject_live_integration",
+        "public_share_link_metadata_when_exposed"
+      ],
+      "browser_run_allowed_for": [
+        "publicly_shared_web_pages_when_accessible_without_login",
+        "own_or_authorized_channel_pages_with_explicit_session_and_permission"
+      ],
+      "browser_run_forbidden_for": [
+        "general_public_content_crawl",
+        "wechat_client_automation",
+        "qr_login_farm",
+        "private_social_graph_or_interaction_collection",
+        "mobile_private_api_reverse_engineering",
+        "login_or_device_fingerprint_bypass"
+      ],
+      "expected_stability": "low-for-general-public-intelligence",
+      "collection_decision": "authorized-data-only-no-general-crawl",
+      "source_priority": "C-unless-official-government-or-enterprise-channel",
+      "notes": "未确认存在面向全网公开视频号内容的通用公开检索API，不能将其设计为稳定全网采集源。"
+    }
+  ],
+  "allowed_numeric_outputs": [
+    "topic_rank_and_heat",
+    "content_publication_time",
+    "public_view_like_comment_share_favorite_danmaku_counts",
+    "aggregate_engagement_rate",
+    "aggregate_propagation_velocity",
+    "aggregate_sentiment_probabilities",
+    "aggregate_policy_company_industry_mentions",
+    "verified_official_account_share",
+    "aggregate_unique_content_or_author_counts",
+    "public_content_removal_or_unavailability_event_count",
+    "cross_platform_topic_co_movement",
+    "source_confidence_and_collection_quality"
+  ],
+  "forbidden_outputs": [
+    "real_name_identity_map",
+    "individual_behavior_timeline",
+    "individual_location_or_device_profile",
+    "private_relationship_graph",
+    "private_message_content",
+    "raw_post_answer_comment_or_video_content",
+    "face_voice_or_biometric_embeddings",
+    "political_religious_health_or_financial_profile_of_individuals"
+  ]
+}
