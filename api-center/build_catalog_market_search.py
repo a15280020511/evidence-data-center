@@ -124,7 +124,6 @@ EXPECTED_EXTENDED_PROVIDERS = {
     "reality-observation": 27,
     "copernicus-marine": 3,
     "noaa-cdo": 5,
-    "global-sensor-backbone": 21,
 }
 
 base.MANAGED_PROVIDER_CATALOG_PATHS = (
@@ -181,7 +180,6 @@ base.MANAGED_PROVIDER_CATALOG_PATHS = (
     REALITY_OBSERVATION_CATALOG,
     NOAA_CDO_CATALOG,
     COPERNICUS_MARINE_CATALOG,
-    GLOBAL_SENSOR_BACKBONE_CATALOG,
 )
 
 load_json = base.load_json
@@ -199,6 +197,28 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
             )
         if provider["secret_value_exposed"] is not False:
             raise ValueError(f"extended provider exposes secret values: {provider_id}")
+
+    standalone = base.load_json(GLOBAL_SENSOR_BACKBONE_CATALOG)
+    rows = standalone.get("providers") if isinstance(standalone, Mapping) else None
+    if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], Mapping):
+        raise ValueError("global sensor standalone provider catalog is invalid")
+    sensor = rows[0]
+    operations = sensor.get("operations")
+    if sensor.get("provider_id") != "global-sensor-backbone" or not isinstance(operations, list) or len(operations) != 21:
+        raise ValueError("global sensor standalone provider invariant failed")
+    if standalone.get("secret_values_exposed") is not False:
+        raise ValueError("global sensor standalone provider exposes secret values")
+    catalog["standalone_managed_provider_catalogs"] = [
+        {
+            "provider_id": "global-sensor-backbone",
+            "display_name": sensor.get("display_name"),
+            "ticket_prefix": sensor.get("ticket_prefix"),
+            "operation_count": len(operations),
+            "catalog_path": "global-sensor-backbone/provider-catalog.json",
+            "secret_values_exposed": False,
+            "directly_invokable": True,
+        }
+    ]
 
     reading_order = list(catalog.get("detail_reading_order") or [])
     for item in (
