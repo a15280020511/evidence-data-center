@@ -62,11 +62,12 @@ jobs:
           set -euo pipefail
           python -m py_compile \
             api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler.py \
+            api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             api-center/cloudflare/numeric-compiler/tests/test_cloudflare_numeric_compiler.py
           python -m unittest discover \
             -s api-center/cloudflare/numeric-compiler/tests \
             -p 'test_*.py' -v
-          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler.py \
+          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             validate --output-dir cloudflare-cn-numeric-validation
           python - <<'PY'
           import json
@@ -74,6 +75,7 @@ jobs:
           receipt = json.loads(Path('cloudflare-cn-numeric-validation/validation-receipt.json').read_text(encoding='utf-8'))
           assert receipt['status'] == 'CLOUDFLARE_NUMERIC_COMPILER_VALIDATED'
           assert receipt['profile_count'] == 13
+          assert receipt['domain_count'] == 12
           assert receipt['variable_count'] >= 100
           assert receipt['arbitrary_prompt_allowed'] is False
           assert receipt['arbitrary_schema_allowed'] is False
@@ -168,13 +170,13 @@ jobs:
         if: steps.duplicate.outputs.duplicate != 'true'
         continue-on-error: true
         run: |
-          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler.py \
+          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             prepare --event-path "$GITHUB_EVENT_PATH" --output-dir cloudflare-cn-numeric-artifacts
 
       - name: Publish admission receipt
         if: steps.duplicate.outputs.duplicate != 'true' && steps.prepare.outcome == 'success'
         run: |
-          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler.py \
+          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             render --output-dir cloudflare-cn-numeric-artifacts > comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@comment.md
 
@@ -183,7 +185,7 @@ jobs:
         if: steps.duplicate.outputs.duplicate != 'true' && steps.prepare.outcome == 'success'
         continue-on-error: true
         run: |
-          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler.py \
+          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             execute \
             --ticket cloudflare-cn-numeric-artifacts/ticket.json \
             --output-dir cloudflare-cn-numeric-artifacts \
@@ -192,7 +194,7 @@ jobs:
       - name: Publish final receipt
         if: always() && steps.duplicate.outputs.duplicate != 'true'
         run: |
-          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler.py \
+          python api-center/cloudflare/numeric-compiler/cloudflare_numeric_compiler_runtime.py \
             render --output-dir cloudflare-cn-numeric-artifacts > comment.md || true
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" -F body=@comment.md
 
