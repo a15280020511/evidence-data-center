@@ -1,0 +1,517 @@
+{
+  "collection_layers": [
+    {
+      "id": "sources",
+      "purpose": "Source catalog, issuer, endpoint or acquisition path, coverage, update cadence, access method and collection status."
+    },
+    {
+      "id": "raw-snapshots",
+      "purpose": "Immutable original files or captures exactly as collected, with checksums and collection timestamps."
+    },
+    {
+      "id": "normalized-records",
+      "purpose": "Standardized tabular or document records with stable field names, typed values and source lineage."
+    },
+    {
+      "id": "time-series",
+      "purpose": "Point-in-time time series with observation date, publication date, revision vintage, frequency, units and seasonal treatment."
+    },
+    {
+      "id": "entity-master",
+      "purpose": "Canonical entities, aliases, identifiers, ownership or hierarchy links, active periods and resolution confidence."
+    },
+    {
+      "id": "variable-dictionaries",
+      "purpose": "Variable definitions, units, code lists, missing-value semantics, transformations, publication lag and revision behavior."
+    },
+    {
+      "id": "crosswalks",
+      "purpose": "Geographic, industry, organization, security, product, unit, currency, calendar and variable mappings."
+    },
+    {
+      "id": "derived-indicators",
+      "purpose": "Evidence-backed indicators derived from stored source data, with formulas, implementation IDs and leakage controls."
+    },
+    {
+      "id": "rule-snapshots",
+      "purpose": "Effective-dated laws, policies, taxes, standards, trading, regulatory and operational parameters."
+    },
+    {
+      "id": "event-timelines",
+      "purpose": "Timestamped events, regime changes, disruptions, interventions, announcements, corrections and resolutions."
+    },
+    {
+      "id": "quality-reports",
+      "purpose": "Coverage, consistency, missingness, bias, timeliness, revision, drift and cross-source validation evidence."
+    },
+    {
+      "id": "licenses-provenance",
+      "purpose": "License, lawful basis, attribution, redistribution and commercial-use scope, source citation and collection provenance."
+    },
+    {
+      "id": "manifests",
+      "purpose": "Versioned manifests linking files, schemas, hashes, scope, limitations, release state and review dates."
+    }
+  ],
+  "domains": [
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "macroeconomy-fiscal-monetary",
+      "preferred_granularity": [
+        "daily",
+        "monthly",
+        "quarterly",
+        "annual"
+      ],
+      "priority": "P1",
+      "purpose": "Macroeconomic activity, prices, fiscal revenue and expenditure, money, credit, interest rates, exchange rates and policy transmission.",
+      "required_collections": [
+        "national_accounts",
+        "prices_and_inflation",
+        "fiscal_budget_tax_debt",
+        "money_credit_rates_fx",
+        "employment_income_consumption",
+        "official_revisions_and_release_calendar"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "enterprise-commerce-industry",
+      "preferred_granularity": [
+        "event",
+        "daily",
+        "monthly",
+        "quarterly",
+        "annual"
+      ],
+      "priority": "P1",
+      "purpose": "Enterprise identities, ownership, operations, financials, commerce, retail, industrial output, competition and business conditions.",
+      "required_collections": [
+        "enterprise_registry_and_ownership",
+        "financial_and_operating_indicators",
+        "retail_wholesale_consumption",
+        "industrial_output_capacity_inventory",
+        "competition_store_and_project_context",
+        "bankruptcy_penalty_and_compliance_events"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "finance-capital-markets",
+      "preferred_granularity": [
+        "tick",
+        "minute",
+        "daily",
+        "monthly",
+        "quarterly"
+      ],
+      "priority": "P1",
+      "purpose": "Securities, funds, banking, insurance, market microstructure, corporate actions, risk, liquidity and investment benchmarks.",
+      "required_collections": [
+        "point_in_time_prices",
+        "corporate_actions",
+        "fundamentals_publication_dates",
+        "constituents_industries_delistings",
+        "funds_bonds_derivatives_fx",
+        "liquidity_costs_risk_free_benchmarks"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "law-policy-regulation",
+      "preferred_granularity": [
+        "event",
+        "effective_period"
+      ],
+      "priority": "P1",
+      "purpose": "Laws, regulations, judicial interpretations, policy documents, administrative rules, standards, enforcement and effective-dated parameters.",
+      "required_collections": [
+        "laws_and_regulations",
+        "judicial_interpretations_and_cases",
+        "policy_documents",
+        "administrative_rules_and_standards",
+        "enforcement_penalty_and_compliance",
+        "effective_dates_versions_and_jurisdiction"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "population-labor-income",
+      "preferred_granularity": [
+        "monthly",
+        "quarterly",
+        "annual",
+        "census"
+      ],
+      "priority": "P1",
+      "purpose": "Population, households, migration, employment, wages, income, consumption, social security, demographics and inequality.",
+      "required_collections": [
+        "population_demographics",
+        "household_income_consumption_assets",
+        "employment_wages_vacancies",
+        "migration_mobility_urbanization",
+        "social_security_and_public_assistance",
+        "survey_microdata_and_sampling_metadata"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "geospatial-land-urban",
+      "preferred_granularity": [
+        "event",
+        "monthly",
+        "annual",
+        "raster",
+        "vector"
+      ],
+      "priority": "P1",
+      "purpose": "Administrative boundaries, land use, buildings, POI, urban form, real estate, accessibility and spatial change.",
+      "required_collections": [
+        "administrative_boundaries",
+        "land_use_land_cover",
+        "buildings_parcels_addresses",
+        "poi_and_business_locations",
+        "real_estate_land_transactions",
+        "night_lights_and_urban_change"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "transport-logistics-ports",
+      "preferred_granularity": [
+        "real_time",
+        "hourly",
+        "daily",
+        "monthly"
+      ],
+      "priority": "P1",
+      "purpose": "Road, rail, aviation, maritime, ports, freight, logistics, transit, congestion, mobility and accessibility.",
+      "required_collections": [
+        "road_network_and_traffic",
+        "rail_and_transit",
+        "aviation_routes_flights_airports",
+        "maritime_shipping_ports_ais",
+        "freight_logistics_and_delivery",
+        "travel_time_accessibility_and_disruptions"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "energy-power-resources",
+      "preferred_granularity": [
+        "real_time",
+        "hourly",
+        "daily",
+        "monthly",
+        "annual"
+      ],
+      "priority": "P1",
+      "purpose": "Electricity, fuels, oil, gas, coal, renewables, grids, storage, resource reserves, prices and energy policy.",
+      "required_collections": [
+        "electricity_generation_load_grid",
+        "oil_gas_coal_and_fuels",
+        "renewables_storage_and_capacity",
+        "energy_prices_and_trade",
+        "resource_reserves_and_extraction",
+        "outages_constraints_and_policy"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "international-trade-supply-chain",
+      "preferred_granularity": [
+        "event",
+        "daily",
+        "monthly",
+        "quarterly",
+        "annual"
+      ],
+      "priority": "P1",
+      "purpose": "Customs, trade flows, tariffs, sanctions, supply chains, shipping, input-output links and cross-border dependencies.",
+      "required_collections": [
+        "customs_trade_flows",
+        "tariffs_quotas_and_trade_rules",
+        "supply_chain_entities_and_links",
+        "input_output_and_value_added",
+        "shipping_freight_and_port_flows",
+        "sanctions_controls_and_disruptions"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "agriculture-food-commodities",
+      "preferred_granularity": [
+        "daily",
+        "weekly",
+        "monthly",
+        "seasonal",
+        "annual"
+      ],
+      "priority": "P2",
+      "purpose": "Agriculture, crops, livestock, food supply, inventories, wholesale and retail prices, commodities and food security.",
+      "required_collections": [
+        "crop_area_yield_and_conditions",
+        "livestock_and_aquaculture",
+        "food_supply_inventory_and_trade",
+        "agricultural_inputs_and_weather",
+        "commodity_wholesale_retail_prices",
+        "food_safety_and_security_events"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "environment-climate-weather",
+      "preferred_granularity": [
+        "real_time",
+        "hourly",
+        "daily",
+        "monthly",
+        "annual",
+        "raster"
+      ],
+      "priority": "P1",
+      "purpose": "Weather, climate, air, water, soil, emissions, disasters, ecology, remote sensing and environmental regulation.",
+      "required_collections": [
+        "weather_observations_and_forecasts",
+        "climate_normals_and_extremes",
+        "air_water_soil_quality",
+        "emissions_and_carbon",
+        "disasters_hazards_and_losses",
+        "remote_sensing_ecology_and_land_change"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "public-health-healthcare",
+      "preferred_granularity": [
+        "event",
+        "daily",
+        "weekly",
+        "monthly",
+        "annual"
+      ],
+      "priority": "P2",
+      "purpose": "Disease, mortality, healthcare supply, utilization, insurance, pharmaceuticals, public health interventions and capacity.",
+      "required_collections": [
+        "disease_surveillance",
+        "mortality_and_population_health",
+        "facilities_beds_staff_capacity",
+        "utilization_cost_and_insurance",
+        "pharmaceuticals_devices_and_supply",
+        "interventions_guidelines_and_outcomes"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "science-technology-patents",
+      "preferred_granularity": [
+        "event",
+        "daily",
+        "monthly",
+        "annual"
+      ],
+      "priority": "P2",
+      "purpose": "Research, publications, patents, grants, standards, technology capabilities, software, models and innovation networks.",
+      "required_collections": [
+        "publications_and_citations",
+        "patents_trademarks_and_assignments",
+        "research_grants_and_projects",
+        "standards_and_technical_rules",
+        "technology_companies_products_models",
+        "open_source_software_and_dependencies"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "education-human-capital",
+      "preferred_granularity": [
+        "term",
+        "annual",
+        "event"
+      ],
+      "priority": "P2",
+      "purpose": "Schools, enrollment, attainment, skills, training, teachers, education finance, labor-market linkage and outcomes.",
+      "required_collections": [
+        "institutions_and_capacity",
+        "enrollment_attainment_and_progression",
+        "teachers_staff_and_finance",
+        "skills_training_and_certification",
+        "admissions_exams_and_policy",
+        "education_to_employment_outcomes"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "public-safety-emergency",
+      "preferred_granularity": [
+        "real_time",
+        "event",
+        "daily",
+        "monthly"
+      ],
+      "priority": "P2",
+      "purpose": "Crime, accidents, fires, emergencies, disasters, public security, response capacity and incident outcomes.",
+      "required_collections": [
+        "crime_and_public_security",
+        "traffic_workplace_and_industrial_accidents",
+        "fire_rescue_and_emergency_calls",
+        "disaster_events_and_response",
+        "critical_infrastructure_incidents",
+        "response_capacity_costs_and_outcomes"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "media-news-public-opinion",
+      "preferred_granularity": [
+        "real_time",
+        "event",
+        "daily",
+        "weekly",
+        "monthly"
+      ],
+      "priority": "P2",
+      "purpose": "News, official statements, media coverage, public attention, narratives, social signals, fact checks and sentiment evidence.",
+      "required_collections": [
+        "news_and_official_releases",
+        "media_entities_and_ownership",
+        "topic_attention_and_search_interest",
+        "public_opinion_surveys",
+        "social_and_platform_signals",
+        "fact_checks_corrections_and_retractions"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "infrastructure-telecom-internet",
+      "preferred_granularity": [
+        "real_time",
+        "hourly",
+        "daily",
+        "monthly",
+        "annual"
+      ],
+      "priority": "P2",
+      "purpose": "Telecommunications, internet, cloud, data centers, broadband, network quality, outages, digital services and infrastructure.",
+      "required_collections": [
+        "telecom_networks_and_coverage",
+        "broadband_mobile_and_satellite",
+        "internet_performance_and_outages",
+        "cloud_data_centers_and_compute",
+        "digital_platforms_and_services",
+        "infrastructure_projects_capacity_and_cost"
+      ]
+    },
+    {
+      "geographic_scope": [
+        "CN",
+        "global"
+      ],
+      "id": "government-public-services",
+      "preferred_granularity": [
+        "event",
+        "monthly",
+        "quarterly",
+        "annual"
+      ],
+      "priority": "P1",
+      "purpose": "Government organizations, budgets, procurement, public assets, administrative services, projects, statistics and accountability.",
+      "required_collections": [
+        "government_organizations_and_functions",
+        "budgets_revenue_expenditure_debt",
+        "procurement_contracts_and_projects",
+        "public_assets_and_infrastructure",
+        "administrative_services_and_performance",
+        "official_statistics_release_and_revision"
+      ]
+    }
+  ],
+  "record_requirements": [
+    "record_id",
+    "version",
+    "domain",
+    "collection_layer",
+    "title",
+    "status",
+    "source_name",
+    "source_locator",
+    "issuer",
+    "collected_at",
+    "valid_from",
+    "valid_to",
+    "geographic_scope",
+    "temporal_scope",
+    "license",
+    "files",
+    "quality_status",
+    "contains_personal_data",
+    "review_due_at"
+  ],
+  "schema_version": "external-reality-library-registry-v1",
+  "status": "structure-complete-data-pending",
+  "storage_contract": {
+    "append_only_versions": true,
+    "authoritative_storage_owner": "evidence-data-center",
+    "compute_runtime_network_allowed": false,
+    "direct_center_to_center_connection_allowed": false,
+    "immutable_hash_required": true,
+    "personal_data_default_allowed": false,
+    "private_required": true,
+    "provider": "huggingface",
+    "raw_secrets_allowed": false,
+    "remote_root": "external-reality/v1/control",
+    "repo_type": "dataset",
+    "selection_and_transfer_owner": "gpts-usage-center"
+  }
+}
