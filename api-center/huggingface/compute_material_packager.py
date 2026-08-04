@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Build immutable, GPTs-approved compute material packages in the Intelligence Center.
+"""Build immutable, GPTs-selected compute material packages in the Intelligence Center.
 
 This module may read the private Hugging Face Dataset only inside the managed
 Evidence Center workflow. It never dispatches the Compute Center and never
 changes Compute Center state. The output is a self-contained GitHub Actions
-Artifact that GPTs must retrieve and relay as complete bytes.
+Artifact. GPTs must retrieve the complete bytes, verify them, and add an
+independent relay attestation before handing the package to Compute.
 """
 from __future__ import annotations
 
@@ -224,7 +225,7 @@ def _validate_selection(selection: Mapping[str, Any]) -> dict[str, Any]:
     if set(approval) != required_approval:
         raise ComputeMaterialPackagerError("gpts_validation fields are incomplete or excessive")
     if approval.get("status") != "PASS" or approval.get("validator") != "gpts-usage-center":
-        raise ComputeMaterialPackagerError("GPTs approval is required")
+        raise ComputeMaterialPackagerError("GPTs selection approval is required")
     if approval.get("task_id") != task_id:
         raise ComputeMaterialPackagerError("GPTs approval task_id mismatch")
     _parse_datetime(approval.get("validated_at"), "gpts_validation.validated_at")
@@ -294,6 +295,7 @@ def build_package(
     output_dir.mkdir(parents=True)
     source_records: list[dict[str, Any]] = []
     files: list[dict[str, Any]] = []
+    seen_record_ids: set[str] = set()
     total_bytes = 0
     for record_path in normalized["record_paths"]:
         path = source_root / Path(*PurePosixPath(record_path).parts)
@@ -310,6 +312,9 @@ def build_package(
             as_of=as_of,
         )
         record_id = str(record["record_id"])
+        if record_id in seen_record_ids:
+            raise ComputeMaterialPackagerError(f"duplicate source record_id: {record_id}")
+        seen_record_ids.add(record_id)
         source_records.append({
             "record_id": record_id,
             "version": record["version"],
@@ -384,20 +389,17 @@ def build_package(
         "geographic_scope": normalized["geographic_scope"],
         "time_range": normalized["time_range"],
         "contains_personal_data": False,
-        "gpts_validation": {
-            **normalized["gpts_validation"],
-            "approved_manifest_sha256": manifest_sha,
-        },
+        "gpts_validation": normalized["gpts_validation"],
     }
     _write_json(output_dir / "envelope.json", envelope)
-    package_fingerprint = _canonical_sha({
+    content_fingerprint = _canonical_sha({
         "manifest_sha256": manifest_sha,
         "envelope_sha256": _file_sha(output_dir / "envelope.json"),
         "files": envelope_files,
     })
     receipt = {
-        "schema_version": "compute-material-package-receipt-v1",
-        "status": "COMPUTE_MATERIAL_PACKAGE_BUILT",
+        "schema_version": "compute-material-package-receipt-v2",
+        "status": "COMPUTE_MATERIAL_PACKAGE_BUILT_AWAITING_GPTS_RELAY",
         "package_id": normalized["package_id"],
         "task_id": normalized["task_id"],
         "material_type": normalized["material_type"],
@@ -406,8 +408,9 @@ def build_package(
         "total_bytes": total_bytes,
         "manifest_sha256": manifest_sha,
         "envelope_sha256": _file_sha(output_dir / "envelope.json"),
-        "package_sha256": package_fingerprint,
-        "gpts_validation": "PASS",
+        "content_sha256": content_fingerprint,
+        "gpts_selection_validation": "PASS",
+        "gpts_relay_attestation_required": True,
         "compute_runtime_network_used": False,
         "direct_center_connection": False,
         "model_calls": 0,
@@ -440,7 +443,7 @@ def build_from_hf(
     if not token:
         raise ComputeMaterialPackagerError("HF_TOKEN is not configured")
     normalized = _validate_selection(selection)
-    client = api or HfApi(token=False, library_name="compute-material-packager", library_version="1")
+    client = api or HfApi(token=False, library_name="compute-material-packager", library_version="2")
     repo_id = _resolve_repo_id(client, token, repo_override, fallback_repo)
     with tempfile.TemporaryDirectory(prefix="compute-material-source-") as temporary:
         source_root = Path(temporary)
@@ -502,11 +505,12 @@ def render_receipt(output_dir: Path) -> int:
     print(f"- Payload files: `{receipt.get('file_count', 0)}`")
     print(f"- Total bytes: `{receipt.get('total_bytes', 0)}`")
     print(f"- Manifest SHA256: `{receipt.get('manifest_sha256', '')}`")
-    print(f"- Package SHA256: `{receipt.get('package_sha256', '')}`")
-    print("- GPTs validation: `PASS`")
+    print(f"- Content SHA256: `{receipt.get('content_sha256', '')}`")
+    print("- GPTs selection validation: `PASS`")
+    print("- GPTs relay attestation required: `true`")
     print("- Direct center connection: `false`")
     print("- Compute runtime network used: `false`")
-    return 0 if receipt.get("status") == "COMPUTE_MATERIAL_PACKAGE_BUILT" else 1
+    return 0 if receipt.get("status") == "COMPUTE_MATERIAL_PACKAGE_BUILT_AWAITING_GPTS_RELAY" else 1
 
 
 def parser() -> argparse.ArgumentParser:
@@ -553,7 +557,7 @@ def main() -> int:
         output_dir.mkdir(parents=True, exist_ok=True)
         token = str(os.getenv(HF_TOKEN_ENV) or "")
         _write_json(output_dir / "receipt.json", {
-            "schema_version": "compute-material-package-receipt-v1",
+            "schema_version": "compute-material-package-receipt-v2",
             "status": "COMPUTE_MATERIAL_PACKAGE_FAILED",
             "failure": {"type": type(exc).__name__, "message": _redact(str(exc), token)},
             "compute_runtime_network_used": False,
