@@ -1,0 +1,299 @@
+{
+  "$id": "external-reality-record-v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "collection_layer": {
+      "enum": [
+        "sources",
+        "raw-snapshots",
+        "normalized-records",
+        "time-series",
+        "entity-master",
+        "variable-dictionaries",
+        "crosswalks",
+        "derived-indicators",
+        "rule-snapshots",
+        "event-timelines",
+        "quality-reports",
+        "licenses-provenance",
+        "manifests"
+      ],
+      "type": "string"
+    },
+    "collected_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "contains_personal_data": {
+      "const": false
+    },
+    "domain": {
+      "enum": [
+        "macroeconomy-fiscal-monetary",
+        "enterprise-commerce-industry",
+        "finance-capital-markets",
+        "law-policy-regulation",
+        "population-labor-income",
+        "geospatial-land-urban",
+        "transport-logistics-ports",
+        "energy-power-resources",
+        "international-trade-supply-chain",
+        "agriculture-food-commodities",
+        "environment-climate-weather",
+        "public-health-healthcare",
+        "science-technology-patents",
+        "education-human-capital",
+        "public-safety-emergency",
+        "media-news-public-opinion",
+        "infrastructure-telecom-internet",
+        "government-public-services"
+      ],
+      "type": "string"
+    },
+    "files": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "bytes": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "media_type": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "path": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "sha256",
+          "bytes",
+          "media_type"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "geographic_scope": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "issuer": {
+      "maxLength": 300,
+      "minLength": 1,
+      "type": "string"
+    },
+    "known_limitations": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "license": {
+      "additionalProperties": false,
+      "properties": {
+        "attribution_required": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "commercial_use_allowed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "name": {
+          "maxLength": 300,
+          "minLength": 1,
+          "type": "string"
+        },
+        "redistribution_allowed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reviewed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "redistribution_allowed",
+        "commercial_use_allowed",
+        "attribution_required",
+        "reviewed"
+      ],
+      "type": "object"
+    },
+    "notes": {
+      "maxLength": 5000,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "point_in_time_safe": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "publication_date": {
+      "format": "date",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quality_status": {
+      "enum": [
+        "pending",
+        "warning",
+        "pass",
+        "blocked"
+      ],
+      "type": "string"
+    },
+    "record_id": {
+      "maxLength": 200,
+      "minLength": 3,
+      "pattern": "^[A-Za-z0-9._:-]+$",
+      "type": "string"
+    },
+    "related_record_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "review_due_at": {
+      "format": "date",
+      "type": "string"
+    },
+    "revision_vintage": {
+      "maxLength": 100,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_locator": {
+      "maxLength": 2000,
+      "minLength": 1,
+      "type": "string"
+    },
+    "source_name": {
+      "maxLength": 300,
+      "minLength": 1,
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "data-pending",
+        "collected-unverified",
+        "verified",
+        "superseded",
+        "rejected"
+      ],
+      "type": "string"
+    },
+    "temporal_scope": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "frequency": {
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        },
+        "start": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "start",
+        "end",
+        "frequency"
+      ],
+      "type": "object"
+    },
+    "title": {
+      "maxLength": 500,
+      "minLength": 1,
+      "type": "string"
+    },
+    "valid_from": {
+      "format": "date",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "valid_to": {
+      "format": "date",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "version": {
+      "maxLength": 80,
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "record_id",
+    "version",
+    "domain",
+    "collection_layer",
+    "title",
+    "status",
+    "source_name",
+    "source_locator",
+    "issuer",
+    "collected_at",
+    "valid_from",
+    "valid_to",
+    "geographic_scope",
+    "temporal_scope",
+    "license",
+    "files",
+    "quality_status",
+    "contains_personal_data",
+    "review_due_at"
+  ],
+  "title": "External Reality Record",
+  "type": "object"
+}
