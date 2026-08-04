@@ -71,13 +71,13 @@
     "noaa-cdo/provider-catalog.json",
     "copernicus-marine/provider-catalog.json"
   ],
-  "managed_provider_catalog_sha256": "f84d500ba31ad3701119585685662e59f6ffc868421c2076b6bd385a3c0fdc56",
+  "managed_provider_catalog_sha256": "26dda6771363f61780574750f8afef358d3f1f23e341778336932f0933e3901d",
   "connector_count": 72,
   "enabled_connector_count": 72,
   "managed_provider_count": 67,
   "enabled_managed_provider_count": 67,
   "managed_operation_count": 737,
-  "exposed_parameter_count": 2622,
+  "exposed_parameter_count": 2621,
   "selection_owner": "gpts-usage-center",
   "maintenance_owner": "web-gpt-github-plugin",
   "direct_center_to_center_calls_allowed": false,
@@ -6034,12 +6034,11 @@
         },
         {
           "operation_id": "google-news",
-          "description": "执行同步 Google News 搜索并返回结构化 JSON 结果。",
+          "description": "执行同步 Google News 关键词搜索并返回结构化 JSON 结果；时间范围使用 time_range，禁止与关键词不兼容的 so 排序参数。",
           "parameter_names": [
             "query",
             "gl",
             "hl",
-            "sort_by_date",
             "start",
             "time_range"
           ],
@@ -6064,9 +6063,6 @@
                 "pattern": "^[a-z]{2}(?:-[a-z]{2})?$",
                 "minLength": 2,
                 "maxLength": 5
-              },
-              "sort_by_date": {
-                "type": "boolean"
               },
               "start": {
                 "type": "integer",
@@ -6173,7 +6169,7 @@
       "optional_secret_environment_variable_name": "",
       "required_repository_variable": "",
       "secret_value_exposed": false,
-      "provider_sha256": "76d40e7ea071c4d19a624b64430d831ca87801b8e750f5f3ee3839ada48c8e5d",
+      "provider_sha256": "d65952952af2fb457979b3adef596a5b09f0ca666a9213899f4a21c78957d8c4",
       "catalog_file": "market-search/provider-catalog.json"
     },
     {
@@ -44444,5 +44440,5 @@
       "connector_sha256": "324981ab0e03779b014f8522a037dedbf2c777b8102a50f6b61a1a32f0751dbc"
     }
   ],
-  "catalog_sha256": "16a3a29eafa55f3ace554ae9a58e508eeeb693f3e6ae8fca302d34f8fd7465a6"
+  "catalog_sha256": "f73699873d53cba454b97cff33267839c7c999f0a7f5e7def0f9c7cf818ac5e1"
 }

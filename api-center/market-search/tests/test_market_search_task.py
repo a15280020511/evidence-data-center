@@ -122,6 +122,38 @@ class MarketSearchTaskTests(unittest.TestCase):
         self.assertTrue(any("engine=google&" in url or "engine=google%26" in url for url in captured))
         self.assertTrue(any("engine=google_news" in url for url in captured))
 
+    def test_google_news_rejects_sort_by_date_and_never_sends_so(self):
+        provider = next(row for row in MODULE.load_json(MODULE.CATALOG_PATH)["providers"] if row["provider_id"] == "serpapi")
+        news = next(row for row in provider["operations"] if row["operation_id"] == "google-news")
+        self.assertNotIn("sort_by_date", news["parameters"])
+        self.assertNotIn("sort_by_date", news["parameter_schema"]["properties"])
+
+        ticket = {
+            "task_id": "serpapi-news-invalid-sort-20260804",
+            "provider": "serpapi",
+            "operation": "google-news",
+            "objective": "reject unsupported sort parameter",
+            "parameters": {"query": "福州", "hl": "zh-cn", "sort_by_date": True},
+            "data_policy": {"classification": "public", "contains_personal_data": False},
+            "acceptance": {"timeout_seconds": 30, "max_response_bytes": 1000000},
+        }
+        with self.assertRaisesRegex(ValueError, "sort_by_date"):
+            MODULE.validate_ticket(ticket)
+
+        captured = []
+        def fake_urlopen(request, timeout):
+            captured.append(request.full_url)
+            return FakeResponse({"search_metadata": {"status": "Success"}, "news_results": [{"title": "news"}]})
+
+        with patch.dict(os.environ, {"SERPAPI_API_KEY": "serp-secret"}, clear=False), patch.object(MODULE.urllib.request, "urlopen", side_effect=fake_urlopen):
+            MODULE.serpapi_query("google-news", {"query": "福州 政务", "gl": "cn", "hl": "zh-cn", "time_range": "week"}, 30, 1000000)
+        self.assertEqual(len(captured), 1)
+        parsed = MODULE.urllib.parse.parse_qs(MODULE.urllib.parse.urlsplit(captured[0]).query)
+        self.assertEqual(parsed["engine"], ["google_news"])
+        self.assertEqual(parsed["hl"], ["zh-cn"])
+        self.assertNotIn("so", parsed)
+        self.assertIn("when:1w", parsed["q"][0])
+
     def test_execute_missing_secret_is_structured_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
