@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decision-system.example/schemas/global-open-apis-ticket-v1.json",
+  "title": "Global Open APIs Ticket",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["task_id", "provider", "operation", "objective", "parameters", "data_policy", "acceptance"],
+  "properties": {
+    "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,119}$"},
+    "provider": {"const": "global-open-apis"},
+    "operation": {
+      "type": "string",
+      "enum": [
+        "catalog-capabilities",
+        "source-access-matrix",
+        "google-knowledge-entities",
+        "google-civic-elections",
+        "google-civic-divisions",
+        "open-book-search",
+        "gbif-species-search",
+        "gbif-occurrence-search",
+        "wellcome-works-search",
+        "data-europa-dataset-search"
+      ]
+    },
+    "objective": {"type": "string", "minLength": 3, "maxLength": 1000},
+    "parameters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {"type": "string", "enum": ["oapen", "doab"]},
+        "query": {"type": "string", "minLength": 1, "maxLength": 200},
+        "limit": {"type": "integer", "minimum": 1, "maximum": 100},
+        "languages": {"type": "string", "minLength": 2, "maxLength": 40},
+        "entity_type": {"type": "string", "enum": ["Person", "Organization", "Corporation", "Place", "Event", "CreativeWork", "Product"]},
+        "taxon_key": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+        "country": {"type": "string", "pattern": "^[A-Z]{2}$"},
+        "year": {"type": "integer", "minimum": 1600, "maximum": 2100}
+      }
+    },
+    "data_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["classification", "contains_personal_data"],
+      "properties": {
+        "classification": {"const": "public"},
+        "contains_personal_data": {"const": false},
+        "notes": {"type": "string", "maxLength": 1000}
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "timeout_seconds": {"type": "integer", "minimum": 5, "maximum": 90},
+        "max_response_bytes": {"type": "integer", "minimum": 1024, "maximum": 10000000}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"operation": {"const": "open-book-search"}}},
+      "then": {"properties": {"parameters": {"required": ["source_id", "query"]}}}
+    },
+    {
+      "if": {"properties": {"operation": {"enum": ["google-knowledge-entities", "google-civic-divisions", "gbif-species-search", "wellcome-works-search", "data-europa-dataset-search"]}}},
+      "then": {"properties": {"parameters": {"required": ["query"]}}}
+    },
+    {
+      "if": {"properties": {"operation": {"const": "gbif-occurrence-search"}}},
+      "then": {"properties": {"parameters": {"required": ["taxon_key"]}}}
+    },
+    {
+      "if": {"properties": {"operation": {"enum": ["catalog-capabilities", "source-access-matrix", "google-civic-elections"]}}},
+      "then": {"properties": {"parameters": {"maxProperties": 0}}}
+    }
+  ]
+}
