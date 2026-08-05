@@ -1,0 +1,170 @@
+{
+  "schema_version": "global-public-specialized-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "providers": [
+    {
+      "provider_id": "global-public-specialized-apis",
+      "display_name": "全球公共机构专项API",
+      "description": "接入不适合由通用国家门户适配器承载的固定官方专项服务。",
+      "enabled": true,
+      "ticket_prefix": "[intel-public-specialized]",
+      "required_secret_environment_variable": "",
+      "optional_secret_environment_variables": [
+        "KOREA_DATA_GO_KR_SERVICE_KEY"
+      ],
+      "catalog_policy": "只允许波兰财政部ISZTAR4固定公开页面和韩国公共数据门户金融委员会KRX固定服务；禁止任意URL、路径、请求头和客户端密钥。",
+      "execution_policy": "每张票据最多一次只读请求，不自动翻页、不自动重试、不跟随重定向；韩国Key仅在后端注入。",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 10000000,
+        "automatic_pagination_allowed": false,
+        "automatic_retry_allowed": false,
+        "redirects_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "client_supplied_credentials_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_queries_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地专项能力目录。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "official_endpoint": "LOCAL",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "source-access-matrix",
+          "description": "读取专项来源的Key、费用、许可和验收状态。",
+          "parameters": [],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {}
+          },
+          "result_contract": {
+            "official_endpoint": "LOCAL",
+            "http_method": "LOCAL",
+            "read_only": true,
+            "credential_mode": "none"
+          }
+        },
+        {
+          "operation_id": "poland-isztar4-help",
+          "description": "读取波兰财政部ISZTAR4关税浏览器官方帮助和数据能力说明。",
+          "parameters": [
+            "language"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "language": {
+                "type": "string",
+                "enum": [
+                  "EN",
+                  "PL"
+                ]
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://ext-isztar4.mf.gov.pl/taryfa_celna/Help",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "output": "html"
+          }
+        },
+        {
+          "operation_id": "poland-isztar4-tariff-sections",
+          "description": "按当前或指定模拟日期读取ISZTAR4公开关税章节和初步信息。",
+          "parameters": [
+            "language",
+            "simulation_date"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "language": {
+                "type": "string",
+                "enum": [
+                  "EN",
+                  "PL"
+                ]
+              },
+              "simulation_date": {
+                "type": "string",
+                "pattern": "^[0-9]{8}$"
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://ext-isztar4.mf.gov.pl/taryfa_celna/PrelimInfoHC",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "output": "html"
+          }
+        },
+        {
+          "operation_id": "korea-krx-listed-companies",
+          "description": "读取韩国金融委员会KRX上市证券与公司基础信息。",
+          "parameters": [
+            "page",
+            "limit",
+            "base_date",
+            "company_name"
+          ],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "limit": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              },
+              "base_date": {
+                "type": "string",
+                "pattern": "^[0-9]{8}$"
+              },
+              "company_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://apis.data.go.kr/1160100/service/GetKrxListedInfoService/getItemInfo",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "required-free-service-key",
+            "output": "json"
+          }
+        }
+      ]
+    }
+  ]
+}

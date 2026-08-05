@@ -1,0 +1,67 @@
+{
+  "schema_version": "global-public-specialized-source-matrix-v1",
+  "reviewed_on": "2026-08-05",
+  "active_source_count": 2,
+  "production_live_count": 0,
+  "pending_free_credential_count": 1,
+  "pending_live_acceptance_count": 1,
+  "sources": [
+    {
+      "source_id": "poland-isztar4",
+      "name": "Poland Ministry of Finance ISZTAR4",
+      "country": "PL",
+      "institution_type": "national-customs-tariff-system",
+      "base_url": "https://ext-isztar4.mf.gov.pl/taryfa_celna",
+      "operations": [
+        "poland-isztar4-help",
+        "poland-isztar4-tariff-sections"
+      ],
+      "credential_mode": "none",
+      "credential_env": "",
+      "cost": "free public tariff browser",
+      "implementation_status": "implemented-pending-live-acceptance",
+      "live_acceptance": {
+        "status": "NOT_RUN",
+        "upstream_called": false,
+        "secret_values_exposed": false
+      },
+      "license_policy": "Official Ministry of Finance tariff-browser pages only; the unresolved JSON production path is not guessed or activated."
+    },
+    {
+      "source_id": "korea-data-go-kr-krx-listed",
+      "name": "Korea FSC KRX Listed Securities Information",
+      "country": "KR",
+      "institution_type": "national-financial-market-open-data",
+      "base_url": "https://apis.data.go.kr/1160100/service/GetKrxListedInfoService",
+      "operations": [
+        "korea-krx-listed-companies"
+      ],
+      "credential_mode": "required_free_service_key",
+      "credential_env": "KOREA_DATA_GO_KR_SERVICE_KEY",
+      "cost": "free automatically approved public-data service key",
+      "implementation_status": "implemented-pending-free-secret",
+      "live_acceptance": {
+        "status": "NOT_RUN",
+        "required_secret": "KOREA_DATA_GO_KR_SERVICE_KEY",
+        "upstream_called": false,
+        "secret_values_exposed": false
+      },
+      "license_policy": "Public listed-security and corporate identifiers from one fixed service contract; no generic data.go.kr arbitrary endpoint."
+    }
+  ],
+  "governance": {
+    "fixed_sources_only": true,
+    "requests_per_ticket_max": 1,
+    "automatic_pagination_allowed": false,
+    "automatic_retry_allowed": false,
+    "redirects_allowed": false,
+    "arbitrary_urls_allowed": false,
+    "arbitrary_hosts_allowed": false,
+    "arbitrary_paths_allowed": false,
+    "arbitrary_headers_allowed": false,
+    "client_supplied_credentials_allowed": false,
+    "write_operations_allowed": false,
+    "personal_data_queries_allowed": false,
+    "secret_values_exposed": false
+  }
+}
