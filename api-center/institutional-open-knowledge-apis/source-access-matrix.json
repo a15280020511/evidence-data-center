@@ -2,6 +2,7 @@
   "schema_version": "institutional-open-knowledge-source-matrix-v1",
   "reviewed_on": "2026-08-05",
   "active_source_count": 3,
+  "production_live_count": 2,
   "sources": [
     {
       "source_id": "fraser-oai",
@@ -13,7 +14,15 @@
       "operations": ["fraser-oai-identify", "fraser-oai-list-records"],
       "credential_mode": "none",
       "cost": "free; no API key for OAI-PMH",
-      "implementation_status": "implemented-pending-live-acceptance",
+      "implementation_status": "implemented-external-timeout",
+      "live_acceptance": {
+        "issue": 1077,
+        "operation": "fraser-oai-identify",
+        "status": "FAILED",
+        "duration_ms": 60359,
+        "failure": "GitHub Actions execution path read timeout after 60 seconds",
+        "secret_values_exposed": false
+      },
       "license_policy": "Public metadata harvesting; document and image rights remain item-specific and FRASER attribution must be preserved."
     },
     {
@@ -26,7 +35,14 @@
       "operations": ["osdr-datasets", "osdr-dataset-metadata"],
       "credential_mode": "none",
       "cost": "free public API",
-      "implementation_status": "implemented-pending-live-acceptance",
+      "implementation_status": "production-live",
+      "live_acceptance": {
+        "issue": 1078,
+        "operation": "osdr-dataset-metadata",
+        "status": "PASS",
+        "duration_ms": 322,
+        "secret_values_exposed": false
+      },
       "license_policy": "Public metadata and source-declared files only; restricted or hidden files are excluded and record-level terms govern reuse."
     },
     {
@@ -39,7 +55,14 @@
       "operations": ["japan-indicator-search", "japan-indicator-data"],
       "credential_mode": "none",
       "cost": "free; no registration required",
-      "implementation_status": "implemented-pending-live-acceptance",
+      "implementation_status": "production-live",
+      "live_acceptance": {
+        "issue": 1079,
+        "operation": "japan-indicator-search",
+        "status": "PASS",
+        "duration_ms": 992,
+        "secret_values_exposed": false
+      },
       "license_policy": "Official aggregate statistics; required attribution and Statistics Dashboard disclaimer must be preserved."
     }
   ],
