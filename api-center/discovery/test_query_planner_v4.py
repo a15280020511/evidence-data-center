@@ -32,6 +32,10 @@ def main() -> int:
     assert not trend_signals.marker_matches("air quality warning", "ai")
     assert not trend_signals.marker_matches("famille royale britannique", "ai")
     assert not trend_signals.marker_matches("daily news", "ai")
+    assert not trend_signals.usable_title("an")
+    assert trend_signals.usable_title("AI")
+    assert trend_signals.usable_title("芯片")
+    assert trend_signals.usable_title("테슬라")
 
     print(json.dumps({
         "queries": len(queries),
@@ -39,6 +43,7 @@ def main() -> int:
         "trend_queries": sum(query.startswith("trend::") for query in queries),
         "github_max_tokens": max(len(query.split()) for query in github_queries),
         "trend_marker_boundary_tests": "passed",
+        "trend_title_quality_tests": "passed",
     }, ensure_ascii=False))
     return 0
 
