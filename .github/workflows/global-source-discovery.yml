@@ -8,6 +8,7 @@ on:
     paths:
       - "api-center/discovery/config.json"
       - "api-center/discovery/global_source_discovery_v2.py"
+      - "api-center/discovery/global_source_discovery_v3.py"
       - "api-center/discovery/normalize_discovery_output.py"
       - ".github/workflows/global-source-discovery.yml"
   workflow_dispatch:
@@ -53,6 +54,7 @@ jobs:
         run: |
           python -m py_compile \
             api-center/discovery/global_source_discovery_v2.py \
+            api-center/discovery/global_source_discovery_v3.py \
             api-center/discovery/normalize_discovery_output.py \
             api-center/discovery/discovered_source_task.py
 
@@ -60,7 +62,7 @@ jobs:
         env:
           MAX_QUERIES: ${{ github.event.inputs.max_queries || '24' }}
         run: |
-          python api-center/discovery/global_source_discovery_v2.py \
+          python api-center/discovery/global_source_discovery_v3.py \
             --config api-center/discovery/config.json \
             --registry api-center/discovery/registry.json \
             --candidates api-center/discovery/candidates.json \
