@@ -1,0 +1,101 @@
+{
+  "schema_version": "global-open-apis-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "providers": [
+    {
+      "provider_id": "global-open-apis",
+      "display_name": "全球开放机构与Google公共知识API",
+      "description": "以固定官方端点提供Google公共知识、开放图书、全球生物多样性、大学馆藏与欧洲开放数据目录的只读查询。",
+      "enabled": true,
+      "ticket_prefix": "[intel-global-open]",
+      "required_secret_environment_variable": "",
+      "catalog_policy": "仅允许代码内固定官方主机、固定路径和结构化参数；Google操作由后端注入GOOGLE_PUBLIC_INTELLIGENCE_API_KEY；禁止任意URL、任意查询语言、自动翻页、写入和个人画像。",
+      "execution_policy": "每张票据最多一次上游请求；无自动重试、无自动翻页、无重定向；超时、结果数和响应体受控。",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 10000000,
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "redirects_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "write_operations_allowed": false,
+        "personal_profiling_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "source-access-matrix",
+          "description": "读取来源、鉴权、许可、生产状态和候选条件矩阵。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "google-knowledge-entities",
+          "description": "搜索Google Knowledge Graph公开实体，返回JSON-LD结构。",
+          "parameters": ["query", "limit", "languages", "entity_type"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "required": ["query"], "properties": {"query": {"type": "string", "minLength": 1, "maxLength": 200}, "limit": {"type": "integer", "minimum": 1, "maximum": 10}, "languages": {"type": "string", "minLength": 2, "maxLength": 40}, "entity_type": {"type": "string", "enum": ["Person", "Organization", "Corporation", "Place", "Event", "CreativeWork", "Product"]}}},
+          "result_contract": {"official_endpoint": "https://kgsearch.googleapis.com/v1/entities:search", "http_method": "GET", "read_only": true, "credential_mode": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY backend-only"}
+        },
+        {
+          "operation_id": "google-civic-elections",
+          "description": "列出Google Civic Information当前可查询的美国公共选举。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
+          "result_contract": {"official_endpoint": "https://www.googleapis.com/civicinfo/v2/elections", "http_method": "GET", "read_only": true, "credential_mode": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY backend-only"}
+        },
+        {
+          "operation_id": "google-civic-divisions",
+          "description": "按自然名称或Open Civic Data标识检索美国公共政治区划；不开放地址级选民查询。",
+          "parameters": ["query"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "required": ["query"], "properties": {"query": {"type": "string", "minLength": 2, "maxLength": 160}}},
+          "result_contract": {"official_endpoint": "https://www.googleapis.com/civicinfo/v2/divisions", "http_method": "GET", "read_only": true, "credential_mode": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY backend-only"}
+        },
+        {
+          "operation_id": "open-book-search",
+          "description": "通过OAPEN或DOAB当前官方REST端点检索开放获取学术图书元数据。",
+          "parameters": ["source_id", "query"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "required": ["source_id", "query"], "properties": {"source_id": {"type": "string", "enum": ["oapen", "doab"]}, "query": {"type": "string", "minLength": 2, "maxLength": 200}}},
+          "result_contract": {"official_endpoint": "fixed OAPEN/DOAB REST search", "http_method": "GET", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "gbif-species-search",
+          "description": "检索GBIF全球物种名称与分类元数据。",
+          "parameters": ["query", "limit"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "required": ["query"], "properties": {"query": {"type": "string", "minLength": 2, "maxLength": 200}, "limit": {"type": "integer", "minimum": 1, "maximum": 50}}},
+          "result_contract": {"official_endpoint": "https://api.gbif.org/v1/species/search", "http_method": "GET", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "gbif-occurrence-search",
+          "description": "按GBIF分类键及可选国家/年份读取受限数量的公开物种出现记录。",
+          "parameters": ["taxon_key", "country", "year", "limit"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "required": ["taxon_key"], "properties": {"taxon_key": {"type": "integer", "minimum": 1, "maximum": 2147483647}, "country": {"type": "string", "pattern": "^[A-Z]{2}$"}, "year": {"type": "integer", "minimum": 1600, "maximum": 2100}, "limit": {"type": "integer", "minimum": 1, "maximum": 50}}},
+          "result_contract": {"official_endpoint": "https://api.gbif.org/v1/occurrence/search", "http_method": "GET", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "wellcome-works-search",
+          "description": "检索Wellcome Collection图书、档案、图片、手稿与数字化资源目录。",
+          "parameters": ["query", "limit"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "required": ["query"], "properties": {"query": {"type": "string", "minLength": 2, "maxLength": 200}, "limit": {"type": "integer", "minimum": 1, "maximum": 50}}},
+          "result_contract": {"official_endpoint": "https://api.wellcomecollection.org/catalogue/v2/works", "http_method": "GET", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "data-europa-dataset-search",
+          "description": "检索data.europa.eu跨欧洲国家和机构的开放数据集目录。",
+          "parameters": ["query", "limit"],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "required": ["query"], "properties": {"query": {"type": "string", "minLength": 2, "maxLength": 200}, "limit": {"type": "integer", "minimum": 1, "maximum": 100}}},
+          "result_contract": {"official_endpoint": "https://data.europa.eu/api/hub/search/search", "http_method": "POST", "read_only": true, "credential_mode": "none"}
+        }
+      ]
+    }
+  ]
+}

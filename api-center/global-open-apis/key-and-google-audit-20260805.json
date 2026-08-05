@@ -1,0 +1,97 @@
+{
+  "schema_version": "key-and-google-api-audit-v1",
+  "reviewed_on": "2026-08-05",
+  "data_commons": {
+    "api_key_required": true,
+    "repository_secret": "GOOGLE_DATA_COMMONS_API_KEY",
+    "official_public_origin": "https://api.datacommons.org",
+    "current_operations": ["resolve-place", "resolve-indicator", "node-properties", "observations"],
+    "decision": "retain",
+    "reason": "BigQuery and Earth Engine do not replace Data Commons entity resolution, statistical-variable semantics, graph relations and unified observations."
+  },
+  "faostat": {
+    "bulk_download_key_required": false,
+    "legacy_rest_key_required_observation": "The retired fenixservices request was not rejected for a missing key.",
+    "legacy_rest_production_status": "retired-after-live-http-521-origin-failure",
+    "new_developer_portal_status": "account-or-subscription-authentication-must-be-verified-per-product-before-enablement",
+    "repository_secret_to_create_now": null,
+    "decision": "keep bulk-download source; do not create or request a FAOSTAT API key until a specific current developer product and its live contract are selected"
+  },
+  "google_active_existing": [
+    {
+      "api": "Data Commons REST v2",
+      "credential": "GOOGLE_DATA_COMMONS_API_KEY"
+    },
+    {
+      "api": "BigQuery public datasets",
+      "credential": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
+    },
+    {
+      "api": "Earth Engine",
+      "credential": "GOOGLE_CLOUD_SERVICE_ACCOUNT_JSON"
+    },
+    {
+      "api": "YouTube Data API",
+      "credential": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY"
+    },
+    {
+      "api": "Fact Check Tools API",
+      "credential": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY"
+    },
+    {
+      "api": "PageSpeed Insights API",
+      "credential": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY"
+    },
+    {
+      "api": "Chrome UX Report API",
+      "credential": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY"
+    },
+    {
+      "api": "Google Books API",
+      "credential": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY"
+    }
+  ],
+  "google_added_pending_live_acceptance": [
+    {
+      "api": "Knowledge Graph Search API",
+      "credential": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
+      "reason": "Current official public entity search, JSON-LD output and distinct value from Data Commons."
+    },
+    {
+      "api": "Civic Information API elections/divisions",
+      "credential": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
+      "scope": "United States public election and political-division data only",
+      "excluded_operation": "address-level voterInfoQuery"
+    }
+  ],
+  "google_not_integrated": [
+    {
+      "api": "Programmable Search JSON API",
+      "reason": "Not a stable new integration because new-customer access closed in 2026 and transition is scheduled."
+    },
+    {
+      "api": "Maps Platform and Places",
+      "reason": "Billing-enabled commercial services, not free public database APIs."
+    },
+    {
+      "api": "Gmail, Drive, Calendar and Contacts",
+      "reason": "Private user data and OAuth workflows are outside this public intelligence provider."
+    },
+    {
+      "api": "Google Dataset Search",
+      "reason": "No supported public search API contract was verified."
+    },
+    {
+      "api": "Cloud Enterprise Knowledge Graph",
+      "reason": "Enterprise product; bounded public Knowledge Graph Search is used instead."
+    }
+  ],
+  "governance": {
+    "one_public_google_key_shared_for_supported_public_apis": true,
+    "service_account_shared_only_for_bigquery_and_earth_engine": true,
+    "data_commons_uses_separate_key": true,
+    "client_supplied_keys_allowed": false,
+    "secret_values_exposed": false,
+    "paid_fallback_authorized": false
+  }
+}
