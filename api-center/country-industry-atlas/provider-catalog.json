@@ -1,0 +1,89 @@
+{
+  "schema_version": "country-industry-atlas-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "providers": [
+    {
+      "provider_id": "country-industry-atlas",
+      "display_name": "全球国家与行业来源图谱",
+      "description": "通过本地国家—行业来源矩阵和固定公共领域门户注册表发现各国官方开放数据、API、统计、法律、采购、知识产权、地理、环境、农业、健康、科研和文化来源。",
+      "enabled": true,
+      "ticket_prefix": "[intel-country-atlas]",
+      "required_secret_environment_variable": "",
+      "catalog_policy": "来源图谱与门户注册表仅用于发现和分级，不自动把第三方登记的端点认定为官方或生产可用。任何具体来源晋升生产前必须独立核验官方身份、许可、鉴权、当前端点和真实执行结果。",
+      "execution_policy": "每张票据最多一次固定上游只读请求；禁止任意URL、自动重试、自动翻页、重定向、写入、密钥透传和个人画像。",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 10000000,
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "redirects_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "write_operations_allowed": false,
+        "personal_profiling_allowed": false,
+        "secret_values_exposed": false,
+        "discovery_results_are_production_authorities": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地能力目录，不访问上游。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "country-industry-atlas",
+          "description": "读取全球国家、区域和行业来源图谱及接入分级。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "atlas-search",
+          "description": "按国家、区域、行业、接入等级或关键词筛选本地来源图谱。",
+          "parameters": ["query", "region", "country", "industry", "access_tier", "limit"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {"type": "string", "minLength": 1, "maxLength": 160},
+              "region": {"type": "string", "minLength": 1, "maxLength": 40},
+              "country": {"type": "string", "minLength": 2, "maxLength": 16},
+              "industry": {"type": "string", "minLength": 1, "maxLength": 80},
+              "access_tier": {"type": "string", "minLength": 1, "maxLength": 50},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+            }
+          },
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "portal-registry-search",
+          "description": "检索DataPortals.org公共领域全球开放数据门户注册表，可按国家、状态、政府属性和API字段筛选。",
+          "parameters": ["query", "country", "status", "api_only", "government_only", "limit"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "query": {"type": "string", "minLength": 1, "maxLength": 160},
+              "country": {"type": "string", "minLength": 2, "maxLength": 16},
+              "status": {"type": "string", "enum": ["active", "inactive", "all"]},
+              "api_only": {"type": "boolean"},
+              "government_only": {"type": "boolean"},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+            }
+          },
+          "result_contract": {
+            "official_endpoint": "https://dataportals.org/api/data.json",
+            "http_method": "GET",
+            "read_only": true,
+            "credential_mode": "none",
+            "discovery_only": true,
+            "production_verification_required": true
+          }
+        }
+      ]
+    }
+  ]
+}
