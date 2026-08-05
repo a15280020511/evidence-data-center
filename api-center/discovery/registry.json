@@ -1,6 +1,6 @@
 {
   "schema_version": "global-source-registry-v2",
-  "source_count": 29,
+  "source_count": 34,
   "sources": [
     {
       "auth": "none",
@@ -87,6 +87,35 @@
       "title": "United States and Global Macroeconomic Projections to 2033",
       "trusted_domain": true,
       "url": "https://www.ers.usda.gov/media/9095/eib-272.pdf?v="
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Annual freshwater withdrawals, total (% of internal resources)\n\nMost recent value\n\n(2022)\n\n1\n\n(2022)\n\nTrend\n\nElectricity production from renewable sources, excluding hydroelectric (% of total)\n\nElectricity production from renewable sources, excluding hydroelectric (% of total)\n\nMost recent value\n\n(2021)\n\n0.3\n\n(2021)\n\nTrend\n\nPeople using safely managed sanitation services (% of population)\n\nPeople using safely managed sanitation services (% of population)\n\nMost recent value\n\n(2024)\n\n16\n\n(2024)\n\nTrend\n\n## Institutions\n\nIndicator\n\nMost recent value\n\nTrend\n\nIndividuals using the Internet (% of population)\n\nIndividuals using the Internet (% of population)\n\nMost recent value\n\n(2024)\n\n34\n\n(2024)\n\nTrend\n\nIntentional homicides (per 100,000 people)\n\nIntentional homicides (per 100,000 people) [...] (2025)\n\n2.4\n\n(2025)\n\nTrend\n\nNet migration\n\nNet migration\n\nMost recent value\n\n(2025)\n\n-7,847\n\n(2025)\n\nTrend\n\nMost recent value\n\n(2020)\n\n0.4\n\n(2020)\n\nTrend\n\n## Economic\n\nIndicator\n\nMost recent value\n\nTrend\n\nGDP (current US$)\n\nGDP (current US$)\n\nMost recent value\n\n(2025 billion)\n\n24.57\n\n(2025 billion)\n\nTrend\n\nGDP per capita (current US$)\n\nGDP per capita (current US$)\n\nMost recent value\n\n(2025)\n\n1,658.3\n\n(2025)\n\nTrend\n\nGDP growth (annual %)\n\nGDP growth (annual %)\n\nMost recent value\n\n(2025)\n\n8.1\n\n(2025)\n\nTrend\n\nUnemployment, total (% of total labor force) (modeled ILO estimate)\n\nUnemployment, total (% of total labor force) (modeled ILO estimate)\n\nMost recent value\n\n(2025)\n\n1.6\n\n(2025)\n\nTrend\n\nInflation, consumer prices (annual %)\n\nInflation, consumer prices (annual %)\n\nMost recent value [...] DA",
+      "discovery_engine": "tavily",
+      "discovery_query": "\"CSV download\" \"internet\" (public utility OR \"outlook\") \"Benin\"",
+      "first_seen_at": "2026-08-05T07:46:07+00:00",
+      "high_value": true,
+      "host": "data.worldbank.org",
+      "integrated_at": "2026-08-05T07:48:48+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T07:46:07+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T07:47:37+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "32f13d2be208d40718d0",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Benin | Data",
+      "trusted_domain": true,
+      "url": "https://data.worldbank.org/country/benin"
     },
     {
       "auth": "none",
@@ -320,6 +349,35 @@
     {
       "auth": "none",
       "catalog_url": null,
+      "description": "from China’s 2017 Input-Output Table … Manufacture of Machinery and Equipment … Construction … Agriculture, Forestry, Animal Husbandry & Fishery … 0.04 … 0.04 … Mining … 0.13 … 0.16 … Manufacture of Foods, Beverage & Tobacco … 0.04 … 0.03 … Manufacture of Textile, Wearing Apparel & Leather Products … 0.03 … 0.02 … Coking, Gas and Processing of Petroleum … 0.04 … 0.06 … Chemical Industry … 0.25 … 0.26 … Manufacture of Nonmetallic Mineral Products … 0.05 … 0.24 … Manufacture and Processing of Metals and Metal Products … 0.38 … 0.33 … Manufacture of Machinery and Equipment … 0.89 … 0.22 … 29 National Bureau of Statistics of China. (2020). China Statistical Yearbook 2019. 40 Other Manufacture … 0.02 … 0.02 … Production and Supply of Electric Power, Heat Power and Water … 0.09 … 0.10 … [...] Space Completed China Statistical Yearbook compiled by National Bureau of Statistics  018/indexeh.htm Residential Floor Space Under Construction China Statistical Yearbook compiled by National Bureau of Statistics  018/indexeh.htm Residential Floor Space Completed China Statistical Yearbook compiled by National Bureau of Statistics  018/indexeh.htm Weifang Comprehensive Rent Index Chinese Academy of Social Sciences [...] by managing the construction process and turning raw land into salable property. In 2016, real estate and construction industries combined accounted for around 29% 0% 5% 10% 15% 20% 0 500 1,000 1,500 2,000 2002 2003 2004 2005 2006 2007 2008 2009 2010 2011 2012 2013 2014 2015 2016 2017 2018 China Real Estate Investment (billion $) U.S. Real Estate Investment (billion $) China",
+      "discovery_engine": "tavily",
+      "discovery_query": "\"Atom feed\" \"construction\" (statistical office OR \"working paper\") \"Hong Kong SAR, China\"",
+      "first_seen_at": "2026-08-05T07:46:48+00:00",
+      "high_value": true,
+      "host": "pages.stern.nyu.edu",
+      "integrated_at": "2026-08-05T07:48:48+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T07:46:48+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T07:47:40+00:00",
+        "content_type": "application/pdf",
+        "machine_readable": false,
+        "ok": true,
+        "status": 206
+      },
+      "score": 72,
+      "source_id": "6dcc9fa923b46cfa2a18",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "[PDF] NBER WORKING PAPER SERIES PEAK CHINA HOUSING Kenneth ...",
+      "trusted_domain": true,
+      "url": "https://pages.stern.nyu.edu/~jcarpen0/Chinaluncheon/Peak%20China%20Housing_2020_08_12.pdf"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
       "description": "Data Home\n\nSkip to main menuSkip to main content\n\n# IMF DATA\n\n### ACCESS TO ECONOMIC AND FINANCIAL DATA\n\nPopular search requests:\n\n### Latest Updates\n\n### Global Trusted Data Commons with StatGPT\n\nAI TOOL FOR ACCESSING OFFICIAL STATISTICS (PREVIEW RELEASE)Disclaimer: Performance, availability, and functionality may vary as the service continues to mature.\n\n### IMF Data Brief: Monetary and Financial Statistics\n\nDATA BRIEFCurrency Liquid Deposits Continue to Rise\n\n### 14th IMF Statistical Forum\n\nNEWSMeasuring the Economy in the Era of Big Data and AI\n\n### World Economic Outlook July 2026\n\nNEWSGlobal Economy in Crosscurrents of War and Technology\n\n### New Global Standards for Macroeconomic Statistics\n\nNEWSThe International Monetary Fund (IMF) has released the seventh edition of the Integrated",
       "discovery_engine": "exa",
       "discovery_query": "\"API\" \"macroeconomics\" (department OR \"research report\") \"global\"",
@@ -518,6 +576,64 @@
     {
       "auth": "none",
       "catalog_url": null,
+      "description": "The Documents section contains details on documents attached to the patent application, as well as options for downloading the documents.",
+      "discovery_engine": "tavily",
+      "discovery_query": "\"JSON API\" \"patents\" (department OR \"archive\") \"Slovak Republic\"",
+      "first_seen_at": "2026-08-05T07:46:28+00:00",
+      "high_value": true,
+      "host": "data.uspto.gov",
+      "integrated_at": "2026-08-05T07:48:48+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T07:46:28+00:00",
+      "license": "open",
+      "probe": {
+        "bytes_sampled": 20666,
+        "checked_at": "2026-08-05T07:47:18+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 82,
+      "source_id": "962f876632012eb0fce2",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "API - Documents - Open Data Portal - USPTO",
+      "trusted_domain": true,
+      "url": "https://data.uspto.gov/apis/patent-file-wrapper/documents"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "UN logo\n\n## Search the United Nations\n\n# Food\n\n## A wake-up call to fight hunger\n\nEven though today's global food production is enough to feed everyone on the planet, hunger continues to increase in some parts of the world. Despite some recent progress in reducing hunger globally, the world is still facing food crises in many regions, especially in Africa and western Asia, where the situation is dire.\n\nThe UN agencies that deal with food security use specific terms to describe the various levels of food scarcity using words such as hunger, food insecurity, and malnutrition. Let’s take a look at what they mean.\n\n### Explaining hunger and food insecurity [...] Malnutrition can be either undernutrition, or the other extreme – overweight and obesity. Both are worrying trends that coexist in the world today.\n\nIn children undernutrition can cause stunting and wasting. Stunting is insufficient height for a child’s age, while wasting is insufficient weight for the child’s height. Stunting is a measure of chronic nutritional deficiency, while wasting is a measure of acute nutritional deficiency.\n\n### What is the link between hunger and food insecurity?\n\nWhen someone reaches a severely food insecure condition, it implies that has run out of food and gone a day or more without eating, explains the UN agency. Although severe food insecurity is at the end of the FAO scale, even moderate food insecurity is an alarming condition. [...] Achieving food security for all is at the heart of the efforts of the UN's Food and Agriculture Organization (FAO). Its main purpose is to make sure people",
+      "discovery_engine": "tavily",
+      "discovery_query": "\"Swagger\" \"food\" (United Nations agency OR \"yearbook\") \"Mali\"",
+      "first_seen_at": "2026-08-05T07:46:19+00:00",
+      "high_value": true,
+      "host": "www.un.org",
+      "integrated_at": "2026-08-05T07:48:48+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T07:46:19+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T07:47:38+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "97471986406e72748283",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Food",
+      "trusted_domain": true,
+      "url": "https://www.un.org/en/global-issues/food"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
       "description": "and global agricultural variables. These projections also relay information on the overall health of international economies in the near future to the USDA, its stakeholders, and a variety of policymakers and market participants. These projections were completed in August 2023 based on data and expectations at that time. This report details the macroeconomic projections from 2023 to 2033. To help users interpret the projection numbers, this report also provides the state of the global economy and an analysis of the influence of events over the past year in various regions and countries. Keywords: macroeconomics, macroeconomic forecasts, Gross Domestic Product, inflation, Consumer Price Index, exchange rates, population About the Authors Wendy Zeng and William Johnson are research [...] To ensure the quality of its research reports and satisfy governmentwide standards, ERS requires that all research reports with substantively new material be reviewed by qualified technical research peers. This technical peer review process, coordinated by ERS' Peer Review Coordinating Council, allows experts who possess the technical background, perspective, and expertise to provide an objective and meaningful assessment of the output’s substantive content and clarity of communication during the publication’s review. [...] The report found that the global economy is projected to recover slowly over the next decade, growing at a faster rate compared to the previous decade but not quite recovering to the levels of growth prior to the Coronavirus (COVID-19) pandemic. Among the major factors con",
       "discovery_engine": "tavily",
       "discovery_query": "\"OpenAPI\" \"macroeconomics\" (ministry OR \"research report\") \"global\"",
@@ -543,6 +659,35 @@
       "title": "United States and Global Macroeconomic Projections to 2033",
       "trusted_domain": true,
       "url": "https://www.ers.usda.gov/media/9095/eib-272.pdf?v=12309"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "This catalog offers a list of APIs provided by IP institutions for their products and services regarding patents, trademarks, industrial designs, copyright,",
+      "discovery_engine": "tavily",
+      "discovery_query": "\"JSON API\" \"patents\" (department OR \"archive\") \"Slovak Republic\"",
+      "first_seen_at": "2026-08-05T07:46:28+00:00",
+      "high_value": true,
+      "host": "apicatalog.wipo.int",
+      "integrated_at": "2026-08-05T07:48:48+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T07:46:28+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 61866,
+        "checked_at": "2026-08-05T07:47:39+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 206
+      },
+      "score": 72,
+      "source_id": "9cef7bab4bf2370f0d0a",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "API Catalog for Intellectual Property",
+      "trusted_domain": true,
+      "url": "https://apicatalog.wipo.int/"
     },
     {
       "auth": "none",
@@ -832,5 +977,5 @@
       "url": "https://datatopics.worldbank.org/world-development-indicators/release-note/apr-2025.html"
     }
   ],
-  "updated_at": "2026-08-05T07:42:39+00:00"
+  "updated_at": "2026-08-05T07:48:48+00:00"
 }
