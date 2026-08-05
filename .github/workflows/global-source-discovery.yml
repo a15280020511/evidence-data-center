@@ -3,12 +3,29 @@ name: Daily Global Source Discovery
 on:
   schedule:
     - cron: "30 1 * * *"
+  pull_request:
+    paths:
+      - "api-center/discovery/config.json"
+      - "api-center/discovery/global_source_discovery_v2.py"
+      - "api-center/discovery/global_source_discovery_v3.py"
+      - "api-center/discovery/global_source_discovery_v4.py"
+      - "api-center/discovery/trend_signals.py"
+      - "api-center/discovery/*-keywords.json"
+      - "api-center/discovery/local-language-expansion-v2.json"
+      - "api-center/discovery/test_query_planner_v4.py"
+      - "api-center/discovery/normalize_discovery_output.py"
+      - ".github/workflows/global-source-discovery.yml"
   push:
     branches: [main]
     paths:
       - "api-center/discovery/config.json"
       - "api-center/discovery/global_source_discovery_v2.py"
       - "api-center/discovery/global_source_discovery_v3.py"
+      - "api-center/discovery/global_source_discovery_v4.py"
+      - "api-center/discovery/trend_signals.py"
+      - "api-center/discovery/*-keywords.json"
+      - "api-center/discovery/local-language-expansion-v2.json"
+      - "api-center/discovery/test_query_planner_v4.py"
       - "api-center/discovery/normalize_discovery_output.py"
       - ".github/workflows/global-source-discovery.yml"
   workflow_dispatch:
@@ -23,7 +40,7 @@ permissions:
   issues: write
 
 concurrency:
-  group: intel-global-source-discovery
+  group: intel-global-source-discovery-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -37,12 +54,12 @@ jobs:
       SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
       SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
       SCKEY: ${{ secrets.SCKEY }}
+      TREND_SIGNALS_PATH: ${{ github.workspace }}/trend-signals.json
       DISCOVERY_REPORT_URL: https://github.com/${{ github.repository }}/blob/main/api-center/discovery/latest-report.md
     steps:
-      - name: Checkout current main
+      - name: Checkout current ref
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: main
           fetch-depth: 0
 
       - name: Set up Python
@@ -55,14 +72,30 @@ jobs:
           python -m py_compile \
             api-center/discovery/global_source_discovery_v2.py \
             api-center/discovery/global_source_discovery_v3.py \
+            api-center/discovery/global_source_discovery_v4.py \
+            api-center/discovery/trend_signals.py \
+            api-center/discovery/test_query_planner_v4.py \
             api-center/discovery/normalize_discovery_output.py \
             api-center/discovery/discovered_source_task.py
 
+      - name: Validate modular query planner
+        working-directory: api-center/discovery
+        run: python test_query_planner_v4.py | tee ../../query-planner-test.json
+
+      - name: Collect bounded Google Trends signals
+        if: github.event_name != 'pull_request'
+        continue-on-error: true
+        run: |
+          python api-center/discovery/trend_signals.py \
+            --config api-center/discovery/config.json \
+            --output trend-signals.json | tee trend-signals-result.json
+
       - name: Discover, deduplicate, probe and register
+        if: github.event_name != 'pull_request'
         env:
           MAX_QUERIES: ${{ github.event.inputs.max_queries || '24' }}
         run: |
-          python api-center/discovery/global_source_discovery_v3.py \
+          python api-center/discovery/global_source_discovery_v4.py \
             --config api-center/discovery/config.json \
             --registry api-center/discovery/registry.json \
             --candidates api-center/discovery/candidates.json \
@@ -71,6 +104,7 @@ jobs:
             --max-queries "$MAX_QUERIES" | tee discovery-result.json
 
       - name: Normalize catalogs and repository references
+        if: github.event_name != 'pull_request'
         run: |
           python api-center/discovery/normalize_discovery_output.py \
             --registry api-center/discovery/registry.json \
@@ -79,15 +113,20 @@ jobs:
             --report api-center/discovery/latest-report.md | tee discovery-normalization.json
 
       - name: Validate generated state
+        if: github.event_name != 'pull_request'
         run: |
           python -m json.tool api-center/discovery/config.json >/dev/null
+          python -m json.tool api-center/discovery/compute-tool-keywords.json >/dev/null
+          python -m json.tool api-center/discovery/local-language-expansion-v2.json >/dev/null
           python -m json.tool api-center/discovery/registry.json >/dev/null
           python -m json.tool api-center/discovery/candidates.json >/dev/null
           python -m json.tool api-center/discovery/state.json >/dev/null
           python -m json.tool discovery-result.json >/dev/null
           python -m json.tool discovery-normalization.json >/dev/null
+          test ! -f trend-signals.json || python -m json.tool trend-signals.json >/dev/null
 
       - name: Commit registry and report changes
+        if: github.event_name != 'pull_request'
         run: |
           git config user.name "evidence-source-discovery[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -104,16 +143,19 @@ jobs:
           git push origin HEAD:main
 
       - name: Upload discovery evidence
-        if: always()
+        if: always() && github.event_name != 'pull_request'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: global-source-discovery-${{ github.run_id }}
           path: |
+            query-planner-test.json
+            trend-signals.json
+            trend-signals-result.json
             discovery-result.json
             discovery-normalization.json
             api-center/discovery/latest-report.md
             api-center/discovery/registry.json
             api-center/discovery/candidates.json
             api-center/discovery/state.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
