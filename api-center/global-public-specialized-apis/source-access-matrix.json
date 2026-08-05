@@ -2,9 +2,9 @@
   "schema_version": "global-public-specialized-source-matrix-v1",
   "reviewed_on": "2026-08-05",
   "active_source_count": 2,
-  "production_live_count": 0,
+  "production_live_count": 1,
   "pending_free_credential_count": 1,
-  "pending_live_acceptance_count": 1,
+  "pending_live_acceptance_count": 0,
   "sources": [
     {
       "source_id": "poland-isztar4",
@@ -19,10 +19,15 @@
       "credential_mode": "none",
       "credential_env": "",
       "cost": "free public tariff browser",
-      "implementation_status": "implemented-pending-live-acceptance",
+      "implementation_status": "production-live",
       "live_acceptance": {
-        "status": "NOT_RUN",
-        "upstream_called": false,
+        "issue": 1112,
+        "run_id": 30983553579,
+        "artifact_id": 8921110384,
+        "operation": "poland-isztar4-help",
+        "status": "PASS",
+        "duration_ms": 949,
+        "upstream_called": true,
         "secret_values_exposed": false
       },
       "license_policy": "Official Ministry of Finance tariff-browser pages only; the unresolved JSON production path is not guessed or activated."
@@ -41,8 +46,13 @@
       "cost": "free automatically approved public-data service key",
       "implementation_status": "implemented-pending-free-secret",
       "live_acceptance": {
-        "status": "NOT_RUN",
+        "issue": 1113,
+        "run_id": 30983597662,
+        "artifact_id": 8921129569,
+        "operation": "korea-krx-listed-companies",
+        "status": "BLOCKED_MISSING_SECRET",
         "required_secret": "KOREA_DATA_GO_KR_SERVICE_KEY",
+        "duration_ms": 0,
         "upstream_called": false,
         "secret_values_exposed": false
       },
