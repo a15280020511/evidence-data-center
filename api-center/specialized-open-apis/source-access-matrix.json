@@ -1,0 +1,123 @@
+{
+  "schema_version": "specialized-open-apis-source-matrix-v1",
+  "reviewed_on": "2026-08-05",
+  "production_pending_live_acceptance": [
+    {
+      "source_id": "nhm-data-portal",
+      "institution": "Natural History Museum, London",
+      "industry": "natural-history-taxonomy-specimens-environment",
+      "credential_mode": "none for most public API features",
+      "operation": "nhm-dataset-search",
+      "unique_value": "Museum research and collections datasets, including natural-history specimens and collection resources.",
+      "usage_policy": "Remain below five requests per second; this connector sends one request per ticket."
+    },
+    {
+      "source_id": "materials-cloud-optimade",
+      "institution": "Materials Cloud / OPTIMADE consortium",
+      "industry": "materials-science-crystal-structures-batteries-mofs",
+      "credential_mode": "none",
+      "operation": "optimade-structures",
+      "unique_value": "Interoperable atomistic structures from fixed public materials databases.",
+      "security_note": "Arbitrary OPTIMADE filters are prohibited; only validated element lists and allowlisted providers are supported."
+    },
+    {
+      "source_id": "gov-uk-search-api",
+      "institution": "UK Government Digital Service",
+      "industry": "government-policy-guidance-regulation-publications",
+      "credential_mode": "none",
+      "operation": "gov-uk-search",
+      "unique_value": "Public discovery layer for UK policy, guidance, regulations, statistics and government publications."
+    },
+    {
+      "source_id": "rijksmuseum-search",
+      "institution": "Rijksmuseum",
+      "industry": "museum-art-cultural-heritage-history",
+      "credential_mode": "none",
+      "operation": "rijksmuseum-collection-search",
+      "unique_value": "Linked Open Data identifiers for museum collection objects with field-level search."
+    },
+    {
+      "source_id": "bgs-opengeoscience",
+      "institution": "British Geological Survey / UKRI",
+      "industry": "geology-geophysics-earthquakes-landslides-boreholes-sensors",
+      "credential_mode": "none",
+      "operation": "bgs-collections",
+      "unique_value": "Official OpenGeoscience OGC API collection catalogue under the Open Government Licence."
+    }
+  ],
+  "verified_not_implemented": [
+    {
+      "source_id": "nioccs",
+      "institution": "US CDC/NIOSH",
+      "industry": "industry-occupation-coding-labor-industrial-hygiene",
+      "credential_mode": "none",
+      "reason": "The API is free and accountless, but public endpoint onboarding requires contact and a frozen non-personal request contract."
+    },
+    {
+      "source_id": "cefas-data-hub",
+      "institution": "Centre for Environment, Fisheries and Aquaculture Science",
+      "industry": "marine-environment-fisheries-aquaculture",
+      "credential_mode": "public read",
+      "reason": "Metadata and dataset APIs are documented; select exact holding and recordset operations before implementation."
+    },
+    {
+      "source_id": "rijksmuseum-oai",
+      "institution": "Rijksmuseum",
+      "industry": "museum-bulk-harvesting",
+      "credential_mode": "none",
+      "reason": "Search API is implemented first; OAI-PMH bulk harvesting should be added only with an incremental-ingestion workflow."
+    },
+    {
+      "source_id": "arca-manuscripts-api",
+      "institution": "Arca manuscript collections",
+      "industry": "manuscripts-archives-primary-sources",
+      "credential_mode": "none",
+      "reason": "Freeze stable identifier and search contracts before implementation."
+    },
+    {
+      "source_id": "uk-api-catalogue-sector-pack",
+      "institution": "UK public bodies",
+      "industry": "education-food-safety-transport-environment-trade-heritage",
+      "credential_mode": "varies",
+      "reason": "The official catalogue exposes many sector APIs; each must be evaluated for authentication, licensing and duplication before activation."
+    }
+  ],
+  "already_covered_do_not_duplicate": [
+    "GBIF",
+    "WoRMS",
+    "Europeana",
+    "DPLA",
+    "Met Museum",
+    "Art Institute of Chicago",
+    "Wellcome Catalogue",
+    "data.europa.eu",
+    "OAPEN",
+    "DOAB",
+    "PubChem",
+    "ChEMBL",
+    "UniProt",
+    "USGS Water Services",
+    "ONS",
+    "FAO AGRIS",
+    "World Bank",
+    "IMF",
+    "OECD",
+    "UN Comtrade",
+    "EIA",
+    "OpenAlex",
+    "Crossref",
+    "DataCite"
+  ],
+  "governance": {
+    "fixed_hosts_only": true,
+    "requests_per_ticket_max": 1,
+    "automatic_retry_allowed": false,
+    "automatic_pagination_allowed": false,
+    "redirects_allowed": false,
+    "arbitrary_query_languages_allowed": false,
+    "arbitrary_optimade_filters_allowed": false,
+    "write_operations_allowed": false,
+    "secret_values_exposed": false,
+    "promotion_requires_live_acceptance": true
+  }
+}
