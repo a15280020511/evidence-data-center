@@ -10,7 +10,7 @@ permissions:
   actions: read
 
 concurrency:
-  group: intel-global-public-institution
+  group: ${{ startsWith(github.event.issue.title, '[intel-public-institution]') && 'intel-global-public-institution' || format('intel-global-public-institution-ignored-{0}', github.run_id) }}
   cancel-in-progress: false
 
 jobs:
