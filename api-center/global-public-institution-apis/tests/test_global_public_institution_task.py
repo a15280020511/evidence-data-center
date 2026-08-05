@@ -38,10 +38,9 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
         self.assertIs(matrix["governance"]["personal_data_queries_allowed"], False)
         self.assertIs(catalog["secret_values_exposed"], False)
 
-    def test_no_key_request_contracts(self) -> None:
+    def test_existing_no_key_request_contracts(self) -> None:
         url, method, headers, query, body, used, source = MODULE.build_request(
-            "singapore-collections",
-            {"page": 2},
+            "singapore-collections", {"page": 2}
         )
         self.assertEqual(url, "https://api-production.data.gov.sg/v2/public/api/collections")
         self.assertEqual(method, "GET")
@@ -59,15 +58,13 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
         self.assertEqual(source, "australia-abs-data-api")
 
         url, _, _, query, _, _, _ = MODULE.build_request(
-            "cnra-dataset-search",
-            {"query": "groundwater", "limit": 10},
+            "cnra-dataset-search", {"query": "groundwater", "limit": 10}
         )
         self.assertEqual(url, "https://data.cnra.ca.gov/api/3/action/package_search")
         self.assertIn(("rows", "10"), query)
 
         url, _, _, query, _, _, source = MODULE.build_request(
-            "asu-dataverse-search",
-            {"query": "climate", "limit": 5},
+            "asu-dataverse-search", {"query": "climate", "limit": 5}
         )
         self.assertEqual(url, "https://dataverse.asu.edu/api/search")
         self.assertIn(("type", "dataset"), query)
@@ -75,8 +72,7 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
 
     def test_uk_api_catalogue_fixed_contract(self) -> None:
         url, method, headers, query, body, used, source = MODULE.build_request(
-            "uk-api-catalogue-csv",
-            {},
+            "uk-api-catalogue-csv", {}
         )
         self.assertEqual(
             url,
@@ -110,97 +106,88 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
         self.assertEqual(source, "ukraine-nipo")
 
         url, _, _, query, _, _, source = MODULE.build_request(
-            "nipo-open-data-record",
-            {"object_id": "m202011127", "obj_type": 4},
+            "nipo-open-data-record", {"object_id": "m202011127", "obj_type": 4}
         )
-        self.assertEqual(
-            url,
-            "https://sis.nipo.gov.ua/api/v1/open-data/m202011127/",
-        )
+        self.assertEqual(url, "https://sis.nipo.gov.ua/api/v1/open-data/m202011127/")
         self.assertEqual(query, [("obj_type", "4")])
         self.assertEqual(source, "ukraine-nipo")
 
     def test_nipo_query_guards(self) -> None:
-        with self.assertRaises(ValueError):
-            MODULE.build_request("nipo-open-data-search", {"obj_type": 4})
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
+        invalid_requests = [
+            ("nipo-open-data-search", {"obj_type": 4}),
+            (
                 "nipo-open-data-search",
                 {
                     "obj_type": 4,
                     "app_date_from": "01.01.2026",
                     "app_date_to": "15.02.2026",
                 },
-            )
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
+            ),
+            (
                 "nipo-open-data-search",
                 {"obj_type": 4, "app_date_from": "01.01.2026"},
-            )
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
+            ),
+            (
                 "nipo-open-data-search",
                 {
                     "app_date_from": "01.01.2026",
                     "app_date_to": "02.01.2026",
                 },
-            )
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
-                "nipo-open-data-record",
-                {"object_id": "../../etc/passwd"},
-            )
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
+            ),
+            ("nipo-open-data-record", {"object_id": "../../etc/passwd"}),
+            (
                 "nipo-open-data-search",
                 {"obj_type": 99, "app_number": "m202011127"},
-            )
+            ),
+        ]
+        for operation, parameters in invalid_requests:
+            with self.subTest(operation=operation, parameters=parameters):
+                with self.assertRaises(ValueError):
+                    MODULE.build_request(operation, parameters)
 
     def test_required_keys_are_backend_only(self) -> None:
-        with mock.patch.dict(os.environ, {"BPS_API_KEY": "secret-bps"}, clear=False):
-            _, _, _, query, _, used, _ = MODULE.build_request(
+        cases = [
+            (
+                "BPS_API_KEY",
+                "secret-bps",
                 "bps-domain-list",
                 {"domain_type": "all"},
-            )
-            self.assertIn(("key", "secret-bps"), query)
-            self.assertEqual(used, ["BPS_API_KEY"])
-        with mock.patch.dict(os.environ, {"ESTAT_APP_ID": "estat-app"}, clear=False):
-            _, _, _, query, _, used, _ = MODULE.build_request(
+                ("key", "secret-bps"),
+            ),
+            (
+                "ESTAT_APP_ID",
+                "estat-app",
                 "estat-stats-list",
                 {"query": "population", "limit": 10},
-            )
-            self.assertIn(("appId", "estat-app"), query)
-            self.assertEqual(used, ["ESTAT_APP_ID"])
-        with mock.patch.dict(
-            os.environ,
-            {"MATERIALS_PROJECT_API_KEY": "mp-key"},
-            clear=False,
-        ):
-            _, _, headers, query, _, used, _ = MODULE.build_request(
-                "materials-summary-search",
-                {"chemical_system": "Si-O", "limit": 5},
-            )
-            self.assertEqual(headers["X-API-KEY"], "mp-key")
-            self.assertIn(("_limit", "5"), query)
-            self.assertEqual(used, ["MATERIALS_PROJECT_API_KEY"])
-        with mock.patch.dict(
-            os.environ,
-            {"INDIA_DATA_GOV_API_KEY": "india-key"},
-            clear=False,
-        ):
-            url, _, _, query, _, used, _ = MODULE.build_request(
+                ("appId", "estat-app"),
+            ),
+            (
+                "INDIA_DATA_GOV_API_KEY",
+                "india-key",
                 "india-resource-get",
                 {
                     "resource_id": "12345678-1234-1234-1234-123456789abc",
                     "limit": 10,
                 },
+                ("api-key", "india-key"),
+            ),
+        ]
+        for env_name, value, operation, parameters, expected_query in cases:
+            with self.subTest(operation=operation):
+                with mock.patch.dict(os.environ, {env_name: value}, clear=False):
+                    _, _, _, query, _, used, _ = MODULE.build_request(operation, parameters)
+                    self.assertIn(expected_query, query)
+                    self.assertEqual(used, [env_name])
+
+        with mock.patch.dict(
+            os.environ, {"MATERIALS_PROJECT_API_KEY": "mp-key"}, clear=False
+        ):
+            _, _, headers, query, _, used, _ = MODULE.build_request(
+                "materials-summary-search", {"chemical_system": "Si-O", "limit": 5}
             )
-            self.assertEqual(
-                url,
-                "https://api.data.gov.in/resource/12345678-1234-1234-1234-123456789abc",
-            )
-            self.assertIn(("api-key", "india-key"), query)
-            self.assertEqual(used, ["INDIA_DATA_GOV_API_KEY"])
+            self.assertEqual(headers["X-API-KEY"], "mp-key")
+            self.assertIn(("_limit", "5"), query)
+            self.assertEqual(used, ["MATERIALS_PROJECT_API_KEY"])
 
     def test_missing_required_keys_fail_closed(self) -> None:
         names = [
@@ -211,65 +198,57 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
             "BRAZIL_DADOS_GOV_TOKEN",
         ]
         cleaned = {name: "" for name in names}
+        cases = [
+            ("bps-domain-list", {"domain_type": "all"}),
+            ("estat-stats-list", {"query": "population"}),
+            ("materials-summary-search", {"chemical_system": "Si-O"}),
+            (
+                "india-resource-get",
+                {"resource_id": "12345678-1234-1234-1234-123456789abc"},
+            ),
+            ("brazil-dataset-list", {"page": 1}),
+        ]
         with mock.patch.dict(os.environ, cleaned, clear=False):
-            with self.assertRaises(RuntimeError):
-                MODULE.build_request("bps-domain-list", {"domain_type": "all"})
-            with self.assertRaises(RuntimeError):
-                MODULE.build_request("estat-stats-list", {"query": "population"})
-            with self.assertRaises(RuntimeError):
-                MODULE.build_request(
-                    "materials-summary-search",
-                    {"chemical_system": "Si-O"},
-                )
-            with self.assertRaises(RuntimeError):
-                MODULE.build_request(
-                    "india-resource-get",
-                    {"resource_id": "12345678-1234-1234-1234-123456789abc"},
-                )
-            with self.assertRaises(RuntimeError):
-                MODULE.build_request("brazil-dataset-list", {"page": 1})
+            for operation, parameters in cases:
+                with self.subTest(operation=operation):
+                    with self.assertRaises(RuntimeError):
+                        MODULE.build_request(operation, parameters)
 
     def test_identifier_and_parameter_guards(self) -> None:
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
-                "singapore-collections",
-                {"url": "https://example.com"},
-            )
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
-                "abs-data",
-                {"dataflow": "../../etc", "data_key": "all"},
-            )
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
-                "materials-summary-search",
-                {"chemical_system": "Si/O"},
-            )
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
-                "asu-dataverse-search",
-                {"query": "\u0000bad"},
-            )
-        with self.assertRaises(ValueError):
-            MODULE.build_request(
-                "india-resource-get",
-                {"resource_id": "not-a-uuid"},
-            )
+        cases = [
+            ("singapore-collections", {"url": "https://example.com"}),
+            ("abs-data", {"dataflow": "../../etc", "data_key": "all"}),
+            ("materials-summary-search", {"chemical_system": "Si/O"}),
+            ("asu-dataverse-search", {"query": "\u0000bad"}),
+            ("india-resource-get", {"resource_id": "not-a-uuid"}),
+        ]
+        for operation, parameters in cases:
+            with self.subTest(operation=operation):
+                with self.assertRaises(ValueError):
+                    MODULE.build_request(operation, parameters)
 
     def test_source_status_counts_and_exclusions(self) -> None:
         matrix = json.loads((HERE / "source-access-matrix.json").read_text(encoding="utf-8"))
         sources = {row["source_id"]: row for row in matrix["sources"]}
         self.assertEqual(matrix["active_source_count"], len(sources))
-        self.assertEqual(matrix["production_live_count"], 4)
+        self.assertEqual(matrix["production_live_count"], 6)
         self.assertEqual(matrix["pending_free_credential_count"], 5)
-        self.assertEqual(matrix["pending_live_acceptance_count"], 2)
+        self.assertEqual(matrix["pending_live_acceptance_count"], 0)
         self.assertEqual(
-            sources["uk-api-catalogue"]["implementation_status"],
-            "implemented-pending-live-acceptance",
+            sources["uk-api-catalogue"]["implementation_status"], "production-live"
         )
         self.assertEqual(
-            sources["ukraine-nipo"]["implementation_status"],
-            "implemented-pending-live-acceptance",
+            sources["ukraine-nipo"]["implementation_status"], "production-live"
+        )
+        self.assertEqual(sources["uk-api-catalogue"]["live_acceptance"]["issue"], 1102)
+        self.assertEqual(sources["ukraine-nipo"]["live_acceptance"]["issue"], 1103)
+        self.assertEqual(
+            sources["uk-api-catalogue"]["live_acceptance"]["artifact_id"],
+            8920690933,
+        )
+        self.assertEqual(
+            sources["ukraine-nipo"]["live_acceptance"]["artifact_id"],
+            8920823064,
         )
         excluded = {row["source_id"] for row in matrix["not_enabled"]}
         self.assertIn("issuelab-oai", excluded)
