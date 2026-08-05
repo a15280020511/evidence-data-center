@@ -75,7 +75,7 @@ def build_request(
         query = safe_plain_query(parameters.get("query"))
         limit = bounded_int(parameters.get("limit"), default=20, minimum=1, maximum=100, name="limit")
         return (
-            "https://data.gov.uk/api/3/action/package_search",
+            "https://data.gov.uk/api/action/package_search",
             "GET",
             [("q", query), ("rows", str(limit)), ("start", "0")],
             None,
@@ -149,7 +149,6 @@ def build_request(
         name = safe_plain_query(parameters.get("name"), "name", 160)
         like = bool(parameters.get("like", True))
         marine_only = bool(parameters.get("marine_only", False))
-        limit = bounded_int(parameters.get("limit"), default=20, minimum=1, maximum=50, name="limit")
         return (
             f"https://www.marinespecies.org/rest/AphiaRecordsByName/{quote(name, safe='')}",
             "GET",
@@ -157,7 +156,6 @@ def build_request(
                 ("like", str(like).lower()),
                 ("marine_only", str(marine_only).lower()),
                 ("offset", "1"),
-                ("limit", str(limit)),
             ],
             None,
             "worms",
@@ -219,7 +217,7 @@ def build_request(
         if parameters:
             raise ValueError("agris-ods-index accepts no parameters")
         return (
-            "https://agris.fao.org/agris_ods/",
+            "https://agris.fao.org/agris_ods",
             "GET",
             [],
             None,
