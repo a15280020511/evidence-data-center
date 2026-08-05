@@ -1,5 +1,6 @@
 {
   "schema_version": "global-source-discovery-config-v1",
+  "deployment_revision": 1,
   "schedule_timezone": "Asia/Seoul",
   "daily_query_limit": 24,
   "apis_guru_batch_size": 120,
