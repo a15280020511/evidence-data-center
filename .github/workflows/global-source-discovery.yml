@@ -49,14 +49,14 @@ jobs:
       - name: Compile discovery runtime
         run: |
           python -m py_compile \
-            api-center/discovery/global_source_discovery.py \
+            api-center/discovery/global_source_discovery_v2.py \
             api-center/discovery/discovered_source_task.py
 
       - name: Discover, deduplicate, probe and register
         env:
           MAX_QUERIES: ${{ github.event.inputs.max_queries || '24' }}
         run: |
-          python api-center/discovery/global_source_discovery.py \
+          python api-center/discovery/global_source_discovery_v2.py \
             --config api-center/discovery/config.json \
             --registry api-center/discovery/registry.json \
             --candidates api-center/discovery/candidates.json \
