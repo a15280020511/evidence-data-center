@@ -1,0 +1,71 @@
+{
+  "schema_version": "intelligence-tool-keywords-v1",
+  "surfaces": [
+    "API", "SDK", "MCP server", "Model Context Protocol", "remote MCP", "connector", "plugin", "tool", "toolkit", "library", "framework", "package", "CLI", "command line", "service", "platform", "browser extension", "GitHub Action", "workflow", "model", "dataset", "benchmark", "ontology", "taxonomy", "protocol adapter"
+  ],
+  "actions": [
+    "search", "discover", "crawl", "scrape", "browse", "read", "extract", "parse", "convert", "normalize", "validate", "clean", "deduplicate", "resolve entities", "link records", "index", "retrieve", "rank", "rerank", "translate", "transcribe", "OCR", "classify", "cluster", "summarize", "detect changes", "archive", "snapshot", "hash", "trace lineage", "build knowledge graph", "visualize", "monitor", "test", "audit", "scan vulnerabilities", "analyze dependencies"
+  ],
+  "capabilities": [
+    "web search", "semantic search", "metasearch", "news search", "academic search", "patent search", "legal search", "company search", "code search", "dataset search", "model search", "image search", "geospatial search",
+    "headless browser", "remote browser", "browser automation", "JavaScript rendering", "web reader", "website change detection", "RSS reader", "Atom reader", "sitemap crawler", "web archive",
+    "web crawler", "structured scraping", "table extraction", "attachment extraction", "HTML cleaning", "readability extraction",
+    "PDF parser", "PDF layout analysis", "PDF table extraction", "OCR", "scanned document OCR", "spreadsheet parser", "Office document parser", "email parser", "archive extractor", "metadata extractor",
+    "speech to text", "audio transcription", "video frame extraction", "image metadata", "image hashing", "image similarity", "computer vision",
+    "translation", "multilingual NLP", "named entity recognition", "relation extraction", "event extraction", "keyword extraction", "topic modeling", "temporal extraction", "location extraction", "claim extraction", "citation extraction",
+    "ETL", "ELT", "data ingestion", "schema inference", "schema registry", "data validation", "data profiling", "data quality", "field mapping", "unit conversion", "time normalization", "format conversion", "dataframe", "query engine", "local analytics database",
+    "entity resolution", "record linkage", "fuzzy matching", "deduplication", "name normalization", "address normalization", "organization resolution", "identifier crosswalk", "geocoding",
+    "RDF", "SPARQL", "knowledge graph", "property graph", "ontology", "taxonomy", "SHACL", "provenance graph", "citation graph", "timeline graph", "evidence graph",
+    "full text search", "vector search", "hybrid search", "document index", "geospatial index", "temporal index", "near duplicate search",
+    "GIS", "geospatial processing", "raster processing", "vector processing", "remote sensing", "STAC", "COG", "NetCDF", "HDF5", "WMS", "WFS", "WMTS", "OGC API",
+    "descriptive statistics", "aggregation", "ranking", "index construction", "time series resampling", "similarity", "distance", "graph metrics", "rule engine", "constraint validation", "anomaly flagging", "data comparison",
+    "STIX", "TAXII", "MISP", "OpenCTI", "IOC normalization", "YARA", "Sigma", "CVE", "CWE", "CPE", "certificate transparency", "threat intelligence",
+    "data lineage", "provenance", "RO-Crate", "versioning", "snapshot", "content hash", "license detection", "terms monitoring", "quota monitoring", "evidence package", "redaction",
+    "SBOM", "dependency analysis", "vulnerability scanning", "secret scanning", "static analysis", "license scanning", "container scanning", "package integrity", "supply chain security",
+    "unit testing", "property testing", "contract testing", "HTTP replay", "mocking", "load testing", "schema testing", "data regression", "structured logging", "metrics", "tracing", "artifact generation", "reproducibility",
+    "MCP SDK", "MCP registry", "MCP gateway", "MCP proxy", "MCP security", "search MCP", "browser MCP", "data MCP", "document MCP", "database MCP", "geospatial MCP", "academic MCP", "news MCP", "code MCP"
+  ],
+  "ecosystems": [
+    "PyPI", "conda-forge", "CRAN", "R-universe", "Julia General", "npm", "Maven Central", "Gradle Plugins", "NuGet", "RubyGems", "crates.io", "Go modules", "GitHub", "GitLab", "Bitbucket", "Hugging Face", "OpenML", "Zenodo", "Software Heritage", "Docker Hub", "GitHub Actions Marketplace", "MCP registry", "OpenAPI catalog"
+  ],
+  "quality_terms": [
+    "open source", "free", "free tier", "no API key", "self hosted", "offline", "read only", "official", "maintained", "actively maintained", "stable release", "documentation", "benchmark", "security", "license", "rate limit", "API reference", "changelog"
+  ],
+  "change_terms": [
+    "new release", "latest release", "changelog", "deprecated", "end of life", "migration", "security advisory", "vulnerability", "license change", "pricing change", "free tier change", "benchmark", "replacement", "alternative"
+  ],
+  "reference_terms": [
+    "official documentation", "API documentation", "protocol specification", "data dictionary", "ontology", "taxonomy", "research methodology", "OSINT methodology", "collection guide", "best practices", "benchmark suite", "public notebook", "example workflow", "training material"
+  ],
+  "local_language_terms": {
+    "zh": ["搜索工具", "浏览器工具", "网页抓取", "爬虫", "数据采集", "数据清洗", "数据处理", "文档解析", "PDF解析", "表格提取", "文字识别", "知识图谱", "实体消歧", "数据血缘", "情报分析", "开源工具", "免费接口", "模型上下文协议", "连接器"],
+    "ja": ["検索ツール", "ブラウザ自動化", "クローラー", "スクレイピング", "データ収集", "文書解析", "OCR", "知識グラフ", "オープンソース", "無料API", "MCPサーバー"],
+    "ko": ["검색 도구", "브라우저 자동화", "크롤러", "스크래핑", "데이터 수집", "문서 파싱", "OCR", "지식 그래프", "오픈 소스", "무료 API", "MCP 서버"],
+    "fr": ["outil de recherche", "automatisation navigateur", "crawler", "extraction web", "collecte de données", "analyse de documents", "OCR", "graphe de connaissances", "open source", "API gratuite", "serveur MCP"],
+    "es": ["herramienta de búsqueda", "automatización del navegador", "rastreador", "extracción web", "recopilación de datos", "análisis de documentos", "OCR", "grafo de conocimiento", "código abierto", "API gratuita", "servidor MCP"],
+    "de": ["Suchwerkzeug", "Browser-Automatisierung", "Crawler", "Web-Extraktion", "Datenerfassung", "Dokumentenanalyse", "OCR", "Wissensgraph", "Open Source", "kostenlose API", "MCP-Server"],
+    "pt": ["ferramenta de busca", "automação de navegador", "crawler", "extração web", "coleta de dados", "análise de documentos", "OCR", "grafo de conhecimento", "código aberto", "API gratuita", "servidor MCP"],
+    "ru": ["поисковый инструмент", "автоматизация браузера", "краулер", "веб-скрейпинг", "сбор данных", "анализ документов", "OCR", "граф знаний", "открытый исходный код", "бесплатный API", "MCP сервер"],
+    "ar": ["أداة بحث", "أتمتة المتصفح", "زاحف ويب", "استخراج الويب", "جمع البيانات", "تحليل المستندات", "التعرف الضوئي", "رسم المعرفة", "مفتوح المصدر", "واجهة مجانية", "خادم MCP"]
+  },
+  "query_templates": [
+    "\"{capability}\" ({surface1} OR {surface2}) ({quality1} OR {quality2})",
+    "\"{action}\" \"{artifact}\" ({surface1} OR {surface2}) open source",
+    "site:{official_domain} \"{capability}\" (API OR SDK OR documentation OR repository)",
+    "\"{capability}\" (MCP server OR Model Context Protocol OR connector)",
+    "\"{capability}\" ({ecosystem}) maintained free",
+    "\"{tool_or_capability}\" (release OR changelog OR deprecated OR security advisory OR benchmark)",
+    "\"{local_language_term}\" ({surface1} OR {surface2}) {country_or_tld}",
+    "\"{capability}\" alternative replacement benchmark open source"
+  ],
+  "negative_terms": [
+    "paid only", "enterprise only", "trial only", "automatic paid overage", "credit card required", "closed source", "abandoned", "malware", "credential stealer", "write access required", "private data scraping", "paywall bypass"
+  ],
+  "budget_policy": {
+    "registry_first": true,
+    "search_engines_for_gap_filling_only": true,
+    "fetch_full_content_only_after_metadata_score": true,
+    "stop_on_free_quota_threshold": true,
+    "reserve_majority_of_search_quota_for_user_tasks": true
+  }
+}
