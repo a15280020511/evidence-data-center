@@ -1,0 +1,322 @@
+{
+  "schema_version": "country-industry-source-atlas-v1",
+  "reviewed_on": "2026-08-05",
+  "coverage_target": "All countries and dependent territories discoverable through global portal registries, official regional catalogues, national statistical-office directories and sector directories; concrete APIs require separate verification and live acceptance.",
+  "coverage_policy": {
+    "discovery_is_not_authority": true,
+    "official_identity_verification_required": true,
+    "license_and_terms_review_required": true,
+    "current_endpoint_contract_required": true,
+    "live_acceptance_required_for_production": true,
+    "scraping_or_authentication_bypass_allowed": false,
+    "duplicate_connectors_allowed": false,
+    "country_portals_should_use_protocol_adapters_where_possible": ["CKAN", "uData", "DCAT", "SDMX", "OData", "OAI-PMH", "OGC API", "STAC", "OCDS"]
+  },
+  "official_discovery_layers": [
+    {
+      "source_id": "dataportals-public-registry",
+      "operator": "Open Knowledge Foundation community project",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["government-open-data", "cross-sector"],
+      "access_tier": "direct-no-key-discovery",
+      "interface": "public-domain JSON and CSV registry",
+      "official_host": "dataportals.org",
+      "unique_value": "Machine-readable catalogue of hundreds of national, regional, local and institutional open-data portals, including platform, API endpoint and API type fields.",
+      "production_status": "pending-live-acceptance",
+      "discovery_only": true
+    },
+    {
+      "source_id": "data-europa-catalogue-network",
+      "operator": "European Union Publications Office",
+      "region": "Europe",
+      "country_codes": ["EU", "EEA", "EU-CANDIDATES"],
+      "industries": ["government-open-data", "statistics", "environment", "transport", "economy", "health", "research", "geospatial"],
+      "access_tier": "already-production-discovery",
+      "interface": "DCAT-AP catalogue search and catalogue metadata",
+      "official_host": "data.europa.eu",
+      "unique_value": "Cross-national discovery of EU, national, regional and local public-sector catalogues.",
+      "production_status": "covered-by-global-open-apis"
+    },
+    {
+      "source_id": "un-data-country-links",
+      "operator": "United Nations Statistics Division",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["official-statistics", "national-statistical-offices", "population", "economy", "society"],
+      "access_tier": "official-directory",
+      "interface": "UNdata API and country data-service directory",
+      "official_host": "data.un.org",
+      "unique_value": "Country links and international statistical databases from the UN statistical system.",
+      "production_status": "directory-only-pending-specific-contract"
+    },
+    {
+      "source_id": "unsd-api-catalogue",
+      "operator": "United Nations Statistics Division",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["official-statistics", "trade", "industry", "energy", "environment", "demography"],
+      "access_tier": "official-directory",
+      "interface": "documented UN statistical APIs and SDMX services",
+      "official_host": "unstats.un.org",
+      "unique_value": "Authoritative directory for UN statistical APIs and related machine services.",
+      "production_status": "directory-only-pending-specific-contract"
+    },
+    {
+      "source_id": "world-bank-data-catalog-api",
+      "operator": "World Bank",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["development", "economy", "poverty", "education", "health", "climate", "finance", "governance"],
+      "access_tier": "already-covered",
+      "interface": "Indicators API and Data Catalog API",
+      "official_host": "api.worldbank.org",
+      "unique_value": "Country, economy, indicator and dataset discovery with global development coverage.",
+      "production_status": "covered-elsewhere-in-repository"
+    },
+    {
+      "source_id": "afdb-country-open-data-platforms",
+      "operator": "African Development Bank",
+      "region": "Africa",
+      "country_codes": ["AFRICA-ALL"],
+      "industries": ["official-statistics", "development", "economy", "agriculture", "infrastructure", "population", "health", "education"],
+      "access_tier": "free-registration-or-public-read",
+      "interface": "country portals and developer APIs",
+      "official_host": "dataportal.opendataforafrica.org",
+      "unique_value": "Country open-data platforms and statistical discovery across African economies.",
+      "production_status": "pending-product-and-credential-selection"
+    },
+    {
+      "source_id": "eclac-cepalstat-nso-directory",
+      "operator": "United Nations ECLAC",
+      "region": "Latin America and Caribbean",
+      "country_codes": ["LAC-ALL"],
+      "industries": ["official-statistics", "economy", "population", "social", "environment", "gender", "trade"],
+      "access_tier": "direct-or-directory",
+      "interface": "CEPALSTAT API and national statistical-office directory",
+      "official_host": "statistics.cepal.org",
+      "unique_value": "Regional statistics plus authoritative links to national statistical offices across Latin America and the Caribbean.",
+      "production_status": "pending-live-contract"
+    },
+    {
+      "source_id": "idb-national-procurement-portals",
+      "operator": "Inter-American Development Bank",
+      "region": "Latin America and Caribbean",
+      "country_codes": ["LAC-ALL"],
+      "industries": ["public-procurement", "contracts", "suppliers", "public-finance"],
+      "access_tier": "official-directory",
+      "interface": "national procurement portal directory",
+      "official_host": "iadb.org",
+      "unique_value": "Country-by-country discovery of official public-procurement systems.",
+      "production_status": "directory-only"
+    },
+    {
+      "source_id": "open-contracting-data-registry",
+      "operator": "Open Contracting Partnership",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["public-procurement", "contracts", "tenders", "suppliers", "infrastructure"],
+      "access_tier": "direct-no-key-discovery",
+      "interface": "OCDS Data Registry, bulk downloads and publisher endpoints",
+      "official_host": "data.open-contracting.org",
+      "unique_value": "Standardized procurement-data discovery across countries and subnational publishers.",
+      "production_status": "pending-publisher-specific-live-acceptance"
+    },
+    {
+      "source_id": "wipo-ip-api-catalog",
+      "operator": "World Intellectual Property Organization",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["patents", "trademarks", "designs", "geographical-indications", "intellectual-property"],
+      "access_tier": "official-api-catalog",
+      "interface": "WIPO API Catalog",
+      "official_host": "api-portal.wipo.int",
+      "unique_value": "Product-level discovery of official WIPO machine interfaces.",
+      "production_status": "select-specific-product-before-implementation"
+    },
+    {
+      "source_id": "wipo-ip-office-directory",
+      "operator": "World Intellectual Property Organization",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["patents", "trademarks", "designs", "national-ip-offices"],
+      "access_tier": "official-directory",
+      "interface": "country and regional IP office directory",
+      "official_host": "wipo.int",
+      "unique_value": "Authoritative country-level discovery of national and regional intellectual-property offices.",
+      "production_status": "directory-only"
+    },
+    {
+      "source_id": "wipo-lex",
+      "operator": "World Intellectual Property Organization",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["law", "intellectual-property", "treaties", "judgments"],
+      "access_tier": "official-website-and-product-selection",
+      "interface": "jurisdiction profiles, laws, treaties and judgments",
+      "official_host": "wipolex.wipo.int",
+      "unique_value": "Cross-jurisdiction intellectual-property legal collection.",
+      "production_status": "catalog-only-until-api-product-selected"
+    },
+    {
+      "source_id": "ogp-data-dashboard",
+      "operator": "Open Government Partnership",
+      "region": "global",
+      "country_codes": ["OGP-MEMBERS"],
+      "industries": ["governance", "open-government", "transparency", "public-participation"],
+      "access_tier": "official-directory-and-downloads",
+      "interface": "member, commitment and governance datasets",
+      "official_host": "opengovpartnership.org",
+      "unique_value": "Country open-government commitments and governance context.",
+      "production_status": "pending-machine-contract-selection"
+    },
+    {
+      "source_id": "dateno-global-catalogue-registry",
+      "operator": "Dateno",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["government-open-data", "research-data", "geospatial", "cross-sector"],
+      "access_tier": "catalog-only-or-commercial-api",
+      "interface": "global catalogue registry and dataset index",
+      "official_host": "dateno.io",
+      "unique_value": "Very broad catalogue discovery across countries, regions and organizations.",
+      "production_status": "not-integrated-commercial-or-terms-review-required"
+    },
+    {
+      "source_id": "ckan-government-ecosystem",
+      "operator": "CKAN Association and public-sector publishers",
+      "region": "global",
+      "country_codes": ["GLOBAL"],
+      "industries": ["government-open-data", "cross-sector"],
+      "access_tier": "protocol-adapter",
+      "interface": "CKAN Action API",
+      "official_host": "ckan.org",
+      "unique_value": "Reusable protocol adapter for national and subnational portals after host, license and contract verification.",
+      "production_status": "adapter-pattern-not-a-source"
+    }
+  ],
+  "regional_country_gateways": [
+    {
+      "source_id": "europe-country-gateway",
+      "region": "Europe",
+      "country_codes": ["AL", "AD", "AT", "BY", "BE", "BA", "BG", "HR", "CY", "CZ", "DK", "EE", "FI", "FR", "DE", "GR", "HU", "IS", "IE", "IT", "XK", "LV", "LI", "LT", "LU", "MT", "MD", "MC", "ME", "NL", "MK", "NO", "PL", "PT", "RO", "RU", "SM", "RS", "SK", "SI", "ES", "SE", "CH", "TR", "UA", "GB", "VA"],
+      "industries": ["cross-sector", "statistics", "law", "procurement", "geospatial", "environment", "research"],
+      "access_tier": "regional-discovery",
+      "primary_discovery": ["data-europa-catalogue-network", "un-data-country-links", "wipo-ip-office-directory", "open-contracting-data-registry"],
+      "production_status": "country-source-selection-required"
+    },
+    {
+      "source_id": "africa-country-gateway",
+      "region": "Africa",
+      "country_codes": ["DZ", "AO", "BJ", "BW", "BF", "BI", "CV", "CM", "CF", "TD", "KM", "CD", "CG", "CI", "DJ", "EG", "GQ", "ER", "SZ", "ET", "GA", "GM", "GH", "GN", "GW", "KE", "LS", "LR", "LY", "MG", "MW", "ML", "MR", "MU", "MA", "MZ", "NA", "NE", "NG", "RW", "ST", "SN", "SC", "SL", "SO", "ZA", "SS", "SD", "TZ", "TG", "TN", "UG", "ZM", "ZW"],
+      "industries": ["cross-sector", "statistics", "development", "procurement", "agriculture", "health", "energy", "infrastructure"],
+      "access_tier": "regional-discovery",
+      "primary_discovery": ["afdb-country-open-data-platforms", "un-data-country-links", "open-contracting-data-registry", "wipo-ip-office-directory"],
+      "production_status": "country-source-selection-required"
+    },
+    {
+      "source_id": "latin-america-caribbean-country-gateway",
+      "region": "Latin America and Caribbean",
+      "country_codes": ["AG", "AR", "BS", "BB", "BZ", "BO", "BR", "CL", "CO", "CR", "CU", "DM", "DO", "EC", "SV", "GD", "GT", "GY", "HT", "HN", "JM", "MX", "NI", "PA", "PY", "PE", "KN", "LC", "VC", "SR", "TT", "UY", "VE"],
+      "industries": ["cross-sector", "statistics", "procurement", "trade", "social", "environment", "agriculture"],
+      "access_tier": "regional-discovery",
+      "primary_discovery": ["eclac-cepalstat-nso-directory", "idb-national-procurement-portals", "open-contracting-data-registry", "un-data-country-links"],
+      "production_status": "country-source-selection-required"
+    },
+    {
+      "source_id": "asia-country-gateway",
+      "region": "Asia",
+      "country_codes": ["AF", "AM", "AZ", "BH", "BD", "BT", "BN", "KH", "CN", "GE", "IN", "ID", "IR", "IQ", "IL", "JP", "JO", "KZ", "KW", "KG", "LA", "LB", "MY", "MV", "MN", "MM", "NP", "KP", "OM", "PK", "PS", "PH", "QA", "SA", "SG", "KR", "LK", "SY", "TW", "TJ", "TH", "TL", "TM", "AE", "UZ", "VN", "YE", "HK", "MO"],
+      "industries": ["cross-sector", "statistics", "trade", "procurement", "transport", "technology", "agriculture", "energy"],
+      "access_tier": "regional-discovery",
+      "primary_discovery": ["dataportals-public-registry", "un-data-country-links", "world-bank-data-catalog-api", "wipo-ip-office-directory"],
+      "production_status": "country-source-selection-required"
+    },
+    {
+      "source_id": "oceania-country-gateway",
+      "region": "Oceania",
+      "country_codes": ["AU", "FJ", "KI", "MH", "FM", "NR", "NZ", "PW", "PG", "WS", "SB", "TO", "TV", "VU"],
+      "industries": ["cross-sector", "statistics", "environment", "geospatial", "agriculture", "marine", "health"],
+      "access_tier": "regional-discovery",
+      "primary_discovery": ["dataportals-public-registry", "un-data-country-links", "world-bank-data-catalog-api", "open-contracting-data-registry"],
+      "production_status": "country-source-selection-required"
+    },
+    {
+      "source_id": "north-america-country-gateway",
+      "region": "North America",
+      "country_codes": ["CA", "US", "MX", "GL", "BM"],
+      "industries": ["cross-sector", "statistics", "procurement", "law", "geospatial", "health", "energy", "research"],
+      "access_tier": "regional-discovery",
+      "primary_discovery": ["dataportals-public-registry", "un-data-country-links", "open-contracting-data-registry", "wipo-ip-office-directory"],
+      "production_status": "country-source-selection-required"
+    }
+  ],
+  "industry_discovery_directories": [
+    {"source_id": "industry-official-statistics", "region": "global", "industries": ["official-statistics", "population", "prices", "income", "employment", "national-accounts"], "access_tier": "directory", "primary_sources": ["un-data-country-links", "unsd-api-catalogue", "world-bank-data-catalog-api", "eclac-cepalstat-nso-directory", "afdb-country-open-data-platforms"]},
+    {"source_id": "industry-fiscal-finance", "region": "global", "industries": ["budget", "fiscal", "debt", "banking", "securities", "payments"], "access_tier": "directory", "primary_sources": ["IMF", "World Bank", "BIS", "national-open-data-portals", "official-statistical-offices"]},
+    {"source_id": "industry-trade-customs", "region": "global", "industries": ["trade", "customs", "tariffs", "shipping"], "access_tier": "directory", "primary_sources": ["UN Comtrade", "WTO", "national-customs-portals", "regional-statistical-portals"]},
+    {"source_id": "industry-public-procurement", "region": "global", "industries": ["procurement", "tenders", "contracts", "suppliers", "infrastructure"], "access_tier": "directory", "primary_sources": ["open-contracting-data-registry", "idb-national-procurement-portals", "national-procurement-portals"]},
+    {"source_id": "industry-companies", "region": "global", "industries": ["companies", "corporate-registers", "beneficial-ownership", "legal-entities"], "access_tier": "directory", "primary_sources": ["GLEIF", "national-company-registers", "OpenOwnership where permitted"]},
+    {"source_id": "industry-law-judiciary", "region": "global", "industries": ["law", "legislation", "courts", "case-law", "treaties"], "access_tier": "directory", "primary_sources": ["national-legislation-portals", "WorldLII", "Cornell World Law", "WIPO Lex", "EU CELLAR"]},
+    {"source_id": "industry-intellectual-property", "region": "global", "industries": ["patents", "trademarks", "designs", "geographical-indications"], "access_tier": "directory", "primary_sources": ["wipo-ip-api-catalog", "wipo-ip-office-directory", "EPO", "national-ip-offices"]},
+    {"source_id": "industry-geospatial", "region": "global", "industries": ["geospatial", "maps", "cadastre", "addresses", "satellite", "elevation"], "access_tier": "directory", "primary_sources": ["national-mapping-agencies", "OGC API directories", "STAC catalogues", "Overture Maps", "Earth Engine"]},
+    {"source_id": "industry-environment-climate", "region": "global", "industries": ["environment", "climate", "air-quality", "emissions", "biodiversity"], "access_tier": "directory", "primary_sources": ["UNEP", "EEA", "Copernicus", "OpenAQ", "GBIF", "national-environment-agencies"]},
+    {"source_id": "industry-agriculture-food", "region": "global", "industries": ["agriculture", "food", "crops", "livestock", "fisheries", "nutrition"], "access_tier": "directory", "primary_sources": ["FAOSTAT bulk", "FAO AGRIS", "national-agriculture-ministries", "food-safety-agencies"]},
+    {"source_id": "industry-health", "region": "global", "industries": ["health", "disease", "clinical-trials", "medicines", "public-health"], "access_tier": "directory", "primary_sources": ["WHO GHO", "ClinicalTrials.gov", "Europe PMC", "national-health-ministries", "drug-regulators"]},
+    {"source_id": "industry-education-research", "region": "global", "industries": ["education", "schools", "universities", "research", "publications", "grants"], "access_tier": "directory", "primary_sources": ["OpenAlex", "Crossref", "OpenAIRE", "national-education-portals", "research-councils"]},
+    {"source_id": "industry-labor", "region": "global", "industries": ["labor", "employment", "wages", "occupations", "workplace-safety"], "access_tier": "directory", "primary_sources": ["ILOSTAT", "national-labor-ministries", "occupational-safety-agencies", "NIOCCS candidate"]},
+    {"source_id": "industry-transport-logistics", "region": "global", "industries": ["transport", "roads", "rail", "aviation", "ports", "logistics", "transit"], "access_tier": "directory", "primary_sources": ["national-transport-portals", "GTFS feeds", "OpenSky", "port-authorities", "maritime-agencies"]},
+    {"source_id": "industry-energy", "region": "global", "industries": ["energy", "electricity", "oil", "gas", "renewables", "grid"], "access_tier": "directory", "primary_sources": ["EIA", "ENTSO-E", "national-energy-regulators", "grid-operators", "IEA where licensed"]},
+    {"source_id": "industry-geology-mining", "region": "global", "industries": ["geology", "mining", "minerals", "earthquakes", "boreholes"], "access_tier": "directory", "primary_sources": ["national-geological-surveys", "BGS OpenGeoscience", "USGS", "OGC services"]},
+    {"source_id": "industry-water", "region": "global", "industries": ["water", "hydrology", "groundwater", "floods", "quality"], "access_tier": "directory", "primary_sources": ["national-water-agencies", "USGS Water Services", "WMO Hydrological Observing System", "environment-agencies"]},
+    {"source_id": "industry-culture-archives", "region": "global", "industries": ["culture", "museums", "libraries", "archives", "heritage", "manuscripts"], "access_tier": "directory", "primary_sources": ["Europeana", "DPLA", "national-libraries", "national-archives", "IIIF", "OAI-PMH"]},
+    {"source_id": "industry-disaster-humanitarian", "region": "global", "industries": ["disasters", "humanitarian", "conflict", "refugees", "emergency"], "access_tier": "directory", "primary_sources": ["ReliefWeb", "HDX", "UNHCR", "national-disaster-agencies", "GDACS"]},
+    {"source_id": "industry-elections-governance", "region": "global", "industries": ["elections", "parliaments", "governance", "open-government", "political-divisions"], "access_tier": "directory", "primary_sources": ["national-election-commissions", "OGP", "parliamentary-open-data", "Google Civic US only"]},
+    {"source_id": "industry-telecom-digital", "region": "global", "industries": ["telecommunications", "internet", "spectrum", "digital-government", "cybersecurity"], "access_tier": "directory", "primary_sources": ["ITU", "national-telecom-regulators", "government-API-catalogues", "national-CSIRTs"]}
+  ],
+  "direct_api_candidates": [
+    {"source_id": "france-data-gouv-udata", "region": "Europe", "country_code": "FR", "industries": ["cross-sector"], "access_tier": "direct-no-key-pending-live", "interface": "uData API", "official_host": "data.gouv.fr", "production_status": "pending-live-acceptance"},
+    {"source_id": "canada-open-government", "region": "North America", "country_code": "CA", "industries": ["cross-sector"], "access_tier": "direct-no-key-pending-live", "interface": "CKAN-compatible catalogue API", "official_host": "open.canada.ca", "production_status": "pending-contract-and-live-acceptance"},
+    {"source_id": "australia-data-gov-au", "region": "Oceania", "country_code": "AU", "industries": ["cross-sector"], "access_tier": "direct-no-key-pending-live", "interface": "CKAN catalogue API", "official_host": "data.gov.au", "production_status": "pending-contract-and-live-acceptance"},
+    {"source_id": "hong-kong-data-gov-hk", "region": "Asia", "country_code": "HK", "industries": ["cross-sector", "transport", "weather", "economy", "geospatial"], "access_tier": "direct-no-key-pending-live", "interface": "official portal APIs and CKAN-style catalogue", "official_host": "data.gov.hk", "production_status": "pending-operation-selection"},
+    {"source_id": "taiwan-data-gov-tw", "region": "Asia", "country_code": "TW", "industries": ["cross-sector", "statistics", "transport", "environment", "agriculture"], "access_tier": "direct-no-key-pending-live", "interface": "official dataset metadata APIs and dataset endpoints", "official_host": "data.gov.tw", "production_status": "pending-operation-selection"},
+    {"source_id": "singapore-data-gov-sg", "region": "Asia", "country_code": "SG", "industries": ["cross-sector", "transport", "housing", "economy", "environment"], "access_tier": "direct-public-pending-live", "interface": "official dataset APIs", "official_host": "data.gov.sg", "production_status": "pending-dataset-specific-contract"},
+    {"source_id": "ukraine-statistics-sdmx-v3", "region": "Europe", "country_code": "UA", "industries": ["official-statistics"], "access_tier": "direct-no-key-pending-live", "interface": "SDMX 3.0 REST", "official_host": "stat.gov.ua", "production_status": "pending-live-acceptance"},
+    {"source_id": "south-africa-procurement-ocds", "region": "Africa", "country_code": "ZA", "industries": ["public-procurement", "contracts", "suppliers"], "access_tier": "direct-no-key-pending-live", "interface": "OCDS bulk and REST/OpenAPI", "official_host": "ocpo.treasury.gov.za", "production_status": "pending-current-endpoint-live-acceptance"},
+    {"source_id": "cepalstat-api", "region": "Latin America and Caribbean", "country_codes": ["LAC-ALL"], "industries": ["official-statistics", "economy", "social", "environment"], "access_tier": "direct-public-pending-live", "interface": "CEPALSTAT API", "official_host": "statistics.cepal.org", "production_status": "pending-current-contract-live-acceptance"},
+    {"source_id": "eurostat-statistics-api", "region": "Europe", "country_codes": ["EU", "EEA"], "industries": ["official-statistics", "economy", "population", "prices", "trade", "labor"], "access_tier": "direct-no-key-already-covered", "interface": "Statistics API and SDMX", "official_host": "ec.europa.eu", "production_status": "covered-elsewhere-or-candidate-for-consolidation"},
+    {"source_id": "open-maps-for-europe", "region": "Europe", "country_codes": ["EU", "EEA"], "industries": ["geospatial", "administrative-boundaries", "transport", "elevation"], "access_tier": "direct-public-pending-live", "interface": "downloads and OGC services", "official_host": "mapsforeurope.org", "production_status": "pending-specific-product-contract"}
+  ],
+  "registration_or_application_candidates": [
+    {"source_id": "india-data-gov-in", "region": "Asia", "country_code": "IN", "industries": ["cross-sector"], "access_tier": "free-key-registration", "credential": "portal API key", "production_status": "apply-and-live-accept"},
+    {"source_id": "korea-data-go-kr", "region": "Asia", "country_code": "KR", "industries": ["cross-sector", "procurement", "transport", "industry", "environment", "archives", "libraries"], "access_tier": "free-key-application", "credential": "Korean public-data portal service key per product", "production_status": "select-products-apply-and-live-accept"},
+    {"source_id": "afdb-developer-api", "region": "Africa", "country_codes": ["AFRICA-ALL"], "industries": ["statistics", "development", "economy"], "access_tier": "free-registration", "credential": "developer account or token depending product", "production_status": "select-product-register-and-live-accept"},
+    {"source_id": "us-data-gov-v4", "region": "North America", "country_code": "US", "industries": ["cross-sector"], "access_tier": "free-key-registration", "credential": "api.data.gov key", "production_status": "already-represented-in-existing-candidate-matrix"},
+    {"source_id": "italy-pdnd", "region": "Europe", "country_code": "IT", "industries": ["government-interoperability", "public-services"], "access_tier": "institutional-authentication", "credential": "authorized public/private organization onboarding", "production_status": "not-a-general-anonymous-public-api"},
+    {"source_id": "wipo-selected-products", "region": "global", "country_codes": ["GLOBAL"], "industries": ["intellectual-property"], "access_tier": "varies-by-product", "credential": "select from WIPO API Catalog", "production_status": "product-specific-review-required"}
+  ],
+  "catalog_only_sources": [
+    {"source_id": "worldlii", "region": "global", "industries": ["law", "case-law", "legislation"], "access_tier": "catalog-only", "reason": "Valuable global legal discovery, but no general production API contract is assumed."},
+    {"source_id": "cornell-world-law", "region": "global", "industries": ["law", "country-legal-systems"], "access_tier": "catalog-only", "reason": "Country legal-system directory and research aid rather than a general structured API."},
+    {"source_id": "wipo-lex-website", "region": "global", "industries": ["law", "intellectual-property"], "access_tier": "catalog-only", "reason": "Use for evidence discovery until a specific WIPO API product and terms are selected."},
+    {"source_id": "dateno-registry", "region": "global", "industries": ["cross-sector", "open-data-catalogues"], "access_tier": "catalog-only-or-commercial-api", "reason": "Broad discovery value; API and reuse terms require separate commercial/terms review."},
+    {"source_id": "ogp-country-pages", "region": "global", "industries": ["governance", "open-government"], "access_tier": "catalog-only", "reason": "Country and commitment discovery; machine contract must be selected separately."}
+  ],
+  "already_covered_do_not_duplicate": [
+    "Data Commons", "BigQuery public datasets", "Earth Engine", "World Bank", "IMF", "OECD", "BIS", "WTO", "UN Comtrade", "ILOSTAT", "UNICEF SDMX", "UN SDG API", "UNHCR", "ReliefWeb", "EIA", "WHO GHO", "OpenSky", "OpenAQ", "WorldPop", "Overture Maps", "OpenAlex", "Crossref", "DataCite", "OpenCitations", "Semantic Scholar", "CORE", "OpenAIRE", "BASE", "Zenodo", "OSF", "Figshare", "Dryad", "Harvard Dataverse", "OpenML", "ROR", "ORCID", "DBLP", "PubMed/PMC", "Europe PMC", "ClinicalTrials.gov", "openFDA", "ChEMBL", "UniProt", "RCSB PDB", "GBIF", "WoRMS", "PubChem", "USGS Water Services", "ONS", "FAO AGRIS", "OAPEN", "DOAB", "Library of Congress", "Open Library", "Google Books", "Internet Archive", "Europeana", "DPLA", "Wellcome Catalogue", "Natural History Museum Data Portal", "Materials Cloud OPTIMADE", "GOV.UK Search API", "Rijksmuseum Search", "BGS OpenGeoscience", "data.europa.eu"
+  ],
+  "governance": {
+    "fixed_hosts_only": true,
+    "requests_per_ticket_max": 1,
+    "automatic_retry_allowed": false,
+    "automatic_pagination_allowed": false,
+    "redirects_allowed": false,
+    "arbitrary_urls_allowed": false,
+    "write_operations_allowed": false,
+    "personal_data_queries_allowed": false,
+    "secret_values_exposed": false,
+    "registry_results_are_discovery_only": true,
+    "promotion_requires_official_identity_license_contract_and_live_acceptance": true,
+    "country_and_industry_coverage_is_discovery_coverage_not_guaranteed_api_availability": true
+  }
+}
