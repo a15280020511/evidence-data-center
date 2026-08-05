@@ -1,0 +1,99 @@
+name: Daily Global Source Discovery
+
+on:
+  schedule:
+    - cron: "30 1 * * *"
+  workflow_dispatch:
+    inputs:
+      max_queries:
+        description: "Maximum rotating search queries for this run"
+        required: false
+        default: "24"
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: intel-global-source-discovery
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+      SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
+      SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+      SCKEY: ${{ secrets.SCKEY }}
+      DISCOVERY_REPORT_URL: https://github.com/${{ github.repository }}/blob/main/api-center/discovery/latest-report.md
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Compile discovery runtime
+        run: |
+          python -m py_compile \
+            api-center/discovery/global_source_discovery.py \
+            api-center/discovery/discovered_source_task.py
+
+      - name: Discover, deduplicate, probe and register
+        env:
+          MAX_QUERIES: ${{ github.event.inputs.max_queries || '24' }}
+        run: |
+          python api-center/discovery/global_source_discovery.py \
+            --config api-center/discovery/config.json \
+            --registry api-center/discovery/registry.json \
+            --candidates api-center/discovery/candidates.json \
+            --state api-center/discovery/state.json \
+            --report api-center/discovery/latest-report.md \
+            --max-queries "$MAX_QUERIES" | tee discovery-result.json
+
+      - name: Validate generated state
+        run: |
+          python -m json.tool api-center/discovery/config.json >/dev/null
+          python -m json.tool api-center/discovery/registry.json >/dev/null
+          python -m json.tool api-center/discovery/candidates.json >/dev/null
+          python -m json.tool api-center/discovery/state.json >/dev/null
+          python -m json.tool discovery-result.json >/dev/null
+
+      - name: Commit registry and report changes
+        run: |
+          git config user.name "evidence-source-discovery[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center/discovery/registry.json \
+                  api-center/discovery/candidates.json \
+                  api-center/discovery/state.json \
+                  api-center/discovery/latest-report.md
+          if git diff --cached --quiet; then
+            echo "No discovery state changes."
+            exit 0
+          fi
+          git commit -m "chore(discovery): refresh global source registry"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Upload discovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: global-source-discovery-${{ github.run_id }}
+          path: |
+            discovery-result.json
+            api-center/discovery/latest-report.md
+            api-center/discovery/registry.json
+            api-center/discovery/candidates.json
+            api-center/discovery/state.json
+          if-no-files-found: error
+          retention-days: 30
