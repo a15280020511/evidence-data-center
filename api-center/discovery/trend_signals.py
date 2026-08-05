@@ -19,6 +19,7 @@ from typing import Any, Iterable, Mapping
 
 UA = "evidence-data-center-trend-signals/1"
 NUMBER_RE = re.compile(r"([0-9][0-9,.]*)")
+ASCII_WORD_RE = re.compile(r"^[a-z0-9][a-z0-9 +#./-]*$", re.I)
 
 
 def utc_now() -> str:
@@ -39,6 +40,21 @@ def save_json(path: Path, value: Mapping[str, Any]) -> None:
 
 def normalized_text(value: str) -> str:
     return " ".join(str(value or "").split()).strip()
+
+
+def marker_matches(blob: str, marker: str) -> bool:
+    """Match ASCII markers on token boundaries and non-ASCII phrases literally."""
+    marker = normalized_text(marker).casefold()
+    if not marker:
+        return False
+    if ASCII_WORD_RE.fullmatch(marker):
+        pattern = rf"(?<![a-z0-9]){re.escape(marker)}(?![a-z0-9])"
+        return re.search(pattern, blob, flags=re.I) is not None
+    return marker in blob
+
+
+def matching_markers(blob: str, markers: list[str]) -> list[str]:
+    return [marker for marker in markers if marker_matches(blob, marker)]
 
 
 def approx_volume(item_text: str) -> int:
@@ -112,7 +128,8 @@ def collect(config: Mapping[str, Any]) -> dict[str, Any]:
             result["feeds_succeeded"] += 1
             for title, item_text in iter_items(xml_bytes):
                 blob = f"{title} {item_text}".casefold()
-                if markers and not any(marker in blob for marker in markers):
+                matched = matching_markers(blob, markers)
+                if markers and not matched:
                     continue
                 key = title.casefold()
                 if key in seen:
@@ -123,7 +140,7 @@ def collect(config: Mapping[str, Any]) -> dict[str, Any]:
                         "term": title[:160],
                         "geo": geo,
                         "approx_volume": approx_volume(item_text),
-                        "matched_markers": [marker for marker in markers if marker in blob][:8],
+                        "matched_markers": matched[:8],
                     }
                 )
         except Exception as exc:  # fail closed; trends are non-critical
