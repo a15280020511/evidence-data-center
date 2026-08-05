@@ -2,6 +2,8 @@
   "schema_version": "global-public-institution-source-matrix-v1",
   "reviewed_on": "2026-08-05",
   "active_source_count": 9,
+  "production_live_count": 4,
+  "pending_free_credential_count": 5,
   "sources": [
     {
       "source_id": "singapore-data-gov",
@@ -13,7 +15,8 @@
       "credential_mode": "optional_free_key",
       "credential_env": "SINGAPORE_DATA_GOV_API_KEY",
       "cost": "anonymous public access; free key recommended for production rate limits",
-      "implementation_status": "implemented-pending-live-acceptance",
+      "implementation_status": "production-live",
+      "live_acceptance": {"issue":1073,"operation":"singapore-collections","status":"PASS","duration_ms":2865,"secret_values_exposed":false},
       "license_policy": "Public dataset and collection metadata; dataset-specific terms and attribution remain authoritative."
     },
     {
@@ -26,7 +29,8 @@
       "credential_mode": "none",
       "credential_env": "",
       "cost": "free; API key removed on 2024-11-29",
-      "implementation_status": "implemented-pending-live-acceptance",
+      "implementation_status": "production-live",
+      "live_acceptance": {"issue":1074,"operation":"abs-dataflows","status":"PASS","duration_ms":15540,"secret_values_exposed":false},
       "license_policy": "Official aggregate statistics and metadata; bounded SDMX requests only."
     },
     {
@@ -39,7 +43,8 @@
       "credential_mode": "none",
       "credential_env": "",
       "cost": "free; no key documented",
-      "implementation_status": "implemented-pending-live-acceptance",
+      "implementation_status": "production-live",
+      "live_acceptance": {"issue":1075,"operation":"cnra-dataset-search","status":"PASS","duration_ms":850,"secret_values_exposed":false},
       "license_policy": "Catalog metadata and hosted public datastore links; resource-level rights apply."
     },
     {
@@ -52,7 +57,8 @@
       "credential_mode": "required_free_key",
       "credential_env": "BPS_API_KEY",
       "cost": "free portal token",
-      "implementation_status": "implemented-pending-secret-and-live-acceptance",
+      "implementation_status": "implemented-pending-free-secret",
+      "live_acceptance": {"issue":1080,"operation":"bps-domain-list","status":"BLOCKED_MISSING_SECRET","duration_ms":0,"required_secret":"BPS_API_KEY","upstream_called":false,"secret_values_exposed":false},
       "license_policy": "Official public aggregate statistics and publication metadata; no personal-data queries."
     },
     {
@@ -65,7 +71,8 @@
       "credential_mode": "required_free_app_id",
       "credential_env": "ESTAT_APP_ID",
       "cost": "free application ID",
-      "implementation_status": "implemented-pending-secret-and-live-acceptance",
+      "implementation_status": "implemented-pending-free-secret",
+      "live_acceptance": {"issue":1081,"operation":"estat-stats-list","status":"BLOCKED_MISSING_SECRET","duration_ms":0,"required_secret":"ESTAT_APP_ID","upstream_called":false,"secret_values_exposed":false},
       "license_policy": "Official aggregate statistics and metadata; preserve source identifiers and annotations."
     },
     {
@@ -78,7 +85,8 @@
       "credential_mode": "required_free_key",
       "credential_env": "MATERIALS_PROJECT_API_KEY",
       "cost": "free account API key",
-      "implementation_status": "implemented-pending-secret-and-live-acceptance",
+      "implementation_status": "implemented-pending-free-secret",
+      "live_acceptance": {"issue":1082,"operation":"materials-summary-search","status":"BLOCKED_MISSING_SECRET","duration_ms":0,"required_secret":"MATERIALS_PROJECT_API_KEY","upstream_called":false,"secret_values_exposed":false},
       "license_policy": "Bounded metadata/property queries only; respect Materials Project attribution, rate and bulk-use terms."
     },
     {
@@ -91,7 +99,8 @@
       "credential_mode": "required_free_key",
       "credential_env": "INDIA_DATA_GOV_API_KEY",
       "cost": "free registered API key",
-      "implementation_status": "implemented-pending-secret-and-live-acceptance",
+      "implementation_status": "implemented-pending-free-secret",
+      "live_acceptance": {"issue":1083,"operation":"india-resource-get","status":"BLOCKED_MISSING_SECRET","duration_ms":0,"required_secret":"INDIA_DATA_GOV_API_KEY","upstream_called":false,"secret_values_exposed":false},
       "license_policy": "Resource-level public data under the Government Open Data License India and dataset-specific notices."
     },
     {
@@ -104,7 +113,8 @@
       "credential_mode": "required_free_bearer_token",
       "credential_env": "BRAZIL_DADOS_GOV_TOKEN",
       "cost": "free consumer token",
-      "implementation_status": "implemented-pending-secret-and-live-acceptance",
+      "implementation_status": "implemented-pending-free-secret",
+      "live_acceptance": {"issue":1084,"operation":"brazil-dataset-list","status":"BLOCKED_MISSING_SECRET","duration_ms":0,"required_secret":"BRAZIL_DADOS_GOV_TOKEN","upstream_called":false,"secret_values_exposed":false},
       "license_policy": "Public federal dataset metadata only; administrative write endpoints are prohibited."
     },
     {
@@ -117,7 +127,8 @@
       "credential_mode": "none",
       "credential_env": "",
       "cost": "free public metadata",
-      "implementation_status": "implemented-pending-live-acceptance",
+      "implementation_status": "production-live",
+      "live_acceptance": {"issue":1076,"operation":"asu-dataverse-search","status":"PASS","duration_ms":549,"secret_values_exposed":false},
       "license_policy": "Published repository metadata and declared public files only; record-level licenses govern reuse."
     }
   ],
@@ -142,34 +153,13 @@
     "NASA ADS"
   ],
   "not_enabled": [
-    {
-      "source_id": "issuelab-oai",
-      "reason": "The official harvesting endpoint is HTTP-only; repository production policy requires fixed HTTPS endpoints."
-    },
-    {
-      "source_id": "federal-register",
-      "reason": "The existing bounded GitHub Actions production acceptance returned HTTP 403 on 2026-08-04; retain conditional status rather than duplicate it."
-    },
-    {
-      "source_id": "uk-hmrc-customs-declarations",
-      "reason": "Production data is restricted to authorised customs users and is not anonymous public intelligence."
-    },
-    {
-      "source_id": "brazil-inpi-general-trademark-api",
-      "reason": "No general-purpose public official REST search API was verified; official publications may be handled separately without substituting a commercial third party."
-    },
-    {
-      "source_id": "poland-isztar4",
-      "reason": "Retained for exact endpoint, licence and bounded live-contract verification before activation."
-    },
-    {
-      "source_id": "ukraine-nipo",
-      "reason": "Retained for current official endpoint, authentication and licence verification before activation."
-    },
-    {
-      "source_id": "korea-data-go-kr",
-      "reason": "The national portal contains service-specific APIs and keys; each concrete product requires a separate fixed contract rather than one generic connector."
-    }
+    {"source_id":"issuelab-oai","reason":"The official harvesting endpoint is HTTP-only; repository production policy requires fixed HTTPS endpoints."},
+    {"source_id":"federal-register","reason":"The existing bounded GitHub Actions production acceptance returned HTTP 403 on 2026-08-04; retain conditional status rather than duplicate it."},
+    {"source_id":"uk-hmrc-customs-declarations","reason":"Production data is restricted to authorised customs users and is not anonymous public intelligence."},
+    {"source_id":"brazil-inpi-general-trademark-api","reason":"No general-purpose public official REST search API was verified; official publications may be handled separately without substituting a commercial third party."},
+    {"source_id":"poland-isztar4","reason":"Retained for exact endpoint, licence and bounded live-contract verification before activation."},
+    {"source_id":"ukraine-nipo","reason":"Retained for current official endpoint, authentication and licence verification before activation."},
+    {"source_id":"korea-data-go-kr","reason":"The national portal contains service-specific APIs and keys; each concrete product requires a separate fixed contract rather than one generic connector."}
   ],
   "governance": {
     "fixed_sources_only": true,
