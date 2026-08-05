@@ -1,0 +1,44 @@
+{
+  "schema_version": "institutional-open-knowledge-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "providers": [
+    {
+      "provider_id": "institutional-open-knowledge-apis",
+      "display_name": "全球机构开放知识API",
+      "description": "固定接入FRASER经济史文献、NASA OSDR空间生命科学数据和日本Statistics Dashboard官方指标。",
+      "enabled": true,
+      "ticket_prefix": "[intel-institutional-knowledge]",
+      "required_secret_environment_variable": "",
+      "optional_secret_environment_variables": [],
+      "catalog_policy": "只允许三个固定HTTPS来源和六个只读操作；禁止任意URL、路径、Header、重定向、自动翻页、resumptionToken追随、文件批量下载和个人画像。",
+      "execution_policy": "每张票据最多一次上游请求，只保存公共元数据或聚合统计，保留来源许可和权利字段。",
+      "limits": {
+        "requests_per_ticket_max": 1,
+        "timeout_seconds_max": 90,
+        "max_response_bytes": 10000000,
+        "automatic_pagination_allowed": false,
+        "resumption_token_following_allowed": false,
+        "automatic_retry_allowed": false,
+        "redirects_allowed": false,
+        "arbitrary_urls_allowed": false,
+        "arbitrary_hosts_allowed": false,
+        "arbitrary_paths_allowed": false,
+        "arbitrary_headers_allowed": false,
+        "write_operations_allowed": false,
+        "restricted_file_retrieval_allowed": false,
+        "personal_data_queries_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {"operation_id":"catalog-capabilities","description":"读取本地能力目录。","parameters":[],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}},
+        {"operation_id":"source-access-matrix","description":"读取来源、许可与状态矩阵。","parameters":[],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}},
+        {"operation_id":"fraser-oai-identify","description":"读取FRASER OAI-PMH仓库身份和协议能力。","parameters":[],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{}},"result_contract":{"official_endpoint":"https://fraser.stlouisfed.org/oai?verb=Identify","http_method":"GET","read_only":true,"credential_mode":"none"}},
+        {"operation_id":"fraser-oai-list-records","description":"读取FRASER首批MODS经济史文献元数据，不追随resumptionToken。","parameters":["from_date","until_date","set"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"from_date":{"type":"string","format":"date"},"until_date":{"type":"string","format":"date"},"set":{"type":"string","minLength":1,"maxLength":100,"pattern":"^[A-Za-z0-9._:-]+$"}}},"result_contract":{"official_endpoint":"https://fraser.stlouisfed.org/oai","http_method":"GET","read_only":true,"credential_mode":"none","metadata_prefix":"mods"}},
+        {"operation_id":"osdr-datasets","description":"读取NASA OSDR公开数据集目录首批结果。","parameters":[],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{}},"result_contract":{"official_endpoint":"https://visualization.osdr.nasa.gov/biodata/api/v2/datasets/","http_method":"GET","read_only":true,"credential_mode":"none"}},
+        {"operation_id":"osdr-dataset-metadata","description":"读取一个NASA OSDR数据集的聚合元数据。","parameters":["accession"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"accession":{"type":"string","pattern":"^OSD-[0-9]{1,8}$"}},"required":["accession"]},"result_contract":{"official_endpoint":"https://visualization.osdr.nasa.gov/biodata/api/v2/dataset/{accession}/","http_method":"GET","read_only":true,"credential_mode":"none"}},
+        {"operation_id":"japan-indicator-search","description":"按关键词检索日本Statistics Dashboard指标元数据。","parameters":["query"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"query":{"type":"string","minLength":1,"maxLength":120}},"required":["query"]},"result_contract":{"official_endpoint":"https://dashboard.e-stat.go.jp/api/1.0/Json/getIndicatorInfo","http_method":"GET","read_only":true,"credential_mode":"none"}},
+        {"operation_id":"japan-indicator-data","description":"按固定指标代码、周期和地区层级读取聚合统计。","parameters":["indicator_code","cycle","regional_rank","seasonal_adjustment"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"indicator_code":{"type":"string","pattern":"^[0-9]{19}$"},"cycle":{"type":"integer","minimum":1,"maximum":4},"regional_rank":{"type":"integer","minimum":1,"maximum":4},"seasonal_adjustment":{"type":"integer","minimum":1,"maximum":2}},"required":["indicator_code","cycle","regional_rank"]},"result_contract":{"official_endpoint":"https://dashboard.e-stat.go.jp/api/1.0/Json/getData","http_method":"GET","read_only":true,"credential_mode":"none"}}
+      ]
+    }
+  ]
+}
