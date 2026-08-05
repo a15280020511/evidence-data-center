@@ -69,6 +69,36 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
         self.assertIn(("type", "dataset"), query)
         self.assertEqual(source, "asu-dataverse")
 
+    def test_new_official_catalog_and_publication_contracts(self) -> None:
+        url, method, headers, query, body, used, source = MODULE.build_request(
+            "uk-api-catalogue-index", {}
+        )
+        self.assertEqual(url, "https://www.api.gov.uk/index/")
+        self.assertEqual(method, "GET")
+        self.assertIn("text/html", headers["Accept"])
+        self.assertEqual(query, [])
+        self.assertIsNone(body)
+        self.assertEqual(used, [])
+        self.assertEqual(source, "uk-api-catalogue")
+
+        url, method, _, query, _, used, source = MODULE.build_request(
+            "poland-isztar4-service-info", {}
+        )
+        self.assertTrue(url.startswith("https://puesc.gov.pl/"))
+        self.assertEqual(method, "GET")
+        self.assertEqual(query, [])
+        self.assertEqual(used, [])
+        self.assertEqual(source, "poland-isztar4")
+
+        url, method, _, query, _, used, source = MODULE.build_request(
+            "ukraine-nipo-statistics", {}
+        )
+        self.assertEqual(url, "https://nipo.gov.ua/en/statistics-reports/")
+        self.assertEqual(method, "GET")
+        self.assertEqual(query, [])
+        self.assertEqual(used, [])
+        self.assertEqual(source, "ukraine-nipo")
+
     def test_required_keys_are_backend_only(self) -> None:
         with mock.patch.dict(os.environ, {"BPS_API_KEY": "secret-bps"}, clear=False):
             _, _, _, query, _, used, _ = MODULE.build_request("bps-domain-list", {"domain_type": "all"})
@@ -95,6 +125,18 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
             self.assertEqual(url, "https://api.data.gov.in/resource/12345678-1234-1234-1234-123456789abc")
             self.assertIn(("api-key", "india-key"), query)
             self.assertEqual(used, ["INDIA_DATA_GOV_API_KEY"])
+        with mock.patch.dict(os.environ, {"KOREA_DATA_GO_KR_SERVICE_KEY": "kr-key"}, clear=False):
+            url, _, _, query, _, used, source = MODULE.build_request(
+                "korea-krx-listed-companies",
+                {"page": 2, "limit": 10, "base_date": "20260805", "company_name": "Samsung"},
+            )
+            self.assertEqual(url, "https://apis.data.go.kr/1160100/service/GetKrxListedInfoService/getItemInfo")
+            self.assertIn(("serviceKey", "kr-key"), query)
+            self.assertIn(("resultType", "json"), query)
+            self.assertIn(("basDt", "20260805"), query)
+            self.assertIn(("likeCorpNm", "Samsung"), query)
+            self.assertEqual(used, ["KOREA_DATA_GO_KR_SERVICE_KEY"])
+            self.assertEqual(source, "korea-data-go-kr-krx-listed")
 
     def test_missing_required_keys_fail_closed(self) -> None:
         names = [
@@ -103,6 +145,7 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
             "MATERIALS_PROJECT_API_KEY",
             "INDIA_DATA_GOV_API_KEY",
             "BRAZIL_DADOS_GOV_TOKEN",
+            "KOREA_DATA_GO_KR_SERVICE_KEY",
         ]
         cleaned = {name: "" for name in names}
         with mock.patch.dict(os.environ, cleaned, clear=False):
@@ -118,6 +161,8 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
                 )
             with self.assertRaises(RuntimeError):
                 MODULE.build_request("brazil-dataset-list", {"page": 1})
+            with self.assertRaises(RuntimeError):
+                MODULE.build_request("korea-krx-listed-companies", {})
 
     def test_identifier_and_parameter_guards(self) -> None:
         with self.assertRaises(ValueError):
@@ -129,9 +174,12 @@ class GlobalPublicInstitutionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             MODULE.build_request("asu-dataverse-search", {"query": "\u0000bad"})
         with self.assertRaises(ValueError):
-            MODULE.build_request(
-                "india-resource-get", {"resource_id": "not-a-uuid"}
-            )
+            MODULE.build_request("india-resource-get", {"resource_id": "not-a-uuid"})
+        with mock.patch.dict(os.environ, {"KOREA_DATA_GO_KR_SERVICE_KEY": "kr-key"}, clear=False):
+            with self.assertRaises(ValueError):
+                MODULE.build_request("korea-krx-listed-companies", {"base_date": "2026-08-05"})
+            with self.assertRaises(ValueError):
+                MODULE.build_request("korea-krx-listed-companies", {"company_name": "\u0000bad"})
 
 
 if __name__ == "__main__":
