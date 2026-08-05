@@ -1,0 +1,130 @@
+{
+  "schema_version": "institutional-api-multiround-research-v1",
+  "reviewed_on": "2026-08-05",
+  "objective": "Discover official free APIs from universities, research institutes, national laboratories, libraries, archives, think tanks and specialist databases without duplicating existing managed sources.",
+  "search_execution": {
+    "rounds": 6,
+    "providers": ["exa", "tavily"],
+    "submitted_tickets": 13,
+    "successful_upstream_searches": 12,
+    "failed_searches": [{"issue":1064,"provider":"tavily","reason":"upstream HTTP 403 on broad think-tank query"}],
+    "successful_replacement_searches": [{"issue":1071,"provider":"tavily","theme":"narrow think-tank and policy-repository APIs"}],
+    "issues": [1059,1060,1061,1062,1063,1064,1065,1066,1067,1068,1069,1070,1071],
+    "model_calls": 0,
+    "secret_values_exposed": false,
+    "themes": [
+      "universities and institutional research repositories",
+      "national libraries, archives and union catalogues",
+      "think tanks, policy institutes and economic research libraries",
+      "national laboratories, academies and government research institutes",
+      "specialist scientific and professional databases",
+      "Asia, Africa, Latin America and Middle East institution discovery"
+    ]
+  },
+  "implemented_in_this_branch": [
+    "Singapore Data.gov.sg",
+    "Australian Bureau of Statistics Data API",
+    "California Natural Resources Agency CKAN",
+    "Indonesia BPS",
+    "Japan e-Stat API 3.0",
+    "Japan Statistics Dashboard WebAPI",
+    "Materials Project",
+    "India Open Government Data Platform",
+    "Brazil Portal Brasileiro de Dados Abertos",
+    "Arizona State University Dataverse",
+    "FRASER OAI-PMH",
+    "NASA OSDR Biological Data API"
+  ],
+  "high_value_verified_candidates": [
+    {
+      "source_id":"fraser-oai",
+      "classification":"implemented",
+      "reason":"Official no-key OAI-PMH economic, financial, banking and policy history metadata."
+    },
+    {
+      "source_id":"nasa-osdr-biodata",
+      "classification":"implemented",
+      "reason":"Official no-key NASA space-life-science and omics research metadata API."
+    },
+    {
+      "source_id":"japan-statistics-dashboard",
+      "classification":"implemented",
+      "reason":"Official no-registration API exposing roughly 6,000 indicators by time and region."
+    },
+    {
+      "source_id":"kyoto-kurenai-dspace",
+      "classification":"conditional",
+      "reason":"Official university repository verified; anonymous REST/OAI surfaces require direct live contract verification."
+    },
+    {
+      "source_id":"uw-researchworks-dspace",
+      "classification":"conditional",
+      "reason":"Official university repository verified; REST/OAI endpoint behaviour requires direct live verification."
+    },
+    {
+      "source_id":"chula-digiverse-dspace",
+      "classification":"conditional",
+      "reason":"Official university digital repository verified; API endpoints require first-party contract verification."
+    },
+    {
+      "source_id":"kegg-rest",
+      "classification":"licence-restricted",
+      "reason":"No-key API is limited by official terms to academic users; non-academic use requires a commercial licence."
+    }
+  ],
+  "excluded_or_not_promoted": [
+    {
+      "source_id":"nypl-digital-collections-api",
+      "reason":"Provider announced shutdown effective 2026-08-01 with no planned public replacement."
+    },
+    {
+      "source_id":"generic-dspace-dataverse-discovery",
+      "reason":"Third-party API catalogues are discovery evidence only; each university endpoint must be verified on its official domain."
+    },
+    {
+      "source_id":"commercial-academic-indexes",
+      "reason":"Scopus, Web of Science, ProQuest, EBSCO, CNKI, Wanfang and similar services require licensed access."
+    }
+  ],
+  "deduplicated_existing_families": [
+    "OpenAlex",
+    "Crossref",
+    "DataCite",
+    "OpenCitations",
+    "PubMed/PMC",
+    "Europe PMC",
+    "OpenAIRE",
+    "CORE",
+    "Semantic Scholar",
+    "Zenodo",
+    "OSF",
+    "Figshare",
+    "Dryad",
+    "Harvard Dataverse",
+    "ROR",
+    "ORCID",
+    "UKRI Gateway to Research",
+    "NIH RePORTER",
+    "ERIC",
+    "OSTI.GOV",
+    "NASA ADS/NTRS",
+    "Library of Congress",
+    "National Diet Library",
+    "German National Library",
+    "Europeana",
+    "DPLA",
+    "HAL",
+    "Rijksmuseum",
+    "Wellcome Catalogue",
+    "re3data"
+  ],
+  "governance": {
+    "search_results_are_production_sources": false,
+    "official_domain_verification_required": true,
+    "licence_review_required": true,
+    "fixed_endpoint_contract_required": true,
+    "independent_live_acceptance_required": true,
+    "automatic_connector_creation_from_third_party_catalogues": false,
+    "restricted_or_commercial_content_bypass_allowed": false
+  }
+}
