@@ -1,6 +1,6 @@
 {
   "schema_version": "global-source-registry-v2",
-  "source_count": 34,
+  "source_count": 42,
   "sources": [
     {
       "auth": "none",
@@ -33,6 +33,35 @@
     },
     {
       "auth": "none",
+      "catalog_url": null,
+      "description": "Suriname, the smallest and least populated country in South America, has a population of 623,236,“Population, total – Suriname,”  The World Bank, October 19, 2024,  \n. of which 34% is rural. Rural Population, total – Suriname,” The World Bank, accessed October 19, 2024, . Suriname experiences a tropical rainforest climate on parts of its northern coast, while the rest of the country has a tropical monsoon climate.“Climate Change Knowledge Portal – Paraguay,” The World Bank, accessed October 19, 2024, [...] Although Suriname is already on an excellent track for sustainable goals as a carbon-negative country, it must continue to identify and implement new adaptations for its future as the climate crisis will undoubtedly impact the country. This includes setting up a definitive, overall emissions reduction target such that the country’s actions can be measured while also developing data collection systems so policymakers can be better informed. “IGES NDC Database,” Institute for Global Environmental Strategies, accessed October 20, 2024, . Climate change adaptation also needs to be better implemented throughout the country, as most technology and infrastructure are being used in the urban and northern coasts, while many rural areas are often forgotten and not well connected. More robust [...] crisis and undermining the country’s capacity for climate resilience. For example, gold mining makes up approximately $2 billion a year for Suriname’s exports“Suriname,” OEC, accessed October 20, 2024, . but also acts as a considerable driver of extreme deforestation and has caused a 10% ",
+      "discovery_engine": "tavily",
+      "discovery_query": "regional_source::climate Suriname open data",
+      "first_seen_at": "2026-08-05T11:29:03+00:00",
+      "high_value": true,
+      "host": "belonging.berkeley.edu",
+      "integrated_at": "2026-08-05T11:29:56+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T11:29:03+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T11:29:25+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 206
+      },
+      "score": 72,
+      "source_id": "0ff2f9fc5e092d232dab",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Suriname Case Study | Climate Refugees | Othering & Belonging Institute",
+      "trusted_domain": true,
+      "url": "https://belonging.berkeley.edu/climatedisplacement/case-studies/suriname"
+    },
+    {
+      "auth": "none",
       "description": "Macroeconomics and Growth - World Bank Research\n\n# Macroeconomics and Growth\n\n---\n\nThe following big questions guide the Macroeconomics and Growth Research work program:\n\n1) What are the determinants of macroeconomic outcomes (especially growth)? How are those outcomes linked to institutions and resource allocation at the micro level?\n\n2) What is the role of governments in raising and allocating resources? What should governments do over the long run and in response to shocks?\n\nThe work program is organized around the following interrelated areas:\n\n- Growth: Macro, regional (local), sectoral, firm growth; labor markets and human capital\n- Firms and Aggregate Outcomes: Allocation of production and finance; competition\n- Public economics/public finance: Domestic revenue mobilization, taxatio",
       "discovery_engine": "exa",
       "discovery_query": "\"developer portal\" \"macroeconomics\" (government OR \"research report\") \"global\"",
@@ -58,6 +87,35 @@
       "title": "Macroeconomics and Growth - World Bank Research",
       "trusted_domain": true,
       "url": "https://www.worldbank.org/en/research/brief/macroeconomics-growth"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "On the same day, the ECB discontinued the current Indices of Consumer Prices - ICP dataset on the ECB Data Portal and replace it with a new HICP dataset that reflects the methodological changes by Eurostat.\n\nFor more information about these updates, visit the HICP dataset page.\n\nOur main objective is to keep prices stable. To achieve this, we aim for 2% inflation over the medium term. Our reference for measuring inflation is the Harmonised Index of Consumer Prices (HICP). The HICP is compiled by Eurostat, the statistical office of the European Union, and the national statistical institutes of EU Member States. The same methodology is used across all countries. [...] ### Inflation dashboard and available data series\n\nWe publish Eurostat inflation data for the main HICP index and 12 consumption categories for the euro area, the EU and all Member States on an interactive dashboard. More product groups as well as seasonally adjusted data which is produced by the ECB is available from our Data Portal.\n\n### A common standard for the euro area\n\nThe introduction of the euro made it necessary to have a common means of measuring inflation for the entire euro area. We use the HICP, which follows the same methodology for all countries.\n\n### Why do we aim for 2% inflation?",
+      "discovery_engine": "tavily",
+      "discovery_query": "institution::international organization consumer prices data portal",
+      "first_seen_at": "2026-08-05T11:28:43+00:00",
+      "high_value": true,
+      "host": "www.ecb.europa.eu",
+      "integrated_at": "2026-08-05T11:29:56+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T11:28:43+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T11:29:23+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "1cab8970357a74f20000",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Measuring inflation and consumer prices",
+      "trusted_domain": true,
+      "url": "https://www.ecb.europa.eu/stats/macroeconomic_and_sectoral/hicp/html/index.en.html"
     },
     {
       "auth": "none",
@@ -116,6 +174,35 @@
       "title": "Benin | Data",
       "trusted_domain": true,
       "url": "https://data.worldbank.org/country/benin"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "IMF Logo\nLogo text\n\n# IMF DATA\n\n## Consumer Price Index (CPI)\n\n### Latest Updates\n\nDataPresentationRelease\n\n### Consumer Price Index (CPI) by Country and Component\n\nThis report provides the Consumer Price Index (CPI) for all countries and allows users to view the data by component.\n\nDocumentRelease\n\n### Consumer Price Index Manual: Concepts and Methods 2020\n\nThe primary purpose of the Manual is to assist countries in producing CPIs that reflect internationally recommended concepts, methods and practices. It draws upon a wide range of experience and expertise to describe practical and suitable methods to guide countries in their efforts to improve the quality and international comparability of their CPIs and to meet user needs.\n\n### Resources\n\nFooter Seal",
+      "discovery_engine": "tavily",
+      "discovery_query": "institution::international organization consumer prices data portal",
+      "first_seen_at": "2026-08-05T11:28:43+00:00",
+      "high_value": true,
+      "host": "data.imf.org",
+      "integrated_at": "2026-08-05T11:29:56+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T11:28:43+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T11:29:23+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "3c180a99a110375a3db8",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "CPI - IMF Data - International Monetary Fund",
+      "trusted_domain": true,
+      "url": "https://data.imf.org/en/datasets/IMF.STA:CPI"
     },
     {
       "auth": "none",
@@ -201,6 +288,35 @@
       "title": "Country Profiles & Economic Surveys - Macroeconomics - Research Guides",
       "trusted_domain": true,
       "url": "https://guides.newman.baruch.cuny.edu/MacroEcon"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Skip to content\n\ndata portal logoReleasesHelp\n\n# Consumer prices\n\n## About\n\nThe consumer price index data set contains long series that track the overall change in the prices of goods and services purchased by households. Consumer price indices are a key macroeconomic indicator, for instance to measure inflation and assess purchasing power over time.\n\nThe data set includes monthly and annual time series for more than 60 countries. Some annual series go back to the mid-19th century, or earlier for a few countries. The average length of the monthly series is more than 60 years. The BIS has constructed long consumer price indices, by joining the series available for consecutive periods. [...] ### Consumer prices - data documentation and sources\n\nThe consumer prices indicators differ significantly from country to country, varying in sources, underlying indicators, and length of the series. To facilitate cross-country comparison, the BIS publishes the consumer prices data set, which provides one main indicator for each jurisdiction. This document explains which methodology, sources and coverage are used to generate the long series.\n\n## Research and publications\n\n### Recent enhancements to the BIS statistics [...] Consumer price indices are commonly used as a deflator for other economic series. The series have been used, in particular, for the calculation of the real effective exchange rate and real residential property price series published by the BIS.\n\n## Metadata\n\nSeasonal adjustment\n:   Non seasonally adjusted\n\nFrequencies\n:   Annual\n\n    Monthly\n\nContact\n:   BIS statistics\n",
+      "discovery_engine": "tavily",
+      "discovery_query": "institution::international organization consumer prices data portal",
+      "first_seen_at": "2026-08-05T11:28:43+00:00",
+      "high_value": true,
+      "host": "data.bis.org",
+      "integrated_at": "2026-08-05T11:29:56+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T11:28:43+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T11:29:22+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 206
+      },
+      "score": 72,
+      "source_id": "4b37a657a15f98bc641f",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Consumer prices - overview | BIS Data Portal",
+      "trusted_domain": true,
+      "url": "https://data.bis.org/topics/CPI"
     },
     {
       "auth": "none",
@@ -459,6 +575,35 @@
       "title": "Department of Agriculture - International Macroeconomic Data Set",
       "trusted_domain": true,
       "url": "https://catalog.data.gov/dataset/international-macroeconomic-data-set"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Source: World Port Index  (downloaded on March 20th 2025)\n\nPower Plants: A comprehensive, global, open-source database of power plants by type of fuel. Last update - 2024\n\nSource: Global power plant database, World Research Institute (WRI) \n\nImage 8Print\n\nImage 9Download\n   JPEG image\n   PNG image\n\nLocation \n\nSuriname\n\nExplore other countries\n\nClimate Variable \n\nAverage Mean Surface Air Temperature\n\nAverage Mean Surface Air Temperature\n\nTemperature\n\n   Average Mean Surface Air Temperature\n   Average Minimum Surface Air Temperature\n   Average Maximum Surface Air Temperature\n\nPrecipitation\n\n   Precipitation\n\n#### Historical and Projected Average Mean Surface Air Temperature\n\n   Suriname \n   1950-2014 \n   CMIP6 Multi-Model Ensemble \n\nExpand Visualization)\n\nHistorical Simulation (1950-2014) [...] Skip to main content\n\nImage 1: HomeImage 2: Home\n\nClimate Change Knowledge Portal\n\nFor Development Practitioners and Policy Makers\n\nImage 3\n\n## Main navigation\n\n   Climate Change and Development\n   Seasonal Forecast\n       Temp/Precip Forecast\n       ENSO Forecast\n\n   Understand Climate Data\n       Climate Change Overview\n       Glossary\n       Guidance Note\n       Metadata\n       Country Profiles\n       General Resources\n\n   Explore Our Data\n   Download Data\n\n## Suriname\n\n   Country Overview\n\n   Historical Climate\n       Climatology (CRU)\n       Climatology (ERA5)\n       Trends & Variability (ERA5)\n       ENSO (ERA5)\n       Historical Natural Disasters\n\n   Future Climates\n       Mean Projections (CMIP6)\n       Trends & Variability (CMIP6)​ [...] Average Mean Surface Air Temperature\n\nT",
+      "discovery_engine": "tavily",
+      "discovery_query": "regional_source::climate Suriname open data",
+      "first_seen_at": "2026-08-05T11:29:03+00:00",
+      "high_value": true,
+      "host": "climateknowledgeportal.worldbank.org",
+      "integrated_at": "2026-08-05T11:29:56+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T11:29:03+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T11:29:25+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "802bba8b6d2df1ffec98",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Suriname - Country Overview | Climate Change Knowledge Portal",
+      "trusted_domain": true,
+      "url": "https://climateknowledgeportal.worldbank.org/country/suriname"
     },
     {
       "auth": "none",
@@ -815,7 +960,7 @@
       "host": "data.worldbank.org",
       "integrated_at": "2026-08-05T07:42:39+00:00",
       "integration_mode": "fixed-url-read-only-registry",
-      "last_seen_at": "2026-08-05T07:41:21+00:00",
+      "last_seen_at": "2026-08-05T11:28:38+00:00",
       "license": "open",
       "probe": {
         "bytes_sampled": 65536,
@@ -861,6 +1006,35 @@
       "title": "United States and Global Macroeconomic Projections to 2033",
       "trusted_domain": true,
       "url": "https://ageconsearch.umn.edu/record/342469/files/eib-272.pdf"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "UNDP Climate Change Country Profiles Suriname C. McSweeney1, M. New1,2 and G. Lizcano1 1. School of Geography and Environment, University of Oxford. 2. Tyndall Centre for Climate Change Research  General Climate Suriname is located in from 2 to 7˚ north of the Equator and has a typically warm and moist tropical climate. Mean air temperature is 25‐27.5˚ throughout the year in the north, and a little cooler, at around 23‐25˚C in the southern regions. Suriname experiences two ‘wet’ seasons; a major wet season when most of the country receives 250‐400mm per month between May and July, and a minor wet season bringing around 150‐200mm per month in November to January. Inter‐annual variations in climate in this region are caused by the El Niño Southern Oscillation (ENSO). El Niño episodes dry [...] ‐13 3 35 MJJ   A1B    ‐5 0 12 ‐13 6 67 (JJA) B1    ‐3 2 13 ‐12 3 14 A2    ‐8 ‐1 11 ‐14 ‐2 23 ASO   A1B    ‐7 0 7 ‐9 0 22 (SON) B1    ‐5 ‐1 8 ‐14 1 15  indicates trend is statistically significant at 95% confidence  indicates data are not available 6 Suriname Figure 1: Trends in annual and seasonal mean temperature for the recent past and projected future. All values shown are anomalies, relative to the 1970-1999 mean climate. Black curves show the mean of observed data from 1960 to 2006, Brown curves show the median (solid line) and range (shading) of model simulations of recent climate across an ensemble of 15 models. Coloured lines from 2006 onwards show the median (solid line) and range (shading) of the ensemble projections of climate under three emissions scenarios. Coloured bars on",
+      "discovery_engine": "tavily",
+      "discovery_query": "regional_source::climate Suriname open data",
+      "first_seen_at": "2026-08-05T11:29:03+00:00",
+      "high_value": true,
+      "host": "research.fit.edu",
+      "integrated_at": "2026-08-05T11:29:56+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T11:29:03+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T11:29:25+00:00",
+        "content_type": "application/pdf",
+        "machine_readable": false,
+        "ok": true,
+        "status": 206
+      },
+      "score": 72,
+      "source_id": "b600c3a3cc3cb4e1c43e",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Suriname",
+      "trusted_domain": true,
+      "url": "https://research.fit.edu/media/site-specific/researchfitedu/coast-climate-adaptation-library/latin-america-and-caribbean/guyana-suriname-fr-guiana/McSweeney-et-al.-Suriname-UNDP-CC-Profile.pdf"
     },
     {
       "auth": "none",
@@ -921,6 +1095,64 @@
     {
       "auth": "none",
       "catalog_url": null,
+      "description": "Home\n\n# Consumer prices and inflation\n\nX\nFacebook\nLinkedin\nEmail\n\nHarmonised indices of consumer prices (HICPs) are comparable measures of changes in consumer prices. They are compiled on the basis of harmonised rules and standards, in particular regarding the coverage of goods and services and the treatment of price observations.\n\nHICPs are produced on a monthly basis for all EU Member States as well as for Iceland, Norway, Switzerland and Turkey. The ECB uses them for assessing price stability.\n\nThe Harmonised Index of Consumer Prices (HICP) for the euro area is published by the European Commission (Eurostat) and generally available from 1996 onwards. Euro area results are obtained by aggregating indices for individual countries. [...] The HICP is broken down following the European classification of individual consumption according to purpose (ECOICOP) and by goods and services special aggregates derived from it. The HICP covers monetary expenditure on final consumption by resident and non-resident households on the economic territory of the euro area. The seasonally adjusted HICP data are compiled by the ECB. [...] HICPs measure changes in prices of goods and services covered by final household monetary consumption expenditure, including all indirect taxes paid by consumers. HICPs have a common coverage of goods and services across countries but country specific item lists and item weights. HICPs do not cover expenditure for owner occupied housing. For items fully or partly paid or refunded by the government, HICPs include only the share that is paid by the consumer (e.g",
+      "discovery_engine": "tavily",
+      "discovery_query": "institution::international organization consumer prices data portal",
+      "first_seen_at": "2026-08-05T11:28:43+00:00",
+      "high_value": true,
+      "host": "data.ecb.europa.eu",
+      "integrated_at": "2026-08-05T11:29:56+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T11:28:43+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 64310,
+        "checked_at": "2026-08-05T11:29:23+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "d3112b3e4f502a1431c6",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Consumer prices and inflation | ECB Data Portal",
+      "trusted_domain": true,
+      "url": "https://data.ecb.europa.eu/methodology/consumer-prices-and-inflation"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Data.gov Home - Data.gov\n\n# The Home of the U.S. Government's Open Data\n\nHere you will find data, tools, and resources to conduct research, develop web and mobile applications, design data visualizations, and more.\n\n#### 363,521 datasets available\n\nSearch Search\n\n# Mission\n\nThe United States Government’s open data site is designed to unleash the power of government open data to inform decisions by the public and policymakers, drive innovation and economic activity, achieve agency missions, and strengthen the foundation of an open and transparent government.\n\n# Metrics\n\nBelow, you can view breakdowns of the type, age, and distribution of catalog.data.gov datasets. For information on top dataset page views, file downloads, and external link clicks broken down by agency, see data.gov/metrics.",
+      "discovery_engine": "exa",
+      "discovery_query": "source::development dataset open data",
+      "first_seen_at": "2026-08-05T11:28:38+00:00",
+      "high_value": true,
+      "host": "data.gov",
+      "integrated_at": "2026-08-05T11:29:56+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-05T11:28:38+00:00",
+      "license": "open",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-05T11:29:15+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 82,
+      "source_id": "da881345a4d74fc2bf99",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Data.gov Home - Data.gov",
+      "trusted_domain": true,
+      "url": "https://data.gov/"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
       "description": "Reports\n\n  ## Regional Economic Updates\n\n  The latest biannual regional economic updates highlight key macroeconomic trends and developments across Africa; East Asia and the Pacific; Europe and Central Asia; Latin America and the Caribbean; the Middle East, North Africa, Afghanistan, and Pakistan; and South Asia.\n image\n\n  ## Institute for Economic Development\n\n  The World Bank Group’s Institute for Economic Development is a hub for global collaboration, gathering insights from both established and new perspectives across think tanks, academia, and research institutions worldwide. By channeling new ideas, knowledge, and innovative policy solutions, the Institute works with partners to address today’s toughest development challenges.\n\n## Highlights\n\nImage\n\nPolicy Research Working Papers [...] Report\n\n  ## Global Economic Prospects, January 2026\n\n  The global economy has shown notable resilience to heightened trade tensions and policy uncertainty. Last year’s faster-than-expected pace of growth capped a recovery from the 2020 recession unmatched in six decades, even if vulnerable emerging market and developing economies are lagging behind.\n\n  + Explore the Data\n image\n\n  Report\n\n  ## World Development Report\n\n  Standards make everyday life run smoothly. You rarely notice them: the credit card that works in any corner of the world, the Wi-Fi signal that connects a remote village to the cloud, or the vaccine vial that fits syringes from Dakar to Delhi. When standards work, they build trust.\n image\n\n  Reports\n\n  ## Regional Economic Updates",
       "discovery_engine": "tavily",
       "discovery_query": "\"developer portal\" \"macroeconomics\" (ministry OR \"research report\") \"global\"",
@@ -977,5 +1209,5 @@
       "url": "https://datatopics.worldbank.org/world-development-indicators/release-note/apr-2025.html"
     }
   ],
-  "updated_at": "2026-08-05T07:48:48+00:00"
+  "updated_at": "2026-08-05T11:29:56+00:00"
 }
