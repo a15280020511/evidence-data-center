@@ -1,0 +1,202 @@
+{
+  "schema_version": "coverage-quality-test-v1",
+  "tested_at": "2026-08-05T17:32:00+08:00",
+  "scope": "Current production query design, proposed modular query families, GitHub repository discovery, multilingual recall, intelligence-tool discovery, compute-tool discovery, and incumbent change detection.",
+  "method": {
+    "type": "bounded representative sample",
+    "limitations": [
+      "This is not a measurement of the entire public internet.",
+      "Topical relevance was manually judged from repository identity and search result metadata.",
+      "Official status, license, security and suitability still require second-stage verification.",
+      "Tavily and Exa were assessed from the latest production report rather than re-run in this test."
+    ]
+  },
+  "current_configuration_findings": {
+    "daily_queries": 24,
+    "current_query_shape": "quoted protocol + quoted sector + (institution OR publication) + quoted region",
+    "source_keyword_taxonomy": "broad but institution/data-source biased",
+    "intelligence_tool_taxonomy": "broad policy coverage but not wired into the production executor",
+    "compute_tool_keyword_executor": "missing as a dedicated production query planner",
+    "incumbent_change_executor": "policy defined but not operational in the current daily workflow",
+    "local_languages_explicitly_listed": ["zh", "ja", "ko", "fr", "es", "de", "pt", "ru", "ar"]
+  },
+  "latest_production_run": {
+    "raw_discoveries": 281,
+    "safety_probes": 80,
+    "new_direct_api_mcp_data_endpoints": 0,
+    "new_readable_pages_or_reports": 34,
+    "openapi_catalog_references": 483,
+    "code_or_mcp_repository_references": 0,
+    "readable_page_yield_from_raw_percent": 12.1,
+    "conclusion": "The current production workflow is stable but primarily discovers webpages and OpenAPI catalog references. It is not yet a functioning four-radar system."
+  },
+  "github_query_tests": [
+    {
+      "query": "\"OpenAPI\" \"remote sensing\" government \"research report\" Brazil",
+      "strategy": "strict multi-axis",
+      "returned": 0,
+      "manually_relevant": 0,
+      "finding": "over-constrained"
+    },
+    {
+      "query": "remote sensing API SDK STAC Brazil open source",
+      "strategy": "long modular",
+      "returned": 0,
+      "manually_relevant": 0,
+      "finding": "still over-constrained for GitHub repository search"
+    },
+    {
+      "query": "STAC remote sensing Brazil",
+      "strategy": "region-constrained",
+      "returned": 0,
+      "manually_relevant": 0,
+      "finding": "country terms can suppress tool discovery"
+    },
+    {
+      "query": "STAC",
+      "strategy": "short capability",
+      "returned": 10,
+      "manually_relevant": 5,
+      "finding": "good recall but substring noise such as stack-related projects"
+    },
+    {
+      "query": "MCP search",
+      "strategy": "short capability",
+      "returned": 10,
+      "manually_relevant": 8,
+      "finding": "high topical precision and several vendor or project organization repositories"
+    },
+    {
+      "query": "PDF table extraction OCR",
+      "strategy": "short capability family",
+      "returned": 10,
+      "manually_relevant": 9,
+      "finding": "high topical recall but mixed maturity"
+    },
+    {
+      "query": "entity resolution",
+      "strategy": "short capability",
+      "returned": 10,
+      "manually_relevant": 9,
+      "finding": "high topical precision; includes mature projects and one archived result"
+    },
+    {
+      "query": "causal inference",
+      "strategy": "compute capability",
+      "returned": 10,
+      "manually_relevant": 10,
+      "finding": "excellent topic recall but mixes production libraries, courses and examples"
+    },
+    {
+      "query": "agent based modeling",
+      "strategy": "compute capability",
+      "returned": 10,
+      "manually_relevant": 7,
+      "finding": "finds major frameworks but includes LLM and unrelated prediction noise"
+    },
+    {
+      "query": "open data Africa",
+      "strategy": "regional information source",
+      "returned": 10,
+      "manually_relevant": 8,
+      "finding": "good regional recall; official and community projects are mixed"
+    },
+    {
+      "query": "public procurement API",
+      "strategy": "domain source/tool",
+      "returned": 10,
+      "manually_relevant": 6,
+      "finding": "moderate precision; official government repository appears but many small projects"
+    },
+    {
+      "query": "数据采集 开源",
+      "strategy": "Chinese local language",
+      "returned": 10,
+      "manually_relevant": 6,
+      "finding": "usable recall with substantial industrial and unrelated noise"
+    },
+    {
+      "query": "検索ツール オープンソース",
+      "strategy": "Japanese local language only",
+      "returned": 0,
+      "manually_relevant": 0,
+      "finding": "local-language-only GitHub repository search failed"
+    },
+    {
+      "query": "أداة بحث مفتوح المصدر",
+      "strategy": "Arabic local language only",
+      "returned": 0,
+      "manually_relevant": 0,
+      "finding": "local-language-only GitHub repository search failed"
+    },
+    {
+      "query": "outil recherche open source",
+      "strategy": "French local language only",
+      "returned": 10,
+      "manually_relevant": 2,
+      "finding": "low precision"
+    },
+    {
+      "query": "Japan legal API",
+      "strategy": "English plus country and domain",
+      "returned": 7,
+      "manually_relevant": 4,
+      "finding": "better than Japanese-only search but no official source was established from result metadata"
+    }
+  ],
+  "sample_metrics": {
+    "strict_or_region_heavy_queries_tested": 3,
+    "strict_or_region_heavy_zero_result_rate_percent": 100.0,
+    "all_returned_repository_results": 107,
+    "manually_topical_results": 74,
+    "manual_topical_precision_percent": 69.2,
+    "multilingual_result": "Chinese produced moderate recall, French low precision, Japanese and Arabic produced zero results in local-language-only tests.",
+    "interpretation": "Short platform-specific capability queries are materially better than the current global five-axis conjunction. Topic recall is acceptable in English, but official-source precision and multilingual recall require a second-stage verifier and mixed-language expansion."
+  },
+  "incumbent_change_detection_spot_checks": [
+    {
+      "repository": "exa-labs/exa-mcp-server",
+      "finding": "Recent commits exposed a version bump to 3.4.0 and a new npm publish workflow, demonstrating that GitHub commit monitoring can detect capability and distribution changes."
+    },
+    {
+      "repository": "py-why/dowhy",
+      "finding": "Recent commits included dependency updates and removal of the AutoGluon integration and BEST quality tier, demonstrating that commit-level monitoring can detect both maintenance and breaking capability removals."
+    },
+    {
+      "repository": "radiantearth/stac-spec",
+      "finding": "Repository is public and not archived; commit history shows the v1.1.0 release, demonstrating release fingerprinting but also the need for stale-maintenance thresholds."
+    }
+  ],
+  "coverage_assessment": {
+    "taxonomy_design": "broad but incomplete",
+    "current_operational_source_radar": "partial",
+    "current_operational_intelligence_tool_radar": "not complete",
+    "current_operational_compute_tool_radar": "not complete",
+    "current_operational_change_radar": "not complete",
+    "absolute_global_coverage": false,
+    "main_blind_spots": [
+      "Over-constrained query composition",
+      "Only nine explicit local-language keyword groups",
+      "No platform-specific query grammar",
+      "No dedicated production compute-tool keyword planner",
+      "No production capability fingerprint and diff pipeline",
+      "No systematic official-organization and official-domain verifier",
+      "No gold-set recall benchmark",
+      "No coverage-gap-driven query prioritization in the current executor",
+      "Insufficient protocol and format coverage for scientific, geospatial and streaming ecosystems",
+      "Search-engine and registry adapters described in policy but not all implemented"
+    ]
+  },
+  "required_changes": [
+    "Replace the single five-axis conjunction with platform-specific query families containing one primary capability and at most one or two optional constraints.",
+    "Use two-stage retrieval: broad candidate discovery followed by official, license, maintenance, security and free-mode verification.",
+    "Build a dedicated compute-tool keyword taxonomy and registry adapter set.",
+    "Use mixed-language expansion: local language + English synonyms + transliteration + country/TLD or official organization signals.",
+    "Add missing languages and regional variants based on coverage gaps rather than a fixed nine-language list.",
+    "Add a gold-set benchmark with known sources and tools across regions, languages and capability families; measure recall, precision and accepted-candidate yield every release.",
+    "Implement capability fingerprints and added/removed/changed/breaking diffs for existing APIs, MCPs, SDKs, packages, models and datasets.",
+    "Prioritize searches from uncovered or stale coverage cells and retain negative evidence to prevent repeated low-yield queries.",
+    "Use registries before search engines and reserve at least half of free search quota for user tasks."
+  ],
+  "verdict": "The keyword universe is broad enough to form a strong taxonomy, but the current combinations and production wiring are not sufficient for global full coverage. Search quality is good for short English capability queries, moderate for regional/domain queries, and weak or unstable for local-language-only queries. The current production workflow should not be described as full coverage until modular planning, multilingual expansion, registries, four machine libraries, change fingerprints and recurring benchmark tests are operational."
+}
