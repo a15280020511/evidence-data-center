@@ -1,5 +1,5 @@
 {
-  "schema_version": "professional-open-apis-source-matrix-v2",
+  "schema_version": "professional-open-apis-source-matrix-v3",
   "reviewed_on": "2026-08-05",
   "production_sources": [
     {
@@ -47,19 +47,6 @@
       "live_acceptance_issue": 1023,
       "live_acceptance_status": "INTEL_PROFESSIONAL_OPEN_COMPLETED",
       "live_acceptance_duration_ms": 898
-    }
-  ],
-  "endpoint_fix_pending_live_acceptance": [
-    {
-      "source_id": "data-gov-uk",
-      "institution": "UK Government",
-      "industry": "public-sector-open-data",
-      "credential_mode": "none",
-      "operation": "data-gov-uk-search",
-      "unique_value": "UK central and local-government datasets and publishers.",
-      "first_live_issue": 1017,
-      "first_live_status": "HTTP_301_OLD_PATH",
-      "required_action": "Use the current fixed /api/action/package_search endpoint and repeat live acceptance."
     },
     {
       "source_id": "fao-agris-ods",
@@ -68,9 +55,26 @@
       "credential_mode": "none",
       "operation": "agris-ods-index",
       "unique_value": "Open bulk index for global agricultural literature and provider records.",
-      "first_live_issue": 1024,
-      "first_live_status": "HTTP_307_CANONICAL_PATH",
-      "required_action": "Use the official canonical URL without a trailing slash and repeat live acceptance."
+      "live_acceptance_issue": 1027,
+      "live_acceptance_status": "INTEL_PROFESSIONAL_OPEN_COMPLETED",
+      "live_acceptance_duration_ms": 362,
+      "canonical_endpoint": "https://agris.fao.org/agris_ods"
+    }
+  ],
+  "official_service_unavailable": [
+    {
+      "source_id": "data-gov-uk",
+      "institution": "UK Government",
+      "industry": "public-sector-open-data",
+      "credential_mode": "none",
+      "operation": "data-gov-uk-search",
+      "unique_value": "UK central and local-government datasets and publishers.",
+      "live_acceptance": [
+        {"issue": 1017, "status": "HTTP_301_OLD_PATH"},
+        {"issue": 1026, "status": "HTTP_301_TECHNICAL_DIFFICULTIES_PUBLIC_DOMAIN"}
+      ],
+      "production_status": "blocked",
+      "reason": "The documented public API domain currently redirects to a technical-difficulties page. The internal CKAN publishing host is not used because it is not the stable public contract."
     }
   ],
   "implemented_external_connectivity_blocked": [
@@ -80,11 +84,9 @@
       "industry": "library-authority-research-identity",
       "credential_mode": "none",
       "operation": "idref-authority-search",
-      "unique_value": "Authority entities for persons, organizations, subjects, places and works.",
       "live_acceptance_issue": 1021,
       "live_acceptance_status": "CONNECT_TIMEOUT_60_SECONDS",
-      "production_status": "blocked",
-      "reason": "The official service is open, but the GitHub runner could not establish a connection to www.idref.fr within 60 seconds."
+      "production_status": "blocked"
     },
     {
       "source_id": "sudoc",
@@ -92,11 +94,9 @@
       "industry": "university-library-catalogue",
       "credential_mode": "none",
       "operation": "sudoc-isbn-lookup",
-      "unique_value": "ISBN to PPN identification in the French academic union catalogue.",
       "live_acceptance_issue": 1022,
       "live_acceptance_status": "CONNECT_TIMEOUT_60_SECONDS",
-      "production_status": "blocked",
-      "reason": "The official service is open, but the GitHub runner could not establish a connection to www.sudoc.fr within 60 seconds."
+      "production_status": "blocked"
     }
   ],
   "current_service_status": {
@@ -111,10 +111,10 @@
     },
     "faostat": {
       "legacy_fenix_rest": "not-production; previous live HTTP 521",
-      "new_developer_api": "account or token authentication is required; repository production credentials are not configured",
-      "bulk_download": "official keyless downloads remain the current usable FAOSTAT acquisition path",
-      "agris_open_dataset": "keyless canonical ODS endpoint is under corrected live acceptance",
-      "decision": "Do not claim the authenticated FAOSTAT API is currently usable. Use official bulk downloads now; register credentials only for a selected new Developer Portal product."
+      "new_developer_api": "not configured; account or token authentication is required",
+      "bulk_download": "production-usable without a key",
+      "agris_open_dataset": "production-live without a key; issue 1027 completed in 362 ms",
+      "decision": "Use official FAOSTAT bulk downloads and AGRIS ODS now. Do not claim the authenticated Developer API is usable until a selected product credential is configured and live-accepted."
     }
   },
   "already_covered_do_not_duplicate": [
@@ -155,153 +155,37 @@
     "OAPEN",
     "DOAB",
     "Wellcome Catalogue",
-    "data.europa.eu"
+    "data.europa.eu",
+    "Natural History Museum Data Portal",
+    "Materials Cloud OPTIMADE",
+    "GOV.UK Search API",
+    "Rijksmuseum Search",
+    "BGS OpenGeoscience"
   ],
   "verified_future_no_key": [
-    {
-      "source_id": "nhm-data-portal",
-      "institution": "Natural History Museum, London",
-      "industry": "natural-history-taxonomy-specimens-environment",
-      "interface": "CKAN/Data Portal API",
-      "condition": "Add fixed dataset and record-search operations with a five-requests-per-second ceiling."
-    },
-    {
-      "source_id": "optimade-federation",
-      "institution": "OPTIMADE consortium and public materials databases",
-      "industry": "materials-science-crystal-structures-batteries",
-      "interface": "OPTIMADE REST v1.3",
-      "condition": "Freeze a provider allowlist and bounded structures query; do not expose arbitrary filter expressions."
-    },
-    {
-      "source_id": "nioccs",
-      "institution": "US CDC/NIOSH",
-      "industry": "labor-occupations-industrial-hygiene",
-      "interface": "free industry and occupation coding service",
-      "condition": "Implement only after confirming a stable machine endpoint and non-personal batch contract."
-    },
-    {
-      "source_id": "rijksmuseum-oai",
-      "institution": "Rijksmuseum",
-      "industry": "museum-cultural-heritage-art-history",
-      "interface": "OAI-PMH",
-      "condition": "Add only where Europeana does not provide equivalent record detail."
-    },
-    {
-      "source_id": "arca-manuscripts-api",
-      "institution": "Arca / Catalan and university manuscript collections",
-      "industry": "manuscripts-archives-primary-sources",
-      "interface": "public API",
-      "condition": "Freeze identifier and search contracts before implementation."
-    },
-    {
-      "source_id": "gov-uk-search-api",
-      "institution": "UK Government Digital Service",
-      "industry": "government-publications-policy-guidance",
-      "interface": "public JSON search API",
-      "condition": "Add bounded government-document search without replacing the dataset-specific data.gov.uk connector."
-    },
-    {
-      "source_id": "uk-national-archives-discovery",
-      "industry": "archives-history-public-records",
-      "condition": "Freeze current endpoint and bounded response contract before implementation."
-    },
-    {
-      "source_id": "cefas-data-hub",
-      "industry": "marine-environment-fisheries",
-      "condition": "Freeze search and dataset metadata endpoints; avoid duplicating existing marine aggregators."
-    },
-    {
-      "source_id": "bgs-ogc-services",
-      "industry": "geology-geophysics-minerals",
-      "condition": "Implement fixed OGC API or STAC operations after live endpoint acceptance."
-    },
-    {
-      "source_id": "wipo-api-catalog",
-      "industry": "intellectual-property-patents",
-      "condition": "Select an exact open WIPO product and freeze its access terms; the repository already has patent sources."
-    },
-    {
-      "source_id": "european-environment-agency",
-      "industry": "environment-climate",
-      "condition": "Prefer current datahub, SDMX or OGC contracts and avoid overlap with data.europa.eu."
-    },
-    {
-      "source_id": "ofqual-data",
-      "industry": "education-qualifications",
-      "condition": "Add only after a stable official machine endpoint is identified."
-    }
+    {"source_id": "nioccs", "industry": "labor-occupations-industrial-hygiene", "condition": "Confirm a stable machine endpoint and non-personal batch contract."},
+    {"source_id": "rijksmuseum-oai", "industry": "museum-bulk-harvesting", "condition": "Add only with an incremental-ingestion workflow."},
+    {"source_id": "arca-manuscripts-api", "industry": "manuscripts-archives-primary-sources", "condition": "Freeze stable identifier and search contracts."},
+    {"source_id": "uk-national-archives-discovery", "industry": "archives-history-public-records", "condition": "Freeze current endpoint and bounded response contract."},
+    {"source_id": "cefas-data-hub", "industry": "marine-environment-fisheries", "condition": "Select exact holdings and recordset endpoints."},
+    {"source_id": "wipo-api-catalog", "industry": "intellectual-property-patents", "condition": "Select an exact open product and freeze access terms."},
+    {"source_id": "european-environment-agency", "industry": "environment-climate", "condition": "Prefer current datahub, SDMX or OGC contracts and avoid overlap."},
+    {"source_id": "ofqual-data", "industry": "education-qualifications", "condition": "Identify a stable official machine endpoint."}
   ],
   "free_key_or_registration_candidates": [
-    {
-      "source_id": "nara-catalog",
-      "industry": "national-archives",
-      "credential": "free NARA API key"
-    },
-    {
-      "source_id": "smithsonian-open-access",
-      "industry": "museum-cultural-heritage",
-      "credential": "free API key"
-    },
-    {
-      "source_id": "usda-nass-quickstats",
-      "industry": "agriculture-production-prices",
-      "credential": "free API key"
-    },
-    {
-      "source_id": "usda-fooddata-central",
-      "industry": "nutrition-food-composition",
-      "credential": "free api.data.gov key"
-    },
-    {
-      "source_id": "materials-project",
-      "industry": "materials-science-batteries",
-      "credential": "free account/API key subject to terms"
-    },
-    {
-      "source_id": "nrel-developer-network",
-      "industry": "renewable-energy-buildings-transport",
-      "credential": "free api.data.gov key"
-    },
-    {
-      "source_id": "data-gov-us-v4",
-      "industry": "us-public-data",
-      "credential": "free api.data.gov key"
-    },
-    {
-      "source_id": "korea-national-archives",
-      "industry": "korean-national-archives",
-      "credential": "free Korean public-data key"
-    },
-    {
-      "source_id": "korea-national-library",
-      "industry": "korean-library-bibliographic",
-      "credential": "free Korean public-data key"
-    },
-    {
-      "source_id": "korean-patent-open-data",
-      "industry": "patents-trademarks-designs",
-      "credential": "free application key"
-    },
-    {
-      "source_id": "korean-procurement-statistics",
-      "industry": "government-procurement-contracts-suppliers",
-      "credential": "free Korean public-data portal key"
-    },
-    {
-      "source_id": "korean-industry-regulations",
-      "industry": "industrial-regulations-product-classification",
-      "credential": "free Korean public-data portal key"
-    },
-    {
-      "source_id": "companies-house",
-      "industry": "uk-companies-corporate",
-      "credential": "free API key; already represented elsewhere in repository"
-    },
-    {
-      "source_id": "entso-e-transparency",
-      "industry": "electricity-grid-markets",
-      "credential": "registration/security token required"
-    }
+    {"source_id": "nara-catalog", "industry": "national-archives", "credential": "free NARA API key"},
+    {"source_id": "smithsonian-open-access", "industry": "museum-cultural-heritage", "credential": "free API key"},
+    {"source_id": "usda-nass-quickstats", "industry": "agriculture-production-prices", "credential": "free API key"},
+    {"source_id": "usda-fooddata-central", "industry": "nutrition-food-composition", "credential": "free api.data.gov key"},
+    {"source_id": "materials-project", "industry": "materials-science-batteries", "credential": "free account/API key subject to terms"},
+    {"source_id": "nrel-developer-network", "industry": "renewable-energy-buildings-transport", "credential": "free api.data.gov key"},
+    {"source_id": "data-gov-us-v4", "industry": "us-public-data", "credential": "free api.data.gov key"},
+    {"source_id": "korea-national-archives", "industry": "korean-national-archives", "credential": "free Korean public-data key"},
+    {"source_id": "korea-national-library", "industry": "korean-library-bibliographic", "credential": "free Korean public-data key"},
+    {"source_id": "korean-patent-open-data", "industry": "patents-trademarks-designs", "credential": "free application key"},
+    {"source_id": "korean-procurement-statistics", "industry": "government-procurement-contracts-suppliers", "credential": "free Korean public-data portal key"},
+    {"source_id": "korean-industry-regulations", "industry": "industrial-regulations-product-classification", "credential": "free Korean public-data portal key"},
+    {"source_id": "entso-e-transparency", "industry": "electricity-grid-markets", "credential": "registration/security token required"}
   ],
   "governance": {
     "fixed_hosts_only": true,
