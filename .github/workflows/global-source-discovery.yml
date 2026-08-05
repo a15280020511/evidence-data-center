@@ -7,6 +7,8 @@ on:
     branches: [main]
     paths:
       - "api-center/discovery/config.json"
+      - "api-center/discovery/global_source_discovery_v2.py"
+      - ".github/workflows/global-source-discovery.yml"
   workflow_dispatch:
     inputs:
       max_queries:
