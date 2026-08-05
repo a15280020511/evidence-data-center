@@ -155,23 +155,25 @@ class ProfessionalOpenApisTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             MODULE.build_request("agris-ods-index", {"query": "x"})
 
-    def test_matrix_exposes_live_status_and_candidates(self) -> None:
+    def test_matrix_exposes_final_live_status_and_candidates(self) -> None:
         matrix = json.loads((HERE / "source-access-matrix.json").read_text(encoding="utf-8"))
         production = {row["source_id"] for row in matrix["production_sources"]}
         self.assertTrue(
-            {"pubchem-pug-rest", "usgs-water-services", "worms", "ons-api"}.issubset(production)
+            {"pubchem-pug-rest", "usgs-water-services", "worms", "ons-api", "fao-agris-ods"}.issubset(production)
         )
-        endpoint_fix = {row["source_id"] for row in matrix["endpoint_fix_pending_live_acceptance"]}
-        self.assertTrue({"data-gov-uk", "fao-agris-ods"}.issubset(endpoint_fix))
+        unavailable = {row["source_id"] for row in matrix["official_service_unavailable"]}
+        self.assertEqual(unavailable, {"data-gov-uk"})
         blocked = {row["source_id"] for row in matrix["implemented_external_connectivity_blocked"]}
         self.assertTrue({"idref", "sudoc"}.issubset(blocked))
         self.assertFalse(matrix["current_service_status"]["data_commons"]["new_key_required"])
         self.assertEqual(matrix["current_service_status"]["data_commons"]["current_live_issue"], 1015)
-        self.assertIn("not-production", matrix["current_service_status"]["faostat"]["legacy_fenix_rest"])
+        faostat = matrix["current_service_status"]["faostat"]
+        self.assertEqual(faostat["bulk_download"], "production-usable without a key")
+        self.assertIn("not configured", faostat["new_developer_api"])
         candidates = {row["source_id"] for row in matrix["free_key_or_registration_candidates"]}
         self.assertTrue({"nara-catalog", "usda-fooddata-central", "materials-project"}.issubset(candidates))
         future = {row["source_id"] for row in matrix["verified_future_no_key"]}
-        self.assertTrue({"nhm-data-portal", "optimade-federation", "nioccs"}.issubset(future))
+        self.assertTrue({"nioccs", "cefas-data-hub", "wipo-api-catalog"}.issubset(future))
         self.assertIs(matrix["governance"]["write_operations_allowed"], False)
 
 
