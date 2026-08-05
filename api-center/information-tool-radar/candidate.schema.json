@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/information-tool-radar/candidate.schema.json",
+  "title": "Information Tool Radar Candidate",
+  "type": "object",
+  "required": ["candidate_id", "adapter", "category", "title", "locator", "discovered_at", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {"type": "string", "minLength": 16},
+    "adapter": {"type": "string", "minLength": 1},
+    "category": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1, "maxLength": 300},
+    "locator": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "language": {"type": ["string", "null"]},
+    "country": {"type": ["string", "null"]},
+    "discovered_at": {"type": "string", "format": "date-time"},
+    "evidence": {"type": "object"},
+    "status": {"enum": ["candidate", "reference", "change_signal", "rejected"]}
+  }
+}
