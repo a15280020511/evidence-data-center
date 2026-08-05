@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/institutional-open-knowledge-ticket.schema.json",
+  "title": "Institutional Open Knowledge Ticket",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "task_id": {"type":"string","minLength":1,"maxLength":120,"pattern":"^[A-Za-z0-9._:-]+$"},
+    "provider": {"const":"institutional-open-knowledge-apis"},
+    "operation": {"type":"string","enum":["catalog-capabilities","source-access-matrix","fraser-oai-identify","fraser-oai-list-records","osdr-datasets","osdr-dataset-metadata","japan-indicator-search","japan-indicator-data"]},
+    "objective": {"type":"string","minLength":1,"maxLength":500},
+    "parameters": {
+      "type":"object",
+      "additionalProperties":false,
+      "properties": {
+        "from_date":{"type":"string","format":"date"},
+        "until_date":{"type":"string","format":"date"},
+        "set":{"type":"string","minLength":1,"maxLength":100},
+        "accession":{"type":"string","pattern":"^OSD-[0-9]{1,8}$"},
+        "query":{"type":"string","minLength":1,"maxLength":120},
+        "indicator_code":{"type":"string","pattern":"^[0-9]{19}$"},
+        "cycle":{"type":"integer","minimum":1,"maximum":4},
+        "regional_rank":{"type":"integer","minimum":1,"maximum":4},
+        "seasonal_adjustment":{"type":"integer","minimum":1,"maximum":2}
+      }
+    },
+    "data_policy": {"type":"object","additionalProperties":true,"properties":{"classification":{"const":"public"},"contains_personal_data":{"const":false}},"required":["classification","contains_personal_data"]},
+    "acceptance": {"type":"object","additionalProperties":false,"properties":{"timeout_seconds":{"type":"integer","minimum":5,"maximum":90},"max_response_bytes":{"type":"integer","minimum":1024,"maximum":10000000}}}
+  },
+  "required":["task_id","provider","operation","objective","parameters","data_policy","acceptance"]
+}

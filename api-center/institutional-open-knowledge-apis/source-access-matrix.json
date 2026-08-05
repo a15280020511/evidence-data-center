@@ -1,0 +1,100 @@
+{
+  "schema_version": "institutional-open-knowledge-source-matrix-v1",
+  "reviewed_on": "2026-08-05",
+  "active_source_count": 3,
+  "sources": [
+    {
+      "source_id": "fraser-oai",
+      "name": "FRASER Economic History OAI-PMH",
+      "institution": "Federal Reserve Bank of St. Louis",
+      "country": "US",
+      "category": "economic-history-policy-research-library",
+      "base_url": "https://fraser.stlouisfed.org/oai",
+      "operations": ["fraser-oai-identify", "fraser-oai-list-records"],
+      "credential_mode": "none",
+      "cost": "free; no API key for OAI-PMH",
+      "implementation_status": "implemented-pending-live-acceptance",
+      "license_policy": "Public metadata harvesting; document and image rights remain item-specific and FRASER attribution must be preserved."
+    },
+    {
+      "source_id": "nasa-osdr-biodata",
+      "name": "NASA Open Science Data Repository Biological Data API",
+      "institution": "NASA",
+      "country": "US",
+      "category": "space-life-science-omics-research-data",
+      "base_url": "https://visualization.osdr.nasa.gov/biodata/api/v2",
+      "operations": ["osdr-datasets", "osdr-dataset-metadata"],
+      "credential_mode": "none",
+      "cost": "free public API",
+      "implementation_status": "implemented-pending-live-acceptance",
+      "license_policy": "Public metadata and source-declared files only; restricted or hidden files are excluded and record-level terms govern reuse."
+    },
+    {
+      "source_id": "japan-statistics-dashboard",
+      "name": "Japan Statistics Dashboard WebAPI",
+      "institution": "Statistics Bureau of Japan",
+      "country": "JP",
+      "category": "official-statistics-indicators",
+      "base_url": "https://dashboard.e-stat.go.jp/api/1.0/Json",
+      "operations": ["japan-indicator-search", "japan-indicator-data"],
+      "credential_mode": "none",
+      "cost": "free; no registration required",
+      "implementation_status": "implemented-pending-live-acceptance",
+      "license_policy": "Official aggregate statistics; required attribution and Statistics Dashboard disclaimer must be preserved."
+    }
+  ],
+  "conditional_candidates": [
+    {
+      "source_id": "kegg-rest",
+      "reason": "The REST interface is technically no-key but official terms restrict free use to academic users; non-academic use requires a commercial licence. Do not activate in a general-purpose production intelligence service without a verified academic-use boundary or licence."
+    },
+    {
+      "source_id": "kyoto-kurenai-dspace",
+      "reason": "University repository and DSpace presence are official, but the anonymous REST/OAI contract was discovered through a third-party API catalogue and requires direct bounded live verification."
+    },
+    {
+      "source_id": "uw-researchworks-dspace",
+      "reason": "The official repository is verified, but its REST/OAI interface contract requires direct live verification before activation."
+    },
+    {
+      "source_id": "chula-digiverse-dspace",
+      "reason": "The official institutional repository is verified; REST/OAI endpoints were discovered through a third-party catalogue and require direct verification."
+    },
+    {
+      "source_id": "nypl-digital-collections-api",
+      "reason": "The provider announced deprecation effective 2026-08-01 with no planned public API replacement."
+    }
+  ],
+  "mapped_existing_sources": [
+    "PubMed/PMC and Europe PMC",
+    "NASA ADS and NASA/NTRS",
+    "National Diet Library SRU",
+    "Library of Congress",
+    "German National Library",
+    "Harvard Dataverse",
+    "OpenAIRE",
+    "CORE",
+    "OpenAlex",
+    "Crossref",
+    "DataCite",
+    "UKRI Gateway to Research",
+    "NIH RePORTER",
+    "ERIC",
+    "OSTI.GOV"
+  ],
+  "governance": {
+    "fixed_sources_only": true,
+    "requests_per_ticket_max": 1,
+    "automatic_pagination_allowed": false,
+    "resumption_token_following_allowed": false,
+    "automatic_retry_allowed": false,
+    "redirects_allowed": false,
+    "arbitrary_urls_allowed": false,
+    "arbitrary_hosts_allowed": false,
+    "arbitrary_paths_allowed": false,
+    "write_operations_allowed": false,
+    "restricted_file_retrieval_allowed": false,
+    "personal_data_queries_allowed": false,
+    "secret_values_exposed": false
+  }
+}
