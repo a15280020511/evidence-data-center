@@ -1,0 +1,147 @@
+{
+  "schema_version": "intelligence-tool-universe-v1",
+  "objective": "Continuously discover, classify, verify and lifecycle-manage every publicly discoverable free tool, service, API, MCP, package, model, dataset, protocol adapter and reference resource that can materially improve the Evidence & Data Center.",
+  "scope_correction": "The intelligence tool universe is not limited to data-provider APIs. It includes search, browsing, crawling, extraction, parsing, OCR, translation, speech, image/video processing, deterministic computation, data engineering, entity resolution, knowledge graphs, retrieval, geospatial processing, threat-intelligence handling, provenance, security, testing, observability, MCP and workflow tools.",
+  "tool_surfaces": [
+    "public-api",
+    "hosted-free-service",
+    "remote-mcp",
+    "local-mcp-candidate",
+    "python-package",
+    "r-package",
+    "julia-package",
+    "javascript-package",
+    "java-package",
+    "dotnet-package",
+    "rust-crate",
+    "go-module",
+    "cli-tool",
+    "library",
+    "framework",
+    "browser-engine",
+    "browser-extension-candidate",
+    "github-action",
+    "container-image-candidate",
+    "open-source-application",
+    "model",
+    "dataset",
+    "protocol",
+    "registry",
+    "reference-database",
+    "benchmark",
+    "taxonomy",
+    "ontology",
+    "documentation-and-playbook"
+  ],
+  "capability_families": {
+    "discovery_and_search": [
+      "general-web-search", "semantic-search", "metasearch", "news-search", "academic-search", "patent-search", "legal-search", "company-search", "code-search", "dataset-search", "model-search", "image-search", "geospatial-search", "site-search", "archive-search", "local-language-search", "query-expansion", "search-result-ranking", "search-result-deduplication"
+    ],
+    "browser_and_web_access": [
+      "headless-browser", "remote-browser", "browser-automation", "javascript-rendering", "session-isolation", "download-control", "screenshot", "pdf-print", "network-capture", "har-recording", "robots-and-policy-checking", "safe-navigation", "anti-loop-controls", "content-reader"
+    ],
+    "crawling_and_collection": [
+      "crawler", "site-map-enumerator", "rss-atom-reader", "webhook-reader", "change-detection", "incremental-crawl", "structured-scraper", "table-scraper", "formless-public-page-reader", "link-extractor", "attachment-discovery", "rate-limit-aware-fetcher", "retry-and-backoff", "snapshot-and-archiving"
+    ],
+    "api_and_protocol_adapters": [
+      "openapi", "rest", "graphql", "grpc-readonly", "sparql", "sdmx", "ckan", "socrata", "arcgis-rest", "stac", "oai-pmh", "sru-cql", "z39-50", "iiif", "rss", "atom", "sitemap", "webdav-readonly", "ftp-public-readonly", "wms", "wfs", "wmts", "ogc-api", "taxii", "mcp"
+    ],
+    "document_and_file_understanding": [
+      "html-cleaning", "readability", "pdf-text", "pdf-layout", "pdf-table", "scanned-pdf", "ocr", "handwriting-ocr-candidate", "office-documents", "spreadsheets", "presentations", "email-and-mbox", "epub", "xml", "json", "yaml", "csv", "parquet", "archives", "metadata-extraction", "mime-detection", "encoding-detection", "language-detection", "document-segmentation", "citation-extraction", "bibliography-parsing"
+    ],
+    "multimedia_intelligence": [
+      "image-metadata", "image-hashing", "image-similarity", "computer-vision", "object-detection-candidate", "map-and-chart-reading-candidate", "video-metadata", "video-frame-extraction", "audio-metadata", "speech-to-text", "speaker-segmentation-candidate", "subtitle-processing", "media-transcoding", "geolocation-clue-extraction-candidate"
+    ],
+    "language_and_text_processing": [
+      "tokenization", "segmentation", "multilingual-nlp", "translation", "transliteration", "named-entity-recognition", "relation-extraction", "event-extraction", "keyword-extraction", "topic-modeling", "classification", "clustering", "summarization-candidate", "sentiment", "stance", "claim-extraction", "quote-attribution", "temporal-expression", "location-extraction", "taxonomy-mapping", "embedding", "reranking"
+    ],
+    "data_engineering": [
+      "etl-elt", "stream-ingestion", "batch-ingestion", "schema-inference", "schema-registry", "field-mapping", "type-normalization", "unit-conversion", "time-zone-normalization", "data-validation", "data-profiling", "data-quality", "missing-data-diagnostics", "outlier-flagging", "format-conversion", "columnar-processing", "query-engine", "local-analytics-database", "dataframe-engine", "workflow-orchestration-candidate"
+    ],
+    "entity_and_identity_intelligence": [
+      "entity-resolution", "record-linkage", "fuzzy-matching", "deduplication", "name-normalization", "address-normalization", "organization-resolution", "identifier-crosswalk", "company-ownership-preparation", "person-name-disambiguation-for-public-records", "geocoding", "reverse-geocoding", "blocking-and-candidate-generation", "similarity-scoring-preparation"
+    ],
+    "knowledge_and_evidence_graphs": [
+      "rdf", "property-graph", "ontology", "taxonomy", "knowledge-graph-construction", "graph-import-export", "graph-query", "shape-validation", "provenance-graph", "citation-graph", "source-relationship-graph", "timeline-graph", "evidence-linking", "claim-source-linking", "graph-visualization"
+    ],
+    "retrieval_and_indexing": [
+      "full-text-index", "inverted-index", "vector-index", "hybrid-retrieval", "document-store", "metadata-catalog", "faceted-search", "multilingual-retrieval", "near-duplicate-search", "citation-retrieval", "geospatial-index", "temporal-index", "local-offline-index"
+    ],
+    "geospatial_and_remote_sensing": [
+      "gis", "vector-processing", "raster-processing", "coordinate-transform", "spatial-index", "spatial-join", "geocoding", "tile-reading", "stac-client", "cog-reader", "netcdf", "hdf5", "xarray", "earth-observation-preprocessing", "cloud-mask-candidate", "change-detection-preparation", "route-and-network-data-preparation", "map-rendering"
+    ],
+    "deterministic_intelligence_computation": [
+      "hashing", "checksums", "descriptive-statistics", "counts-and-rates", "aggregation", "ranking", "index-construction", "time-series-resampling", "rolling-summary", "basic-correlation-diagnostics", "distance-and-similarity", "graph-metrics-for-source-preparation", "geospatial-measurement", "timeline-construction", "rule-engine", "constraint-validation", "anomaly-flag-generation", "data-comparison", "data-collision-preparation"
+    ],
+    "threat_and_security_intelligence": [
+      "stix", "taxii", "misp-client", "opencti-client", "ioc-normalization", "yara", "sigma", "cve-cwe-cpe", "vulnerability-feeds", "malware-metadata-only", "domain-ip-asn-enrichment-from-public-sources", "certificate-transparency", "security-advisories", "supply-chain-intelligence", "defensive-threat-feed-processing"
+    ],
+    "provenance_and_governance": [
+      "source-registry", "data-lineage", "provenance", "ro-crate", "research-object", "versioning", "content-hash", "snapshot", "license-detection", "terms-monitoring", "cost-and-quota-monitoring", "secret-isolation", "audit-log", "evidence-package", "retention-policy", "redaction", "data-minimization"
+    ],
+    "security_and_supply_chain": [
+      "dependency-analysis", "sbom", "vulnerability-scanning", "secret-scanning", "static-analysis", "license-scanning", "container-scanning-candidate", "package-signature-verification", "provenance-attestation", "malicious-package-screening", "maintainer-risk", "release-integrity", "sandboxing", "network-deny-testing"
+    ],
+    "testing_observability_and_reliability": [
+      "unit-testing", "property-testing", "contract-testing", "http-replay", "mocking", "load-testing", "fuzzing-candidate", "schema-testing", "data-regression", "link-health", "api-health", "structured-logging", "metrics", "tracing", "error-classification", "rate-limit-monitoring", "quota-accounting", "artifact-generation", "reproducibility"
+    ],
+    "mcp_and_agent_tooling": [
+      "official-mcp-sdk", "remote-mcp-discovery", "mcp-registry", "mcp-schema-validation", "mcp-capability-catalog", "mcp-permission-analysis", "mcp-security-scanning", "mcp-proxy-candidate", "mcp-gateway-candidate", "search-mcp", "browser-mcp", "data-mcp", "document-mcp", "database-mcp-readonly", "geospatial-mcp", "academic-mcp", "news-mcp", "code-mcp", "workflow-mcp", "connector-generation-candidate"
+    ],
+    "reference_materials": [
+      "official-documentation", "api-reference", "protocol-specification", "data-dictionary", "ontology", "taxonomy", "industry-standard", "research-method", "collection-playbook", "osint-methodology", "data-quality-guide", "benchmark-suite", "example-dataset", "public-notebook", "reproducible-workflow", "training-material"
+    ]
+  },
+  "center_boundary": {
+    "allowed_in_intelligence_center": [
+      "collection, deterministic transformation, parsing, normalization, indexing, evidence construction and bounded descriptive computation needed to prepare intelligence",
+      "public-source graph construction, source comparison, entity candidate generation and quality diagnostics",
+      "safe read-only APIs and remote MCP tools with fixed capabilities"
+    ],
+    "must_be_delegated_to_compute_center": [
+      "formal statistical inference", "causal conclusions", "optimization", "simulation", "policy counterfactuals", "portfolio optimization", "agent-based modeling", "strategic game analysis", "final predictive model selection"
+    ],
+    "never_auto_execute": [
+      "unknown local MCP", "unknown package install", "unknown container", "binary download", "browser extension", "arbitrary script", "write-enabled API", "credential submission"
+    ]
+  },
+  "primary_discovery_ecosystems": [
+    "APIs.guru", "official API catalogs", "official developer portals", "MCP registries", "GitHub", "GitLab", "Bitbucket", "PyPI", "conda-forge", "CRAN", "R-universe", "Julia General", "npm", "Maven Central", "NuGet", "RubyGems", "crates.io", "Go modules", "Hugging Face Hub", "OpenML", "Zenodo", "Software Heritage", "deps.dev", "OSV", "Docker Hub metadata", "GitHub Actions Marketplace metadata", "CKAN portals", "Socrata catalogs", "ArcGIS Hub", "STAC catalogs", "re3data", "OpenDOAR", "OpenAIRE", "Crossref", "DataCite", "OpenAlex"
+  ],
+  "query_families": [
+    "[capability] API OR SDK OR developer portal",
+    "[capability] MCP server OR Model Context Protocol OR connector",
+    "[capability] open source library OR package OR framework OR toolkit",
+    "[file or protocol] parser OR extractor OR reader OR client",
+    "[industry or language] search tool OR crawler OR dataset discovery",
+    "[tool] release OR changelog OR deprecated OR migration OR benchmark",
+    "[tool] vulnerability OR security advisory OR license change",
+    "site:official-domain [capability] documentation OR API OR repository",
+    "local-language equivalents for search, browser, crawler, extraction, OCR, data processing, analysis, MCP, package and toolkit"
+  ],
+  "candidate_record_required_fields": [
+    "candidate_id", "name", "tool_surface", "capability_families", "official_url", "official_repository", "registry_source", "latest_observed_version", "license", "free_mode", "key_required", "credit_card_required", "automatic_paid_overage", "rate_limit", "platforms", "runtime", "network_requirements", "offline_support", "maintenance_recency", "maintainer_diversity", "release_history", "dependency_graph", "known_vulnerabilities", "supply_chain_signals", "documentation_quality", "test_signal", "resource_cost", "integration_complexity", "center_fit", "overlap_with_existing", "replacement_target", "status", "rejection_reason", "first_seen_at", "last_verified_at", "evidence_urls"
+  ],
+  "candidate_states": [
+    "discovered", "metadata-verified", "official-source-verified", "free-gate-passed", "security-review", "sandbox-eligible", "benchmark-eligible", "approved-candidate", "promoted", "watchlist", "rejected", "deprecated", "retired"
+  ],
+  "free_gate": {
+    "accepted": ["open-source", "public-domain", "free-no-key", "free-key-required", "free-snapshot", "free-tier-with-hard-stop"],
+    "rejected": ["trial-only", "mandatory-paid-plan", "automatic-paid-overage", "mandatory-card-with-charge-risk", "unknown-license", "prohibited-automation", "private-data-harvesting"]
+  },
+  "automation_policy": {
+    "allowed": [
+      "collect metadata", "read official documentation", "query public registries", "read fixed public APIs", "inspect manifests and lockfiles", "download bounded text metadata", "record candidates", "open review issues", "notify via ServerChan"
+    ],
+    "forbidden": [
+      "install candidate", "execute candidate code", "start local MCP", "run candidate container", "enable browser extension", "grant OAuth", "submit credentials", "enable billing", "modify production dependencies"
+    ]
+  },
+  "cadence": {
+    "daily": ["new releases", "deprecations", "security advisories", "license or pricing changes", "high-value new remote tools"],
+    "weekly": ["balanced registry and multilingual discovery across every capability family", "deduplication", "overlap analysis", "priority scoring"],
+    "monthly": ["free-tier and billing audit", "maintenance audit", "security rescan", "coverage-gap report"],
+    "quarterly": ["frontier review", "incumbent-versus-candidate benchmark campaign", "retirement review"]
+  },
+  "truthfulness_constraint": "No finite process can guarantee literal discovery of every tool worldwide. The system must report measurable coverage, saturation, blind spots and discovery failures rather than claim absolute completeness."
+}
