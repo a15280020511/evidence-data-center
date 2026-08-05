@@ -1,0 +1,218 @@
+{
+  "schema_version": "global-free-api-multiround-research-v1",
+  "reviewed_on": "2026-08-05",
+  "objective": "Discover non-duplicate official, public and free or free-key APIs across countries, regions, industries, universities, libraries, archives and research institutions.",
+  "search_execution": {
+    "rounds": 5,
+    "providers_each_round": ["tavily", "exa", "google-via-serpapi", "baidu-ai-search"],
+    "actual_upstream_searches": 20,
+    "model_calls": 0,
+    "secret_values_exposed": false,
+    "issues": [1038, 1039, 1040, 1041, 1042, 1043, 1044, 1045, 1046, 1047, 1048, 1049, 1050, 1051, 1052, 1053, 1054, 1055, 1056, 1057],
+    "round_themes": [
+      "national and regional government open-data portals",
+      "sector APIs for economy, trade, law, energy, transport, health, agriculture and environment",
+      "regional diversification across Europe, Africa, Latin America, Asia and Oceania",
+      "universities, libraries, archives, museums, research institutes and specialist databases",
+      "exact official-name, access-term and authentication verification"
+    ]
+  },
+  "new_direct_or_no_key_candidates": [
+    {
+      "source_id": "brazil-dados-gov-br-api",
+      "country": "BR",
+      "industries": ["government-open-data", "cross-sector"],
+      "official_evidence": "Brazil federal government API catalogue describes REST/JSON search, listing and detail endpoints with production Swagger at dados.gov.br.",
+      "access": "public; exact anonymous production contract still requires live acceptance",
+      "priority": "P0"
+    },
+    {
+      "source_id": "singapore-data-gov-sg",
+      "country": "SG",
+      "industries": ["government-open-data", "weather", "traffic", "geospatial", "cross-sector"],
+      "official_evidence": "Official developer guide states all APIs are public and can be used without a key for testing; a key is recommended for production rate limits and support.",
+      "access": "anonymous testing; free key recommended for production",
+      "priority": "P0"
+    },
+    {
+      "source_id": "california-cnra-ckan",
+      "country": "US-CA",
+      "industries": ["natural-resources", "water", "environment", "geospatial"],
+      "official_evidence": "California Natural Resources Agency documents a public CKAN API and datastore endpoints.",
+      "access": "no key documented; bounded live acceptance required",
+      "priority": "P1"
+    },
+    {
+      "source_id": "issuelab-oai-pmh",
+      "country": "US",
+      "industries": ["policy-research", "civil-society", "philanthropy", "social-science"],
+      "official_evidence": "IssueLab documents a public OAI-PMH metadata provider with XML records and resumption tokens.",
+      "access": "no key; incremental harvesting contract required",
+      "priority": "P1"
+    },
+    {
+      "source_id": "asu-dataverse-oai",
+      "country": "US",
+      "industries": ["university-research-data", "scholarly-metadata"],
+      "official_evidence": "ASU Research Data Repository exposes a Dataverse OAI-PMH endpoint; exact official ASU endpoint must be independently confirmed.",
+      "access": "likely no key for public metadata; official-page and live verification required",
+      "priority": "P1"
+    },
+    {
+      "source_id": "uk-api-catalogue",
+      "country": "GB",
+      "industries": ["government-digital-services", "cross-sector-api-discovery"],
+      "official_evidence": "The UK government maintains a public catalogue of government APIs.",
+      "access": "catalogue discovery; each listed API has separate access terms",
+      "priority": "P1"
+    },
+    {
+      "source_id": "poland-isztar4-json",
+      "country": "PL",
+      "industries": ["customs", "tariffs", "trade"],
+      "official_evidence": "Polish customs provides ISZTAR4 machine interfaces including JSON resources.",
+      "access": "public-interface candidate; endpoint and rate policy require live verification",
+      "priority": "P1"
+    },
+    {
+      "source_id": "ukraine-nipo-api",
+      "country": "UA",
+      "industries": ["patents", "trademarks", "intellectual-property"],
+      "official_evidence": "Ukraine NIPO publishes API information for intellectual-property data services.",
+      "access": "public candidate; current authentication and licence require exact verification",
+      "priority": "P1"
+    },
+    {
+      "source_id": "us-federal-register-api",
+      "country": "US",
+      "industries": ["regulation", "executive-orders", "public-notices"],
+      "official_evidence": "The U.S. Federal Register provides official developer documentation for public documents and agencies.",
+      "access": "public candidate; live acceptance required",
+      "priority": "P1"
+    }
+  ],
+  "new_free_key_or_application_candidates": [
+    {
+      "source_id": "us-datagov-v4",
+      "country": "US",
+      "industries": ["government-open-data", "cross-sector"],
+      "credential": "free api.data.gov key",
+      "verified_terms": "Current v4 catalogue requires X-Api-Key; personal keys have a documented 1000 requests/hour limit; DEMO_KEY is not suitable for production.",
+      "priority": "P0"
+    },
+    {
+      "source_id": "australia-abs-indicator-api",
+      "country": "AU",
+      "industries": ["official-statistics", "economy", "labor", "prices", "trade"],
+      "credential": "free key by request form/email",
+      "verified_terms": "Production API uses SDMX and returns JSON, CSV or XML; key must be sent in x-api-key.",
+      "priority": "P0"
+    },
+    {
+      "source_id": "indonesia-bps-web-api",
+      "country": "ID",
+      "industries": ["official-statistics", "population", "economy", "trade", "regional-data"],
+      "credential": "free token from the BPS API portal",
+      "verified_terms": "Official BPS documentation states users can obtain multiple tokens and responses are JSON.",
+      "priority": "P0"
+    },
+    {
+      "source_id": "india-data-gov-in",
+      "country": "IN",
+      "industries": ["government-open-data", "cross-sector"],
+      "credential": "free registration/API key by dataset service",
+      "verified_terms": "National open-government data platform; exact service quotas require product-level validation.",
+      "priority": "P1"
+    },
+    {
+      "source_id": "japan-estat-api",
+      "country": "JP",
+      "industries": ["official-statistics", "population", "economy", "labor", "regional-data"],
+      "credential": "free application ID",
+      "verified_terms": "Official statistics API candidate; endpoint and current quota require separate live validation.",
+      "priority": "P1"
+    },
+    {
+      "source_id": "korea-data-go-kr-services",
+      "country": "KR",
+      "industries": ["government-open-data", "procurement", "patents", "archives", "library", "cross-sector"],
+      "credential": "free service keys through the national public-data portal",
+      "verified_terms": "Keys and quotas are service-specific; one key must not be assumed to cover all products.",
+      "priority": "P1"
+    },
+    {
+      "source_id": "materials-project-api",
+      "country": "US",
+      "industries": ["materials-science", "batteries", "crystal-structures", "thermodynamics"],
+      "credential": "free account/API key for most useful queries",
+      "verified_terms": "Official documentation requires an API key for most data and restricts bulk automated collection; distinct from the existing Materials Cloud OPTIMADE connector.",
+      "priority": "P1"
+    },
+    {
+      "source_id": "us-congress-api",
+      "country": "US",
+      "industries": ["legislation", "bills", "members", "votes"],
+      "credential": "free key/registration subject to current Congress.gov terms",
+      "verified_terms": "Official developer service candidate; exact current key and quota must be frozen before implementation.",
+      "priority": "P1"
+    }
+  ],
+  "official_data_but_not_public_general_api": [
+    {
+      "source_id": "brazil-inpi-trademark-register",
+      "country": "BR",
+      "reason": "Official weekly RPI publications and a human search interface exist, but the exact verification found no general-purpose public official REST API for full trademark search. Do not substitute a third-party commercial API as an official source."
+    },
+    {
+      "source_id": "uk-hmrc-customs-declarations",
+      "country": "GB",
+      "reason": "The API is for authorised customs users and declaration data, not anonymous public intelligence. Sandbox availability does not make production data publicly accessible."
+    }
+  ],
+  "already_covered_or_duplicate_families": [
+    "World Bank",
+    "IMF",
+    "OECD",
+    "Eurostat",
+    "ECB",
+    "UN Comtrade",
+    "WITS",
+    "EIA",
+    "USGS",
+    "NOAA",
+    "EPA-related open data families",
+    "Companies House",
+    "SEC EDGAR",
+    "USPTO and patent discovery families",
+    "Open Contracting/OCDS discovery",
+    "OpenAlex",
+    "Crossref",
+    "DataCite",
+    "PubMed/PMC",
+    "GBIF",
+    "PubChem",
+    "Materials Cloud OPTIMADE",
+    "data.europa.eu",
+    "OAPEN",
+    "DOAB",
+    "Wellcome Catalogue",
+    "re3data"
+  ],
+  "provider_quality_observations": {
+    "exa": "Best in these rounds for exact semantic discovery of official non-US documentation and access terms.",
+    "tavily": "Strong at extracting rich documentation, but broad global queries were often US-heavy and needed exact-name follow-up.",
+    "google_via_serpapi": "Useful for exact official-domain verification; broad multi-country queries produced substantial noise and secondary sources.",
+    "baidu_ai_search": "Useful for Chinese-language discovery and China/Asia verification, but broad global queries returned many secondary or commercial pages; official-name and official-domain constraints are required."
+  },
+  "governance": {
+    "search_result_is_production_source": false,
+    "automatic_connector_creation_allowed": false,
+    "official_identity_verification_required": true,
+    "licence_and_terms_review_required": true,
+    "fixed_endpoint_contract_required": true,
+    "independent_live_acceptance_required": true,
+    "duplicate_connector_creation_allowed": false,
+    "authorised_business_data_must_not_be_classified_as_public": true,
+    "third_party_commercial_api_must_not_be_substituted_for_official_source": true
+  }
+}
