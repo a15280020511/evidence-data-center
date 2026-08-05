@@ -83,12 +83,16 @@ jobs:
         run: python test_query_planner_v4.py | tee ../../query-planner-test.json
 
       - name: Collect bounded Google Trends signals
-        if: github.event_name != 'pull_request'
         continue-on-error: true
         run: |
           python api-center/discovery/trend_signals.py \
             --config api-center/discovery/config.json \
             --output trend-signals.json | tee trend-signals-result.json
+
+      - name: Validate trend signal envelope
+        run: |
+          python -m json.tool trend-signals.json >/dev/null
+          python -m json.tool trend-signals-result.json >/dev/null
 
       - name: Discover, deduplicate, probe and register
         if: github.event_name != 'pull_request'
@@ -123,7 +127,6 @@ jobs:
           python -m json.tool api-center/discovery/state.json >/dev/null
           python -m json.tool discovery-result.json >/dev/null
           python -m json.tool discovery-normalization.json >/dev/null
-          test ! -f trend-signals.json || python -m json.tool trend-signals.json >/dev/null
 
       - name: Commit registry and report changes
         if: github.event_name != 'pull_request'
@@ -143,7 +146,7 @@ jobs:
           git push origin HEAD:main
 
       - name: Upload discovery evidence
-        if: always() && github.event_name != 'pull_request'
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: global-source-discovery-${{ github.run_id }}
