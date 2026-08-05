@@ -1,34 +1,45 @@
 {
-  "schema_version": "global-open-apis-source-matrix-v1",
+  "schema_version": "global-open-apis-source-matrix-v2",
   "reviewed_on": "2026-08-05",
-  "production_pending_live_acceptance": [
+  "implemented_pending_external_enablement": [
     {
       "source_id": "google-knowledge-graph-search",
       "institution": "Google",
       "category": "public-entity-knowledge-graph",
-      "credential_mode": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
+      "credential_mode": "existing GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
       "cost": "free quota subject to Google project limits",
       "unique_value": "Ranked schema.org/JSON-LD entity resolution complementary to Data Commons statistical entities.",
-      "operations": ["google-knowledge-entities"]
+      "operations": ["google-knowledge-entities"],
+      "live_acceptance_issue": 1004,
+      "live_acceptance_status": "HTTP_403_SERVICE_DISABLED",
+      "required_action": "Enable kgsearch.googleapis.com in the existing Google project; no new key is required."
     },
     {
       "source_id": "google-civic-information",
       "institution": "Google / Voting Information Project",
       "category": "united-states-elections-and-political-divisions",
-      "credential_mode": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
+      "credential_mode": "existing GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
       "cost": "free, documented default quota",
       "scope_note": "United States only; address-level voterInfo is intentionally not exposed.",
-      "operations": ["google-civic-elections", "google-civic-divisions"]
-    },
+      "operations": ["google-civic-elections", "google-civic-divisions"],
+      "live_acceptance_issue": 1005,
+      "live_acceptance_status": "HTTP_403_SERVICE_DISABLED",
+      "required_action": "Enable civicinfo.googleapis.com in the existing Google project; no new key is required."
+    }
+  ],
+  "production_sources": [
     {
       "source_id": "oapen-rest",
       "institution": "OAPEN Foundation",
       "category": "open-access-scholarly-books",
       "credential_mode": "none",
       "cost": "free",
-      "license_note": "OAPEN metadata is offered under CC0 where stated; item-level content licenses remain authoritative.",
+      "license_note": "OAPEN metadata is offered under CC0 where stated; item-level content licences remain authoritative.",
       "replacement_note": "Uses the current REST search interface and does not revive the previously failed OAI-PMH path.",
-      "operations": ["open-book-search"]
+      "operations": ["open-book-search"],
+      "live_acceptance_issue": 1006,
+      "live_acceptance_status": "INTEL_GLOBAL_OPEN_COMPLETED",
+      "live_acceptance_duration_ms": 16531
     },
     {
       "source_id": "doab-rest",
@@ -36,9 +47,13 @@
       "category": "peer-reviewed-open-books-and-publishers",
       "credential_mode": "none",
       "cost": "free",
-      "license_note": "DOAB metadata is CC0; item-level content licenses remain authoritative.",
+      "license_note": "DOAB metadata is CC0; item-level content licences remain authoritative.",
       "replacement_note": "Uses the current REST search interface and does not revive the previously failed OAI-PMH path.",
-      "operations": ["open-book-search"]
+      "operations": ["open-book-search"],
+      "live_acceptance_issue": 1012,
+      "live_acceptance_status": "INTEL_GLOBAL_OPEN_COMPLETED",
+      "live_acceptance_duration_ms": 17944,
+      "performance_caveat": "A broad query in issue 1007 timed out after 60 seconds. Use specific search terms and preserve ticket timeout and response-size limits."
     },
     {
       "source_id": "gbif",
@@ -46,7 +61,11 @@
       "category": "taxonomy-and-biodiversity-occurrences",
       "credential_mode": "none for bounded public search",
       "cost": "free",
-      "operations": ["gbif-species-search", "gbif-occurrence-search"]
+      "operations": ["gbif-species-search", "gbif-occurrence-search"],
+      "live_acceptance": [
+        {"issue": 1008, "operation": "gbif-species-search", "status": "INTEL_GLOBAL_OPEN_COMPLETED", "duration_ms": 835},
+        {"issue": 1009, "operation": "gbif-occurrence-search", "status": "INTEL_GLOBAL_OPEN_COMPLETED", "duration_ms": 1175}
+      ]
     },
     {
       "source_id": "wellcome-catalogue",
@@ -55,7 +74,10 @@
       "credential_mode": "none",
       "cost": "free",
       "license_note": "Wellcome-created catalogue data may be CC0; third-party and item-level rights vary.",
-      "operations": ["wellcome-works-search"]
+      "operations": ["wellcome-works-search"],
+      "live_acceptance_issue": 1010,
+      "live_acceptance_status": "INTEL_GLOBAL_OPEN_COMPLETED",
+      "live_acceptance_duration_ms": 1011
     },
     {
       "source_id": "data-europa-eu",
@@ -63,110 +85,139 @@
       "category": "cross-national-open-data-catalogue",
       "credential_mode": "none for public read search",
       "cost": "free",
-      "operations": ["data-europa-dataset-search"]
+      "operations": ["data-europa-dataset-search"],
+      "live_acceptance_issue": 1011,
+      "live_acceptance_status": "INTEL_GLOBAL_OPEN_COMPLETED",
+      "live_acceptance_duration_ms": 1296
     }
   ],
   "already_covered_do_not_duplicate": [
-    "OpenAlex",
-    "Crossref",
-    "DataCite",
-    "OpenCitations",
-    "PubMed/PMC",
-    "Europe PMC",
-    "Semantic Scholar",
-    "CORE",
-    "OpenAIRE",
-    "BASE",
-    "Zenodo",
-    "OSF",
-    "Figshare",
-    "Dryad",
-    "Harvard Dataverse",
-    "OpenML",
-    "ROR",
-    "ORCID",
-    "DBLP",
-    "Library of Congress",
-    "Open Library",
-    "Google Books",
-    "Europeana",
-    "DPLA",
-    "German National Library",
-    "Japan National Diet Library",
-    "UN Digital Library",
-    "USGS Publications",
-    "OSTI",
-    "NASA ADS/NTRS",
-    "DOAJ",
-    "EconBiz/EconStor",
-    "HAL",
-    "NBER metadata",
-    "RCSB PDB",
-    "UniProt",
-    "ChEMBL",
-    "EU CELLAR",
-    "ERIC",
-    "UKRI Gateway to Research",
-    "NIH RePORTER",
-    "ClinicalTrials.gov",
-    "Met Museum",
-    "Art Institute of Chicago",
-    "DigitalNZ",
-    "Biodiversity Heritage Library"
+    "OpenAlex", "Crossref", "DataCite", "OpenCitations", "PubMed/PMC", "Europe PMC", "Semantic Scholar", "CORE", "OpenAIRE", "BASE", "Zenodo", "OSF", "Figshare", "Dryad", "Harvard Dataverse", "OpenML", "ROR", "ORCID", "DBLP", "Library of Congress", "Open Library", "Google Books", "Internet Archive", "Europeana", "DPLA", "German National Library", "Japan National Diet Library", "UN Digital Library", "USGS Publications", "OSTI", "NASA ADS/NTRS", "DOAJ", "EconBiz/EconStor", "HAL", "NBER metadata", "RCSB PDB", "UniProt", "ChEMBL", "EU CELLAR", "ERIC", "UKRI Gateway to Research", "NIH RePORTER", "ClinicalTrials.gov", "Met Museum", "Art Institute of Chicago", "DigitalNZ", "Biodiversity Heritage Library"
   ],
-  "verified_candidates_not_yet_implemented": [
+  "verified_free_candidates_not_yet_implemented": [
     {
-      "source_id": "nara-catalog",
-      "institution": "US National Archives and Records Administration",
-      "credential_mode": "free API key required",
-      "reason": "Valuable national archive catalogue; requires a separately governed key and live quota acceptance."
+      "source_id": "data-gov-uk",
+      "institution": "United Kingdom National Data Library / data.gov.uk",
+      "credential_mode": "none",
+      "interface": "CKAN API",
+      "unique_value": "UK national and local-government dataset and publisher directory.",
+      "reason": "Official API is no-key and no-rate-limit, but a dedicated bounded package-search contract still requires implementation and live acceptance.",
+      "priority": "P0"
+    },
+    {
+      "source_id": "sudoc-sru",
+      "institution": "ABES / French higher-education libraries",
+      "credential_mode": "none",
+      "interface": "SRU",
+      "unique_value": "French university union catalogue beyond general web indexes.",
+      "reason": "Requires a fixed allowlisted CQL profile and XML response contract.",
+      "priority": "P1"
+    },
+    {
+      "source_id": "idref",
+      "institution": "ABES / French higher education and research",
+      "credential_mode": "none for public APIs and linked data",
+      "interface": "REST, OAI-PMH and RDF",
+      "unique_value": "Authority identifiers for persons, organizations and scholarly entities.",
+      "reason": "Requires a bounded search-to-identifier workflow and reconciliation rules.",
+      "priority": "P1"
+    },
+    {
+      "source_id": "unt-digital-library",
+      "institution": "University of North Texas Libraries",
+      "credential_mode": "none",
+      "interface": "OAI-PMH, IIIF, SRU and OpenSearch",
+      "unique_value": "University-hosted historical newspapers, archives and primary-source collections.",
+      "reason": "Individual-repository metadata partly overlaps current aggregators; add when primary-source or Texas-history coverage is required.",
+      "priority": "P1"
+    },
+    {
+      "source_id": "agris-open-dataset",
+      "institution": "FAO AGRIS",
+      "credential_mode": "none for public search and downloadable open dataset",
+      "interface": "bulk open dataset and public portal",
+      "unique_value": "Global agricultural literature and provider records.",
+      "reason": "Treat as governed bulk ingestion rather than inventing an undocumented query API.",
+      "priority": "P1"
     },
     {
       "source_id": "uk-national-archives-discovery",
       "institution": "The National Archives, United Kingdom",
       "credential_mode": "public-read contract requires final endpoint acceptance",
-      "reason": "Archive discovery value is clear, but exact current bounded result contract must be frozen."
+      "reason": "Archive discovery value is clear, but exact current bounded result contract must be frozen.",
+      "priority": "P1"
     },
     {
       "source_id": "harvard-iiif",
       "institution": "Harvard University",
       "credential_mode": "none for public manifests",
-      "reason": "Manifest retrieval requires a known object identifier; add only with a stable discovery-to-ID workflow."
+      "reason": "Manifest retrieval requires a known object identifier; add only with a stable discovery-to-ID workflow.",
+      "priority": "P2"
     },
     {
       "source_id": "stanford-iiif",
       "institution": "Stanford University Libraries",
       "credential_mode": "none for public manifests",
-      "reason": "Manifest retrieval is useful after object discovery, but is not a general catalogue search replacement."
-    },
-    {
-      "source_id": "wellcome-iiif",
-      "institution": "Wellcome Collection",
-      "credential_mode": "none",
-      "reason": "Images are reachable from accepted catalogue records; image operations should be added only when a concrete visual-evidence workflow is defined."
+      "reason": "Manifest retrieval is useful after object discovery, but is not a general catalogue search replacement.",
+      "priority": "P2"
     },
     {
       "source_id": "umd-drum",
       "institution": "University of Maryland",
       "credential_mode": "none",
-      "reason": "OAI-PMH/OpenSearch/DSpace REST are available, but repository-level coverage is partly normalized by existing OpenAIRE/BASE/CORE layers."
+      "reason": "OAI-PMH/OpenSearch/DSpace REST are available, but repository-level coverage is partly normalized by existing OpenAIRE/BASE/CORE layers.",
+      "priority": "P2"
     },
     {
       "source_id": "sonar-swiss-open-access",
       "institution": "Swiss universities and research institutions",
       "credential_mode": "none",
-      "reason": "Stable OAI-PMH exists; defer unless Swiss repository-specific metadata is required beyond aggregators."
+      "reason": "Stable OAI-PMH exists; defer unless Swiss repository-specific metadata is required beyond aggregators.",
+      "priority": "P2"
+    },
+    {
+      "source_id": "rijksmuseum-oai",
+      "institution": "Rijksmuseum",
+      "credential_mode": "none for OAI-PMH",
+      "reason": "Useful cultural-heritage metadata, but Europeana and current museum providers already cover much of the discovery layer.",
+      "priority": "P2"
+    }
+  ],
+  "free_key_or_registration_candidates": [
+    {
+      "source_id": "nara-catalog",
+      "institution": "US National Archives and Records Administration",
+      "credential_mode": "free API key required",
+      "reason": "Apply only when the national archive catalogue is prioritized and then perform live quota acceptance."
+    },
+    {
+      "source_id": "korea-national-archives",
+      "institution": "National Archives of Korea",
+      "credential_mode": "free public-data API key required",
+      "reason": "Korean public-data portal application and quota governance are required."
+    },
+    {
+      "source_id": "korea-national-library",
+      "institution": "National Library of Korea",
+      "credential_mode": "free public-data API key required",
+      "reason": "Register through the Korean public-data portal before connector activation."
     },
     {
       "source_id": "smithsonian-open-access",
       "institution": "Smithsonian Institution",
       "credential_mode": "API key required for search API; IIIF object access may be public",
       "reason": "Requires separate key governance or an identifier-first IIIF contract."
+    },
+    {
+      "source_id": "data-gov-us-v4",
+      "institution": "United States Data.gov",
+      "credential_mode": "free api.data.gov key required",
+      "reason": "The current v4 catalogue contract requires a key; use a dedicated backend secret rather than DEMO_KEY for production."
     }
   ],
   "google_coverage_decisions": {
-    "active_existing": [
-      "Data Commons",
+    "active_and_live": [
+      "Data Commons REST v2",
       "BigQuery public datasets",
       "Earth Engine",
       "YouTube Data API",
@@ -175,31 +226,16 @@
       "Chrome UX Report API",
       "Google Books API"
     ],
-    "added_in_this_change": [
+    "implemented_but_service_enable_required": [
       "Knowledge Graph Search API",
       "Civic Information API elections/divisions"
     ],
     "not_added": [
-      {
-        "api": "Programmable Search JSON API",
-        "reason": "Closed to new customers in 2026 and scheduled for transition; not a stable new dependency."
-      },
-      {
-        "api": "Maps/Places/Directions/Geocoding",
-        "reason": "Billing-enabled commercial services; not treated as free public databases."
-      },
-      {
-        "api": "Gmail/Drive/Calendar/Contacts",
-        "reason": "Private user data and OAuth workflows, outside the public intelligence catalogue."
-      },
-      {
-        "api": "Google Dataset Search",
-        "reason": "No supported public search API contract was verified."
-      },
-      {
-        "api": "Cloud Enterprise Knowledge Graph",
-        "reason": "Enterprise product; the public Knowledge Graph Search API is used for bounded free-quota entity search."
-      }
+      {"api": "Programmable Search JSON API", "reason": "Closed to new customers in 2026 and scheduled for transition; not a stable new dependency."},
+      {"api": "Maps/Places/Directions/Geocoding", "reason": "Billing-enabled commercial services; not treated as free public databases."},
+      {"api": "Gmail/Drive/Calendar/Contacts", "reason": "Private user data and OAuth workflows, outside the public intelligence catalogue."},
+      {"api": "Google Dataset Search", "reason": "No supported public search API contract was verified."},
+      {"api": "Cloud Enterprise Knowledge Graph", "reason": "Enterprise product; the public Knowledge Graph Search API is used for bounded entity search."}
     ]
   },
   "governance": {
@@ -212,6 +248,7 @@
     "write_operations_allowed": false,
     "address_level_voter_queries_allowed": false,
     "secret_values_exposed": false,
-    "promotion_requires_live_acceptance": true
+    "promotion_requires_live_acceptance": true,
+    "individual_repositories_are_deferred_when_existing_aggregators_provide_equivalent_coverage": true
   }
 }
