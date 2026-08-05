@@ -1,0 +1,32 @@
+{
+  "schema_version": "compute-tool-keywords-v1",
+  "capabilities": [
+    "statistics", "econometrics", "causal inference", "Bayesian inference",
+    "time series forecasting", "state space model", "survival analysis",
+    "optimization", "operations research", "mixed integer programming",
+    "constraint programming", "stochastic optimization", "robust optimization",
+    "Monte Carlo simulation", "discrete event simulation", "system dynamics",
+    "agent based modeling", "game theory", "mechanism design",
+    "network science", "graph analytics", "community detection",
+    "uncertainty quantification", "sensitivity analysis", "calibration",
+    "anomaly detection", "change point detection", "scenario analysis",
+    "financial analysis", "portfolio optimization", "risk modeling",
+    "policy analysis", "counterfactual analysis", "social behavior modeling",
+    "geospatial computation", "remote sensing analysis", "spatial econometrics",
+    "data quality", "scientific visualization", "reproducible research",
+    "benchmarking", "numerical validation", "probabilistic programming"
+  ],
+  "ecosystems": [
+    "Python", "R", "Julia", "Rust", "C++", "Java", "PyPI",
+    "conda-forge", "CRAN", "R-universe", "Julia General", "GitHub"
+  ],
+  "surfaces": [
+    "library", "package", "framework", "toolkit", "solver", "engine",
+    "benchmark", "reference implementation", "open source"
+  ],
+  "change_terms": [
+    "release", "changelog", "new feature", "deprecated", "breaking change",
+    "migration", "security advisory", "vulnerability", "license change",
+    "benchmark", "performance regression", "replacement"
+  ]
+}
