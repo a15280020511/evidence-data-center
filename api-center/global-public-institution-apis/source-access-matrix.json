@@ -1,9 +1,10 @@
 {
-  "schema_version": "global-public-institution-source-matrix-v1",
+  "schema_version": "global-public-institution-source-matrix-v2",
   "reviewed_on": "2026-08-05",
-  "active_source_count": 9,
+  "active_source_count": 13,
   "production_live_count": 4,
-  "pending_free_credential_count": 5,
+  "pending_free_credential_count": 6,
+  "pending_live_acceptance_count": 3,
   "sources": [
     {
       "source_id": "singapore-data-gov",
@@ -130,6 +131,62 @@
       "implementation_status": "production-live",
       "live_acceptance": {"issue":1076,"operation":"asu-dataverse-search","status":"PASS","duration_ms":549,"secret_values_exposed":false},
       "license_policy": "Published repository metadata and declared public files only; record-level licenses govern reuse."
+    },
+    {
+      "source_id": "uk-api-catalogue",
+      "name": "UK Public Sector API Catalogue",
+      "country": "GB",
+      "institution_type": "national-government-api-catalogue",
+      "base_url": "https://www.api.gov.uk",
+      "operations": ["uk-api-catalogue-index"],
+      "credential_mode": "none",
+      "credential_env": "",
+      "cost": "free public catalogue",
+      "implementation_status": "implemented-pending-live-acceptance",
+      "live_acceptance": {"status":"NOT_RUN","upstream_called":false,"secret_values_exposed":false},
+      "license_policy": "Discovery catalogue only; each listed API keeps its own accessibility, authentication and licensing conditions."
+    },
+    {
+      "source_id": "poland-isztar4",
+      "name": "Poland PUESC ISZTAR4 Service Information",
+      "country": "PL",
+      "institution_type": "customs-tariff-service-contract",
+      "base_url": "https://puesc.gov.pl",
+      "operations": ["poland-isztar4-service-info"],
+      "credential_mode": "none",
+      "credential_env": "",
+      "cost": "free official service documentation",
+      "implementation_status": "implemented-pending-live-acceptance",
+      "live_acceptance": {"status":"NOT_RUN","upstream_called":false,"secret_values_exposed":false},
+      "license_policy": "Official contract and specification discovery only; no test-domain endpoint is promoted as production data API."
+    },
+    {
+      "source_id": "ukraine-nipo",
+      "name": "Ukraine NIPO Statistics and Reports",
+      "country": "UA",
+      "institution_type": "national-intellectual-property-statistics",
+      "base_url": "https://nipo.gov.ua/en/statistics-reports/",
+      "operations": ["ukraine-nipo-statistics"],
+      "credential_mode": "none",
+      "credential_env": "",
+      "cost": "free official public statistics and reports",
+      "implementation_status": "implemented-pending-live-acceptance",
+      "live_acceptance": {"status":"NOT_RUN","upstream_called":false,"secret_values_exposed":false},
+      "license_policy": "Official published aggregate IP statistics, dashboards and reports only; not represented as a general public registry REST API."
+    },
+    {
+      "source_id": "korea-data-go-kr-krx-listed",
+      "name": "Korea FSC KRX Listed Securities Information",
+      "country": "KR",
+      "institution_type": "national-financial-market-open-data",
+      "base_url": "https://apis.data.go.kr/1160100/service/GetKrxListedInfoService",
+      "operations": ["korea-krx-listed-companies"],
+      "credential_mode": "required_free_service_key",
+      "credential_env": "KOREA_DATA_GO_KR_SERVICE_KEY",
+      "cost": "free automatically approved public-data service key",
+      "implementation_status": "implemented-pending-free-secret",
+      "live_acceptance": {"status":"NOT_RUN","required_secret":"KOREA_DATA_GO_KR_SERVICE_KEY","upstream_called":false,"secret_values_exposed":false},
+      "license_policy": "Public listed-security and corporate identifiers only; one fixed service contract, not a generic data.go.kr arbitrary endpoint."
     }
   ],
   "mapped_existing_sources": [
@@ -156,10 +213,7 @@
     {"source_id":"issuelab-oai","reason":"The official harvesting endpoint is HTTP-only; repository production policy requires fixed HTTPS endpoints."},
     {"source_id":"federal-register","reason":"The existing bounded GitHub Actions production acceptance returned HTTP 403 on 2026-08-04; retain conditional status rather than duplicate it."},
     {"source_id":"uk-hmrc-customs-declarations","reason":"Production data is restricted to authorised customs users and is not anonymous public intelligence."},
-    {"source_id":"brazil-inpi-general-trademark-api","reason":"No general-purpose public official REST search API was verified; official publications may be handled separately without substituting a commercial third party."},
-    {"source_id":"poland-isztar4","reason":"Retained for exact endpoint, licence and bounded live-contract verification before activation."},
-    {"source_id":"ukraine-nipo","reason":"Retained for current official endpoint, authentication and licence verification before activation."},
-    {"source_id":"korea-data-go-kr","reason":"The national portal contains service-specific APIs and keys; each concrete product requires a separate fixed contract rather than one generic connector."}
+    {"source_id":"brazil-inpi-general-trademark-api","reason":"No general-purpose public official REST search API was verified; official publications may be handled separately without substituting a commercial third party."}
   ],
   "governance": {
     "fixed_sources_only": true,
