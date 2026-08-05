@@ -8,6 +8,7 @@ on:
     paths:
       - "api-center/discovery/config.json"
       - "api-center/discovery/global_source_discovery_v2.py"
+      - "api-center/discovery/normalize_discovery_output.py"
       - ".github/workflows/global-source-discovery.yml"
   workflow_dispatch:
     inputs:
@@ -52,6 +53,7 @@ jobs:
         run: |
           python -m py_compile \
             api-center/discovery/global_source_discovery_v2.py \
+            api-center/discovery/normalize_discovery_output.py \
             api-center/discovery/discovered_source_task.py
 
       - name: Discover, deduplicate, probe and register
@@ -66,6 +68,14 @@ jobs:
             --report api-center/discovery/latest-report.md \
             --max-queries "$MAX_QUERIES" | tee discovery-result.json
 
+      - name: Normalize catalogs and repository references
+        run: |
+          python api-center/discovery/normalize_discovery_output.py \
+            --registry api-center/discovery/registry.json \
+            --candidates api-center/discovery/candidates.json \
+            --result discovery-result.json \
+            --report api-center/discovery/latest-report.md | tee discovery-normalization.json
+
       - name: Validate generated state
         run: |
           python -m json.tool api-center/discovery/config.json >/dev/null
@@ -73,6 +83,7 @@ jobs:
           python -m json.tool api-center/discovery/candidates.json >/dev/null
           python -m json.tool api-center/discovery/state.json >/dev/null
           python -m json.tool discovery-result.json >/dev/null
+          python -m json.tool discovery-normalization.json >/dev/null
 
       - name: Commit registry and report changes
         run: |
@@ -97,6 +108,7 @@ jobs:
           name: global-source-discovery-${{ github.run_id }}
           path: |
             discovery-result.json
+            discovery-normalization.json
             api-center/discovery/latest-report.md
             api-center/discovery/registry.json
             api-center/discovery/candidates.json
