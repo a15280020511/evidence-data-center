@@ -1,33 +1,15 @@
 {
-  "apis_guru_cursor": 120,
+  "apis_guru_cursor": 240,
+  "last_engine_counts": {
+    "exa": 8,
+    "github": 4,
+    "tavily": 8
+  },
   "last_errors": [
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 422: Unprocessable Entity",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden",
-    "github: HTTPError: HTTP Error 403: Forbidden"
+    "apis.guru spec amazonaws.com:ec2: RuntimeError: response exceeds maximum size"
   ],
-  "last_run_at": "2026-08-05T07:27:00+00:00",
-  "query_cursor": 24,
-  "runs": 1,
-  "schema_version": "global-source-discovery-state-v1"
+  "last_run_at": "2026-08-05T07:37:52+00:00",
+  "query_cursor": 48,
+  "runs": 2,
+  "schema_version": "global-source-discovery-state-v2"
 }
