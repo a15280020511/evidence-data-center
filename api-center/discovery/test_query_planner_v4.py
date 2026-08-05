@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import global_source_discovery_v4 as planner
+import trend_signals
 
 HERE = Path(__file__).resolve().parent
 
@@ -25,11 +26,19 @@ def main() -> int:
     github_queries = [planner.github_query(*planner.split_query(query)) for query in queries]
     assert all(1 <= len(query.split()) <= 8 for query in github_queries)
     assert not any('"' in query or "(" in query or ")" in query for query in github_queries)
+
+    assert trend_signals.marker_matches("new ai model release", "ai")
+    assert trend_signals.marker_matches("public api update", "api")
+    assert not trend_signals.marker_matches("air quality warning", "ai")
+    assert not trend_signals.marker_matches("famille royale britannique", "ai")
+    assert not trend_signals.marker_matches("daily news", "ai")
+
     print(json.dumps({
         "queries": len(queries),
         "families": sorted(prefixes),
         "trend_queries": sum(query.startswith("trend::") for query in queries),
         "github_max_tokens": max(len(query.split()) for query in github_queries),
+        "trend_marker_boundary_tests": "passed",
     }, ensure_ascii=False))
     return 0
 
