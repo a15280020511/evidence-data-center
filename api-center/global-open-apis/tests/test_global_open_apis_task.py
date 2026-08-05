@@ -130,12 +130,23 @@ class GlobalOpenApisTests(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             MODULE.validate_response("gbif-results", {"results": {}})
 
-    def test_matrix_exposes_conditions(self) -> None:
+    def test_matrix_exposes_production_enablement_and_key_conditions(self) -> None:
         matrix = json.loads((HERE / "source-access-matrix.json").read_text(encoding="utf-8"))
-        pending = {row["source_id"] for row in matrix["production_pending_live_acceptance"]}
-        self.assertTrue({"oapen-rest", "doab-rest", "gbif", "wellcome-catalogue", "data-europa-eu"}.issubset(pending))
-        candidates = {row["source_id"]: row["credential_mode"] for row in matrix["verified_candidates_not_yet_implemented"]}
-        self.assertEqual(candidates["nara-catalog"], "free API key required")
+        production = {row["source_id"] for row in matrix["production_sources"]}
+        self.assertTrue(
+            {"oapen-rest", "doab-rest", "gbif", "wellcome-catalogue", "data-europa-eu"}.issubset(production)
+        )
+        blocked = {
+            row["source_id"]: row["required_action"]
+            for row in matrix["implemented_pending_external_enablement"]
+        }
+        self.assertIn("kgsearch.googleapis.com", blocked["google-knowledge-graph-search"])
+        self.assertIn("civicinfo.googleapis.com", blocked["google-civic-information"])
+        key_candidates = {
+            row["source_id"]: row["credential_mode"]
+            for row in matrix["free_key_or_registration_candidates"]
+        }
+        self.assertEqual(key_candidates["nara-catalog"], "free API key required")
         self.assertIs(matrix["governance"]["address_level_voter_queries_allowed"], False)
 
 
