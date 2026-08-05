@@ -122,9 +122,9 @@ class SpecializedOpenApisTests(unittest.TestCase):
             (None, "LOCAL", [], None, "matrix", "application/json"),
         )
         matrix = json.loads((HERE / "source-access-matrix.json").read_text(encoding="utf-8"))
-        pending = {row["source_id"] for row in matrix["production_pending_live_acceptance"]}
+        production = {row["source_id"] for row in matrix["production_sources"]}
         self.assertEqual(
-            pending,
+            production,
             {
                 "nhm-data-portal",
                 "materials-cloud-optimade",
@@ -133,6 +133,12 @@ class SpecializedOpenApisTests(unittest.TestCase):
                 "bgs-opengeoscience",
             },
         )
+        issues = {row["source_id"]: row["live_acceptance_issue"] for row in matrix["production_sources"]}
+        self.assertEqual(issues["nhm-data-portal"], 1029)
+        self.assertEqual(issues["materials-cloud-optimade"], 1030)
+        self.assertEqual(issues["gov-uk-search-api"], 1031)
+        self.assertEqual(issues["rijksmuseum-search"], 1032)
+        self.assertEqual(issues["bgs-opengeoscience"], 1033)
         self.assertIs(matrix["governance"]["arbitrary_optimade_filters_allowed"], False)
 
 
