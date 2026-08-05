@@ -20,6 +20,7 @@ from typing import Any, Iterable, Mapping
 UA = "evidence-data-center-trend-signals/1"
 NUMBER_RE = re.compile(r"([0-9][0-9,.]*)")
 ASCII_WORD_RE = re.compile(r"^[a-z0-9][a-z0-9 +#./-]*$", re.I)
+SHORT_ASCII_ALLOWLIST = {"ai", "5g", "r"}
 
 
 def utc_now() -> str:
@@ -40,6 +41,17 @@ def save_json(path: Path, value: Mapping[str, Any]) -> None:
 
 def normalized_text(value: str) -> str:
     return " ".join(str(value or "").split()).strip()
+
+
+def usable_title(title: str) -> bool:
+    normalized = normalized_text(title)
+    alnum = [char for char in normalized if char.isalnum()]
+    if not alnum:
+        return False
+    if any(ord(char) > 127 for char in alnum):
+        return len(alnum) >= 2
+    compact = "".join(alnum).casefold()
+    return len(alnum) >= 3 or compact in SHORT_ASCII_ALLOWLIST
 
 
 def marker_matches(blob: str, marker: str) -> bool:
@@ -92,7 +104,7 @@ def iter_items(xml_bytes: bytes) -> Iterable[tuple[str, str]]:
         title_node = item.find("title")
         title = normalized_text(title_node.text if title_node is not None else "")
         item_text = normalized_text(" ".join(text for text in item.itertext() if text))
-        if title:
+        if usable_title(title):
             yield title, item_text
 
 
