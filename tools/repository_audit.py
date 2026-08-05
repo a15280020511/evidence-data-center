@@ -21,7 +21,9 @@ HISTORICAL = {
     "MIGRATION.md", "MIGRATION_MANIFEST.json", "MIGRATION_PROVENANCE.json", "RECOVERY.md",
 }
 SEVERITY = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
-PINNED_ACTION = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}(?:\s*#.*)?$")
+PINNED_ACTION = re.compile(
+    r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*@[0-9a-f]{40}(?:\s*#.*)?$"
+)
 SENSITIVE_NAME = re.compile(r"(?i)(api[_-]?key|secret|token|password|credential)")
 PLACEHOLDER = re.compile(r"(?i)(example|placeholder|dummy|redacted|replace[-_ ]?me|not[-_ ]?set|your[-_ ])")
 ENV_NAME_LITERAL = re.compile(r"^[A-Z][A-Z0-9_]{2,80}$")
