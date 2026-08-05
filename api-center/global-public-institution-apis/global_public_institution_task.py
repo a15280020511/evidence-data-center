@@ -30,12 +30,16 @@ from managed_provider_runtime import (  # noqa: E402
 SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
 MATRIX_PATH = HERE / "source-access-matrix.json"
-USER_AGENT = "evidence-data-center-public-institution/1.0"
-PLAIN_TEXT_RE = re.compile(r"[^0-9A-Za-z\u00C0-\u024F\u3040-\u30FF\u3400-\u9FFF _.,:+*/-]+")
+USER_AGENT = "evidence-data-center-public-institution/1.1"
+PLAIN_TEXT_RE = re.compile(r"[^0-9A-Za-z\u00C0-\u024F\u3040-\u30FF\u3400-\u9FFF _.,:+*/()-]+")
 DATAFLOW_RE = re.compile(r"^[A-Z0-9_,.:-]{1,80}$")
 DATA_KEY_RE = re.compile(r"^[A-Za-z0-9.*+_,:-]{1,300}$")
-UUID_RE = re.compile(r"^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$")
+UUID_RE = re.compile(
+    r"^[A-Fa-f0-9]{8}-[A-Fa-f0-9]{4}-[A-Fa-f0-9]{4}-"
+    r"[A-Fa-f0-9]{4}-[A-Fa-f0-9]{12}$"
+)
 CHEMSYS_RE = re.compile(r"^[A-Z][a-z]?(?:-[A-Z][a-z]?){0,7}$")
+DATE8_RE = re.compile(r"^[0-9]{8}$")
 
 
 def safe_text(value: Any, name: str, maximum: int, *, required: bool = True) -> str:
@@ -75,7 +79,7 @@ def operation_parameters(parameters: Mapping[str, Any], allowed: set[str]) -> No
 
 def build_request(operation: str, parameters: Mapping[str, Any]):
     headers = {
-        "Accept": "application/json, application/xml;q=0.8, text/xml;q=0.8, text/csv;q=0.7",
+        "Accept": "application/json, application/xml;q=0.8, text/xml;q=0.8, text/csv;q=0.7, text/html;q=0.6",
         "User-Agent": USER_AGENT,
     }
     query: list[tuple[str, str]] = []
@@ -234,6 +238,42 @@ def build_request(operation: str, parameters: Mapping[str, Any]):
         query.append(("verb", "Identify"))
         return "https://dataverse.asu.edu/oai", "GET", headers, query, None, credentials_used, source_id
 
+    if operation == "uk-api-catalogue-index":
+        operation_parameters(parameters, set())
+        source_id = "uk-api-catalogue"
+        headers["Accept"] = "text/html, application/xhtml+xml;q=0.9"
+        return "https://www.api.gov.uk/index/", "GET", headers, query, None, credentials_used, source_id
+
+    if operation == "poland-isztar4-service-info":
+        operation_parameters(parameters, set())
+        source_id = "poland-isztar4"
+        headers["Accept"] = "text/html, application/xhtml+xml;q=0.9"
+        return "https://puesc.gov.pl/en/uslugi/uslugi-sieciowe-informacje-i-specyfikacje/system-isztar4", "GET", headers, query, None, credentials_used, source_id
+
+    if operation == "ukraine-nipo-statistics":
+        operation_parameters(parameters, set())
+        source_id = "ukraine-nipo"
+        headers["Accept"] = "text/html, application/xhtml+xml;q=0.9"
+        return "https://nipo.gov.ua/en/statistics-reports/", "GET", headers, query, None, credentials_used, source_id
+
+    if operation == "korea-krx-listed-companies":
+        operation_parameters(parameters, {"page", "limit", "base_date", "company_name"})
+        source_id = "korea-data-go-kr-krx-listed"
+        page = bounded_int(parameters.get("page"), default=1, minimum=1, maximum=1000, name="page")
+        limit = bounded_int(parameters.get("limit"), default=20, minimum=1, maximum=100, name="limit")
+        base_date = safe_text(parameters.get("base_date"), "base_date", 8, required=False)
+        if base_date and not DATE8_RE.fullmatch(base_date):
+            raise ValueError("base_date must use YYYYMMDD")
+        company_name = safe_query(parameters.get("company_name"), name="company_name", maximum=80, required=False)
+        key = credential("KOREA_DATA_GO_KR_SERVICE_KEY", required=True)
+        credentials_used.append("KOREA_DATA_GO_KR_SERVICE_KEY")
+        query.extend([("serviceKey", key), ("resultType", "json"), ("pageNo", str(page)), ("numOfRows", str(limit))])
+        if base_date:
+            query.append(("basDt", base_date))
+        if company_name:
+            query.append(("likeCorpNm", company_name))
+        return "https://apis.data.go.kr/1160100/service/GetKrxListedInfoService/getItemInfo", "GET", headers, query, None, credentials_used, source_id
+
     raise ValueError(f"unsupported operation: {operation}")
 
 
@@ -277,15 +317,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
             else:
                 snapshot = {"source_access_matrix": load_json(MATRIX_PATH)}
         else:
-            response = requests.request(
-                method,
-                str(url),
-                params=query,
-                json=body,
-                headers=headers,
-                timeout=timeout,
-                allow_redirects=False,
-            )
+            response = requests.request(method, str(url), params=query, json=body, headers=headers, timeout=timeout, allow_redirects=False)
             raw = response.content
             if len(raw) > max_bytes:
                 raise RuntimeError(f"response exceeds acceptance.max_response_bytes={max_bytes}")
@@ -297,20 +329,18 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
             suffix = "json" if "json" in content_type.lower() else "txt"
             (output_dir / f"upstream-response.{suffix}").write_bytes(raw)
             snapshot = {"source_id": source_id, "operation": operation, "data": data}
-            metadata.update(
-                {
-                    "upstream_called": True,
-                    "request_count": 1,
-                    "api_origin": urlparse(str(url)).hostname,
-                    "http_method": method,
-                    "http_status": response.status_code,
-                    "content_type": content_type,
-                    "response_bytes": len(raw),
-                    "response_sha256": bytes_sha(raw),
-                    "credential_mode": "backend" if credentials_used else "none",
-                    "credential_environment_variables_used": credentials_used,
-                }
-            )
+            metadata.update({
+                "upstream_called": True,
+                "request_count": 1,
+                "api_origin": urlparse(str(url)).hostname,
+                "http_method": method,
+                "http_status": response.status_code,
+                "content_type": content_type,
+                "response_bytes": len(raw),
+                "response_sha256": bytes_sha(raw),
+                "credential_mode": "backend" if credentials_used else "none",
+                "credential_environment_variables_used": credentials_used,
+            })
         status = "INTEL_PUBLIC_INSTITUTION_APIS_COMPLETED"
     except Exception as exc:
         failure = {"type": type(exc).__name__, "message": str(exc)[:2000]}
