@@ -1,0 +1,31 @@
+{
+  "schema_version": "country-industry-atlas-live-acceptance-v1",
+  "reviewed_on": "2026-08-05",
+  "production_discovery_sources": [
+    {
+      "source_id": "dataportals-public-registry",
+      "operation": "portal-registry-search",
+      "role": "discovery-only",
+      "credential_mode": "none",
+      "license": "Public Domain registry data",
+      "fixed_endpoint": "https://dataportals.org/api/data.json",
+      "live_acceptance_issue": 1036,
+      "live_acceptance_run": 30975076611,
+      "live_acceptance_artifact": 8917945192,
+      "live_acceptance_status": "INTEL_COUNTRY_INDUSTRY_ATLAS_COMPLETED",
+      "live_acceptance_duration_ms": 312,
+      "secret_values_exposed": false,
+      "production_status": "production-live-discovery",
+      "authority_boundary": "Registry records are leads only. Each listed portal or API must independently pass official-identity, licence, endpoint-contract and live-execution validation before production use."
+    }
+  ],
+  "concrete_country_apis_promoted_by_this_ledger": [],
+  "source_atlas_status_note": "Any initial pending marker for the DataPortals registry in source-atlas.json is superseded by this evidence-backed ledger. No concrete portal listed by the registry is promoted by implication.",
+  "governance": {
+    "registry_discovery_source_can_be_production": true,
+    "registry_entries_are_production_sources": false,
+    "automatic_portal_activation_allowed": false,
+    "automatic_api_endpoint_following_allowed": false,
+    "independent_live_acceptance_required": true
+  }
+}
