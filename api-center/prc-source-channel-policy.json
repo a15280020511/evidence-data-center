@@ -1,38 +1,64 @@
 {
-  "schema_version": "prc-source-channel-tiering-v1",
+  "schema_version": "prc-source-channel-tiering-v2",
   "status": "production-control",
   "jurisdiction": "PRC_MAINLAND",
-  "principle": "classify_channel_then_apply_minimum_necessary_controls",
+  "principle": "identity_attribution_gate_then_channel_tier_then_minimum_necessary_controls",
   "default_action": "REVIEW_BEFORE_PRODUCTION",
+  "scope_gate": {
+    "strict_control_requires_all": [
+      "prc_nexus_present",
+      "user_real_name_or_identity_linked_activity_is_reasonably_attributable",
+      "material_legal_or_account_risk_trigger_present"
+    ],
+    "identity_attribution_examples": [
+      "real_name_verified_account",
+      "phone_id_bankcard_payment_or_business_identity_binding",
+      "user_linked_api_key_cookie_session_member_id_or_subscription",
+      "provider_access_billing_security_or_audit_record_linked_to_user"
+    ],
+    "risk_trigger_examples": [
+      "authenticated_paid_or_member_access",
+      "automated_bulk_or_persistent_collection",
+      "uncertain_account_api_license_or_automation_scope",
+      "denial_account_alert_provider_notice_or_complaint",
+      "personal_important_restricted_geospatial_commercial_secret_or_nonpublic_data",
+      "external_distribution_resale_publication_or_commercial_service"
+    ],
+    "outside_scope_action": "USE_GLOBAL_OPERATIONAL_BASELINE_WITHOUT_PRC_SPECIFIC_RATE_OR_ORIGIN_CONTROLS",
+    "ordinary_ip_tld_or_routine_anonymous_server_log_alone_triggers_strict_control": false
+  },
   "classification_dimensions": [
-    "operator_identity",
+    "prc_nexus",
+    "user_real_name_or_identity_attribution",
+    "provider_access_billing_security_and_audit_records",
+    "material_legal_or_account_risk",
     "official_or_third_party",
     "public_or_authenticated",
     "documented_api_or_browser_automation",
     "account_and_license_scope",
-    "source_server_technical_measures",
     "data_classification",
     "collection_scale_and_persistence",
     "internal_analysis_or_external_redistribution"
   ],
   "tiers": {
     "GREEN_DIRECT": {
+      "applicability_condition": "PRC_STRICT_SCOPE_GATE_PASSED",
       "risk_score_range": [1.0, 1.5],
       "production_state": "PRODUCTION_SAFE_READONLY",
       "channels": [
-        "prc_government_or_public_institution_official_open_api",
-        "self_registered_official_documented_readonly_api",
+        "user_linked_prc_official_documented_readonly_api",
+        "user_linked_prc_government_or_public_institution_official_open_api",
         "official_bulk_download_or_open_data_file",
         "official_export_sftp_or_explicitly_licensed_mirror",
-        "prc_government_or_public_institution_public_static_page",
-        "official_public_pdf_notice_statistical_table_or_attachment"
+        "official_public_pdf_notice_statistical_table_or_attachment",
+        "provider_authorized_readonly_cloud_access"
       ],
       "required_controls": [
+        "account_identity_and_attribution_record",
         "fixed_official_https_host",
         "documented_readonly_operation",
-        "parameter_and_response_schema",
         "secret_isolation_when_authenticated",
-        "provider_quota_and_terms_enforcement",
+        "provider_quota_terms_and_account_scope_enforcement",
         "bounded_runtime_response_bytes_and_cost",
         "data_classification_scan_before_model_or_storage",
         "source_license_and_provenance_record",
@@ -48,28 +74,20 @@
       "request_defaults": {
         "official_api": "FOLLOW_PROVIDER_DOCUMENTED_LIMITS",
         "official_bulk_download": "USE_OFFICIAL_BULK_ENDPOINT_WITH_DEDUPLICATION_AND_CACHE",
-        "public_static_web_max_concurrency": 2,
-        "public_static_web_minimum_interval_seconds": 2,
-        "public_static_web_max_pages_per_task": 100,
         "automatic_retry": "ONE_RETRY_FOR_NETWORK_TIMEOUT_OR_5XX_ONLY"
-      },
-      "storage_defaults": {
-        "structured_facts_and_numeric_data": "ALLOWED",
-        "official_open_data_files": "ALLOWED_WHEN_LICENSE_PERMITS",
-        "full_text_and_images": "METADATA_OR_NECESSARY_EXCERPTS_BY_DEFAULT",
-        "redistribution": "ONLY_WHEN_LICENSE_OR_OFFICIAL_POLICY_PERMITS"
       }
     },
     "YELLOW_CONTROLLED": {
+      "applicability_condition": "PRC_STRICT_SCOPE_GATE_PASSED",
       "risk_score_range": [1.5, 2.5],
       "production_state": "PROVISIONAL_SAFE_READONLY_OR_PRODUCTION_SAFE_READONLY",
       "channels": [
-        "public_no_login_commercial_or_non_government_webpage",
-        "public_dynamic_page_requiring_browser_rendering",
-        "third_party_aggregator_api",
-        "search_engine_result_or_search_api",
-        "public_social_platform_page_for_aggregate_signals",
-        "public_news_report_research_or_database_page"
+        "user_linked_third_party_aggregator_api",
+        "user_linked_search_engine_or_search_api",
+        "authenticated_or_billed_public_dynamic_page",
+        "user_linked_public_social_platform_signal_collection",
+        "user_linked_public_news_report_research_or_database_page",
+        "other_attributable_readonly_public_channel"
       ],
       "required_controls": [
         "fixed_domain_and_public_path_allowlist",
@@ -91,19 +109,14 @@
         "max_pages_per_task": 20,
         "max_requests_per_domain_per_hour": 30,
         "automatic_retry": "ONE_RETRY_FOR_NETWORK_TIMEOUT_OR_5XX_ONLY"
-      },
-      "storage_defaults": {
-        "structured_facts_numeric_aggregates_and_short_summary": "ALLOWED_AFTER_VALIDATION",
-        "raw_social_content_and_individual_profiles": "NOT_ALLOWED",
-        "complete_news_report_or_database_mirror": "NOT_ALLOWED",
-        "public_redistribution": "REQUIRES_LICENSE_CONFIRMATION"
       }
     },
     "ORANGE_DEDICATED": {
+      "applicability_condition": "PRC_STRICT_SCOPE_GATE_PASSED",
       "risk_score_range": [2.0, 3.5],
       "production_state": "CONTROLLED_SPECIAL_USE",
       "channels": [
-        "self_registered_authenticated_website_account",
+        "real_name_verified_authenticated_website_account",
         "paid_member_or_subscription_backend",
         "authenticated_cloud_browser_session",
         "website_with_uncertain_automation_or_bulk_download_rights",
@@ -113,7 +126,7 @@
       ],
       "required_controls": [
         "dedicated_source_specific_connector",
-        "account_and_license_scope_evidence",
+        "account_real_name_attribution_and_license_scope_evidence",
         "one_primary_origin_per_account_or_key",
         "official_api_or_export_first",
         "authorized_local_or_manual_export_preferred",
@@ -132,15 +145,10 @@
         "max_pages_or_exports": "SOURCE_SPECIFIC_REVIEW",
         "automatic_retry": "NO_RETRY_FOR_AUTHORIZATION_RATE_LIMIT_OR_TECHNICAL_MEASURE_SIGNALS",
         "origin_switch": "FORBIDDEN"
-      },
-      "storage_defaults": {
-        "structured_facts": "ALLOWED_ONLY_WITH_SCOPE_AND_LICENSE_CONFIRMATION",
-        "raw_backend_pages_files_and_exports": "TEMPORARY_TASK_SCOPED_BY_DEFAULT",
-        "cloud_model_processing": "ONLY_PUBLIC_NON_PERSONAL_NON_IMPORTANT_DATA_OR_EXPLICITLY_APPROVED",
-        "redistribution": "DENIED_UNLESS_EXPLICITLY_LICENSED"
       }
     },
     "RED_PROHIBITED": {
+      "applicability_condition": "GLOBAL_SECURITY_DENY_INCLUDING_PRC_STRICT",
       "risk_score_range": [4.0, 5.0],
       "production_state": "REJECTED_OR_DISABLED",
       "channels": [
@@ -163,18 +171,21 @@
     "important_data_detected": "BLOCK_GENERAL_CROSS_BORDER_AND_REQUIRE_SPECIAL_REVIEW",
     "restricted_geospatial_data_detected": "BLOCK_GENERAL_PROCESSING_AND_REQUIRE_SPECIAL_REVIEW",
     "commercial_secret_or_nonpublic_backend_data_detected": "BLOCK_AND_QUARANTINE",
+    "identity_attribution_becomes_known": "REAPPLY_SCOPE_GATE_AND_RECLASSIFY",
+    "material_legal_or_account_risk_becomes_known": "REAPPLY_SCOPE_GATE_AND_RECLASSIFY",
     "license_scope_unknown": "ESCALATE_TO_ORANGE_DEDICATED",
     "provider_terms_or_api_scope_change": "REVIEW_BEFORE_CONTINUED_PRODUCTION",
     "401_403_429_captcha_waf_or_account_alert": "SHARED_HARD_STOP_ACROSS_TOOLS_AND_ORIGINS",
     "internal_analysis_changes_to_external_distribution_or_commercial_service": "RECLASSIFY_AND_REVIEW"
   },
   "channel_selection_order": [
+    "GLOBAL_BASELINE_FOR_NON_ATTRIBUTABLE_PUBLIC_SOURCE",
     "GREEN_OFFICIAL_API_OR_OPEN_DATA",
     "GREEN_OFFICIAL_DOWNLOAD_EXPORT_OR_STATIC_DOCUMENT",
-    "YELLOW_PUBLIC_WEB_OR_AGGREGATOR_READONLY",
+    "YELLOW_ATTRIBUTABLE_PUBLIC_OR_AGGREGATOR_READONLY",
     "ORANGE_AUTHORIZED_LOCAL_OR_MANUAL_EXPORT",
     "ORANGE_PRC_FIXED_RUNNER_OR_DEDICATED_CONNECTOR",
     "LEGAL_ACCESS_UNAVAILABLE_OR_DATA_INSUFFICIENT"
   ],
-  "assurance_statement": "Low-risk official and public channels remain efficient and are not burdened with authenticated-backend controls. Higher-risk channels receive progressively stronger controls. Red channels remain prohibited. No tier guarantees zero legal or operational risk."
+  "assurance_statement": "PRC-specific strict controls are activated only for activity that is reasonably attributable to the user's real-name or identity-linked records and presents material legal or account risk. Anonymous public PRC sources use the global operational baseline. Red capabilities remain prohibited globally. No tier guarantees zero legal or operational risk."
 }
