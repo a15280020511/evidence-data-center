@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - "api-center/information-tool-radar/catalog-domains.json"
       - "api-center/information-tool-radar/full_book_text_probe.py"
       - "api-center/information-tool-radar/test_full_book_text_probe.py"
       - "api-center/information-tool-radar/lawful_book_reader.py"
@@ -12,6 +13,7 @@ on:
   push:
     branches: [main]
     paths:
+      - "api-center/information-tool-radar/catalog-domains.json"
       - "api-center/information-tool-radar/full_book_text_probe.py"
       - "api-center/information-tool-radar/test_full_book_text_probe.py"
       - "api-center/information-tool-radar/lawful_book_reader.py"
