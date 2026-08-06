@@ -12,7 +12,11 @@
       "required_for_gate": true,
       "category": "present_web",
       "index_catalog": "https://index.commoncrawl.org/collinfo.json",
-      "probe_domains": ["openalex.org", "datacite.org", "modelcontextprotocol.io"]
+      "probe_domains": [
+        "openalex.org",
+        "datacite.org",
+        "modelcontextprotocol.io"
+      ]
     },
     "wayback": {
       "enabled": true,
@@ -20,7 +24,11 @@
       "category": "historical_web",
       "endpoint": "https://web.archive.org/cdx/search/cdx",
       "fallback_endpoint": "https://arquivo.pt/wayback/cdx",
-      "probe_domains": ["openalex.org", "datacite.org", "modelcontextprotocol.io"]
+      "probe_domains": [
+        "openalex.org",
+        "datacite.org",
+        "modelcontextprotocol.io"
+      ]
     },
     "gdelt": {
       "enabled": true,
@@ -28,7 +36,9 @@
       "category": "global_events",
       "endpoint": "https://api.gdeltproject.org/api/v2/doc/doc",
       "fallback_feed": "https://data.gdeltproject.org/gdeltv3/web/ngrams/LASTUPDATE.TXT",
-      "queries": ["artificial intelligence"]
+      "queries": [
+        "artificial intelligence"
+      ]
     },
     "reliefweb": {
       "enabled": true,
@@ -43,22 +53,47 @@
       "category": "multilingual_entities",
       "request_delay_seconds": 0.4,
       "maxlag": 5,
-      "languages": ["en", "zh", "ja", "ko", "fr", "es", "de", "pt", "ru", "ar", "hi", "id"]
+      "languages": [
+        "en",
+        "zh",
+        "ja",
+        "ko",
+        "fr",
+        "es",
+        "de",
+        "pt",
+        "ru",
+        "ar",
+        "hi",
+        "id"
+      ]
     },
     "datacite": {
       "enabled": true,
       "required_for_gate": false,
       "category": "research_data",
       "endpoint": "https://api.datacite.org/dois",
-      "queries": ["causal inference", "remote sensing", "public procurement", "agent based modeling"],
-      "fallback_parameters": {"resource-type-id": "dataset", "sort": "-updated"}
+      "queries": [
+        "causal inference",
+        "remote sensing",
+        "public procurement",
+        "agent based modeling"
+      ],
+      "fallback_parameters": {
+        "resource-type-id": "dataset",
+        "sort": "-updated"
+      }
     },
     "crossref": {
       "enabled": true,
       "required_for_gate": true,
       "category": "research_data",
       "endpoint": "https://api.crossref.org/works",
-      "queries": ["causal inference", "remote sensing", "agent based modeling"]
+      "queries": [
+        "causal inference",
+        "remote sensing",
+        "agent based modeling"
+      ]
     },
     "pypi": {
       "enabled": true,
@@ -72,9 +107,18 @@
       "category": "software_security",
       "endpoint": "https://api.osv.dev/v1/querybatch",
       "packages": [
-        {"ecosystem": "PyPI", "name": "requests"},
-        {"ecosystem": "PyPI", "name": "numpy"},
-        {"ecosystem": "npm", "name": "axios"}
+        {
+          "ecosystem": "PyPI",
+          "name": "requests"
+        },
+        {
+          "ecosystem": "PyPI",
+          "name": "numpy"
+        },
+        {
+          "ecosystem": "npm",
+          "name": "axios"
+        }
       ]
     },
     "github": {
@@ -89,12 +133,6 @@
         "causal inference",
         "agent based modeling",
         "open data Africa"
-      ],
-      "best_match_max_records": 25,
-      "best_match_queries": [
-        "archive api language:Python",
-        "bibliographic metadata SDK",
-        "digital library catalog API"
       ]
     }
   },
