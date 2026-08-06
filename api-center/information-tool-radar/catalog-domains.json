@@ -5,11 +5,14 @@
   "policy": {
     "https_required": true,
     "fail_closed": true,
+    "no_persisted_domains": true,
+    "resolve_from_wikimedia_each_run": true,
     "automatic_domain_promotion": false,
     "follow_cross_domain_redirects": false,
     "unknown_domains_allowed": false,
-    "minimum_healthy_domains": 1,
-    "domain_change_action": "record-candidate-and-require-governance-review"
+    "minimum_source_score": 3,
+    "maximum_runtime_candidates": 8,
+    "domain_change_action": "resolve-live-from-wikimedia-and-use-transiently"
   },
   "discovery": {
     "candidate_only": true,
@@ -31,44 +34,17 @@
       "annas-archive",
       "annasarchive"
     ],
-    "promotion_action": "open pull request after independent verification"
+    "runtime_action": "rank-current-Wikimedia-candidates-and-probe-search-contract",
+    "persistence": "none"
   },
-  "domains": [
-    {
-      "url": "https://annas-archive.gl",
-      "priority": 10,
-      "enabled": true,
-      "approval_status": "approved",
-      "approval_basis": "manual allowlist and live search contract test",
-      "identity_confidence": "limited",
-      "last_verified_at": "2026-08-06"
-    },
-    {
-      "url": "https://annas-archive.pk",
-      "priority": 20,
-      "enabled": true,
-      "approval_status": "approved",
-      "approval_basis": "manual allowlist and live search contract test",
-      "identity_confidence": "limited",
-      "last_verified_at": "2026-08-06"
-    },
-    {
-      "url": "https://annas-archive.gd",
-      "priority": 30,
-      "enabled": true,
-      "approval_status": "approved",
-      "approval_basis": "manual allowlist and live search contract test",
-      "identity_confidence": "limited",
-      "last_verified_at": "2026-08-06"
-    }
-  ],
+  "domains": [],
   "forbidden_operations": [
+    "persist Anna's Archive domains in repository configuration",
     "install or execute third-party wrapper packages",
     "follow detail or download links",
-    "retrieve book or document files",
+    "retrieve book or document files from Anna's Archive",
     "resolve direct download links",
-    "follow redirects to unapproved domains",
-    "bypass captcha anti-bot access control rate limit or paywall",
-    "automatically approve a newly discovered domain"
+    "follow cross-domain redirects",
+    "bypass captcha anti-bot access control rate limit or paywall"
   ]
 }
