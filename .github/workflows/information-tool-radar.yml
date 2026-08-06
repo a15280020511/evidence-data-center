@@ -57,6 +57,7 @@ jobs:
             api-center/information-tool-radar/incumbent_watch.py \
             api-center/information-tool-radar/sensitive_watch.py \
             api-center/information-tool-radar/blind_discovery_audit.py \
+            api-center/information-tool-radar/annas_strategy_catalog_probe.py \
             api-center/information-tool-radar/test_radar.py \
             api-center/information-tool-radar/test_incumbent_inventory.py \
             api-center/information-tool-radar/test_incumbent_watch.py \
@@ -113,6 +114,13 @@ jobs:
             --output-dir information-tool-radar-artifact \
             --enforce-policy | tee sensitive-watch-run.json
 
+      - name: Probe strategy-related catalog metadata
+        run: |
+          set -o pipefail
+          python api-center/information-tool-radar/annas_strategy_catalog_probe.py \
+            --output information-tool-radar-artifact/annas-strategy-catalog-probe.json \
+            --max-titles 8 | tee annas-strategy-catalog-probe-run.json
+
       - name: Audit generic rediscovery of incumbent tools
         run: |
           set -o pipefail
@@ -144,12 +152,14 @@ jobs:
           python -m json.tool information-tool-radar-run.json >/dev/null
           python -m json.tool blind-discovery-run.json >/dev/null
           python -m json.tool sensitive-watch-run.json >/dev/null
+          python -m json.tool annas-strategy-catalog-probe-run.json >/dev/null
           python -m json.tool incumbent-audit-run.json >/dev/null
           python -m json.tool incumbent-watch-run.json >/dev/null
           python -m json.tool information-tool-radar-artifact/coverage-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/manifest.json >/dev/null
           python -m json.tool information-tool-radar-artifact/blind-discovery-audit.json >/dev/null
           python -m json.tool information-tool-radar-artifact/sensitive-source-watch-report.json >/dev/null
+          python -m json.tool information-tool-radar-artifact/annas-strategy-catalog-probe.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-inventory.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-audit-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-watch-report.json >/dev/null
@@ -158,6 +168,7 @@ jobs:
           test -s information-tool-radar-artifact/coverage-report.md
           test -s information-tool-radar-artifact/candidates.jsonl
           test -s information-tool-radar-artifact/sensitive-source-watch-candidates.jsonl
+          test -s information-tool-radar-artifact/annas-strategy-catalog-probe.json
           test -s information-tool-radar-artifact/incumbent-audit-report.md
           test -s information-tool-radar-artifact/incumbent-watch-report.md
           test -s information-tool-radar-artifact/incumbent-candidates.jsonl
@@ -176,6 +187,7 @@ jobs:
             information-tool-radar-run.json
             blind-discovery-run.json
             sensitive-watch-run.json
+            annas-strategy-catalog-probe-run.json
             incumbent-audit-run.json
             incumbent-watch-run.json
             information-tool-radar-artifact/
