@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Download and extract text from lawfully accessible PDF books.
 
-This module extends the existing lawful-book policy rather than creating a second
-unrestricted downloader. Remote PDF retrieval is limited to hosts explicitly
-approved in ``lawful-book-sources.json`` through ``pdf_formats`` and requires a
-public-domain or open-license attestation. User-provided local PDFs require an
-explicit lawful-possession attestation.
+This module extends the existing lawful-book policy. Remote PDF retrieval is
+limited to hosts explicitly approved in ``lawful-book-sources.json`` through
+``pdf_formats`` and requires a public-domain or open-license attestation.
+User-provided local PDFs require an explicit lawful-possession attestation.
 
 The reader never visits Anna's Archive detail pages, never resolves Anna download
 links, never bypasses access controls, and never accepts an unknown remote host.
@@ -29,7 +28,7 @@ import lawful_book_reader as base
 try:
     from pypdf import PdfReader
     from pypdf.errors import PdfReadError
-except ImportError as exc:  # pragma: no cover - exercised by deployment validation
+except ImportError as exc:  # pragma: no cover
     raise RuntimeError(
         "pypdf is required; install api-center/information-tool-radar/"
         "book-reader-requirements.txt"
@@ -43,7 +42,11 @@ ACTIVE_ACTION_TYPES = {
     "/SubmitForm",
     "/ImportData",
     "/GoToR",
+    "/Rendition",
+    "/Sound",
+    "/Movie",
 }
+BENIGN_ACTION_TYPES = {"/GoTo"}
 DEFAULT_MAX_PAGES = 2_000
 DEFAULT_MAX_BYTES = 25_000_000
 DEFAULT_MAX_CHARS = 500_000
@@ -70,7 +73,9 @@ def _mapping(value: Any) -> Mapping[str, Any]:
 
 def _sequence(value: Any) -> Sequence[Any]:
     candidate = _deref(value)
-    if isinstance(candidate, Sequence) and not isinstance(candidate, (str, bytes, bytearray)):
+    if isinstance(candidate, Sequence) and not isinstance(
+        candidate, (str, bytes, bytearray)
+    ):
         return candidate
     return ()
 
@@ -184,7 +189,7 @@ def _outline_entries(items: Any, level: int = 1) -> list[dict[str, Any]]:
             return
         if isinstance(value, list):
             for child in value:
-                visit(child, min(depth + 1, 20))
+                visit(child, depth)
             return
         title = getattr(value, "title", "")
         if title:
@@ -196,12 +201,42 @@ def _outline_entries(items: Any, level: int = 1) -> list[dict[str, Any]]:
     return output[:500]
 
 
+def _classify_action(value: Any, context: str) -> tuple[list[str], bool]:
+    """Return safety findings and whether a benign view action was observed."""
+    candidate = _deref(value)
+    if candidate is None:
+        return [], False
+
+    # PDF destinations are commonly arrays such as [page /Fit]. They only choose
+    # the initial view and do not execute code, access a network, or launch a file.
+    if _sequence(candidate):
+        return [], True
+
+    if isinstance(candidate, Mapping):
+        action_type = str(candidate.get("/S") or "")
+        if action_type in BENIGN_ACTION_TYPES:
+            return [], True
+        if action_type in ACTIVE_ACTION_TYPES:
+            return [f"{context} contains forbidden action {action_type}"], False
+        if action_type:
+            return [f"{context} contains unapproved action {action_type}"], False
+        return [f"{context} contains an unclassified action dictionary"], False
+
+    return [f"{context} contains an unclassified action object"], False
+
+
 def inspect_pdf_safety(reader: PdfReader) -> dict[str, Any]:
-    """Reject active content and embedded payloads before text extraction."""
+    """Reject executable/external actions and embedded payloads before extraction."""
     findings: list[str] = []
+    benign_view_actions = 0
     root = _mapping(reader.trailer.get("/Root"))
+
     if "/OpenAction" in root:
-        findings.append("document OpenAction is forbidden")
+        action_findings, benign = _classify_action(
+            root.get("/OpenAction"), "document OpenAction"
+        )
+        findings.extend(action_findings)
+        benign_view_actions += int(benign)
     if "/AA" in root:
         findings.append("document additional actions are forbidden")
 
@@ -226,19 +261,23 @@ def inspect_pdf_safety(reader: PdfReader) -> dict[str, Any]:
                 findings.append("annotation count exceeds safety limit")
                 break
             annotation_map = _mapping(annotation)
-            action = _mapping(annotation_map.get("/A"))
-            action_type = str(action.get("/S") or "")
-            if action_type in ACTIVE_ACTION_TYPES:
-                findings.append(
-                    f"page {page_number} contains forbidden action {action_type}"
-                )
+            if "/A" not in annotation_map:
+                continue
+            action_findings, benign = _classify_action(
+                annotation_map.get("/A"), f"page {page_number} annotation"
+            )
+            findings.extend(action_findings)
+            benign_view_actions += int(benign)
         if findings or annotations_examined > 20_000:
             break
 
     return {
         "active_content_rejected": True,
+        "external_actions_rejected": True,
         "embedded_files_rejected": True,
         "encrypted_pdf_rejected": True,
+        "benign_view_destinations_allowed": True,
+        "benign_view_actions_observed": benign_view_actions,
         "annotations_examined": annotations_examined,
         "findings": findings,
         "passed": not findings,
@@ -246,7 +285,10 @@ def inspect_pdf_safety(reader: PdfReader) -> dict[str, Any]:
 
 
 def _normalize_page_text(value: str) -> str:
-    lines = [line.rstrip() for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
+    lines = [
+        line.rstrip()
+        for line in value.replace("\r\n", "\n").replace("\r", "\n").split("\n")
+    ]
     return "\n".join(lines).strip()
 
 
@@ -293,32 +335,39 @@ def parse_pdf(
     full_parts: list[str] = []
     page_records: list[dict[str, Any]] = []
     total_text_observed = 0
+    selected_text_characters = 0
     pages_with_text = 0
     remaining = max_chars
+
     for page_number, page in enumerate(reader.pages, start=1):
         try:
             extracted = page.extract_text() or ""
         except Exception as exc:
-            raise ValueError(f"PDF text extraction failed on page {page_number}: {exc}") from exc
+            raise ValueError(
+                f"PDF text extraction failed on page {page_number}: {exc}"
+            ) from exc
         normalized = _normalize_page_text(extracted)
-        if normalized:
-            pages_with_text += 1
-            total_text_observed += len(normalized)
-            if len(page_records) < 200:
-                page_records.append(
-                    {
-                        "page": page_number,
-                        "text_excerpt": normalized[:1_000],
-                        "characters": len(normalized),
-                    }
-                )
-            if remaining > 0:
-                selected = normalized[:remaining]
-                full_parts.append(selected)
-                remaining -= len(selected)
+        if not normalized:
+            continue
+
+        pages_with_text += 1
+        total_text_observed += len(normalized)
+        if len(page_records) < 200:
+            page_records.append(
+                {
+                    "page": page_number,
+                    "text_excerpt": normalized[:1_000],
+                    "characters": len(normalized),
+                }
+            )
+        if remaining > 0:
+            selected = normalized[:remaining]
+            full_parts.append(selected)
+            selected_text_characters += len(selected)
+            remaining -= len(selected)
 
     content_text = "\n\n".join(full_parts)[:max_chars]
-    content_truncated = total_text_observed > len(content_text)
+    content_truncated = total_text_observed > selected_text_characters
     return {
         "metadata": metadata,
         "toc": toc,
@@ -357,7 +406,9 @@ def run_pdf_reader(
     if bool(url) == bool(file_path):
         policy_errors.append("provide exactly one of URL or local PDF")
     if url and rights_basis not in base.REMOTE_RIGHTS_BASES:
-        policy_errors.append("remote PDF retrieval requires public-domain or open-license basis")
+        policy_errors.append(
+            "remote PDF retrieval requires public-domain or open-license basis"
+        )
     if file_path and rights_basis != "user-provided":
         policy_errors.append("local PDFs require user-provided rights basis")
     if url:
@@ -420,7 +471,9 @@ def run_pdf_reader(
             if url and urllib.parse.urlparse(url).hostname
             else None
         ),
-        "source_policy": dict(source_record) if source_record else {"type": "user-provided"},
+        "source_policy": (
+            dict(source_record) if source_record else {"type": "user-provided"}
+        ),
         "format": PDF_FORMAT,
         "content_type": content_type,
         "downloaded_bytes": len(payload),
@@ -458,7 +511,9 @@ def main() -> int:
     source = parser.add_mutually_exclusive_group(required=True)
     source.add_argument("--url")
     source.add_argument("--file", type=Path)
-    parser.add_argument("--rights-basis", required=True, choices=sorted(base.RIGHTS_BASES))
+    parser.add_argument(
+        "--rights-basis", required=True, choices=sorted(base.RIGHTS_BASES)
+    )
     parser.add_argument("--rights-note", required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--text-output", type=Path)
@@ -498,7 +553,9 @@ def main() -> int:
 
     if args.text_output and report.get("status") == "pass":
         args.text_output.parent.mkdir(parents=True, exist_ok=True)
-        args.text_output.write_text(str(report.get("content_text") or ""), encoding="utf-8")
+        args.text_output.write_text(
+            str(report.get("content_text") or ""), encoding="utf-8"
+        )
         report["text_output"] = str(args.text_output)
 
     base.save_json(args.output, report)
@@ -510,7 +567,9 @@ def main() -> int:
                 "downloaded_bytes": report.get("downloaded_bytes", 0),
                 "pages": report.get("page_count", 0),
                 "pages_with_text": report.get("pages_with_text", 0),
-                "content_chars_extracted": report.get("content_chars_extracted", 0),
+                "content_chars_extracted": report.get(
+                    "content_chars_extracted", 0
+                ),
                 "content_complete": report.get("content_complete", False),
                 "file_retained": report.get("file_retained", False),
             },
