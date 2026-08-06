@@ -1,5 +1,5 @@
 {
-  "schema_version": "intelligence-tool-admission-v2",
+  "schema_version": "intelligence-tool-admission-v3",
   "policy_status": "production",
   "legal_compliance_baseline": {
     "jurisdiction": "PRC_MAINLAND",
@@ -8,6 +8,7 @@
     "foreign_provider_terms_are_operational_constraints": true,
     "zero_risk_guarantee_prohibited": true
   },
+  "source_server_footprint_policy": "source-server-footprint-policy.json",
   "default_decision": "REJECTED",
   "principle": "audit_then_contain_then_admit",
   "continuity_principle": "preserve_legal_capability_via_safe_fallbacks",
@@ -43,14 +44,22 @@
     "independent_disable_and_rollback": true,
     "prc_mainland_legal_risk_statement": true,
     "license_and_account_scope_record": true,
-    "cross_border_data_classification_gate": true
+    "cross_border_data_classification_gate": true,
+    "source_server_visible_footprint_record": true,
+    "approved_egress_class": true,
+    "account_primary_origin_binding": true,
+    "cross_tool_source_budget": true,
+    "cross_tool_source_circuit_breaker": true,
+    "stable_non_rotating_client_identity": true,
+    "foreign_cloud_authenticated_backend_gate": true
   },
   "continuity_fallback_order": [
     "official_read_only_api",
     "official_export_sftp_or_licensed_mirror",
     "fixed_public_web_read_only_rendering",
-    "dedicated_authorized_backend_read_only_connector",
-    "approved_private_fixed_cloud_browser_flow",
+    "authorized_local_or_manual_export",
+    "prc_fixed_runner",
+    "dedicated_authorized_backend_read_only_connector_when_provider_explicitly_allows",
     "legal_access_unavailable_or_data_insufficient_receipt"
   ],
   "existing_tool_transition": {
@@ -62,7 +71,9 @@
       "parameter_allowlist",
       "secret_isolation",
       "no_evasion_capability",
-      "no_general_personal_or_important_data_cross_border_flow"
+      "no_general_personal_or_important_data_cross_border_flow",
+      "source_side_footprint_documented",
+      "no_cross_origin_retry_after_denial"
     ],
     "immediate_capability_disable_triggers": [
       "arbitrary_code",
@@ -72,7 +83,10 @@
       "full_account_permissions",
       "write_or_transaction_capability",
       "unbounded_collection",
-      "general_personal_or_important_data_cross_border_flow"
+      "general_personal_or_important_data_cross_border_flow",
+      "foreign_cloud_authenticated_prc_backend_without_explicit_permission",
+      "cross_tool_or_cross_origin_denial_bypass",
+      "automatic_429_retry"
     ],
     "quarantine_when_safe_subcapability_cannot_be_isolated": true
   },
@@ -91,11 +105,17 @@
     "community_actor_with_credentials",
     "full_account_permissions",
     "residential_proxy",
+    "proxy_pool",
+    "random_egress_ip",
     "captcha_solving",
     "automatic_unblock",
     "browser_fingerprint_evasion",
+    "tls_fingerprint_evasion",
+    "user_agent_rotation",
+    "false_x_forwarded_for",
     "credential_harvesting",
     "hidden_endpoint_scanning",
+    "private_mobile_api_reverse_engineering",
     "vulnerability_scanning",
     "write_operations",
     "form_submission",
@@ -109,7 +129,10 @@
     "raw_data_resale",
     "personal_data_in_general_cross_border_flow",
     "important_data_in_general_cross_border_flow",
-    "restricted_geospatial_data_in_general_cross_border_flow"
+    "restricted_geospatial_data_in_general_cross_border_flow",
+    "authenticated_prc_backend_via_foreign_cloud_without_explicit_permission",
+    "cross_tool_denial_bypass",
+    "cross_origin_retry_after_denial"
   ],
   "hard_stop_rules": {
     "401": "AUTHORIZATION_DENIED",
@@ -118,6 +141,8 @@
     "captcha": "TECHNICAL_MEASURE_ENCOUNTERED",
     "waf": "TECHNICAL_MEASURE_ENCOUNTERED",
     "block_page": "TECHNICAL_MEASURE_ENCOUNTERED",
+    "account_security_alert": "ACCOUNT_AUTOMATION_STOPPED",
+    "provider_complaint_or_notice": "SOURCE_QUARANTINED",
     "personal_data_detected": "DATA_CLASSIFICATION_BLOCKED",
     "credential_detected": "DATA_CLASSIFICATION_BLOCKED",
     "secret_detected": "DATA_CLASSIFICATION_BLOCKED",
@@ -132,6 +157,8 @@
     "rotate_account_after_denial",
     "change_cookie_after_denial",
     "change_headers_after_denial",
+    "rotate_user_agent_after_denial",
+    "switch_execution_provider_after_denial",
     "proxy_fallback_after_denial",
     "multi_account_quota_aggregation",
     "multi_key_quota_aggregation"
@@ -142,10 +169,12 @@
       "limited_permissions",
       "fixed_domain_allowlist",
       "fixed_read_only_flow",
+      "public_no_login_pages_by_default",
       "max_concurrency_1",
       "bounded_pages",
       "bounded_runtime",
       "bounded_cost",
+      "stable_user_agent",
       "task_scoped_storage",
       "complete_audit_and_cleanup"
     ],
@@ -156,10 +185,14 @@
       "community_actor_credentials",
       "full_permissions",
       "residential_proxy",
+      "proxy_pool",
       "captcha_actor",
       "unblock_actor",
+      "user_agent_rotation",
+      "fingerprint_evasion",
       "arbitrary_webhook",
-      "denial_evasion_retry"
+      "denial_evasion_retry",
+      "authenticated_prc_backend_without_explicit_provider_permission"
     ]
   },
   "required_admission_evidence": [
@@ -170,8 +203,13 @@
     "parameter_and_response_contracts",
     "license_and_account_scope",
     "secret_isolation",
+    "source_visible_footprint_documented",
+    "egress_class_and_account_binding",
+    "cross_tool_global_source_budget",
+    "source_side_audit_receipt",
     "negative_capability_tests",
     "hard_stop_tests",
+    "no_cross_origin_denial_bypass_tests",
     "data_classification_tests",
     "cross_border_data_classification_test",
     "quota_cost_timeout_tests",
@@ -183,14 +221,15 @@
     "upstream_domain_change",
     "api_version_change",
     "terms_or_license_change",
+    "provider_ip_or_region_access_policy_change",
     "pricing_or_quota_change",
     "new_cookie_proxy_script_write_or_webhook_capability",
     "personal_secret_important_or_restricted_geospatial_data_returned",
-    "401_403_429_waf_block_or_complaint",
+    "401_403_429_waf_block_account_alert_or_complaint",
     "maintainer_or_ownership_change",
     "dependency_supply_chain_change",
     "internal_to_external_or_commercial_use_change"
   ],
   "catalog_admission_rule": "Only PASS tools in PRODUCTION_SAFE_READONLY or approved CONTROLLED_SPECIAL_USE may enter new GPT exposure. Existing eligible tools may remain PROVISIONAL_SAFE_READONLY during non-disruptive review.",
-  "assurance_statement": "Controls reduce foreseeable PRC-mainland legal and security risk to a reasonably low and auditable level; they do not guarantee zero risk or zero operational impact."
+  "assurance_statement": "Controls reduce foreseeable PRC-mainland legal, source-server and security risk to a reasonably low and auditable level; they do not guarantee zero risk or zero operational impact."
 }
