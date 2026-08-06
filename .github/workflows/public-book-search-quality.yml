@@ -1,0 +1,109 @@
+name: Unified Public Book Search Quality
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "api-center/information-tool-radar/public_book_search.py"
+      - "api-center/information-tool-radar/public_book_search_cli.py"
+      - "api-center/information-tool-radar/public-book-search-sources.json"
+      - "api-center/information-tool-radar/test_public_book_search.py"
+      - "api-center/information-tool-radar/test_public_book_search_cli.py"
+      - ".github/workflows/public-book-search-quality.yml"
+  push:
+    branches: [main]
+    paths:
+      - "api-center/information-tool-radar/public_book_search.py"
+      - "api-center/information-tool-radar/public_book_search_cli.py"
+      - "api-center/information-tool-radar/public-book-search-sources.json"
+      - "api-center/information-tool-radar/test_public_book_search.py"
+      - "api-center/information-tool-radar/test_public_book_search_cli.py"
+      - ".github/workflows/public-book-search-quality.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-book-search-quality-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout current ref
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Compile and test production filter
+        working-directory: api-center/information-tool-radar
+        run: |
+          set -o pipefail
+          python -m py_compile \
+            public_book_search.py \
+            public_book_search_cli.py \
+            test_public_book_search.py \
+            test_public_book_search_cli.py
+          python test_public_book_search.py | tee ../../public-book-search-engine-unit.json
+          python test_public_book_search_cli.py | tee ../../public-book-search-quality-unit.json
+
+      - name: Run real production entry
+        run: |
+          set -o pipefail
+          mkdir -p public-book-search-quality-artifact
+          python api-center/information-tool-radar/public_book_search_cli.py \
+            --registry api-center/information-tool-radar/public-book-search-sources.json \
+            --query "Alice in Wonderland" \
+            --limit 5 \
+            --output public-book-search-quality-artifact/report.json \
+            --enforce | tee public-book-search-quality-run.json
+
+      - name: Enforce record quality and safety
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+          from urllib.parse import urlparse
+
+          report = json.loads(Path("public-book-search-quality-artifact/report.json").read_text(encoding="utf-8"))
+          assert report["status"] == "pass", report
+          assert report["successful_source_count"] == 4, report
+          assert report["source_side_hard_stop_count"] == 0, report
+          assert report["safety"]["automatic_retries_allowed"] is False, report
+          assert report["safety"]["redirects_allowed"] is False, report
+          assert report["safety"]["anna_archive_downloads_allowed"] is False, report
+          assert report["safety"]["access_control_bypass_allowed"] is False, report
+
+          gutenberg = [item for item in report["results"] if item["source_id"] == "project-gutenberg"]
+          assert gutenberg, report
+          seen = set()
+          for item in gutenberg:
+              assert item["title"].casefold() != "subjects", item
+              ebook_id = str(item.get("provider_record_id") or "")
+              assert re.fullmatch(r"\d+", ebook_id), item
+              assert ebook_id not in seen, item
+              seen.add(ebook_id)
+              assert item["catalog_url"] == f"https://www.gutenberg.org/ebooks/{ebook_id}", item
+              for location in item.get("readable_locations") or []:
+                  assert location["declared_by"] == "official-opds", location
+                  assert urlparse(location["url"]).hostname in {"gutenberg.org", "www.gutenberg.org"}, location
+          PY
+
+      - name: Upload quality evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: public-book-search-quality-${{ github.run_id }}
+          path: |
+            public-book-search-engine-unit.json
+            public-book-search-quality-unit.json
+            public-book-search-quality-run.json
+            public-book-search-quality-artifact/
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,0 +1,131 @@
+name: Unified Public Book Search
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: "Book title, author, or keyword"
+        required: true
+        default: "Alice in Wonderland"
+        type: string
+      limit:
+        description: "Maximum results per source"
+        required: true
+        default: "5"
+        type: choice
+        options:
+          - "3"
+          - "5"
+          - "10"
+  pull_request:
+    paths:
+      - "api-center/information-tool-radar/public_book_search.py"
+      - "api-center/information-tool-radar/public-book-search-sources.json"
+      - "api-center/information-tool-radar/test_public_book_search.py"
+      - "api-center/information-tool-radar/public-book-source-coverage.json"
+      - "api-center/information-tool-radar/CATALOG_DISCOVERY_AND_READING.md"
+      - ".github/workflows/public-book-search.yml"
+  push:
+    branches: [main]
+    paths:
+      - "api-center/information-tool-radar/public_book_search.py"
+      - "api-center/information-tool-radar/public-book-search-sources.json"
+      - "api-center/information-tool-radar/test_public_book_search.py"
+      - "api-center/information-tool-radar/public-book-source-coverage.json"
+      - "api-center/information-tool-radar/CATALOG_DISCOVERY_AND_READING.md"
+      - ".github/workflows/public-book-search.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: unified-public-book-search-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  search:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      SEARCH_QUERY: ${{ github.event.inputs.query || 'Alice in Wonderland' }}
+      SEARCH_LIMIT: ${{ github.event.inputs.limit || '5' }}
+    steps:
+      - name: Checkout current ref
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Compile and run deterministic tests
+        working-directory: api-center/information-tool-radar
+        run: |
+          set -o pipefail
+          python -m py_compile public_book_search.py test_public_book_search.py
+          python test_public_book_search.py | tee ../../public-book-search-unit.json
+
+      - name: Run bounded live unified search
+        run: |
+          set -o pipefail
+          mkdir -p public-book-search-artifact
+          python api-center/information-tool-radar/public_book_search.py \
+            --registry api-center/information-tool-radar/public-book-search-sources.json \
+            --query "$SEARCH_QUERY" \
+            --limit "$SEARCH_LIMIT" \
+            --output public-book-search-artifact/report.json \
+            --enforce | tee public-book-search-run.json
+
+      - name: Validate evidence and source-side controls
+        run: |
+          python -m json.tool public-book-search-unit.json >/dev/null
+          python -m json.tool public-book-search-run.json >/dev/null
+          python -m json.tool public-book-search-artifact/report.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from urllib.parse import urlparse
+
+          report = json.loads(Path("public-book-search-artifact/report.json").read_text(encoding="utf-8"))
+          assert report["status"] == "pass", report
+          assert report["source_count"] == 4, report
+          assert report["successful_source_count"] >= 3, report
+          assert report["safety"]["requests_per_source_max"] == 1, report
+          assert report["safety"]["automatic_retries_allowed"] is False, report
+          assert report["safety"]["redirects_allowed"] is False, report
+          assert report["safety"]["anna_archive_downloads_allowed"] is False, report
+          assert report["safety"]["access_control_bypass_allowed"] is False, report
+          assert report["safety"]["minimum_interval_seconds"] == 10.0, report
+          allowed_hosts = {
+              "www.gutenberg.org",
+              "gutenberg.org",
+              "standardebooks.org",
+              "en.wikisource.org",
+              "zh.wikisource.org",
+          }
+          for source in report["sources"]:
+              assert source["request_count"] <= 1, source
+              assert source["automatic_retry_count"] == 0, source
+              if source.get("source_side_hard_stop"):
+                  assert source.get("http_status") in {401, 403, 429}, source
+          for result in report["results"]:
+              catalog_url = result.get("catalog_url")
+              if catalog_url:
+                  assert urlparse(catalog_url).scheme == "https", result
+                  assert urlparse(catalog_url).hostname in allowed_hosts, result
+              for location in result.get("readable_locations") or []:
+                  assert location.get("declared_by") in {"official-opds", "mediawiki-page"}, location
+                  assert urlparse(location["url"]).hostname in allowed_hosts, location
+          PY
+
+      - name: Upload unified-search evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: public-book-search-${{ github.run_id }}
+          path: |
+            public-book-search-unit.json
+            public-book-search-run.json
+            public-book-search-artifact/
+          if-no-files-found: warn
+          retention-days: 7

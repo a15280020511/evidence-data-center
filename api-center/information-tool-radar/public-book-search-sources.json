@@ -1,0 +1,72 @@
+{
+  "schema_version": "public-book-search-sources-v1",
+  "policy": {
+    "https_required": true,
+    "unknown_sources_allowed": false,
+    "redirects_allowed": false,
+    "automatic_retries_allowed": false,
+    "requests_per_source_max": 1,
+    "source_concurrency_max": 1,
+    "source_side_hard_stop_http": [401, 403, 429],
+    "query_length_max": 200,
+    "results_per_source_max": 20,
+    "minimum_interval_seconds": 10,
+    "direct_file_links_must_be_provider_declared": true,
+    "anna_archive_downloads_allowed": false,
+    "access_control_bypass_allowed": false
+  },
+  "sources": [
+    {
+      "source_id": "project-gutenberg",
+      "display_name": "Project Gutenberg",
+      "enabled": true,
+      "access_class": "OFFICIAL_API_CLOUD",
+      "host": "www.gutenberg.org",
+      "endpoint": "https://www.gutenberg.org/ebooks/search.opds/",
+      "parser": "opds-atom",
+      "query_parameter": "query",
+      "rights_basis": "public-domain-us",
+      "result_policy": "official-opds-declared-locations",
+      "documentation": "https://www.gutenberg.org/ebooks/offline_catalogs.html"
+    },
+    {
+      "source_id": "standard-ebooks",
+      "display_name": "Standard Ebooks",
+      "enabled": true,
+      "access_class": "PUBLIC_WEB_CLOUD",
+      "host": "standardebooks.org",
+      "endpoint": "https://standardebooks.org/ebooks",
+      "parser": "standard-ebooks-html",
+      "query_parameter": "query",
+      "rights_basis": "public-domain-us-and-cc0-project-work",
+      "result_policy": "landing-pages-only",
+      "documentation": "https://standardebooks.org/feeds"
+    },
+    {
+      "source_id": "wikisource-en",
+      "display_name": "English Wikisource",
+      "enabled": true,
+      "access_class": "OFFICIAL_API_CLOUD",
+      "host": "en.wikisource.org",
+      "endpoint": "https://en.wikisource.org/w/api.php",
+      "parser": "mediawiki-search-json",
+      "language": "en",
+      "rights_basis": "item-rights-and-cc-by-sa",
+      "result_policy": "wiki-page-locations",
+      "documentation": "https://www.mediawiki.org/wiki/API:Search"
+    },
+    {
+      "source_id": "wikisource-zh",
+      "display_name": "中文维基文库",
+      "enabled": true,
+      "access_class": "OFFICIAL_API_CLOUD",
+      "host": "zh.wikisource.org",
+      "endpoint": "https://zh.wikisource.org/w/api.php",
+      "parser": "mediawiki-search-json",
+      "language": "zh",
+      "rights_basis": "item-rights-and-cc-by-sa",
+      "result_policy": "wiki-page-locations",
+      "documentation": "https://www.mediawiki.org/wiki/API:Search"
+    }
+  ]
+}
