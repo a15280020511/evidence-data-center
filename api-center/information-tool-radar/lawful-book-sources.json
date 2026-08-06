@@ -7,7 +7,8 @@
     "anna_archive_downloads_allowed": false,
     "rights_attestation_required": true,
     "maximum_download_bytes": 25000000,
-    "maximum_extracted_characters": 500000
+    "maximum_extracted_characters": 500000,
+    "maximum_pdf_pages": 2000
   },
   "sources": [
     {
@@ -56,6 +57,14 @@
       "allow_subdomains": false,
       "rights_bases": ["public-domain", "open-license"],
       "formats": ["epub", "html", "xhtml", "txt"],
+      "pdf_formats": ["pdf"],
+      "pdf_requirements": {
+        "item_level_rights_attestation_required": true,
+        "encrypted_pdf_allowed": false,
+        "active_content_allowed": false,
+        "embedded_files_allowed": false,
+        "text_layer_may_be_required_by_task": true
+      },
       "approval_basis": "Wikimedia-hosted files with item-level public-domain or open-license attestation"
     }
   ]
