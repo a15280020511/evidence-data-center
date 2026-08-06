@@ -1,20 +1,14 @@
 {
   "schema_version": "prc-attributable-legal-risk-registry-v1",
   "status": "production-control",
-  "policy": "Every PRC-mainland collection path that uses a user-linked real-name account, API credential, paid membership, session or provider audit trail must pass a legal-risk preflight before any secret is injected or any upstream request is sent.",
+  "policy": "Every PRC-mainland collection path using a user-linked real-name account, API credential, paid entitlement, session or provider audit trail must pass legal-risk preflight before any provider secret is injected or any upstream request is sent.",
   "unknown_classification_action": "REVIEW_REQUIRED",
-  "approved_decisions": [
-    "NOT_APPLICABLE",
-    "ALLOW_WITH_CONTROLS"
-  ],
-  "blocked_decisions": [
-    "REVIEW_REQUIRED",
-    "BLOCK"
-  ],
+  "approved_decisions": ["NOT_APPLICABLE", "ALLOW_WITH_CONTROLS"],
+  "blocked_decisions": ["REVIEW_REQUIRED", "BLOCK"],
   "global_required_controls": [
     "official_or_explicitly_authorized_access",
     "fixed_readonly_operation",
-    "backend_secret_injection_only",
+    "backend_secret_injection_only_after_audit",
     "bounded_requests_runtime_response_and_cost",
     "provider_quota_and_terms_enforcement",
     "hard_stop_on_401_403_429_captcha_waf_or_account_alert",
@@ -25,6 +19,7 @@
   ],
   "providers": {
     "yuandian": {
+      "secret_environment_variables": ["YUANDIAN_API_KEY"],
       "prc_nexus": true,
       "identity_attributable": true,
       "identity_signals": ["user_linked_api_key"],
@@ -36,6 +31,7 @@
       "automatic_decision": "ALLOW_WITH_CONTROLS"
     },
     "tushare": {
+      "secret_environment_variables": ["TUSHARE_API_TOKEN"],
       "prc_nexus": true,
       "identity_attributable": true,
       "identity_signals": ["user_linked_api_token"],
@@ -47,6 +43,7 @@
       "automatic_decision": "ALLOW_WITH_CONTROLS"
     },
     "baidu-ai-cloud": {
+      "secret_environment_variables": ["BAIDU_AI_CLOUD_API_KEY"],
       "prc_nexus": true,
       "identity_attributable": true,
       "identity_signals": ["user_linked_cloud_api_key", "cloud_account_record"],
@@ -58,6 +55,7 @@
       "automatic_decision": "ALLOW_WITH_CONTROLS"
     },
     "qweather": {
+      "secret_environment_variables": ["QWEATHER_API_KEY"],
       "prc_nexus": true,
       "identity_attributable": true,
       "identity_signals": ["user_linked_api_key", "dedicated_api_host"],
@@ -69,6 +67,7 @@
       "automatic_decision": "ALLOW_WITH_CONTROLS"
     },
     "aifin-market": {
+      "secret_environment_variables": ["WIND_API_KEY"],
       "prc_nexus": true,
       "identity_attributable": true,
       "identity_signals": ["user_linked_wind_api_key"],
@@ -80,6 +79,7 @@
       "automatic_decision": "ALLOW_WITH_CONTROLS"
     },
     "tianyancha": {
+      "secret_environment_variables": ["TIANYANCHA_API_TOKEN"],
       "prc_nexus": true,
       "identity_attributable": true,
       "identity_signals": ["user_linked_api_token", "commercial_account_record"],
@@ -91,6 +91,7 @@
       "automatic_decision": "ALLOW_WITH_CONTROLS"
     },
     "miaoxiang": {
+      "secret_environment_variables": ["MX_APIKEY"],
       "prc_nexus": true,
       "identity_attributable": true,
       "identity_signals": ["user_linked_api_key"],
@@ -102,6 +103,7 @@
       "automatic_decision": "ALLOW_WITH_CONTROLS"
     },
     "miaoxiang-mcp": {
+      "secret_environment_variables": ["EM_API_KEY"],
       "prc_nexus": true,
       "identity_attributable": true,
       "identity_signals": ["user_linked_api_key"],
@@ -116,12 +118,12 @@
   "workflows": {
     ".github/workflows/yuandian-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "yuandian", "ticket_path": "yuandian-artifacts/ticket.json"},
     ".github/workflows/tushare-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "tushare", "ticket_path": "tushare-artifacts/ticket.json"},
-    ".github/workflows/baidu-ai-cloud-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "baidu-ai-cloud", "ticket_path": "baidu-ai-cloud-artifacts/ticket.json"},
+    ".github/workflows/baidu-ai-cloud-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "baidu-ai-cloud", "ticket_path": "baidu-ai-artifacts/ticket.json"},
     ".github/workflows/qweather-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "qweather", "ticket_path": "qweather-artifacts/ticket.json"},
     ".github/workflows/aifin-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "aifin-market", "ticket_path": "aifin-artifacts/ticket.json"},
     ".github/workflows/miaoxiang-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "miaoxiang", "ticket_path": "miaoxiang-artifacts/ticket.json"},
     ".github/workflows/miaoxiang-mcp-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "miaoxiang-mcp", "ticket_path": "miaoxiang-mcp-artifacts/ticket.json"},
-    ".github/workflows/company-intelligence-api-ticket.yml": {"provider_selection": "ticket", "provider_ids": ["tianyancha", "miaoxiang"], "ticket_path": "company-intelligence-artifacts/ticket.json"}
+    ".github/workflows/company-intelligence-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "tianyancha", "ticket_path": "company-artifacts/ticket.json"}
   },
-  "assurance_statement": "The registry identifies current known PRC credential-bound collection paths. Passing the preflight means the configured fixed read-only path and required controls are permitted by repository policy; it is not a guarantee of zero legal risk and does not authorize external redistribution, personal data processing, important data processing, restricted geospatial data, commercial-secret access or bypass of provider controls."
+  "assurance_statement": "The registry covers current known PRC credential-bound collection paths. Passing preflight permits only the configured fixed read-only internal-use path under required controls. It is not a zero-risk guarantee and does not authorize external redistribution, personal information processing, important data processing, restricted geospatial data, commercial-secret access, nonpublic data access or bypass of provider controls."
 }
