@@ -26,6 +26,7 @@ ALLOWED_MODES = {
     "metadata-and-open-digital-items",
     "metadata-and-rights-labelled-media",
     "metadata-and-oa-location-discovery",
+    "metadata-and-provider-declared-pdf-locations",
     "metadata-and-oa-links",
     "metadata-and-oa-fulltext",
     "metadata-and-oa-fulltext-where-declared",
@@ -120,8 +121,8 @@ def validate_registry(registry: Mapping[str, Any]) -> list[str]:
             if endpoint is not None:
                 errors.append(f"{source_id}: shadow source endpoint must not be persisted")
             lowered = json.dumps(raw, ensure_ascii=False).casefold()
-            for forbidden in ("download-link", "direct-download", "ipfs://", "magnet:", "/md5/"):
-                if forbidden in lowered and forbidden != "download-link":
+            for forbidden in ("direct-download", "ipfs://", "magnet:", "/md5/"):
+                if forbidden in lowered:
                     errors.append(f"{source_id}: forbidden shadow locator material: {forbidden}")
     return errors
 
