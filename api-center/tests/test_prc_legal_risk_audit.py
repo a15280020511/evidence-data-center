@@ -26,7 +26,8 @@ class PrcLegalRiskAuditTests(unittest.TestCase):
             with mock.patch.dict(os.environ, {"GITHUB_OUTPUT": str(github_output)}, clear=False):
                 status = AUDIT._preflight(workflow_id, ticket_path, output_dir)
             receipt = json.loads((output_dir / "prc-legal-risk-audit.json").read_text(encoding="utf-8"))
-            self.assertNotIn("secret", json.dumps(receipt, ensure_ascii=False).lower())
+            self.assertNotIn("dummy-secret-value", json.dumps(receipt, ensure_ascii=False))
+            self.assertFalse(receipt["secret_or_real_name_values_recorded"])
             return status, receipt
 
     def test_registry_is_complete_and_valid(self) -> None:
@@ -34,6 +35,8 @@ class PrcLegalRiskAuditTests(unittest.TestCase):
         AUDIT._validate_registry(registry)
         self.assertGreaterEqual(len(registry["providers"]), 8)
         self.assertGreaterEqual(len(registry["workflows"]), 8)
+        for provider in registry["providers"].values():
+            self.assertTrue(provider["secret_environment_variables"])
 
     def test_fixed_attributable_provider_is_audited_and_allowed_with_controls(self) -> None:
         status, receipt = self._run(
@@ -42,6 +45,7 @@ class PrcLegalRiskAuditTests(unittest.TestCase):
                 "provider_id": "yuandian",
                 "operation_id": "search-cases",
                 "data_policy": {"contains_personal_data": False},
+                "test_secret": "dummy-secret-value",
             },
         )
         self.assertEqual(status, 0)
@@ -51,7 +55,6 @@ class PrcLegalRiskAuditTests(unittest.TestCase):
         self.assertEqual(receipt["jurisdiction_profile"], "PRC_STRICT")
         self.assertTrue(receipt["trace_records"])
         self.assertTrue(receipt["required_controls"])
-        self.assertFalse(receipt["secret_or_real_name_values_recorded"])
 
     def test_local_catalog_operation_does_not_inject_upstream_risk(self) -> None:
         status, receipt = self._run(
@@ -76,27 +79,31 @@ class PrcLegalRiskAuditTests(unittest.TestCase):
         self.assertEqual(receipt["decision"], "BLOCK")
         self.assertTrue(receipt["blocking_findings"])
 
-    def test_ticket_selected_provider_must_be_unambiguous(self) -> None:
-        status, receipt = self._run(
-            ".github/workflows/company-intelligence-api-ticket.yml",
-            {"operation_id": "company-basic", "parameters": {"keyword": "example"}},
-        )
-        self.assertEqual(status, 2)
-        self.assertEqual(receipt["decision"], "REVIEW_REQUIRED")
-        self.assertIn("PROVIDER_IDENTITY_NOT_UNAMBIGUOUS", receipt["reason_codes"])
-
-    def test_ticket_selected_provider_is_audited(self) -> None:
+    def test_company_workflow_is_fixed_to_tianyancha(self) -> None:
         status, receipt = self._run(
             ".github/workflows/company-intelligence-api-ticket.yml",
             {
-                "provider_id": "tianyancha",
-                "operation_id": "company-basic",
-                "data_policy": {"contains_personal_data": False},
+                "provider": "tianyancha",
+                "operation": "company-basic",
+                "parameters": {"keyword": "example"},
             },
         )
         self.assertEqual(status, 0)
         self.assertEqual(receipt["provider_id"], "tianyancha")
         self.assertEqual(receipt["channel_tier"], "ORANGE_DEDICATED")
+
+    def test_external_distribution_requires_review(self) -> None:
+        status, receipt = self._run(
+            ".github/workflows/aifin-api-ticket.yml",
+            {
+                "provider_id": "aifin-market",
+                "operation_id": "stock-quote",
+                "distribution_scope": "external",
+            },
+        )
+        self.assertEqual(status, 2)
+        self.assertEqual(receipt["decision"], "REVIEW_REQUIRED")
+        self.assertTrue(receipt["review_findings"])
 
     def test_unregistered_workflow_fails_closed(self) -> None:
         status, receipt = self._run(
