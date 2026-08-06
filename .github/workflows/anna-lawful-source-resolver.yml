@@ -1,0 +1,132 @@
+name: Anna Metadata Lawful Source Resolver
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "Book title copied from a catalog record"
+        required: true
+        default: "Alice in Wonderland"
+        type: string
+      author:
+        description: "Optional author"
+        required: false
+        default: "Lewis Carroll"
+        type: string
+  pull_request:
+    paths:
+      - "api-center/information-tool-radar/anna_lawful_source_resolver.py"
+      - "api-center/information-tool-radar/test_anna_lawful_source_resolver.py"
+      - "api-center/information-tool-radar/public_book_search.py"
+      - "api-center/information-tool-radar/public_book_search_cli.py"
+      - "api-center/information-tool-radar/public-book-search-sources.json"
+      - "api-center/information-tool-radar/lawful_book_reader.py"
+      - "api-center/information-tool-radar/lawful-book-sources.json"
+      - ".github/workflows/anna-lawful-source-resolver.yml"
+  push:
+    branches: [main]
+    paths:
+      - "api-center/information-tool-radar/anna_lawful_source_resolver.py"
+      - "api-center/information-tool-radar/test_anna_lawful_source_resolver.py"
+      - "api-center/information-tool-radar/public_book_search.py"
+      - "api-center/information-tool-radar/public_book_search_cli.py"
+      - "api-center/information-tool-radar/public-book-search-sources.json"
+      - "api-center/information-tool-radar/lawful_book_reader.py"
+      - "api-center/information-tool-radar/lawful-book-sources.json"
+      - ".github/workflows/anna-lawful-source-resolver.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: anna-lawful-source-resolver-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  resolve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      BOOK_TITLE: ${{ github.event.inputs.title || 'Alice in Wonderland' }}
+      BOOK_AUTHOR: ${{ github.event.inputs.author || 'Lewis Carroll' }}
+    steps:
+      - name: Checkout current ref
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Compile and run deterministic tests
+        working-directory: api-center/information-tool-radar
+        run: |
+          set -o pipefail
+          python -m py_compile \
+            anna_lawful_source_resolver.py \
+            test_anna_lawful_source_resolver.py
+          python test_anna_lawful_source_resolver.py \
+            | tee ../../anna-lawful-source-resolver-unit.json
+
+      - name: Resolve catalog metadata to approved sources
+        run: |
+          set -o pipefail
+          mkdir -p anna-lawful-source-resolver-artifact
+          python api-center/information-tool-radar/anna_lawful_source_resolver.py \
+            --search-registry api-center/information-tool-radar/public-book-search-sources.json \
+            --reader-registry api-center/information-tool-radar/lawful-book-sources.json \
+            --title "$BOOK_TITLE" \
+            --author "$BOOK_AUTHOR" \
+            --limit-per-source 5 \
+            --match-threshold 0.45 \
+            --output anna-lawful-source-resolver-artifact/report.json \
+            --enforce | tee anna-lawful-source-resolver-run.json
+
+      - name: Enforce lawful resolution evidence
+        run: |
+          python -m json.tool anna-lawful-source-resolver-unit.json >/dev/null
+          python -m json.tool anna-lawful-source-resolver-run.json >/dev/null
+          python -m json.tool anna-lawful-source-resolver-artifact/report.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from urllib.parse import urlparse
+
+          report = json.loads(
+              Path("anna-lawful-source-resolver-artifact/report.json").read_text(encoding="utf-8")
+          )
+          assert report["status"] in {"pass", "degraded"}, report
+          assert report["resolution_state"] == "matched-reader-ready", report
+          assert report["candidate_count"] >= 1, report
+          assert report["reader_ready_count"] >= 1, report
+          safety = report["safety"]
+          assert safety["anna_detail_pages_visited"] is False, safety
+          assert safety["anna_download_urls_consumed"] is False, safety
+          assert safety["anna_mirror_or_external_file_hosts_visited"] is False, safety
+          assert safety["access_controls_bypassed"] is False, safety
+          allowed_hosts = {
+              "www.gutenberg.org",
+              "gutenberg.org",
+              "standardebooks.org",
+              "en.wikisource.org",
+              "zh.wikisource.org",
+              "upload.wikimedia.org",
+          }
+          for candidate in report["candidates"]:
+              for location in candidate.get("reader_ready_locations") or []:
+                  parsed = urlparse(location["url"])
+                  assert parsed.scheme == "https", location
+                  assert parsed.hostname in allowed_hosts, location
+          PY
+
+      - name: Upload resolver evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: anna-lawful-source-resolver-${{ github.run_id }}
+          path: |
+            anna-lawful-source-resolver-unit.json
+            anna-lawful-source-resolver-run.json
+            anna-lawful-source-resolver-artifact/
+          if-no-files-found: warn
+          retention-days: 7
