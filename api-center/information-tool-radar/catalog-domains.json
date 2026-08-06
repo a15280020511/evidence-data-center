@@ -11,6 +11,28 @@
     "minimum_healthy_domains": 1,
     "domain_change_action": "record-candidate-and-require-governance-review"
   },
+  "discovery": {
+    "candidate_only": true,
+    "automatic_promotion": false,
+    "sources": [
+      "Wikidata P856 official website claims",
+      "Wikipedia external links"
+    ],
+    "entity_queries": [
+      "Anna's Archive",
+      "安娜的档案",
+      "安娜图书馆"
+    ],
+    "wikipedia_languages": [
+      "en",
+      "zh"
+    ],
+    "domain_tokens": [
+      "annas-archive",
+      "annasarchive"
+    ],
+    "promotion_action": "open pull request after independent verification"
+  },
   "domains": [
     {
       "url": "https://annas-archive.gl",

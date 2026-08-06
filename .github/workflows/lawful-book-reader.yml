@@ -1,0 +1,111 @@
+name: Lawful Book Reader
+
+on:
+  workflow_dispatch:
+    inputs:
+      book_url:
+        description: "HTTPS URL from an approved public-domain/open-license source"
+        required: true
+        default: "https://www.gutenberg.org/cache/epub/11/pg11.txt"
+        type: string
+      rights_basis:
+        description: "Rights basis"
+        required: true
+        default: "public-domain"
+        type: choice
+        options:
+          - public-domain
+          - open-license
+      rights_note:
+        description: "Concrete rights attestation"
+        required: true
+        default: "Project Gutenberg public-domain edition."
+        type: string
+      retain_book_file:
+        description: "Include the downloaded book file in the private workflow artifact"
+        required: true
+        default: false
+        type: boolean
+  pull_request:
+    paths:
+      - "api-center/information-tool-radar/lawful_book_reader.py"
+      - "api-center/information-tool-radar/lawful-book-sources.json"
+      - "api-center/information-tool-radar/test_lawful_book_reader.py"
+      - ".github/workflows/lawful-book-reader.yml"
+  push:
+    branches: [main]
+    paths:
+      - "api-center/information-tool-radar/lawful_book_reader.py"
+      - "api-center/information-tool-radar/lawful-book-sources.json"
+      - "api-center/information-tool-radar/test_lawful_book_reader.py"
+      - ".github/workflows/lawful-book-reader.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lawful-book-reader-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  read:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      BOOK_URL: ${{ github.event.inputs.book_url || 'https://www.gutenberg.org/cache/epub/11/pg11.txt' }}
+      RIGHTS_BASIS: ${{ github.event.inputs.rights_basis || 'public-domain' }}
+      RIGHTS_NOTE: ${{ github.event.inputs.rights_note || 'Project Gutenberg public-domain edition.' }}
+      RETAIN_BOOK_FILE: ${{ github.event.inputs.retain_book_file || 'false' }}
+    steps:
+      - name: Checkout current ref
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Compile and test
+        working-directory: api-center/information-tool-radar
+        run: |
+          set -o pipefail
+          python -m py_compile lawful_book_reader.py test_lawful_book_reader.py
+          python test_lawful_book_reader.py | tee ../../lawful-book-reader-unit.json
+
+      - name: Download and read approved book
+        run: |
+          set -o pipefail
+          mkdir -p lawful-book-artifact
+          args=(
+            --registry api-center/information-tool-radar/lawful-book-sources.json
+            --url "$BOOK_URL"
+            --rights-basis "$RIGHTS_BASIS"
+            --rights-note "$RIGHTS_NOTE"
+            --output lawful-book-artifact/lawful-book-reader-report.json
+            --enforce
+          )
+          if [[ "$RETAIN_BOOK_FILE" == "true" ]]; then
+            args+=(--retain-file lawful-book-artifact/downloaded-book.bin)
+          fi
+          python api-center/information-tool-radar/lawful_book_reader.py "${args[@]}" \
+            | tee lawful-book-reader-run.json
+
+      - name: Validate evidence
+        run: |
+          python -m json.tool api-center/information-tool-radar/lawful-book-sources.json >/dev/null
+          python -m json.tool lawful-book-reader-unit.json >/dev/null
+          python -m json.tool lawful-book-reader-run.json >/dev/null
+          python -m json.tool lawful-book-artifact/lawful-book-reader-report.json >/dev/null
+          test -s lawful-book-artifact/lawful-book-reader-report.json
+
+      - name: Upload report and optional book
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: lawful-book-reader-${{ github.run_id }}
+          path: |
+            lawful-book-reader-unit.json
+            lawful-book-reader-run.json
+            lawful-book-artifact/
+          if-no-files-found: warn
+          retention-days: 7
