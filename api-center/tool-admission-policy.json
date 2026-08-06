@@ -1,10 +1,19 @@
 {
-  "schema_version": "intelligence-tool-admission-v1",
-  "policy_status": "production-candidate",
+  "schema_version": "intelligence-tool-admission-v2",
+  "policy_status": "production",
+  "legal_compliance_baseline": {
+    "jurisdiction": "PRC_MAINLAND",
+    "scope": "current_effective_laws_regulations_judicial_interpretations_department_rules_and_mandatory_national_standards",
+    "foreign_law_compliance_target": false,
+    "foreign_provider_terms_are_operational_constraints": true,
+    "zero_risk_guarantee_prohibited": true
+  },
   "default_decision": "REJECTED",
   "principle": "audit_then_contain_then_admit",
+  "continuity_principle": "preserve_legal_capability_via_safe_fallbacks",
   "allowed_states": [
     "PRODUCTION_SAFE_READONLY",
+    "PROVISIONAL_SAFE_READONLY",
     "CONTROLLED_SPECIAL_USE",
     "QUARANTINED",
     "REJECTED",
@@ -31,7 +40,41 @@
     "bounded_cost": true,
     "public_non_personal_default": true,
     "structured_audit_receipt": true,
-    "independent_disable_and_rollback": true
+    "independent_disable_and_rollback": true,
+    "prc_mainland_legal_risk_statement": true,
+    "license_and_account_scope_record": true,
+    "cross_border_data_classification_gate": true
+  },
+  "continuity_fallback_order": [
+    "official_read_only_api",
+    "official_export_sftp_or_licensed_mirror",
+    "fixed_public_web_read_only_rendering",
+    "dedicated_authorized_backend_read_only_connector",
+    "approved_private_fixed_cloud_browser_flow",
+    "legal_access_unavailable_or_data_insufficient_receipt"
+  ],
+  "existing_tool_transition": {
+    "non_disruptive_review": true,
+    "eligible_provisional_state": "PROVISIONAL_SAFE_READONLY",
+    "provisional_requirements": [
+      "fixed_host",
+      "fixed_read_only_operations",
+      "parameter_allowlist",
+      "secret_isolation",
+      "no_evasion_capability",
+      "no_general_personal_or_important_data_cross_border_flow"
+    ],
+    "immediate_capability_disable_triggers": [
+      "arbitrary_code",
+      "arbitrary_url",
+      "ticket_or_model_supplied_credentials",
+      "proxy_or_captcha_evasion",
+      "full_account_permissions",
+      "write_or_transaction_capability",
+      "unbounded_collection",
+      "general_personal_or_important_data_cross_border_flow"
+    ],
+    "quarantine_when_safe_subcapability_cannot_be_isolated": true
   },
   "permanent_denies": [
     "arbitrary_url",
@@ -65,7 +108,8 @@
     "full_database_mirroring",
     "raw_data_resale",
     "personal_data_in_general_cross_border_flow",
-    "important_data_in_general_cross_border_flow"
+    "important_data_in_general_cross_border_flow",
+    "restricted_geospatial_data_in_general_cross_border_flow"
   ],
   "hard_stop_rules": {
     "401": "AUTHORIZATION_DENIED",
@@ -78,6 +122,8 @@
     "credential_detected": "DATA_CLASSIFICATION_BLOCKED",
     "secret_detected": "DATA_CLASSIFICATION_BLOCKED",
     "important_data_detected": "DATA_CLASSIFICATION_BLOCKED",
+    "restricted_geospatial_data_detected": "DATA_CLASSIFICATION_BLOCKED",
+    "license_scope_unknown": "LICENSE_SCOPE_BLOCKED",
     "limit_exceeded": "BOUNDED_LIMIT_EXCEEDED"
   },
   "forbidden_recovery_actions": [
@@ -119,6 +165,7 @@
   "required_admission_evidence": [
     "tool_identity_and_maintainer",
     "purpose_and_data_types",
+    "prc_mainland_legal_risk_statement",
     "host_and_operation_allowlist",
     "parameter_and_response_contracts",
     "license_and_account_scope",
@@ -126,21 +173,24 @@
     "negative_capability_tests",
     "hard_stop_tests",
     "data_classification_tests",
+    "cross_border_data_classification_test",
     "quota_cost_timeout_tests",
     "audit_snapshot_artifact",
     "rollback_procedure"
   ],
   "review_triggers": [
+    "prc_law_regulation_judicial_interpretation_or_mandatory_standard_change",
     "upstream_domain_change",
     "api_version_change",
     "terms_or_license_change",
     "pricing_or_quota_change",
     "new_cookie_proxy_script_write_or_webhook_capability",
-    "personal_secret_or_important_data_returned",
+    "personal_secret_important_or_restricted_geospatial_data_returned",
     "401_403_429_waf_block_or_complaint",
     "maintainer_or_ownership_change",
     "dependency_supply_chain_change",
     "internal_to_external_or_commercial_use_change"
   ],
-  "catalog_admission_rule": "Only PASS tools may enter api-catalog.json and GPT exposure."
+  "catalog_admission_rule": "Only PASS tools in PRODUCTION_SAFE_READONLY or approved CONTROLLED_SPECIAL_USE may enter new GPT exposure. Existing eligible tools may remain PROVISIONAL_SAFE_READONLY during non-disruptive review.",
+  "assurance_statement": "Controls reduce foreseeable PRC-mainland legal and security risk to a reasonably low and auditable level; they do not guarantee zero risk or zero operational impact."
 }
