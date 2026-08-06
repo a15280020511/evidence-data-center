@@ -62,11 +62,15 @@ jobs:
             api-center/information-tool-radar/incumbent_inventory.py \
             api-center/information-tool-radar/incumbent_audit.py \
             api-center/information-tool-radar/incumbent_watch.py \
+            api-center/information-tool-radar/catalog_domain_discovery.py \
             api-center/information-tool-radar/catalog_web_search.py \
+            api-center/information-tool-radar/catalog_runtime_search.py \
             api-center/information-tool-radar/test_radar.py \
             api-center/information-tool-radar/test_incumbent_inventory.py \
             api-center/information-tool-radar/test_incumbent_watch.py \
-            api-center/information-tool-radar/test_catalog_web_search.py
+            api-center/information-tool-radar/test_catalog_domain_discovery.py \
+            api-center/information-tool-radar/test_catalog_web_search.py \
+            api-center/information-tool-radar/test_catalog_runtime_search.py
 
       - name: Run deterministic radar tests
         working-directory: api-center/information-tool-radar
@@ -86,11 +90,13 @@ jobs:
           set -o pipefail
           python test_incumbent_watch.py | tee ../../incumbent-watch-unit.json
 
-      - name: Run deterministic catalog web search tests
+      - name: Run deterministic Wikimedia resolution tests
         working-directory: api-center/information-tool-radar
         run: |
           set -o pipefail
+          python test_catalog_domain_discovery.py | tee ../../catalog-domain-discovery-unit.json
           python test_catalog_web_search.py | tee ../../catalog-web-search-unit.json
+          python test_catalog_runtime_search.py | tee ../../catalog-runtime-search-unit.json
 
       - name: Run bounded live coverage test
         run: |
@@ -101,14 +107,14 @@ jobs:
             --output-dir information-tool-radar-artifact \
             --enforce-thresholds | tee information-tool-radar-run.json
 
-      - name: Run controlled catalog web search
+      - name: Resolve catalog domain live from Wikimedia and search
         run: |
           set -o pipefail
-          python api-center/information-tool-radar/catalog_web_search.py \
+          python api-center/information-tool-radar/catalog_runtime_search.py \
             --registry api-center/information-tool-radar/catalog-domains.json \
             --query "$CATALOG_QUERY" \
-            --output information-tool-radar-artifact/catalog-web-search-report.json \
-            --enforce | tee catalog-web-search-run.json
+            --output information-tool-radar-artifact/catalog-runtime-search-report.json \
+            --enforce | tee catalog-runtime-search-run.json
 
       - name: Audit generic rediscovery of incumbent tools
         run: |
@@ -137,14 +143,16 @@ jobs:
           python -m json.tool information-tool-radar-unit.json >/dev/null
           python -m json.tool incumbent-inventory-unit.json >/dev/null
           python -m json.tool incumbent-watch-unit.json >/dev/null
+          python -m json.tool catalog-domain-discovery-unit.json >/dev/null
           python -m json.tool catalog-web-search-unit.json >/dev/null
+          python -m json.tool catalog-runtime-search-unit.json >/dev/null
           python -m json.tool information-tool-radar-run.json >/dev/null
-          python -m json.tool catalog-web-search-run.json >/dev/null
+          python -m json.tool catalog-runtime-search-run.json >/dev/null
           python -m json.tool incumbent-audit-run.json >/dev/null
           python -m json.tool incumbent-watch-run.json >/dev/null
           python -m json.tool information-tool-radar-artifact/coverage-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/manifest.json >/dev/null
-          python -m json.tool information-tool-radar-artifact/catalog-web-search-report.json >/dev/null
+          python -m json.tool information-tool-radar-artifact/catalog-runtime-search-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-inventory.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-audit-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-watch-report.json >/dev/null
@@ -152,7 +160,7 @@ jobs:
           python -m json.tool information-tool-radar-artifact/incumbent-fingerprint-state.json >/dev/null
           test -s information-tool-radar-artifact/coverage-report.md
           test -s information-tool-radar-artifact/candidates.jsonl
-          test -s information-tool-radar-artifact/catalog-web-search-report.json
+          test -s information-tool-radar-artifact/catalog-runtime-search-report.json
           test -s information-tool-radar-artifact/incumbent-audit-report.md
           test -s information-tool-radar-artifact/incumbent-watch-report.md
           test -s information-tool-radar-artifact/incumbent-candidates.jsonl
@@ -167,9 +175,11 @@ jobs:
             information-tool-radar-unit.json
             incumbent-inventory-unit.json
             incumbent-watch-unit.json
+            catalog-domain-discovery-unit.json
             catalog-web-search-unit.json
+            catalog-runtime-search-unit.json
             information-tool-radar-run.json
-            catalog-web-search-run.json
+            catalog-runtime-search-run.json
             incumbent-audit-run.json
             incumbent-watch-run.json
             information-tool-radar-artifact/
