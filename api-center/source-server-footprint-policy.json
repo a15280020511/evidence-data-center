@@ -1,16 +1,29 @@
 {
-  "schema_version": "source-server-footprint-control-v1",
+  "schema_version": "source-server-footprint-control-v2",
   "status": "production-control",
   "jurisdiction": "PRC_MAINLAND",
-  "principle": "stable_minimal_explainable_stop_on_denial",
+  "principle": "strict_footprint_control_only_for_user_attributable_prc_legal_or_account_risk",
   "foreign_ip_itself_is_illegal": false,
   "identity_concealment_goal": false,
+  "scope_gate": {
+    "requires_profile": "PRC_STRICT",
+    "strict_control_requires_all": [
+      "prc_nexus_present",
+      "user_real_name_or_identity_linked_activity_is_reasonably_attributable",
+      "material_legal_or_account_risk_trigger_present"
+    ],
+    "routine_anonymous_ip_or_access_log_alone_is_sufficient": false,
+    "public_no_login_no_user_binding_action": "GLOBAL_OPERATIONAL_BASELINE",
+    "unknown_attribution_or_risk_action": "REVIEW_BEFORE_PRODUCTION"
+  },
   "source_server_observables": [
     "egress_ip",
     "country_region_asn",
     "tls_browser_automation_fingerprint",
     "user_agent_and_request_headers",
     "account_api_key_cookie_session_binding",
+    "real_name_phone_id_bankcard_payment_or_business_identity_binding",
+    "provider_access_billing_security_and_audit_records",
     "request_time_rate_concurrency_pagination_volume",
     "paths_and_download_patterns",
     "401_403_429_captcha_waf_block_and_followup_behavior"
@@ -24,15 +37,25 @@
     "BLOCKED"
   ],
   "prc_source_profiles": {
-    "official_api": {
+    "official_api_identity_linked": {
       "foreign_cloud_allowed": "conditional_on_provider_terms_and_ip_policy",
       "fixed_documented_endpoints_only": true,
       "account_primary_origin_binding_required": true,
       "global_account_quota_required": true,
       "cross_provider_rotation_allowed": false
     },
-    "public_web_no_login": {
+    "public_web_no_login_no_user_binding": {
+      "strict_prc_footprint_controls_required": false,
+      "profile": "GLOBAL_OPERATIONAL_BASELINE",
       "foreign_cloud_allowed": true,
+      "provider_documented_limits_take_precedence": true,
+      "prc_default_ten_second_interval_required": false,
+      "prc_default_twenty_page_limit_required": false,
+      "prc_account_origin_binding_required": false,
+      "routine_anonymous_server_log_is_identity_attribution": false
+    },
+    "attributable_public_or_dynamic_channel": {
+      "strict_prc_footprint_controls_required": true,
       "fixed_public_paths_only": true,
       "max_concurrency": 1,
       "default_minimum_interval_seconds": 10,
@@ -57,6 +80,7 @@
     }
   },
   "identity_and_origin_consistency": {
+    "applies_only_to_user_attributable_account_key_session_or_paid_identity": true,
     "one_primary_origin_class_per_account_or_key": true,
     "same_task_origin_switch_allowed": false,
     "denial_shared_across_all_tools": true,
@@ -65,6 +89,7 @@
     "alternate_origin_after_denial_allowed": false
   },
   "request_footprint_defaults": {
+    "applies_only_to_prc_strict_profile": true,
     "web_max_concurrency": 1,
     "web_minimum_interval_seconds": 10,
     "web_max_pages_per_task": 20,
@@ -91,7 +116,7 @@
     "alternate_tool_or_origin_fallback_after_denial": false
   },
   "client_identity": {
-    "stable_user_agent_required": true,
+    "stable_user_agent_required_for_prc_strict": true,
     "random_user_agent_rotation_allowed": false,
     "browser_device_farm_emulation_allowed": false,
     "tls_fingerprint_evasion_allowed": false,
@@ -128,18 +153,19 @@
     "terms_or_ip_policy_change": "SOURCE_REVIEW_REQUIRED"
   },
   "source_side_audit_receipt": {
+    "detailed_receipt_required_only_for_prc_strict": true,
+    "baseline_structured_receipt_required_for_other_profiles": true,
     "required_fields": [
       "source_id",
       "source_domain_sha256",
+      "jurisdiction_profile",
+      "identity_attribution_state",
+      "material_risk_state",
       "egress_class",
       "authenticated",
-      "user_agent_profile_version",
       "request_count",
       "page_count",
-      "max_concurrency",
-      "minimum_interval_seconds",
       "http_status_sequence",
-      "retry_after_observed",
       "origin_switch_occurred",
       "global_circuit_breaker_triggered",
       "response_bytes",
@@ -147,24 +173,26 @@
     ],
     "actual_egress_ip_discovery_required": false,
     "actual_egress_ip_publication_allowed": false,
-    "secret_or_cookie_recording_allowed": false
+    "secret_cookie_or_real_name_value_recording_allowed": false
   },
   "continuity_fallback_order": [
     "official_api",
     "official_bulk_or_download_endpoint",
-    "fixed_public_web_low_frequency_readonly",
+    "public_web_using_global_baseline_when_not_attributable",
     "authorized_local_or_manual_export",
     "prc_fixed_runner",
     "legal_access_unavailable_or_data_insufficient"
   ],
   "admission_evidence": [
-    "source_visible_footprint_documented",
-    "egress_class_and_account_binding",
-    "cross_tool_global_budget",
+    "prc_nexus_classified",
+    "user_identity_attribution_classified",
+    "material_legal_or_account_risk_classified",
+    "source_visible_footprint_documented_for_prc_strict",
+    "egress_class_and_account_binding_when_attributable",
     "401_403_429_captcha_waf_hard_stop_tests",
     "no_ip_account_key_cookie_user_agent_or_provider_rotation_tests",
     "source_side_audit_receipt",
     "lawful_fallback_and_disable_path"
   ],
-  "assurance_statement": "The policy minimizes suspicious or evasive source-side traces without concealing identity. It preserves official API and public-read workflows, but blocks tasks that require bypassing denial or technical measures."
+  "assurance_statement": "Detailed PRC source-footprint controls are limited to real-name or identity-linked activity that can reasonably be traced to the user and presents material legal or account risk. Anonymous public access uses the global operational baseline. The policy does not conceal identity or permit bypassing denial or technical measures."
 }

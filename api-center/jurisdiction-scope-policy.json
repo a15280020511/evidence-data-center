@@ -1,25 +1,53 @@
 {
-  "schema_version": "intelligence-jurisdiction-scope-v2",
+  "schema_version": "intelligence-jurisdiction-scope-v3",
   "status": "production-control",
   "policy_owner": "evidence-data-center",
   "default_legal_target": "PRC_MAINLAND",
-  "principle": "prc_strict_controls_only_for_prc_sources_and_prc_data_flows",
+  "principle": "prc_strict_controls_only_for_user_attributable_real_name_or_identity_linked_legal_risk",
   "prc_source_channel_policy": "prc-source-channel-policy.json",
-  "precedence": "This file is the authoritative jurisdictional scope overlay for tool-admission-policy.json, source-server-footprint-policy.json and prc-source-channel-policy.json. PRC-specific controls must not be applied to sources assigned GLOBAL_OPERATIONAL_BASELINE. Every PRC source must also receive a channel tier.",
+  "precedence": "This file is the authoritative jurisdictional and identity-attribution scope overlay for tool-admission-policy.json, source-server-footprint-policy.json and prc-source-channel-policy.json. PRC-specific strict controls apply only when the PRC nexus, user-attribution and material-risk gates are all satisfied. Non-PRC sources and PRC public sources that are not reasonably attributable to the user use GLOBAL_OPERATIONAL_BASELINE. Every PRC_STRICT source must also receive a channel tier.",
   "classification": {
     "source_country_metadata_required": true,
-    "prc_scope_applies_when_any": [
+    "prc_nexus_applies_when_any": [
       "source_operator_or_primary_service_location_is_prc_mainland",
-      "source_is_prc_government_official_institution_or_prc_registered_platform",
       "authenticated_account_or_api_service_is_operated_in_prc_mainland",
+      "source_is_prc_government_official_institution_or_prc_registered_platform",
       "dataset_is_explicitly_classified_as_prc_personal_important_or_restricted_geospatial_data"
     ],
-    "ip_address_or_tld_alone_is_not_sufficient": true,
-    "unknown_source_country_action": "REVIEW_BEFORE_PRODUCTION"
+    "user_identity_attribution_signals": [
+      "user_completed_real_name_verification",
+      "user_phone_id_bankcard_payment_or_business_identity_is_bound",
+      "account_api_key_cookie_session_member_id_or_subscription_is_linked_to_user",
+      "provider_access_billing_security_or_audit_records_can_reasonably_identify_user",
+      "complaint_enforcement_contract_or_account_record_can_reasonably_be_linked_to_user"
+    ],
+    "material_legal_or_account_risk_triggers": [
+      "authenticated_paid_member_or_subscription_access",
+      "automated_bulk_or_persistent_collection",
+      "account_api_license_or_automation_scope_is_uncertain",
+      "401_403_429_captcha_waf_block_account_alert_or_provider_notice",
+      "personal_important_restricted_geospatial_commercial_secret_or_nonpublic_data",
+      "external_distribution_resale_publication_or_commercial_service"
+    ],
+    "prc_strict_requires_all": [
+      "prc_nexus_present",
+      "at_least_one_user_identity_attribution_signal",
+      "at_least_one_material_legal_or_account_risk_trigger"
+    ],
+    "prc_public_baseline_when_all": [
+      "public_no_login_no_authentication",
+      "no_user_account_api_key_cookie_session_payment_or_subscription_binding",
+      "no_record_reasonably_linking_the_activity_to_the_user_beyond_routine_non_attributable_server_logs",
+      "no_personal_important_restricted_geospatial_commercial_secret_or_nonpublic_data"
+    ],
+    "ordinary_ip_tld_or_routine_anonymous_access_log_alone_is_not_sufficient": true,
+    "unknown_source_country_action": "REVIEW_BEFORE_PRODUCTION",
+    "unknown_identity_attribution_action": "REVIEW_BEFORE_PRODUCTION",
+    "unknown_material_risk_action": "REVIEW_BEFORE_PRODUCTION"
   },
   "profiles": {
     "PRC_STRICT": {
-      "applies_to": "PRC_MAINLAND sources and data flows",
+      "applies_to": "PRC-mainland sources where the user's real-name or identity-linked activity is reasonably attributable and a material legal or account risk trigger exists",
       "legal_baseline": "PRC_MAINLAND",
       "source_server_footprint_policy": "source-server-footprint-policy.json",
       "source_channel_policy": "prc-source-channel-policy.json",
@@ -52,12 +80,14 @@
       "denial_behavior": "shared_hard_stop_across_tools_and_origins"
     },
     "GLOBAL_OPERATIONAL_BASELINE": {
-      "applies_to": "non-PRC sources and non-PRC data flows",
+      "applies_to": "non-PRC sources plus PRC public sources that are not reasonably attributable to the user and do not carry regulated or nonpublic data risk",
       "prc_specific_legal_controls_enabled": false,
       "prc_cross_border_data_gate": false,
       "prc_fixed_runner_required": false,
       "foreign_cloud_authenticated_backend_blocked_by_prc_policy": false,
       "prc_public_web_default_rate_limits_enabled": false,
+      "prc_account_primary_origin_binding_required": false,
+      "prc_detailed_source_footprint_receipt_required": false,
       "provider_documented_limits_take_precedence": true,
       "provider_terms_and_account_scope_required": true,
       "official_or_authorized_access_required": true,
@@ -82,18 +112,18 @@
     "no_vulnerability_exploitation_or_malicious_code",
     "no_unapproved_write_transaction_trading_or_account_control"
   ],
-  "prc_only_controls": [
+  "prc_attributable_risk_controls": [
     "prc_channel_tier_assignment",
-    "prc_source_server_visible_footprint_profile",
-    "prc_account_primary_origin_binding",
-    "prc_cross_tool_source_budget_and_circuit_breaker",
-    "prc_foreign_cloud_authenticated_backend_gate",
-    "prc_public_web_low_frequency_defaults",
+    "prc_attributable_source_server_visible_footprint_profile",
+    "prc_attributable_account_primary_origin_binding",
+    "prc_attributable_cross_tool_source_budget_and_circuit_breaker",
+    "prc_attributable_foreign_cloud_authenticated_backend_gate",
+    "prc_attributable_public_web_low_frequency_defaults",
     "prc_green_official_channel_relaxed_defaults",
     "prc_personal_important_and_restricted_geospatial_cross_border_gate",
     "prc_fixed_runner_fallback",
     "prc_no_cross_origin_denial_bypass"
   ],
-  "admission_rule": "Every source must be assigned exactly one jurisdiction profile before production. PRC_STRICT is mandatory only for PRC-mainland sources or PRC-mainland regulated data flows. Every PRC_STRICT source must additionally be assigned exactly one tier from prc-source-channel-policy.json. Other sources use GLOBAL_OPERATIONAL_BASELINE.",
-  "assurance_statement": "This policy narrows PRC-specific legal and source-footprint controls to PRC-mainland scope, differentiates safe and higher-risk PRC channels, and retains global operational security, authorization, provider-contract and data-quality safeguards."
+  "admission_rule": "Every source must be assigned exactly one profile before production. PRC_STRICT is used only when the PRC nexus, user identity attribution and material legal/account risk gates are all satisfied. PRC public sources with no login, no user-linked credential or payment record, no reasonably attributable identity record and no regulated/nonpublic data use GLOBAL_OPERATIONAL_BASELINE. Every PRC_STRICT source must additionally be assigned exactly one tier from prc-source-channel-policy.json.",
+  "assurance_statement": "This policy focuses PRC-specific strict controls on real-name or identity-linked activities that can reasonably be traced to the user and create material legal or account risk. It does not treat ordinary anonymous public access logs, IP addresses or PRC domains alone as enough to trigger strict controls. Global authorization, provider-contract, security and data-quality safeguards remain in force."
 }
