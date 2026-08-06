@@ -51,6 +51,7 @@ jobs:
             api-center/information-tool-radar/radar_v2.py \
             api-center/information-tool-radar/radar_v3.py \
             api-center/information-tool-radar/radar_v4.py \
+            api-center/information-tool-radar/radar_v5.py \
             api-center/information-tool-radar/incumbent_inventory.py \
             api-center/information-tool-radar/incumbent_audit.py \
             api-center/information-tool-radar/incumbent_watch.py \
@@ -88,7 +89,7 @@ jobs:
         run: |
           set -o pipefail
           rm -rf information-tool-radar-artifact
-          python api-center/information-tool-radar/radar_v4.py \
+          python api-center/information-tool-radar/radar_v5.py \
             --config api-center/information-tool-radar/config.json \
             --output-dir information-tool-radar-artifact \
             --enforce-thresholds | tee information-tool-radar-run.json
