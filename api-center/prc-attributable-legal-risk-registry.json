@@ -1,0 +1,127 @@
+{
+  "schema_version": "prc-attributable-legal-risk-registry-v1",
+  "status": "production-control",
+  "policy": "Every PRC-mainland collection path that uses a user-linked real-name account, API credential, paid membership, session or provider audit trail must pass a legal-risk preflight before any secret is injected or any upstream request is sent.",
+  "unknown_classification_action": "REVIEW_REQUIRED",
+  "approved_decisions": [
+    "NOT_APPLICABLE",
+    "ALLOW_WITH_CONTROLS"
+  ],
+  "blocked_decisions": [
+    "REVIEW_REQUIRED",
+    "BLOCK"
+  ],
+  "global_required_controls": [
+    "official_or_explicitly_authorized_access",
+    "fixed_readonly_operation",
+    "backend_secret_injection_only",
+    "bounded_requests_runtime_response_and_cost",
+    "provider_quota_and_terms_enforcement",
+    "hard_stop_on_401_403_429_captcha_waf_or_account_alert",
+    "no_origin_account_key_cookie_or_user_agent_rotation_after_denial",
+    "data_classification_and_minimization",
+    "internal_use_only_unless_separately_reviewed",
+    "structured_audit_receipt_without_secret_or_real_name_values"
+  ],
+  "providers": {
+    "yuandian": {
+      "prc_nexus": true,
+      "identity_attributable": true,
+      "identity_signals": ["user_linked_api_key"],
+      "trace_records": ["provider_access_log", "provider_security_audit_record", "account_record"],
+      "material_risk_triggers": ["authenticated_api", "automated_collection", "legal_information_processing"],
+      "authorization_basis": "official_documented_readonly_api",
+      "data_scope": ["public_legal_information"],
+      "channel_tier": "GREEN_DIRECT",
+      "automatic_decision": "ALLOW_WITH_CONTROLS"
+    },
+    "tushare": {
+      "prc_nexus": true,
+      "identity_attributable": true,
+      "identity_signals": ["user_linked_api_token"],
+      "trace_records": ["provider_access_log", "quota_record", "account_record"],
+      "material_risk_triggers": ["authenticated_api", "automated_collection", "financial_data_processing"],
+      "authorization_basis": "official_documented_readonly_api",
+      "data_scope": ["public_market_and_financial_information"],
+      "channel_tier": "GREEN_DIRECT",
+      "automatic_decision": "ALLOW_WITH_CONTROLS"
+    },
+    "baidu-ai-cloud": {
+      "prc_nexus": true,
+      "identity_attributable": true,
+      "identity_signals": ["user_linked_cloud_api_key", "cloud_account_record"],
+      "trace_records": ["provider_access_log", "billing_or_quota_record", "cloud_security_audit_record"],
+      "material_risk_triggers": ["authenticated_cloud_api", "automated_search_or_content_retrieval", "model_or_search_processing"],
+      "authorization_basis": "official_fixed_readonly_api",
+      "data_scope": ["public_web_search", "public_baike_content", "bounded_search_summary"],
+      "channel_tier": "GREEN_DIRECT",
+      "automatic_decision": "ALLOW_WITH_CONTROLS"
+    },
+    "qweather": {
+      "prc_nexus": true,
+      "identity_attributable": true,
+      "identity_signals": ["user_linked_api_key", "dedicated_api_host"],
+      "trace_records": ["provider_access_log", "quota_record", "account_record"],
+      "material_risk_triggers": ["authenticated_api", "automated_collection", "geospatial_and_weather_data_processing"],
+      "authorization_basis": "official_fixed_readonly_api",
+      "data_scope": ["weather", "air_quality", "public_geolocation", "public_poi"],
+      "channel_tier": "GREEN_DIRECT",
+      "automatic_decision": "ALLOW_WITH_CONTROLS"
+    },
+    "aifin-market": {
+      "prc_nexus": true,
+      "identity_attributable": true,
+      "identity_signals": ["user_linked_wind_api_key"],
+      "trace_records": ["provider_access_log", "subscription_or_entitlement_record", "account_record"],
+      "material_risk_triggers": ["authenticated_paid_or_entitled_api", "automated_financial_data_collection", "licensed_database_use"],
+      "authorization_basis": "official_fixed_readonly_mcp_tools",
+      "data_scope": ["licensed_financial_market_and_company_information"],
+      "channel_tier": "ORANGE_DEDICATED",
+      "automatic_decision": "ALLOW_WITH_CONTROLS"
+    },
+    "tianyancha": {
+      "prc_nexus": true,
+      "identity_attributable": true,
+      "identity_signals": ["user_linked_api_token", "commercial_account_record"],
+      "trace_records": ["provider_access_log", "billing_or_entitlement_record", "account_record"],
+      "material_risk_triggers": ["authenticated_commercial_api", "automated_company_data_collection", "licensed_database_use"],
+      "authorization_basis": "official_fixed_readonly_api",
+      "data_scope": ["public_company_registration_and_annual_report_information"],
+      "channel_tier": "ORANGE_DEDICATED",
+      "automatic_decision": "ALLOW_WITH_CONTROLS"
+    },
+    "miaoxiang": {
+      "prc_nexus": true,
+      "identity_attributable": true,
+      "identity_signals": ["user_linked_api_key"],
+      "trace_records": ["provider_access_log", "quota_or_entitlement_record", "account_record"],
+      "material_risk_triggers": ["authenticated_api", "automated_financial_data_collection", "licensed_database_use"],
+      "authorization_basis": "official_fixed_readonly_api",
+      "data_scope": ["financial_market_company_news_and_screening_information"],
+      "channel_tier": "ORANGE_DEDICATED",
+      "automatic_decision": "ALLOW_WITH_CONTROLS"
+    },
+    "miaoxiang-mcp": {
+      "prc_nexus": true,
+      "identity_attributable": true,
+      "identity_signals": ["user_linked_api_key"],
+      "trace_records": ["provider_access_log", "quota_or_entitlement_record", "account_record"],
+      "material_risk_triggers": ["authenticated_mcp_api", "automated_financial_data_collection", "licensed_database_use"],
+      "authorization_basis": "official_fixed_readonly_mcp_tools",
+      "data_scope": ["financial_market_company_macro_research_and_screening_information"],
+      "channel_tier": "ORANGE_DEDICATED",
+      "automatic_decision": "ALLOW_WITH_CONTROLS"
+    }
+  },
+  "workflows": {
+    ".github/workflows/yuandian-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "yuandian", "ticket_path": "yuandian-artifacts/ticket.json"},
+    ".github/workflows/tushare-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "tushare", "ticket_path": "tushare-artifacts/ticket.json"},
+    ".github/workflows/baidu-ai-cloud-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "baidu-ai-cloud", "ticket_path": "baidu-ai-cloud-artifacts/ticket.json"},
+    ".github/workflows/qweather-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "qweather", "ticket_path": "qweather-artifacts/ticket.json"},
+    ".github/workflows/aifin-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "aifin-market", "ticket_path": "aifin-artifacts/ticket.json"},
+    ".github/workflows/miaoxiang-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "miaoxiang", "ticket_path": "miaoxiang-artifacts/ticket.json"},
+    ".github/workflows/miaoxiang-mcp-api-ticket.yml": {"provider_selection": "fixed", "provider_id": "miaoxiang-mcp", "ticket_path": "miaoxiang-mcp-artifacts/ticket.json"},
+    ".github/workflows/company-intelligence-api-ticket.yml": {"provider_selection": "ticket", "provider_ids": ["tianyancha", "miaoxiang"], "ticket_path": "company-intelligence-artifacts/ticket.json"}
+  },
+  "assurance_statement": "The registry identifies current known PRC credential-bound collection paths. Passing the preflight means the configured fixed read-only path and required controls are permitted by repository policy; it is not a guarantee of zero legal risk and does not authorize external redistribution, personal data processing, important data processing, restricted geospatial data, commercial-secret access or bypass of provider controls."
+}
