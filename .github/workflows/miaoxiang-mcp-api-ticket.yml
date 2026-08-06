@@ -24,7 +24,6 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
-      EM_API_KEY: ${{ secrets.EM_API_KEY }}
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -45,7 +44,7 @@ jobs:
           python -m pip check
 
       - name: Compile managed MCP control plane
-        run: python -m py_compile api-center/miaoxiang-mcp/miaoxiang_mcp_task.py
+        run: python -m py_compile api-center/prc_legal_risk_audit.py api-center/miaoxiang-mcp/miaoxiang_mcp_task.py
 
       - name: Parse and authorize Miaoxiang MCP ticket
         id: prepare
@@ -55,13 +54,31 @@ jobs:
             --event-path "$GITHUB_EVENT_PATH" \
             --output-dir miaoxiang-mcp-artifacts
 
-      - name: Comment accepted ticket
+      - name: Audit PRC attributable legal risk before secret injection
+        id: legal_audit
         if: steps.prepare.outputs.accepted == 'true'
+        continue-on-error: true
+        run: |
+          python api-center/prc_legal_risk_audit.py preflight \
+            --workflow-id ".github/workflows/miaoxiang-mcp-api-ticket.yml" \
+            --ticket miaoxiang-mcp-artifacts/ticket.json \
+            --output-dir miaoxiang-mcp-artifacts
+
+      - name: Comment accepted ticket
+        if: steps.prepare.outputs.accepted == 'true' && steps.legal_audit.outputs.accepted == 'true'
         run: |
           python api-center/miaoxiang-mcp/miaoxiang_mcp_task.py render \
             --output-dir miaoxiang-mcp-artifacts --phase accepted > miaoxiang-mcp-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
             -F body=@miaoxiang-mcp-comment.md
+
+      - name: Comment legal-risk audit block
+        if: steps.prepare.outputs.accepted == 'true' && steps.legal_audit.outputs.accepted != 'true'
+        run: |
+          python api-center/prc_legal_risk_audit.py render \
+            --audit miaoxiang-mcp-artifacts/prc-legal-risk-audit.json > miaoxiang-mcp-audit-comment.md
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -F body=@miaoxiang-mcp-audit-comment.md
 
       - name: Comment rejected ticket
         if: steps.prepare.outputs.accepted != 'true'
@@ -73,8 +90,10 @@ jobs:
 
       - name: Execute bounded read-only MCP operation
         id: execute
-        if: steps.prepare.outputs.accepted == 'true'
+        if: steps.prepare.outputs.accepted == 'true' && steps.legal_audit.outputs.accepted == 'true'
         continue-on-error: true
+        env:
+          EM_API_KEY: ${{ secrets.EM_API_KEY }}
         run: |
           python api-center/miaoxiang-mcp/miaoxiang_mcp_task.py execute \
             --ticket miaoxiang-mcp-artifacts/ticket.json \
@@ -92,7 +111,10 @@ jobs:
           retention-days: 30
 
       - name: Publish verified result or structured failure
-        if: always() && steps.prepare.outputs.accepted == 'true'
+        if: >-
+          always() &&
+          steps.prepare.outputs.accepted == 'true' &&
+          steps.legal_audit.outputs.accepted == 'true'
         env:
           ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
         run: |
@@ -107,6 +129,7 @@ jobs:
         if: >-
           always() &&
           (steps.prepare.outputs.accepted != 'true' ||
+           steps.legal_audit.outputs.accepted != 'true' ||
            steps.execute.outputs.status != 'API_MIAOXIANG_MCP_COMPLETED' ||
            steps.upload.outcome != 'success')
         run: |
