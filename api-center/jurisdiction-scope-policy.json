@@ -1,0 +1,87 @@
+{
+  "schema_version": "intelligence-jurisdiction-scope-v1",
+  "status": "production-control",
+  "policy_owner": "evidence-data-center",
+  "default_legal_target": "PRC_MAINLAND",
+  "principle": "prc_strict_controls_only_for_prc_sources_and_prc_data_flows",
+  "precedence": "This file is the authoritative jurisdictional scope overlay for tool-admission-policy.json and source-server-footprint-policy.json. Controls labelled PRC or defined by the PRC footprint policy must not be applied to sources assigned GLOBAL_OPERATIONAL_BASELINE.",
+  "classification": {
+    "source_country_metadata_required": true,
+    "prc_scope_applies_when_any": [
+      "source_operator_or_primary_service_location_is_prc_mainland",
+      "source_is_prc_government_official_institution_or_prc_registered_platform",
+      "authenticated_account_or_api_service_is_operated_in_prc_mainland",
+      "dataset_is_explicitly_classified_as_prc_personal_important_or_restricted_geospatial_data"
+    ],
+    "ip_address_or_tld_alone_is_not_sufficient": true,
+    "unknown_source_country_action": "REVIEW_BEFORE_PRODUCTION"
+  },
+  "profiles": {
+    "PRC_STRICT": {
+      "applies_to": "PRC_MAINLAND sources and data flows",
+      "legal_baseline": "PRC_MAINLAND",
+      "source_server_footprint_policy": "source-server-footprint-policy.json",
+      "prc_cross_border_data_gate": true,
+      "foreign_cloud_authenticated_backend_gate": true,
+      "account_primary_origin_binding": true,
+      "cross_tool_source_budget": true,
+      "cross_tool_source_circuit_breaker": true,
+      "stable_non_rotating_client_identity": true,
+      "public_web_default_max_concurrency": 1,
+      "public_web_default_minimum_interval_seconds": 10,
+      "public_web_default_max_pages_per_task": 20,
+      "public_web_default_max_requests_per_domain_per_hour": 30,
+      "preferred_authenticated_paths": [
+        "official_api",
+        "official_export_sftp_or_licensed_mirror",
+        "authorized_local_or_manual_export",
+        "prc_fixed_runner",
+        "provider_explicitly_authorized_foreign_cloud",
+        "legal_access_unavailable_or_data_insufficient"
+      ],
+      "denial_behavior": "shared_hard_stop_across_tools_and_origins"
+    },
+    "GLOBAL_OPERATIONAL_BASELINE": {
+      "applies_to": "non-PRC sources and non-PRC data flows",
+      "prc_specific_legal_controls_enabled": false,
+      "prc_cross_border_data_gate": false,
+      "prc_fixed_runner_required": false,
+      "foreign_cloud_authenticated_backend_blocked_by_prc_policy": false,
+      "prc_public_web_default_rate_limits_enabled": false,
+      "provider_documented_limits_take_precedence": true,
+      "provider_terms_and_account_scope_required": true,
+      "official_or_authorized_access_required": true,
+      "secret_isolation_required": true,
+      "bounded_cost_runtime_response_and_pagination_required": true,
+      "response_schema_and_data_quality_validation_required": true,
+      "structured_audit_and_rollback_required": true,
+      "401_403_429_and_provider_block_signals_follow_provider_contract": true,
+      "arbitrary_code_secret_exposure_vulnerability_exploitation_and_unapproved_write_operations_forbidden": true
+    }
+  },
+  "global_security_controls": [
+    "secret_isolation",
+    "account_and_api_scope_enforcement",
+    "provider_terms_quota_and_block_signal_enforcement",
+    "fixed_operations_and_parameter_schema",
+    "response_schema_and_data_quality_validation",
+    "bounded_runtime_requests_pagination_response_bytes_and_cost",
+    "structured_audit_receipt",
+    "independent_disable_and_rollback",
+    "no_stolen_credentials_or_secret_exposure",
+    "no_vulnerability_exploitation_or_malicious_code",
+    "no_unapproved_write_transaction_trading_or_account_control"
+  ],
+  "prc_only_controls": [
+    "prc_source_server_visible_footprint_profile",
+    "prc_account_primary_origin_binding",
+    "prc_cross_tool_source_budget_and_circuit_breaker",
+    "prc_foreign_cloud_authenticated_backend_gate",
+    "prc_public_web_low_frequency_defaults",
+    "prc_personal_important_and_restricted_geospatial_cross_border_gate",
+    "prc_fixed_runner_fallback",
+    "prc_no_cross_origin_denial_bypass"
+  ],
+  "admission_rule": "Every source must be assigned exactly one profile before production. PRC_STRICT is mandatory only for PRC-mainland sources or PRC-mainland regulated data flows. Other sources use GLOBAL_OPERATIONAL_BASELINE.",
+  "assurance_statement": "This policy narrows PRC-specific legal and source-footprint controls to PRC-mainland scope while retaining global operational security, authorization, provider-contract and data-quality safeguards."
+}
