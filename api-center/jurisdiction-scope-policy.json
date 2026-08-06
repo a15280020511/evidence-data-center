@@ -4,6 +4,7 @@
   "policy_owner": "evidence-data-center",
   "default_legal_target": "PRC_MAINLAND",
   "principle": "prc_strict_controls_only_for_prc_sources_and_prc_data_flows",
+  "precedence": "This file is the authoritative jurisdictional scope overlay for tool-admission-policy.json and source-server-footprint-policy.json. Controls labelled PRC or defined by the PRC footprint policy must not be applied to sources assigned GLOBAL_OPERATIONAL_BASELINE.",
   "classification": {
     "source_country_metadata_required": true,
     "prc_scope_applies_when_any": [
