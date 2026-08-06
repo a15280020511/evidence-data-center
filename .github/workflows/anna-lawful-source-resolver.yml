@@ -39,8 +39,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: anna-lawful-source-resolver-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: anna-lawful-source-resolver-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   resolve:
