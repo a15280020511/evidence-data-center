@@ -1,0 +1,62 @@
+{
+  "schema_version": "lawful-book-source-registry-v1",
+  "policy": {
+    "https_required": true,
+    "unknown_domains_allowed": false,
+    "cross_domain_redirects_allowed": false,
+    "anna_archive_downloads_allowed": false,
+    "rights_attestation_required": true,
+    "maximum_download_bytes": 25000000,
+    "maximum_extracted_characters": 500000
+  },
+  "sources": [
+    {
+      "host": "www.gutenberg.org",
+      "enabled": true,
+      "allow_subdomains": false,
+      "rights_bases": ["public-domain"],
+      "formats": ["epub", "html", "xhtml", "txt"],
+      "approval_basis": "Project Gutenberg public-domain distribution"
+    },
+    {
+      "host": "gutenberg.org",
+      "enabled": true,
+      "allow_subdomains": false,
+      "rights_bases": ["public-domain"],
+      "formats": ["epub", "html", "xhtml", "txt"],
+      "approval_basis": "Project Gutenberg public-domain distribution"
+    },
+    {
+      "host": "standardebooks.org",
+      "enabled": true,
+      "allow_subdomains": true,
+      "rights_bases": ["public-domain", "open-license"],
+      "formats": ["epub", "html", "xhtml", "txt"],
+      "approval_basis": "Standard Ebooks public-domain editions and openly licensed project assets"
+    },
+    {
+      "host": "en.wikisource.org",
+      "enabled": true,
+      "allow_subdomains": false,
+      "rights_bases": ["public-domain", "open-license"],
+      "formats": ["html", "xhtml", "txt"],
+      "approval_basis": "Wikisource public-domain and openly licensed texts"
+    },
+    {
+      "host": "zh.wikisource.org",
+      "enabled": true,
+      "allow_subdomains": false,
+      "rights_bases": ["public-domain", "open-license"],
+      "formats": ["html", "xhtml", "txt"],
+      "approval_basis": "Wikisource public-domain and openly licensed texts"
+    },
+    {
+      "host": "upload.wikimedia.org",
+      "enabled": true,
+      "allow_subdomains": false,
+      "rights_bases": ["public-domain", "open-license"],
+      "formats": ["epub", "html", "xhtml", "txt"],
+      "approval_basis": "Wikimedia-hosted files with item-level public-domain or open-license attestation"
+    }
+  ]
+}
