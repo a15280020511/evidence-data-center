@@ -44,7 +44,7 @@ concurrency:
 
 jobs:
   resolve:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 10
     env:
       BOOK_TITLE: ${{ github.event.inputs.title || 'Alice in Wonderland' }}
