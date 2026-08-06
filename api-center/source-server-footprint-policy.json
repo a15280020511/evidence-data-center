@@ -1,0 +1,170 @@
+{
+  "schema_version": "source-server-footprint-control-v1",
+  "status": "production-control",
+  "jurisdiction": "PRC_MAINLAND",
+  "principle": "stable_minimal_explainable_stop_on_denial",
+  "foreign_ip_itself_is_illegal": false,
+  "identity_concealment_goal": false,
+  "source_server_observables": [
+    "egress_ip",
+    "country_region_asn",
+    "tls_browser_automation_fingerprint",
+    "user_agent_and_request_headers",
+    "account_api_key_cookie_session_binding",
+    "request_time_rate_concurrency_pagination_volume",
+    "paths_and_download_patterns",
+    "401_403_429_captcha_waf_block_and_followup_behavior"
+  ],
+  "approved_egress_classes": [
+    "OFFICIAL_API_CLOUD",
+    "PUBLIC_WEB_CLOUD",
+    "AUTHORIZED_LOCAL",
+    "PRC_FIXED_RUNNER",
+    "MANUAL_EXPORT",
+    "BLOCKED"
+  ],
+  "prc_source_profiles": {
+    "official_api": {
+      "foreign_cloud_allowed": "conditional_on_provider_terms_and_ip_policy",
+      "fixed_documented_endpoints_only": true,
+      "account_primary_origin_binding_required": true,
+      "global_account_quota_required": true,
+      "cross_provider_rotation_allowed": false
+    },
+    "public_web_no_login": {
+      "foreign_cloud_allowed": true,
+      "fixed_public_paths_only": true,
+      "max_concurrency": 1,
+      "default_minimum_interval_seconds": 10,
+      "default_max_pages_per_task": 20,
+      "default_max_requests_per_domain_per_hour": 30,
+      "stable_user_agent_required": true,
+      "random_user_agent_allowed": false,
+      "login_or_private_endpoint_allowed": false
+    },
+    "authenticated_web_or_member_backend": {
+      "foreign_cloud_allowed_by_default": false,
+      "preferred_paths": [
+        "official_api",
+        "official_export_sftp_or_licensed_mirror",
+        "authorized_local_export",
+        "prc_fixed_runner",
+        "legal_access_unavailable"
+      ],
+      "explicit_provider_permission_required_for_foreign_cloud": true,
+      "account_origin_binding_required": true,
+      "bulk_browser_collection_allowed_by_default": false
+    }
+  },
+  "identity_and_origin_consistency": {
+    "one_primary_origin_class_per_account_or_key": true,
+    "same_task_origin_switch_allowed": false,
+    "denial_shared_across_all_tools": true,
+    "cross_tool_quota_aggregation_required": true,
+    "cross_tool_source_circuit_breaker_required": true,
+    "alternate_origin_after_denial_allowed": false
+  },
+  "request_footprint_defaults": {
+    "web_max_concurrency": 1,
+    "web_minimum_interval_seconds": 10,
+    "web_max_pages_per_task": 20,
+    "web_max_requests_per_domain_per_hour": 30,
+    "official_api_limits_follow_provider_contract": true,
+    "source_specific_override_requires_review": true,
+    "task_ticket_may_expand_limits": false
+  },
+  "retry_policy": {
+    "automatic_retry_allowed_for": [
+      "network_timeout",
+      "http_500",
+      "http_502",
+      "http_503",
+      "http_504"
+    ],
+    "same_origin_same_identity_required": true,
+    "maximum_automatic_retries": 1,
+    "automatic_retry_for_401": false,
+    "automatic_retry_for_403": false,
+    "automatic_retry_for_429": false,
+    "automatic_retry_for_captcha_waf_or_block": false,
+    "retry_after_must_be_recorded": true,
+    "alternate_tool_or_origin_fallback_after_denial": false
+  },
+  "client_identity": {
+    "stable_user_agent_required": true,
+    "random_user_agent_rotation_allowed": false,
+    "browser_device_farm_emulation_allowed": false,
+    "tls_fingerprint_evasion_allowed": false,
+    "canvas_webgl_fingerprint_evasion_allowed": false,
+    "false_referer_allowed": false,
+    "false_x_forwarded_for_allowed": false,
+    "internal_task_or_secret_in_headers_allowed": false
+  },
+  "permanent_denies": [
+    "residential_proxy",
+    "proxy_pool",
+    "random_egress_ip",
+    "ip_rotation_after_denial",
+    "execution_provider_switch_after_denial",
+    "account_key_cookie_rotation_after_denial",
+    "user_agent_rotation",
+    "tls_or_browser_fingerprint_evasion",
+    "captcha_solving",
+    "automatic_unblock",
+    "hidden_endpoint_scanning",
+    "private_mobile_api_reverse_engineering",
+    "multi_account_or_multi_key_quota_aggregation",
+    "authenticated_prc_backend_via_foreign_cloud_without_explicit_permission"
+  ],
+  "global_hard_stops": {
+    "401": "AUTHORIZATION_REVIEW_REQUIRED",
+    "403": "AUTHORIZATION_REVIEW_REQUIRED",
+    "429": "RATE_LIMITED_STOP_TASK",
+    "captcha": "TECHNICAL_MEASURE_REVIEW_REQUIRED",
+    "waf": "TECHNICAL_MEASURE_REVIEW_REQUIRED",
+    "block_page": "TECHNICAL_MEASURE_REVIEW_REQUIRED",
+    "account_security_alert": "ACCOUNT_AUTOMATION_STOPPED",
+    "provider_complaint_or_notice": "SOURCE_QUARANTINED",
+    "terms_or_ip_policy_change": "SOURCE_REVIEW_REQUIRED"
+  },
+  "source_side_audit_receipt": {
+    "required_fields": [
+      "source_id",
+      "source_domain_sha256",
+      "egress_class",
+      "authenticated",
+      "user_agent_profile_version",
+      "request_count",
+      "page_count",
+      "max_concurrency",
+      "minimum_interval_seconds",
+      "http_status_sequence",
+      "retry_after_observed",
+      "origin_switch_occurred",
+      "global_circuit_breaker_triggered",
+      "response_bytes",
+      "cleanup_status"
+    ],
+    "actual_egress_ip_discovery_required": false,
+    "actual_egress_ip_publication_allowed": false,
+    "secret_or_cookie_recording_allowed": false
+  },
+  "continuity_fallback_order": [
+    "official_api",
+    "official_bulk_or_download_endpoint",
+    "fixed_public_web_low_frequency_readonly",
+    "authorized_local_or_manual_export",
+    "prc_fixed_runner",
+    "legal_access_unavailable_or_data_insufficient"
+  ],
+  "admission_evidence": [
+    "source_visible_footprint_documented",
+    "egress_class_and_account_binding",
+    "cross_tool_global_budget",
+    "401_403_429_captcha_waf_hard_stop_tests",
+    "no_ip_account_key_cookie_user_agent_or_provider_rotation_tests",
+    "source_side_audit_receipt",
+    "lawful_fallback_and_disable_path"
+  ],
+  "assurance_statement": "The policy minimizes suspicious or evasive source-side traces without concealing identity. It preserves official API and public-read workflows, but blocks tasks that require bypassing denial or technical measures."
+}
