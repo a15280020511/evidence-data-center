@@ -1,7 +1,9 @@
 {
   "schema_version": "catalog-domain-registry-v1",
+  "name": "Anna's Archive",
   "source": "annas-archive-public-search",
   "mode": "metadata-only",
+  "purpose": "Resolve the current public-search domain at runtime and search visible catalog metadata without persisting Anna's Archive domains.",
   "policy": {
     "https_required": true,
     "fail_closed": true,
@@ -13,6 +15,71 @@
     "minimum_source_score": 3,
     "maximum_runtime_candidates": 8,
     "domain_change_action": "resolve-live-from-wikimedia-and-use-transiently"
+  },
+  "runtime_domain_resolution": {
+    "trigger": "before every Anna's Archive catalog search",
+    "stored_domain_count_required": 0,
+    "steps": [
+      {
+        "order": 1,
+        "action": "query Wikidata entity search",
+        "queries": [
+          "Anna's Archive",
+          "安娜的档案",
+          "安娜图书馆"
+        ]
+      },
+      {
+        "order": 2,
+        "action": "read Wikidata P856 official website claims and linked English and Chinese Wikipedia pages"
+      },
+      {
+        "order": 3,
+        "action": "extract HTTPS root-domain candidates matching annas-archive or annasarchive"
+      },
+      {
+        "order": 4,
+        "action": "rank candidates by source evidence",
+        "priority": [
+          "Wikidata P856 official website claim",
+          "multiple matching Wikimedia references",
+          "Wikipedia external link"
+        ]
+      },
+      {
+        "order": 5,
+        "action": "probe each candidate with the requested public search query",
+        "contract": {
+          "https_only": true,
+          "expected_http_status": 200,
+          "visible_catalog_titles_required": true,
+          "cross_domain_redirects_followed": false,
+          "detail_pages_opened": false,
+          "download_links_followed": false
+        }
+      },
+      {
+        "order": 6,
+        "action": "use the first candidate that passes the live search-page contract for this task only"
+      },
+      {
+        "order": 7,
+        "action": "discard all resolved domains and candidates when the task ends"
+      }
+    ],
+    "failure_handling": {
+      "wikimedia_unavailable": "fail-closed and report domain-resolution unavailable",
+      "no_candidate_found": "fail-closed and return no catalog results",
+      "all_candidates_unhealthy": "fail-closed and retain diagnostic evidence only",
+      "redirect_to_another_domain": "do not follow; evaluate that domain only if independently returned by Wikimedia in the same run",
+      "captcha_or_access_control": "stop without bypass"
+    },
+    "persistence": {
+      "write_domain_to_repository": false,
+      "write_domain_to_database": false,
+      "reuse_domain_across_tasks": false,
+      "retain_only": "bounded execution report and health evidence"
+    }
   },
   "discovery": {
     "candidate_only": true,
@@ -37,14 +104,48 @@
     "runtime_action": "rank-current-Wikimedia-candidates-and-probe-search-contract",
     "persistence": "none"
   },
+  "capabilities": {
+    "catalog_search": {
+      "enabled": true,
+      "scope": [
+        "visible title metadata",
+        "visible result count",
+        "bounded title samples"
+      ]
+    },
+    "full_text": {
+      "from_annas_archive": false,
+      "anna_detail_pages_allowed": false,
+      "anna_downloads_allowed": false,
+      "supported_by_separate_lawful_reader": true,
+      "allowed_rights_bases": [
+        "public-domain",
+        "open-license",
+        "user-provided"
+      ],
+      "supported_formats": [
+        "epub",
+        "html",
+        "xhtml",
+        "txt"
+      ],
+      "complete_text_requirement": {
+        "content_complete": true,
+        "content_truncated": false,
+        "text_file_length_must_match_report": true,
+        "sha256_required": true
+      }
+    }
+  },
   "domains": [],
   "forbidden_operations": [
     "persist Anna's Archive domains in repository configuration",
     "install or execute third-party wrapper packages",
-    "follow detail or download links",
+    "follow Anna's Archive detail or download links",
     "retrieve book or document files from Anna's Archive",
     "resolve direct download links",
     "follow cross-domain redirects",
-    "bypass captcha anti-bot access control rate limit or paywall"
+    "bypass captcha anti-bot access control rate limit or paywall",
+    "treat a visible catalog record as proof of download rights"
   ]
 }
