@@ -2,75 +2,154 @@
   "schema_version": "public-book-source-coverage-v1",
   "reviewed_at": "2026-08-06",
   "scope": "Public book catalogs and lawfully accessible public-domain/open-license full-text sources currently represented in the Intelligence Center",
-  "conclusion": "The high-value sources previously discussed are substantially represented, but they are not all exposed through one unified book-search adapter. Catalog discovery and lawful full-text retrieval remain separate capabilities.",
+  "conclusion": "Project Gutenberg, Standard Ebooks, and English/Chinese Wikisource are now exposed through one governed public-book search adapter. Broader library catalogs remain separate fixed providers because their contracts, credentials, and rights fields differ.",
+  "unified_public_book_search": {
+    "status": "integrated",
+    "implementation": "information-tool-radar/public_book_search.py",
+    "source_registry": "information-tool-radar/public-book-search-sources.json",
+    "workflow": ".github/workflows/public-book-search.yml",
+    "sources": [
+      "project-gutenberg",
+      "standard-ebooks",
+      "wikisource-en",
+      "wikisource-zh"
+    ],
+    "requests_per_source_max": 1,
+    "source_concurrency_max": 1,
+    "automatic_retries_allowed": false,
+    "source_side_hard_stop_http": [
+      401,
+      403,
+      429
+    ]
+  },
   "sources": [
     {
       "source_id": "annas-archive",
-      "role": ["catalog-metadata"],
-      "catalog_search": "integrated",
+      "role": [
+        "catalog-metadata"
+      ],
+      "catalog_search": "integrated-separate-metadata-adapter",
       "full_text": "not-allowed",
       "implementation": "information-tool-radar/catalog_runtime_search.py",
       "notes": "Runtime domain resolution from Wikidata/Wikipedia; visible catalog metadata only; no detail pages or downloads."
     },
     {
       "source_id": "project-gutenberg",
-      "role": ["public-domain-full-text"],
-      "catalog_search": "not-dedicated",
+      "role": [
+        "catalog-metadata",
+        "public-domain-full-text"
+      ],
+      "catalog_search": "integrated-unified-adapter",
       "full_text": "integrated",
-      "implementation": "information-tool-radar/lawful_book_reader.py",
-      "formats": ["epub", "html", "xhtml", "txt"],
-      "notes": "Approved public-domain download source; no separate Gutenberg search operation in the Intelligence Center."
+      "implementation": [
+        "information-tool-radar/public_book_search.py",
+        "information-tool-radar/lawful_book_reader.py"
+      ],
+      "search_contract": "official OPDS, one page and one request per task",
+      "formats": [
+        "epub",
+        "html",
+        "xhtml",
+        "txt"
+      ],
+      "notes": "Search results retain official landing pages and only provider-declared OPDS acquisition locations. Users outside the United States must evaluate local copyright status."
     },
     {
       "source_id": "standard-ebooks",
-      "role": ["public-domain-full-text", "open-license-full-text"],
-      "catalog_search": "not-dedicated",
+      "role": [
+        "catalog-metadata",
+        "public-domain-full-text",
+        "open-license-full-text"
+      ],
+      "catalog_search": "integrated-unified-adapter",
       "full_text": "integrated",
-      "implementation": "information-tool-radar/lawful_book_reader.py",
-      "formats": ["epub", "html", "xhtml", "txt"],
-      "notes": "Approved source; no separate Standard Ebooks search operation in the Intelligence Center."
+      "implementation": [
+        "information-tool-radar/public_book_search.py",
+        "information-tool-radar/lawful_book_reader.py"
+      ],
+      "search_contract": "public browse search, one page and one request per task",
+      "formats": [
+        "epub",
+        "html",
+        "xhtml",
+        "txt"
+      ],
+      "notes": "The search adapter returns landing pages only. It does not automate Patrons Circle, authenticated feeds, or collection downloads."
     },
     {
       "source_id": "wikisource-en-zh",
-      "role": ["public-domain-full-text", "open-license-full-text"],
-      "catalog_search": "not-dedicated",
+      "role": [
+        "catalog-metadata",
+        "public-domain-full-text",
+        "open-license-full-text"
+      ],
+      "catalog_search": "integrated-unified-adapter",
       "full_text": "integrated",
-      "implementation": "information-tool-radar/lawful_book_reader.py",
-      "formats": ["html", "xhtml", "txt"],
-      "notes": "English and Chinese Wikisource hosts are approved; a unified MediaWiki book-search operation has not been added."
+      "implementation": [
+        "information-tool-radar/public_book_search.py",
+        "information-tool-radar/lawful_book_reader.py"
+      ],
+      "search_contract": "official MediaWiki Action API, one request per language site",
+      "formats": [
+        "html",
+        "xhtml",
+        "txt"
+      ],
+      "notes": "English and Chinese Wikisource are searched separately and returned in one normalized report. Item-level rights and edition scope still require review."
     },
     {
       "source_id": "wikimedia-files",
-      "role": ["public-domain-full-text", "open-license-full-text", "pdf-files"],
+      "role": [
+        "public-domain-full-text",
+        "open-license-full-text",
+        "pdf-files"
+      ],
       "catalog_search": "not-a-book-catalog",
       "full_text": "integrated",
       "implementation": [
         "information-tool-radar/lawful_book_reader.py",
         "information-tool-radar/lawful_pdf_reader.py"
       ],
-      "formats": ["epub", "html", "xhtml", "txt", "pdf"],
+      "formats": [
+        "epub",
+        "html",
+        "xhtml",
+        "txt",
+        "pdf"
+      ],
       "notes": "PDF requires item-level rights attestation and rejects encryption, active content and embedded files."
     },
     {
       "source_id": "open-library",
-      "role": ["catalog-metadata", "edition-metadata"],
-      "catalog_search": "integrated",
+      "role": [
+        "catalog-metadata",
+        "edition-metadata"
+      ],
+      "catalog_search": "integrated-separate-provider",
       "full_text": "declared-open-links-only",
       "implementation": "global-literature-libraries/literature-search and literature-record",
       "notes": "Fixed source_id open-library; no unrestricted file download."
     },
     {
       "source_id": "internet-archive",
-      "role": ["catalog-metadata", "item-metadata", "file-list-metadata"],
-      "catalog_search": "integrated",
+      "role": [
+        "catalog-metadata",
+        "item-metadata",
+        "file-list-metadata"
+      ],
+      "catalog_search": "integrated-separate-provider",
       "full_text": "file-download-disabled",
       "implementation": "internet-archive/search-items, get-item-metadata and list-item-files",
       "notes": "Dedicated official API provider; arbitrary file downloads and borrowing automation remain disabled."
     },
     {
       "source_id": "google-books",
-      "role": ["catalog-metadata", "availability-metadata"],
-      "catalog_search": "integrated",
+      "role": [
+        "catalog-metadata",
+        "availability-metadata"
+      ],
+      "catalog_search": "integrated-separate-provider",
       "full_text": "provider-declared-access-only",
       "implementation": "global-knowledge-archives/knowledge-search and knowledge-record",
       "credential": "GOOGLE_PUBLIC_INTELLIGENCE_API_KEY",
@@ -78,44 +157,57 @@
     },
     {
       "source_id": "library-of-congress",
-      "role": ["catalog-metadata"],
-      "catalog_search": "integrated",
+      "role": [
+        "catalog-metadata"
+      ],
+      "catalog_search": "integrated-separate-provider",
       "full_text": "declared-open-links-only",
       "implementation": "global-literature-libraries/literature-search and literature-record"
     },
     {
       "source_id": "gallica",
-      "role": ["catalog-metadata", "digital-library-metadata"],
-      "catalog_search": "integrated",
+      "role": [
+        "catalog-metadata",
+        "digital-library-metadata"
+      ],
+      "catalog_search": "integrated-separate-provider",
       "full_text": "declared-open-links-only",
       "implementation": "global-literature-libraries/literature-search"
     },
     {
       "source_id": "ndl-sru",
-      "role": ["national-library-catalog"],
-      "catalog_search": "integrated",
+      "role": [
+        "national-library-catalog"
+      ],
+      "catalog_search": "integrated-separate-provider",
       "full_text": "metadata-only",
       "implementation": "global-literature-libraries/sru-search"
     },
     {
       "source_id": "dnb-sru",
-      "role": ["national-library-catalog"],
-      "catalog_search": "integrated",
+      "role": [
+        "national-library-catalog"
+      ],
+      "catalog_search": "integrated-separate-provider",
       "full_text": "metadata-only",
       "implementation": "global-knowledge-archives/sru-search"
     },
     {
       "source_id": "europeana",
-      "role": ["cultural-heritage-catalog"],
-      "catalog_search": "integrated-conditional-key",
+      "role": [
+        "cultural-heritage-catalog"
+      ],
+      "catalog_search": "integrated-conditional-key-separate-provider",
       "full_text": "rights-field-dependent",
       "implementation": "global-literature-libraries/literature-search and literature-record",
       "credential": "EUROPEANA_API_KEY"
     },
     {
       "source_id": "dpla",
-      "role": ["library-archive-catalog"],
-      "catalog_search": "integrated-conditional-key",
+      "role": [
+        "library-archive-catalog"
+      ],
+      "catalog_search": "integrated-conditional-key-separate-provider",
       "full_text": "rights-field-dependent",
       "implementation": "global-literature-libraries/literature-search and literature-record",
       "credential": "DPLA_API_KEY"
@@ -123,8 +215,8 @@
   ],
   "gaps": [
     {
-      "gap": "No unified search adapter for Project Gutenberg, Standard Ebooks and English/Chinese Wikisource",
-      "impact": "They can supply lawful full text when a concrete approved URL is known, but are not queried through one common catalog operation."
+      "gap": "The unified public-domain adapter does not merge every national library and commercial availability catalog into the same request",
+      "impact": "Open Library, Internet Archive, Google Books, national libraries, Europeana and DPLA remain separate governed providers so their distinct credentials, rights fields, quotas and response contracts are not hidden."
     },
     {
       "gap": "Publisher open-book pages are not one stable global API",
@@ -137,9 +229,11 @@
   ],
   "safety_invariants": {
     "anna_pdf_downloads_allowed": false,
+    "anna_detail_pages_allowed": false,
     "unknown_remote_hosts_allowed": false,
-    "rights_attestation_required": true,
+    "rights_attestation_required_for_full_text": true,
     "access_control_bypass_allowed": false,
-    "catalog_record_treated_as_download_right": false
+    "catalog_record_treated_as_download_right": false,
+    "automatic_401_403_429_retry_allowed": false
   }
 }
