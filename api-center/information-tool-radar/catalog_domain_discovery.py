@@ -231,6 +231,41 @@ def candidate_matches(url: str, tokens: list[str], official_claim: bool) -> bool
     )
 
 
+def candidate_kind(domain: str, tokens: list[str]) -> str:
+    host = (urllib.parse.urlparse(domain).hostname or "").casefold()
+    for token in tokens:
+        folded = token.casefold().strip().strip(".")
+        if host.startswith(folded + "."):
+            return "root-domain"
+    return "related-subdomain"
+
+
+def add_candidate(
+    candidates: dict[str, dict[str, Any]],
+    *,
+    domain: str,
+    approved: set[str],
+    tokens: list[str],
+    source: Mapping[str, Any],
+    source_score: int,
+) -> None:
+    kind = candidate_kind(domain, tokens)
+    row = candidates.setdefault(
+        domain,
+        {
+            "candidate_domain": domain,
+            "candidate_kind": kind,
+            "status": "already-approved" if domain in approved else "unapproved-candidate",
+            "source_score": 0,
+            "sources": [],
+        },
+    )
+    if kind == "root-domain":
+        row["candidate_kind"] = "root-domain"
+    row["source_score"] = int(row.get("source_score") or 0) + source_score
+    row["sources"].append(dict(source))
+
+
 def discover(
     registry: Mapping[str, Any],
     timeout: int = 15,
@@ -275,15 +310,18 @@ def discover(
             except ValueError:
                 continue
             if candidate_matches(url, tokens, official_claim=True):
-                candidates.setdefault(
-                    domain,
-                    {
-                        "candidate_domain": domain,
-                        "status": "already-approved" if domain in approved else "unapproved-candidate",
-                        "sources": [],
+                add_candidate(
+                    candidates,
+                    domain=domain,
+                    approved=approved,
+                    tokens=tokens,
+                    source={
+                        "type": "wikidata-P856",
+                        "entity_id": entity_id,
+                        "source_url": url,
+                        "confidence": "medium",
                     },
-                )["sources"].append(
-                    {"type": "wikidata-P856", "entity_id": entity_id, "source_url": url}
+                    source_score=3,
                 )
 
         for language, title in sitelink_titles(raw_entity, languages):
@@ -302,25 +340,42 @@ def discover(
                     domain = normalize_domain(url)
                 except ValueError:
                     continue
-                candidates.setdefault(
-                    domain,
-                    {
-                        "candidate_domain": domain,
-                        "status": "already-approved" if domain in approved else "unapproved-candidate",
-                        "sources": [],
-                    },
-                )["sources"].append(
-                    {
+                add_candidate(
+                    candidates,
+                    domain=domain,
+                    approved=approved,
+                    tokens=tokens,
+                    source={
                         "type": "wikipedia-external-link",
                         "language": language,
                         "page_title": title,
                         "entity_id": entity_id,
                         "source_url": url,
-                    }
+                        "confidence": "low",
+                    },
+                    source_score=1,
                 )
 
-    rows = sorted(candidates.values(), key=lambda item: item["candidate_domain"])
-    new_rows = [row for row in rows if row["status"] == "unapproved-candidate"]
+    rows = sorted(
+        candidates.values(),
+        key=lambda item: (
+            item.get("candidate_kind") != "root-domain",
+            -int(item.get("source_score") or 0),
+            item["candidate_domain"],
+        ),
+    )
+    new_rows = [
+        row
+        for row in rows
+        if row["status"] == "unapproved-candidate"
+        and row.get("candidate_kind") == "root-domain"
+    ]
+    related_hosts = [
+        row
+        for row in rows
+        if row["status"] == "unapproved-candidate"
+        and row.get("candidate_kind") == "related-subdomain"
+    ]
     if successful_queries == 0:
         status = "unavailable"
     elif source_errors:
@@ -341,6 +396,7 @@ def discover(
         "approved_domains": sorted(approved),
         "candidates": rows,
         "new_candidates": new_rows,
+        "related_hosts": related_hosts,
         "manual_review_required": bool(new_rows),
         "source_errors": source_errors,
         "promotion_requirements": [
@@ -384,6 +440,7 @@ def main() -> int:
                 "status": report.get("status"),
                 "candidate_count": len(report.get("candidates") or []),
                 "new_candidate_count": len(report.get("new_candidates") or []),
+                "related_host_count": len(report.get("related_hosts") or []),
                 "manual_review_required": report.get("manual_review_required", False),
             },
             ensure_ascii=False,

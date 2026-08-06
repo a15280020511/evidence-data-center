@@ -75,6 +75,7 @@ def main() -> int:
         return [
             "https://annas-archive.gl/",
             "https://annas-archive.other/somewhere",
+            "https://software.annas-archive.gl/project",
             "https://unrelated.example/",
         ]
 
@@ -95,6 +96,15 @@ def main() -> int:
     assert domains["https://annas-archive.gl"]["status"] == "already-approved"
     assert domains["https://annas-archive.new"]["status"] == "unapproved-candidate"
     assert domains["https://annas-archive.other"]["status"] == "unapproved-candidate"
+    assert domains["https://annas-archive.other"]["candidate_kind"] == "root-domain"
+    assert domains["https://software.annas-archive.gl"]["candidate_kind"] == "related-subdomain"
+    assert {row["candidate_domain"] for row in report["new_candidates"]} == {
+        "https://annas-archive.new",
+        "https://annas-archive.other",
+    }
+    assert {row["candidate_domain"] for row in report["related_hosts"]} == {
+        "https://software.annas-archive.gl"
+    }
     assert "https://unrelated.example" not in domains
 
     invalid = registry()
@@ -113,6 +123,7 @@ def main() -> int:
         "wikipedia_external_link_candidate": "passed",
         "approved_domain_recognition": "passed",
         "automatic_promotion_rejected": "passed",
+        "root_domains_separated_from_subdomains": "passed",
         "unrelated_domains_filtered": "passed",
     }, ensure_ascii=False))
     return 0
