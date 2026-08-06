@@ -89,6 +89,12 @@
         "causal inference",
         "agent based modeling",
         "open data Africa"
+      ],
+      "best_match_max_records": 25,
+      "best_match_queries": [
+        "archive api language:Python",
+        "bibliographic metadata SDK",
+        "digital library catalog API"
       ]
     }
   },
@@ -110,6 +116,9 @@
     "submit credentials",
     "activate billing",
     "write to external services",
-    "bypass robots access control or paywall"
+    "bypass robots access control or paywall",
+    "retrieve copyrighted content",
+    "resolve direct download links",
+    "bypass captcha or anti-bot protection"
   ]
 }
