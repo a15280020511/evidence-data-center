@@ -4,6 +4,12 @@ on:
   schedule:
     - cron: "15 2 * * *"
   workflow_dispatch:
+    inputs:
+      catalog_query:
+        description: "Metadata-only catalog search query"
+        required: false
+        default: "孙子兵法"
+        type: string
   pull_request:
     paths:
       - "api-center/information-tool-radar/**"
@@ -35,6 +41,7 @@ jobs:
     timeout-minutes: 25
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CATALOG_QUERY: ${{ github.event.inputs.catalog_query || '孙子兵法' }}
     steps:
       - name: Checkout current ref
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -55,12 +62,11 @@ jobs:
             api-center/information-tool-radar/incumbent_inventory.py \
             api-center/information-tool-radar/incumbent_audit.py \
             api-center/information-tool-radar/incumbent_watch.py \
-            api-center/information-tool-radar/sensitive_watch.py \
-            api-center/information-tool-radar/blind_discovery_audit.py \
+            api-center/information-tool-radar/catalog_web_search.py \
             api-center/information-tool-radar/test_radar.py \
             api-center/information-tool-radar/test_incumbent_inventory.py \
             api-center/information-tool-radar/test_incumbent_watch.py \
-            api-center/information-tool-radar/test_sensitive_watch.py
+            api-center/information-tool-radar/test_catalog_web_search.py
 
       - name: Run deterministic radar tests
         working-directory: api-center/information-tool-radar
@@ -80,11 +86,11 @@ jobs:
           set -o pipefail
           python test_incumbent_watch.py | tee ../../incumbent-watch-unit.json
 
-      - name: Run deterministic sensitive watch tests
+      - name: Run deterministic catalog web search tests
         working-directory: api-center/information-tool-radar
         run: |
           set -o pipefail
-          python test_sensitive_watch.py | tee ../../sensitive-watch-unit.json
+          python test_catalog_web_search.py | tee ../../catalog-web-search-unit.json
 
       - name: Run bounded live coverage test
         run: |
@@ -95,23 +101,14 @@ jobs:
             --output-dir information-tool-radar-artifact \
             --enforce-thresholds | tee information-tool-radar-run.json
 
-      - name: Prove broad blind discovery
+      - name: Run controlled catalog web search
         run: |
           set -o pipefail
-          python api-center/information-tool-radar/blind_discovery_audit.py \
-            --config api-center/information-tool-radar/config.json \
-            --watchlist api-center/information-tool-radar/watchlists/annas-archive-metadata.json \
-            --candidates information-tool-radar-artifact/candidates.jsonl \
-            --output information-tool-radar-artifact/blind-discovery-audit.json \
-            --enforce | tee blind-discovery-run.json
-
-      - name: Run metadata-only sensitive source watch
-        run: |
-          set -o pipefail
-          python api-center/information-tool-radar/sensitive_watch.py \
-            --watchlist api-center/information-tool-radar/watchlists/annas-archive-metadata.json \
-            --output-dir information-tool-radar-artifact \
-            --enforce-policy | tee sensitive-watch-run.json
+          python api-center/information-tool-radar/catalog_web_search.py \
+            --registry api-center/information-tool-radar/catalog-domains.json \
+            --query "$CATALOG_QUERY" \
+            --output information-tool-radar-artifact/catalog-web-search-report.json \
+            --enforce | tee catalog-web-search-run.json
 
       - name: Audit generic rediscovery of incumbent tools
         run: |
@@ -136,20 +133,18 @@ jobs:
         run: |
           python -m json.tool api-center/information-tool-radar/config.json >/dev/null
           python -m json.tool api-center/information-tool-radar/candidate.schema.json >/dev/null
-          python -m json.tool api-center/information-tool-radar/watchlists/annas-archive-metadata.json >/dev/null
+          python -m json.tool api-center/information-tool-radar/catalog-domains.json >/dev/null
           python -m json.tool information-tool-radar-unit.json >/dev/null
           python -m json.tool incumbent-inventory-unit.json >/dev/null
           python -m json.tool incumbent-watch-unit.json >/dev/null
-          python -m json.tool sensitive-watch-unit.json >/dev/null
+          python -m json.tool catalog-web-search-unit.json >/dev/null
           python -m json.tool information-tool-radar-run.json >/dev/null
-          python -m json.tool blind-discovery-run.json >/dev/null
-          python -m json.tool sensitive-watch-run.json >/dev/null
+          python -m json.tool catalog-web-search-run.json >/dev/null
           python -m json.tool incumbent-audit-run.json >/dev/null
           python -m json.tool incumbent-watch-run.json >/dev/null
           python -m json.tool information-tool-radar-artifact/coverage-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/manifest.json >/dev/null
-          python -m json.tool information-tool-radar-artifact/blind-discovery-audit.json >/dev/null
-          python -m json.tool information-tool-radar-artifact/sensitive-source-watch-report.json >/dev/null
+          python -m json.tool information-tool-radar-artifact/catalog-web-search-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-inventory.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-audit-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-watch-report.json >/dev/null
@@ -157,7 +152,7 @@ jobs:
           python -m json.tool information-tool-radar-artifact/incumbent-fingerprint-state.json >/dev/null
           test -s information-tool-radar-artifact/coverage-report.md
           test -s information-tool-radar-artifact/candidates.jsonl
-          test -s information-tool-radar-artifact/sensitive-source-watch-candidates.jsonl
+          test -s information-tool-radar-artifact/catalog-web-search-report.json
           test -s information-tool-radar-artifact/incumbent-audit-report.md
           test -s information-tool-radar-artifact/incumbent-watch-report.md
           test -s information-tool-radar-artifact/incumbent-candidates.jsonl
@@ -172,10 +167,9 @@ jobs:
             information-tool-radar-unit.json
             incumbent-inventory-unit.json
             incumbent-watch-unit.json
-            sensitive-watch-unit.json
+            catalog-web-search-unit.json
             information-tool-radar-run.json
-            blind-discovery-run.json
-            sensitive-watch-run.json
+            catalog-web-search-run.json
             incumbent-audit-run.json
             incumbent-watch-run.json
             information-tool-radar-artifact/
