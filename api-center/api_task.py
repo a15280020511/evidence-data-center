@@ -30,7 +30,8 @@ SAFE_ENV_KEYS = (
     "ISSUE_NUMBER",
 )
 ENV_NAME_RE = re.compile(r"^[A-Z][A-Z0-9_]{2,127}$")
-TRANSIENT_HTTP = {408, 425, 429, 500, 502, 503, 504}
+TRANSIENT_HTTP = {408, 425, 500, 502, 503, 504}
+SOURCE_SIDE_HARD_STOP_HTTP = {401, 403, 429}
 
 
 def utc_now() -> str:
@@ -470,9 +471,11 @@ def _fetch_one(
                     "attempt": attempt,
                     "http_status": final_status,
                     "duration_ms": round((time.perf_counter() - started) * 1000, 3),
-                    "outcome": "http_error",
+                    "outcome": "source_side_hard_stop" if final_status in SOURCE_SIDE_HARD_STOP_HTTP else "http_error",
                 }
             )
+            if final_status in SOURCE_SIDE_HARD_STOP_HTTP:
+                break
             if final_status not in TRANSIENT_HTTP or attempt >= max_attempts:
                 break
         except (urllib.error.URLError, TimeoutError, socket.timeout, json.JSONDecodeError, UnicodeDecodeError, ValueError) as exc:
@@ -497,6 +500,24 @@ def _fetch_one(
             "success": False,
             "state": "network_error",
             "message": error_message or "no HTTP response",
+            "business_status": None,
+            "business_code": None,
+            "data_present": False,
+        }
+    elif final_status in {401, 403}:
+        contract_result = {
+            "success": False,
+            "state": "authorization_denied",
+            "message": error_message or f"HTTP {final_status}",
+            "business_status": None,
+            "business_code": None,
+            "data_present": False,
+        }
+    elif final_status == 429:
+        contract_result = {
+            "success": False,
+            "state": "rate_limited",
+            "message": error_message or "HTTP 429",
             "business_status": None,
             "business_code": None,
             "data_present": False,
@@ -546,6 +567,7 @@ def _fetch_one(
         "response_headers": final_headers,
         "attempts": attempts,
         "attempt_count": len(attempts),
+        "source_side_hard_stop": final_status in SOURCE_SIDE_HARD_STOP_HTTP,
         "state": contract_result["state"],
         "success": bool(contract_result["success"]),
         "business_status": contract_result["business_status"],
@@ -597,6 +619,8 @@ def _diagnostics(
             "authorization_header_recorded": False,
             "arbitrary_urls_allowed": False,
             "ticket_requires_public_non_personal_data": True,
+            "source_side_hard_stop_http": sorted(SOURCE_SIDE_HARD_STOP_HTTP),
+            "automatic_429_retry_allowed": False,
             "environment_allowlist": [key.lower() for key in SAFE_ENV_KEYS],
         },
     }
@@ -703,8 +727,10 @@ def execute(plan_path: Path, output_dir: Path) -> int:
         "request_count": snapshot["request_count"],
         "successful_request_count": successful_count,
         "external_data_fetch_attempts": sum(int(item.get("attempt_count") or 0) for item in results),
+        "source_side_hard_stop_count": sum(bool(item.get("source_side_hard_stop")) for item in results),
         "model_calls": 0,
         "arbitrary_urls_allowed": False,
+        "automatic_429_retry_allowed": False,
         "connector_ids": [str(item.get("connector_id")) for item in results],
         "run_identity": run_identity(),
         "secret_values_included": False,
