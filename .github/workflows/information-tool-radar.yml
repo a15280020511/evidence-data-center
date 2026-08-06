@@ -56,6 +56,7 @@ jobs:
             api-center/information-tool-radar/incumbent_audit.py \
             api-center/information-tool-radar/incumbent_watch.py \
             api-center/information-tool-radar/sensitive_watch.py \
+            api-center/information-tool-radar/blind_discovery_audit.py \
             api-center/information-tool-radar/test_radar.py \
             api-center/information-tool-radar/test_incumbent_inventory.py \
             api-center/information-tool-radar/test_incumbent_watch.py \
@@ -94,6 +95,16 @@ jobs:
             --output-dir information-tool-radar-artifact \
             --enforce-thresholds | tee information-tool-radar-run.json
 
+      - name: Prove broad blind discovery
+        run: |
+          set -o pipefail
+          python api-center/information-tool-radar/blind_discovery_audit.py \
+            --config api-center/information-tool-radar/config.json \
+            --watchlist api-center/information-tool-radar/watchlists/annas-archive-metadata.json \
+            --candidates information-tool-radar-artifact/candidates.jsonl \
+            --output information-tool-radar-artifact/blind-discovery-audit.json \
+            --enforce | tee blind-discovery-run.json
+
       - name: Run metadata-only sensitive source watch
         run: |
           set -o pipefail
@@ -131,11 +142,13 @@ jobs:
           python -m json.tool incumbent-watch-unit.json >/dev/null
           python -m json.tool sensitive-watch-unit.json >/dev/null
           python -m json.tool information-tool-radar-run.json >/dev/null
+          python -m json.tool blind-discovery-run.json >/dev/null
           python -m json.tool sensitive-watch-run.json >/dev/null
           python -m json.tool incumbent-audit-run.json >/dev/null
           python -m json.tool incumbent-watch-run.json >/dev/null
           python -m json.tool information-tool-radar-artifact/coverage-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/manifest.json >/dev/null
+          python -m json.tool information-tool-radar-artifact/blind-discovery-audit.json >/dev/null
           python -m json.tool information-tool-radar-artifact/sensitive-source-watch-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-inventory.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-audit-report.json >/dev/null
@@ -161,6 +174,7 @@ jobs:
             incumbent-watch-unit.json
             sensitive-watch-unit.json
             information-tool-radar-run.json
+            blind-discovery-run.json
             sensitive-watch-run.json
             incumbent-audit-run.json
             incumbent-watch-run.json

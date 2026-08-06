@@ -2,8 +2,8 @@
 """GitHub dual-mode discovery for the Information & Tool Radar.
 
 Recent-change queries stay sorted by update time. Broad category discovery uses
-GitHub's best-match order so older but semantically relevant projects are not
-buried by unrelated newly updated repositories.
+GitHub's best-match order and a separately bounded result depth so older but
+semantically relevant projects are not buried by unrelated recent repositories.
 """
 from __future__ import annotations
 
@@ -27,17 +27,23 @@ def github(config: Mapping[str, Any], runtime: Mapping[str, int]) -> base.Adapte
         (str(query), "best_match")
         for query in list(config.get("best_match_queries") or [])
     )
+    best_match_limit = min(
+        max(int(config.get("best_match_max_records") or runtime["max_records"]), 1),
+        50,
+    )
     result.details["query_modes"] = {
         "recent": sum(mode == "recent" for _, mode in query_plan),
         "best_match": sum(mode == "best_match" for _, mode in query_plan),
     }
+    result.details["best_match_max_records"] = best_match_limit
 
     for query, mode in query_plan:
         result.probes += 1
+        query_limit = best_match_limit if mode == "best_match" else runtime["max_records"]
         try:
             params: dict[str, Any] = {
                 "q": query,
-                "per_page": runtime["max_records"],
+                "per_page": query_limit,
             }
             if mode == "recent":
                 params.update({"sort": "updated", "order": "desc"})
@@ -52,7 +58,7 @@ def github(config: Mapping[str, Any], runtime: Mapping[str, int]) -> base.Adapte
             if not isinstance(rows, list):
                 raise RuntimeError("GitHub items missing")
             result.successful_probes += 1
-            for row in rows[: runtime["max_records"]]:
+            for row in rows[:query_limit]:
                 if isinstance(row, Mapping) and row.get("html_url"):
                     result.candidates.append(base.make_candidate(
                         result.name,

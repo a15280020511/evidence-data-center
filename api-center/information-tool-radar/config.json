@@ -90,8 +90,9 @@
         "agent based modeling",
         "open data Africa"
       ],
+      "best_match_max_records": 25,
       "best_match_queries": [
-        "unofficial archive API Python",
+        "archive api language:Python",
         "bibliographic metadata SDK",
         "digital library catalog API"
       ]

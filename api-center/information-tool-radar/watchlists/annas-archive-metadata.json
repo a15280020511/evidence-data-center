@@ -9,7 +9,7 @@
   "purpose": "Discover and monitor public repository metadata, maintenance, licensing and security signals for third-party wrappers. This watch does not retrieve catalog content or files.",
   "discovery_policy": {
     "generic_queries": [
-      "unofficial archive API Python",
+      "archive api language:Python",
       "bibliographic metadata SDK",
       "digital library catalog API"
     ],
