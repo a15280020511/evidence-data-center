@@ -1,16 +1,13 @@
 {
-  "apis_guru_cursor": 600,
+  "apis_guru_cursor": 720,
   "last_engine_counts": {
     "exa": 8,
     "github": 4,
     "tavily": 8
   },
-  "last_errors": [
-    "apis.guru spec appcenter.ms: RuntimeError: response exceeds maximum size",
-    "apis.guru spec autotask.net: RuntimeError: response exceeds maximum size"
-  ],
-  "last_run_at": "2026-08-05T11:29:56+00:00",
-  "query_cursor": 120,
-  "runs": 5,
+  "last_errors": [],
+  "last_run_at": "2026-08-06T04:43:25+00:00",
+  "query_cursor": 144,
+  "runs": 6,
   "schema_version": "global-source-discovery-state-v2"
 }
