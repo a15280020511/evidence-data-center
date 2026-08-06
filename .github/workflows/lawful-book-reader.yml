@@ -62,7 +62,7 @@ jobs:
       RIGHTS_BASIS: ${{ github.event.inputs.rights_basis || 'public-domain' }}
       RIGHTS_NOTE: ${{ github.event.inputs.rights_note || 'Project Gutenberg public-domain edition.' }}
       RETAIN_BOOK_FILE: ${{ github.event.inputs.retain_book_file || 'false' }}
-      PUBLIC_PDF_URL: "https://upload.wikimedia.org/wikipedia/commons/1/12/The_Art_of_War_%28Giles%2C_1910%29.pdf"
+      PUBLIC_PDF_URL: "https://upload.wikimedia.org/wikipedia/commons/a/a8/The_Art_of_War_%28Giles%2C_1910%29.pdf"
     steps:
       - name: Checkout current ref
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
