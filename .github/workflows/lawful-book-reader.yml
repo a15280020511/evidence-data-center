@@ -29,15 +29,21 @@ on:
   pull_request:
     paths:
       - "api-center/information-tool-radar/lawful_book_reader.py"
+      - "api-center/information-tool-radar/lawful_pdf_reader.py"
       - "api-center/information-tool-radar/lawful-book-sources.json"
+      - "api-center/information-tool-radar/book-reader-requirements.txt"
       - "api-center/information-tool-radar/test_lawful_book_reader.py"
+      - "api-center/information-tool-radar/test_lawful_pdf_reader.py"
       - ".github/workflows/lawful-book-reader.yml"
   push:
     branches: [main]
     paths:
       - "api-center/information-tool-radar/lawful_book_reader.py"
+      - "api-center/information-tool-radar/lawful_pdf_reader.py"
       - "api-center/information-tool-radar/lawful-book-sources.json"
+      - "api-center/information-tool-radar/book-reader-requirements.txt"
       - "api-center/information-tool-radar/test_lawful_book_reader.py"
+      - "api-center/information-tool-radar/test_lawful_pdf_reader.py"
       - ".github/workflows/lawful-book-reader.yml"
 
 permissions:
@@ -50,12 +56,13 @@ concurrency:
 jobs:
   read:
     runs-on: ubuntu-24.04
-    timeout-minutes: 12
+    timeout-minutes: 15
     env:
       BOOK_URL: ${{ github.event.inputs.book_url || 'https://www.gutenberg.org/cache/epub/11/pg11.txt' }}
       RIGHTS_BASIS: ${{ github.event.inputs.rights_basis || 'public-domain' }}
       RIGHTS_NOTE: ${{ github.event.inputs.rights_note || 'Project Gutenberg public-domain edition.' }}
       RETAIN_BOOK_FILE: ${{ github.event.inputs.retain_book_file || 'false' }}
+      PUBLIC_PDF_URL: "https://upload.wikimedia.org/wikipedia/commons/1/12/The_Art_of_War_%28Giles%2C_1910%29.pdf"
     steps:
       - name: Checkout current ref
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -65,12 +72,22 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install bounded reader dependencies
+        run: |
+          python -m pip install --disable-pip-version-check \
+            -r api-center/information-tool-radar/book-reader-requirements.txt
+
       - name: Compile and test
         working-directory: api-center/information-tool-radar
         run: |
           set -o pipefail
-          python -m py_compile lawful_book_reader.py test_lawful_book_reader.py
+          python -m py_compile \
+            lawful_book_reader.py \
+            lawful_pdf_reader.py \
+            test_lawful_book_reader.py \
+            test_lawful_pdf_reader.py
           python test_lawful_book_reader.py | tee ../../lawful-book-reader-unit.json
+          python test_lawful_pdf_reader.py | tee ../../lawful-pdf-reader-unit.json
 
       - name: Download and read approved book
         run: |
@@ -90,13 +107,50 @@ jobs:
           python api-center/information-tool-radar/lawful_book_reader.py "${args[@]}" \
             | tee lawful-book-reader-run.json
 
+      - name: Download and extract approved public-domain PDF
+        run: |
+          set -o pipefail
+          python api-center/information-tool-radar/lawful_pdf_reader.py \
+            --registry api-center/information-tool-radar/lawful-book-sources.json \
+            --url "$PUBLIC_PDF_URL" \
+            --rights-basis public-domain \
+            --rights-note "Wikimedia Commons public-domain edition of The Art of War, Lionel Giles translation." \
+            --output lawful-book-artifact/lawful-pdf-reader-report.json \
+            --text-output lawful-book-artifact/lawful-pdf-full-text.txt \
+            --max-chars 1000000 \
+            --require-text \
+            --enforce | tee lawful-pdf-reader-run.json
+
       - name: Validate evidence
         run: |
           python -m json.tool api-center/information-tool-radar/lawful-book-sources.json >/dev/null
           python -m json.tool lawful-book-reader-unit.json >/dev/null
+          python -m json.tool lawful-pdf-reader-unit.json >/dev/null
           python -m json.tool lawful-book-reader-run.json >/dev/null
+          python -m json.tool lawful-pdf-reader-run.json >/dev/null
           python -m json.tool lawful-book-artifact/lawful-book-reader-report.json >/dev/null
+          python -m json.tool lawful-book-artifact/lawful-pdf-reader-report.json >/dev/null
           test -s lawful-book-artifact/lawful-book-reader-report.json
+          test -s lawful-book-artifact/lawful-pdf-reader-report.json
+          test -s lawful-book-artifact/lawful-pdf-full-text.txt
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(
+              Path("lawful-book-artifact/lawful-pdf-reader-report.json").read_text(encoding="utf-8")
+          )
+          text = Path("lawful-book-artifact/lawful-pdf-full-text.txt").read_text(encoding="utf-8")
+          assert report["status"] == "pass", report
+          assert report["format"] == "pdf", report
+          assert report["text_layer_present"] is True, report
+          assert report["content_complete"] is True, report
+          assert report["content_truncated"] is False, report
+          assert report["content_chars_extracted"] == len(text), (report, len(text))
+          assert len(text) > 10000, len(text)
+          assert report["pdf_safety"]["passed"] is True, report
+          assert report["safety"]["anna_archive_downloads_allowed"] is False, report
+          PY
 
       - name: Upload report and optional book
         if: always()
@@ -105,7 +159,9 @@ jobs:
           name: lawful-book-reader-${{ github.run_id }}
           path: |
             lawful-book-reader-unit.json
+            lawful-pdf-reader-unit.json
             lawful-book-reader-run.json
+            lawful-pdf-reader-run.json
             lawful-book-artifact/
           if-no-files-found: warn
           retention-days: 7
