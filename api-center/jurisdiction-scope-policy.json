@@ -1,10 +1,11 @@
 {
-  "schema_version": "intelligence-jurisdiction-scope-v1",
+  "schema_version": "intelligence-jurisdiction-scope-v2",
   "status": "production-control",
   "policy_owner": "evidence-data-center",
   "default_legal_target": "PRC_MAINLAND",
   "principle": "prc_strict_controls_only_for_prc_sources_and_prc_data_flows",
-  "precedence": "This file is the authoritative jurisdictional scope overlay for tool-admission-policy.json and source-server-footprint-policy.json. Controls labelled PRC or defined by the PRC footprint policy must not be applied to sources assigned GLOBAL_OPERATIONAL_BASELINE.",
+  "prc_source_channel_policy": "prc-source-channel-policy.json",
+  "precedence": "This file is the authoritative jurisdictional scope overlay for tool-admission-policy.json, source-server-footprint-policy.json and prc-source-channel-policy.json. PRC-specific controls must not be applied to sources assigned GLOBAL_OPERATIONAL_BASELINE. Every PRC source must also receive a channel tier.",
   "classification": {
     "source_country_metadata_required": true,
     "prc_scope_applies_when_any": [
@@ -21,6 +22,14 @@
       "applies_to": "PRC_MAINLAND sources and data flows",
       "legal_baseline": "PRC_MAINLAND",
       "source_server_footprint_policy": "source-server-footprint-policy.json",
+      "source_channel_policy": "prc-source-channel-policy.json",
+      "channel_tiering_enabled": true,
+      "required_channel_tiers": [
+        "GREEN_DIRECT",
+        "YELLOW_CONTROLLED",
+        "ORANGE_DEDICATED",
+        "RED_PROHIBITED"
+      ],
       "prc_cross_border_data_gate": true,
       "foreign_cloud_authenticated_backend_gate": true,
       "account_primary_origin_binding": true,
@@ -31,6 +40,7 @@
       "public_web_default_minimum_interval_seconds": 10,
       "public_web_default_max_pages_per_task": 20,
       "public_web_default_max_requests_per_domain_per_hour": 30,
+      "green_official_channels_may_use_channel_specific_relaxed_defaults": true,
       "preferred_authenticated_paths": [
         "official_api",
         "official_export_sftp_or_licensed_mirror",
@@ -73,15 +83,17 @@
     "no_unapproved_write_transaction_trading_or_account_control"
   ],
   "prc_only_controls": [
+    "prc_channel_tier_assignment",
     "prc_source_server_visible_footprint_profile",
     "prc_account_primary_origin_binding",
     "prc_cross_tool_source_budget_and_circuit_breaker",
     "prc_foreign_cloud_authenticated_backend_gate",
     "prc_public_web_low_frequency_defaults",
+    "prc_green_official_channel_relaxed_defaults",
     "prc_personal_important_and_restricted_geospatial_cross_border_gate",
     "prc_fixed_runner_fallback",
     "prc_no_cross_origin_denial_bypass"
   ],
-  "admission_rule": "Every source must be assigned exactly one profile before production. PRC_STRICT is mandatory only for PRC-mainland sources or PRC-mainland regulated data flows. Other sources use GLOBAL_OPERATIONAL_BASELINE.",
-  "assurance_statement": "This policy narrows PRC-specific legal and source-footprint controls to PRC-mainland scope while retaining global operational security, authorization, provider-contract and data-quality safeguards."
+  "admission_rule": "Every source must be assigned exactly one jurisdiction profile before production. PRC_STRICT is mandatory only for PRC-mainland sources or PRC-mainland regulated data flows. Every PRC_STRICT source must additionally be assigned exactly one tier from prc-source-channel-policy.json. Other sources use GLOBAL_OPERATIONAL_BASELINE.",
+  "assurance_statement": "This policy narrows PRC-specific legal and source-footprint controls to PRC-mainland scope, differentiates safe and higher-risk PRC channels, and retains global operational security, authorization, provider-contract and data-quality safeguards."
 }

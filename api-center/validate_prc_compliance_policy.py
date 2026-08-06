@@ -15,6 +15,7 @@ def main() -> None:
     policy = load_json("tool-admission-policy.json")
     footprint = load_json("source-server-footprint-policy.json")
     scope = load_json("jurisdiction-scope-policy.json")
+    channels = load_json("prc-source-channel-policy.json")
     catalog = load_json("api-catalog.json")
     manifest = load_json("connector-manifest.json")
 
@@ -25,9 +26,11 @@ def main() -> None:
     assert policy.get("continuity_principle") == "preserve_legal_capability_via_safe_fallbacks"
     assert policy.get("source_server_footprint_policy") == "source-server-footprint-policy.json"
 
+    assert scope.get("schema_version") == "intelligence-jurisdiction-scope-v2"
     assert scope.get("status") == "production-control"
     assert scope.get("default_legal_target") == "PRC_MAINLAND"
     assert scope.get("principle") == "prc_strict_controls_only_for_prc_sources_and_prc_data_flows"
+    assert scope.get("prc_source_channel_policy") == "prc-source-channel-policy.json"
 
     classification = scope.get("classification", {})
     assert classification.get("source_country_metadata_required") is True
@@ -39,6 +42,15 @@ def main() -> None:
     prc = profiles.get("PRC_STRICT", {})
     global_baseline = profiles.get("GLOBAL_OPERATIONAL_BASELINE", {})
     assert prc.get("legal_baseline") == "PRC_MAINLAND"
+    assert prc.get("source_channel_policy") == "prc-source-channel-policy.json"
+    assert prc.get("channel_tiering_enabled") is True
+    assert set(prc.get("required_channel_tiers", [])) == {
+        "GREEN_DIRECT",
+        "YELLOW_CONTROLLED",
+        "ORANGE_DEDICATED",
+        "RED_PROHIBITED",
+    }
+    assert prc.get("green_official_channels_may_use_channel_specific_relaxed_defaults") is True
     assert prc.get("prc_cross_border_data_gate") is True
     assert prc.get("foreign_cloud_authenticated_backend_gate") is True
     assert prc.get("account_primary_origin_binding") is True
@@ -70,16 +82,75 @@ def main() -> None:
 
     prc_only = set(scope.get("prc_only_controls", []))
     required_prc_only = {
+        "prc_channel_tier_assignment",
         "prc_source_server_visible_footprint_profile",
         "prc_account_primary_origin_binding",
         "prc_cross_tool_source_budget_and_circuit_breaker",
         "prc_foreign_cloud_authenticated_backend_gate",
         "prc_public_web_low_frequency_defaults",
+        "prc_green_official_channel_relaxed_defaults",
         "prc_personal_important_and_restricted_geospatial_cross_border_gate",
         "prc_fixed_runner_fallback",
         "prc_no_cross_origin_denial_bypass",
     }
     assert not (required_prc_only - prc_only)
+
+    assert channels.get("schema_version") == "prc-source-channel-tiering-v1"
+    assert channels.get("status") == "production-control"
+    assert channels.get("jurisdiction") == "PRC_MAINLAND"
+    assert channels.get("principle") == "classify_channel_then_apply_minimum_necessary_controls"
+    assert channels.get("default_action") == "REVIEW_BEFORE_PRODUCTION"
+    assert len(channels.get("classification_dimensions", [])) >= 8
+
+    tiers = channels.get("tiers", {})
+    assert set(tiers) == {
+        "GREEN_DIRECT",
+        "YELLOW_CONTROLLED",
+        "ORANGE_DEDICATED",
+        "RED_PROHIBITED",
+    }
+    green = tiers["GREEN_DIRECT"]
+    yellow = tiers["YELLOW_CONTROLLED"]
+    orange = tiers["ORANGE_DEDICATED"]
+    red = tiers["RED_PROHIBITED"]
+
+    assert green.get("production_state") == "PRODUCTION_SAFE_READONLY"
+    assert len(green.get("channels", [])) >= 6
+    assert green.get("request_defaults", {}).get("official_api") == "FOLLOW_PROVIDER_DOCUMENTED_LIMITS"
+    assert green.get("request_defaults", {}).get("public_static_web_max_concurrency") == 2
+    assert "blanket_ten_second_interval" in set(green.get("controls_not_required_by_default", []))
+    assert "prc_fixed_runner" in set(green.get("controls_not_required_by_default", []))
+
+    assert yellow.get("production_state") == "PROVISIONAL_SAFE_READONLY_OR_PRODUCTION_SAFE_READONLY"
+    yellow_defaults = yellow.get("request_defaults", {})
+    assert yellow_defaults.get("max_concurrency") == 1
+    assert yellow_defaults.get("minimum_interval_seconds") == 10
+    assert yellow_defaults.get("max_pages_per_task") == 20
+    assert yellow_defaults.get("max_requests_per_domain_per_hour") == 30
+    assert "401_403_429_captcha_waf_hard_stop" in set(yellow.get("required_controls", []))
+
+    assert orange.get("production_state") == "CONTROLLED_SPECIAL_USE"
+    orange_controls = set(orange.get("required_controls", []))
+    assert "dedicated_source_specific_connector" in orange_controls
+    assert "official_api_or_export_first" in orange_controls
+    assert "foreign_cloud_authenticated_access_requires_explicit_provider_permission" in orange_controls
+    assert orange.get("request_defaults", {}).get("origin_switch") == "FORBIDDEN"
+
+    assert red.get("production_state") == "REJECTED_OR_DISABLED"
+    assert len(red.get("channels", [])) >= 9
+    assert red.get("required_action") == "PERMANENTLY_DENY_AND_QUARANTINE_ANY_TOOL_REQUIRING_THESE_CAPABILITIES"
+
+    escalation = channels.get("tier_escalation_rules", {})
+    for key in (
+        "personal_data_detected",
+        "important_data_detected",
+        "restricted_geospatial_data_detected",
+        "commercial_secret_or_nonpublic_backend_data_detected",
+        "license_scope_unknown",
+        "401_403_429_captcha_waf_or_account_alert",
+    ):
+        assert key in escalation
+    assert len(channels.get("channel_selection_order", [])) >= 6
 
     assert footprint.get("status") == "production-control"
     assert footprint.get("jurisdiction") == "PRC_MAINLAND"
@@ -126,6 +197,8 @@ def main() -> None:
         "SOURCE_SERVER_FOOTPRINT_CONTROL.md",
         "JURISDICTION_SCOPE_POLICY.md",
         "jurisdiction-scope-policy.json",
+        "PRC_SOURCE_CHANNEL_TIERING.md",
+        "prc-source-channel-policy.json",
     ):
         assert (ROOT / name).is_file(), f"missing policy file: {name}"
 
@@ -133,6 +206,8 @@ def main() -> None:
         "status": "PASS",
         "legal_baseline": "PRC_MAINLAND",
         "strict_prc_controls_scope": "PRC_SOURCES_AND_PRC_DATA_FLOWS_ONLY",
+        "prc_channel_tiers": sorted(tiers),
+        "green_official_channels_relaxed": True,
         "non_prc_profile": "GLOBAL_OPERATIONAL_BASELINE",
         "source_server_footprint_control": "PRC_ONLY",
         "managed_providers_checked": len(managed_providers),
