@@ -54,9 +54,11 @@ jobs:
             api-center/information-tool-radar/incumbent_inventory.py \
             api-center/information-tool-radar/incumbent_audit.py \
             api-center/information-tool-radar/incumbent_watch.py \
+            api-center/information-tool-radar/sensitive_watch.py \
             api-center/information-tool-radar/test_radar.py \
             api-center/information-tool-radar/test_incumbent_inventory.py \
-            api-center/information-tool-radar/test_incumbent_watch.py
+            api-center/information-tool-radar/test_incumbent_watch.py \
+            api-center/information-tool-radar/test_sensitive_watch.py
 
       - name: Run deterministic radar tests
         working-directory: api-center/information-tool-radar
@@ -76,6 +78,12 @@ jobs:
           set -o pipefail
           python test_incumbent_watch.py | tee ../../incumbent-watch-unit.json
 
+      - name: Run deterministic sensitive watch tests
+        working-directory: api-center/information-tool-radar
+        run: |
+          set -o pipefail
+          python test_sensitive_watch.py | tee ../../sensitive-watch-unit.json
+
       - name: Run bounded live coverage test
         run: |
           set -o pipefail
@@ -84,6 +92,14 @@ jobs:
             --config api-center/information-tool-radar/config.json \
             --output-dir information-tool-radar-artifact \
             --enforce-thresholds | tee information-tool-radar-run.json
+
+      - name: Run metadata-only sensitive source watch
+        run: |
+          set -o pipefail
+          python api-center/information-tool-radar/sensitive_watch.py \
+            --watchlist api-center/information-tool-radar/watchlists/annas-archive-metadata.json \
+            --output-dir information-tool-radar-artifact \
+            --enforce-policy | tee sensitive-watch-run.json
 
       - name: Audit generic rediscovery of incumbent tools
         run: |
@@ -108,14 +124,18 @@ jobs:
         run: |
           python -m json.tool api-center/information-tool-radar/config.json >/dev/null
           python -m json.tool api-center/information-tool-radar/candidate.schema.json >/dev/null
+          python -m json.tool api-center/information-tool-radar/watchlists/annas-archive-metadata.json >/dev/null
           python -m json.tool information-tool-radar-unit.json >/dev/null
           python -m json.tool incumbent-inventory-unit.json >/dev/null
           python -m json.tool incumbent-watch-unit.json >/dev/null
+          python -m json.tool sensitive-watch-unit.json >/dev/null
           python -m json.tool information-tool-radar-run.json >/dev/null
+          python -m json.tool sensitive-watch-run.json >/dev/null
           python -m json.tool incumbent-audit-run.json >/dev/null
           python -m json.tool incumbent-watch-run.json >/dev/null
           python -m json.tool information-tool-radar-artifact/coverage-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/manifest.json >/dev/null
+          python -m json.tool information-tool-radar-artifact/sensitive-source-watch-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-inventory.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-audit-report.json >/dev/null
           python -m json.tool information-tool-radar-artifact/incumbent-watch-report.json >/dev/null
@@ -123,6 +143,7 @@ jobs:
           python -m json.tool information-tool-radar-artifact/incumbent-fingerprint-state.json >/dev/null
           test -s information-tool-radar-artifact/coverage-report.md
           test -s information-tool-radar-artifact/candidates.jsonl
+          test -s information-tool-radar-artifact/sensitive-source-watch-candidates.jsonl
           test -s information-tool-radar-artifact/incumbent-audit-report.md
           test -s information-tool-radar-artifact/incumbent-watch-report.md
           test -s information-tool-radar-artifact/incumbent-candidates.jsonl
@@ -137,7 +158,9 @@ jobs:
             information-tool-radar-unit.json
             incumbent-inventory-unit.json
             incumbent-watch-unit.json
+            sensitive-watch-unit.json
             information-tool-radar-run.json
+            sensitive-watch-run.json
             incumbent-audit-run.json
             incumbent-watch-run.json
             information-tool-radar-artifact/

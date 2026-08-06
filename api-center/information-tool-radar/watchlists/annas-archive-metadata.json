@@ -1,0 +1,60 @@
+{
+  "schema_version": "sensitive-source-watch-v1",
+  "watch_id": "annas-archive-third-party-metadata",
+  "display_name": "Anna's Archive third-party wrapper metadata watch",
+  "enabled": true,
+  "integration_mode": "monitoring-only",
+  "production_connector": false,
+  "classification": "high-risk-third-party-catalog-wrapper",
+  "purpose": "Discover and monitor public repository metadata, maintenance, licensing and security signals for third-party wrappers. This watch does not retrieve catalog content or files.",
+  "discovery_policy": {
+    "generic_queries": [
+      "unofficial archive API Python",
+      "bibliographic metadata SDK",
+      "digital library catalog API"
+    ],
+    "target_name_required": false,
+    "second_stage_alias_expansion": true
+  },
+  "repository_candidates": [
+    {
+      "repository": "CrazyZard/annas-archive-api",
+      "role": "unofficial-python-api-candidate",
+      "review_status": "watchlist"
+    },
+    {
+      "repository": "eduresser/annas-archive-sdk",
+      "role": "python-sdk-candidate",
+      "review_status": "watchlist"
+    },
+    {
+      "repository": "Nquxii/anna-dl",
+      "role": "cli-reference-only",
+      "review_status": "restricted-watchlist"
+    }
+  ],
+  "allowed_operations": [
+    "read public GitHub repository metadata",
+    "read public README, manifest, release, license and security metadata",
+    "compare repository maintenance and provenance signals",
+    "record a review candidate"
+  ],
+  "forbidden_operations": [
+    "download books or documents",
+    "resolve direct download links",
+    "bypass captcha, anti-bot protection, access controls or rate limits",
+    "install or execute third-party code",
+    "retrieve copyrighted content",
+    "expose a production API connector",
+    "submit credentials or enable billing"
+  ],
+  "promotion_requirements": [
+    "copyright and terms review",
+    "license verification",
+    "maintainer and provenance review",
+    "dependency and vulnerability review",
+    "isolated metadata-only contract test",
+    "governance approval"
+  ],
+  "current_status": "watchlist-not-production"
+}
