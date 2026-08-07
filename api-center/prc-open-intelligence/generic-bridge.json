@@ -1,0 +1,30 @@
+{
+  "schema_version": "prc-open-intelligence-generic-bridge-v1",
+  "execution_mode": "local-prc-open",
+  "connectors": [
+    {
+      "connector_id": "prc-china-check-company-search",
+      "provider": "china-check",
+      "operation": "company-search",
+      "description": "Search mainland-China company registration matches through the approved no-auth China-Check MCP provider."
+    },
+    {
+      "connector_id": "prc-china-check-company-snapshot",
+      "provider": "china-check",
+      "operation": "company-snapshot",
+      "description": "Fetch one sanitized mainland-China company registration snapshot through the approved no-auth China-Check MCP provider."
+    },
+    {
+      "connector_id": "prc-sinofacts-company-search",
+      "provider": "sinofacts",
+      "operation": "company-search",
+      "description": "Search the attributed CC BY 4.0 SinoFacts public company snapshot."
+    },
+    {
+      "connector_id": "prc-sinofacts-company-profile",
+      "provider": "sinofacts",
+      "operation": "company-profile",
+      "description": "Fetch one attributed CC BY 4.0 SinoFacts public company record."
+    }
+  ]
+}

@@ -18,6 +18,7 @@ HERE = Path(__file__).resolve().parent
 SCHEMA_PATH = HERE / "api-ticket.schema.json"
 MANIFEST_PATH = HERE / "connector-manifest.json"
 CONNECTORS_DIR = HERE / "connectors"
+PRC_LOCAL_EXECUTION_MODE = "local-prc-open"
 MAX_BODY_CHARS = 100_000
 ENV_NAME_RE = re.compile(r"^[A-Z][A-Z0-9_]{2,127}$")
 TRUSTED_STATE_PREFIXES = (
@@ -162,6 +163,51 @@ def _connector_catalog(root: Path = HERE) -> dict[str, dict[str, Any]]:
     return catalog
 
 
+def _prc_local_bridge_catalog(root: Path = HERE) -> dict[str, dict[str, Any]]:
+    bridge_path = root / "prc-open-intelligence/generic-bridge.json"
+    provider_path = root / "prc-open-intelligence/provider-catalog.json"
+    if not bridge_path.is_file() or not provider_path.is_file():
+        return {}
+    bridge = _load_json(bridge_path)
+    provider_catalog = _load_json(provider_path)
+    bridge_rows = bridge.get("connectors") if isinstance(bridge, Mapping) else None
+    providers = provider_catalog.get("providers") if isinstance(provider_catalog, Mapping) else None
+    if not isinstance(bridge_rows, list) or not isinstance(providers, list):
+        raise ValueError("PRC local bridge/provider catalog is malformed")
+    operation_catalog: dict[tuple[str, str], Mapping[str, Any]] = {}
+    for provider in providers:
+        if not isinstance(provider, Mapping) or provider.get("enabled") is not True:
+            continue
+        provider_id = str(provider.get("provider_id") or "")
+        for operation in provider.get("operations") or []:
+            if not isinstance(operation, Mapping):
+                continue
+            operation_catalog[(provider_id, str(operation.get("operation_id") or ""))] = operation
+    result: dict[str, dict[str, Any]] = {}
+    for raw in bridge_rows:
+        if not isinstance(raw, Mapping):
+            raise ValueError("PRC local bridge row must be an object")
+        connector_id = str(raw.get("connector_id") or "")
+        provider = str(raw.get("provider") or "")
+        operation = str(raw.get("operation") or "")
+        if not re.fullmatch(r"[a-z][a-z0-9-]{2,63}", connector_id):
+            raise ValueError(f"invalid PRC local connector id: {connector_id}")
+        operation_row = operation_catalog.get((provider, operation))
+        if operation_row is None:
+            raise ValueError(
+                f"PRC bridge target is not an enabled provider operation: {provider}/{operation}"
+            )
+        result[connector_id] = {
+            "connector_id": connector_id,
+            "provider": provider,
+            "operation": operation,
+            "description": str(raw.get("description") or ""),
+            "parameter_schema": dict(operation_row.get("parameter_schema") or {}),
+            "execution_mode": PRC_LOCAL_EXECUTION_MODE,
+        }
+    return result
+
+
 def _render_path_parameters(
     connector: Mapping[str, Any],
     request_id: str,
@@ -270,6 +316,7 @@ def _validate_parameter_rules(
 
 def _validate_and_plan(packet: Mapping[str, Any], root: Path = HERE) -> dict[str, Any]:
     catalog = _connector_catalog(root)
+    prc_local_catalog = _prc_local_bridge_catalog(root)
     request_ids: set[str] = set()
     planned: list[dict[str, Any]] = []
     required_secrets: set[str] = set()
@@ -281,6 +328,40 @@ def _validate_and_plan(packet: Mapping[str, Any], root: Path = HERE) -> dict[str
         if request_id in request_ids:
             raise ValueError(f"duplicate request_id: {request_id}")
         request_ids.add(request_id)
+
+        local_connector = prc_local_catalog.get(connector_id)
+        if local_connector is not None:
+            parameters = dict(request_row.get("parameters") or {})
+            parameter_schema = dict(local_connector.get("parameter_schema") or {})
+            parameter_errors = sorted(
+                Draft202012Validator(parameter_schema).iter_errors(parameters),
+                key=lambda item: list(item.absolute_path),
+            )
+            if parameter_errors:
+                rendered = "; ".join(
+                    f"parameters.{'.'.join(str(x) for x in item.absolute_path)}: {item.message}"
+                    for item in parameter_errors[:20]
+                )
+                raise ValueError(
+                    f"request {request_id} violates PRC local parameter contract: {rendered}"
+                )
+            planned.append(
+                {
+                    "request_id": request_id,
+                    "connector_id": connector_id,
+                    "endpoint": f"/local/prc-open/{connector_id}",
+                    "method": "LOCAL",
+                    "execution_mode": PRC_LOCAL_EXECUTION_MODE,
+                    "path_parameters": {},
+                    "parameters": parameters,
+                    "allow_empty": bool(request_row.get("allow_empty", False)),
+                    "response_contract": {"success_when_data_present": True},
+                    "response_quality": {},
+                    "quality_checks": {},
+                    "connector_sha256": canonical_sha(local_connector),
+                }
+            )
+            continue
 
         connector = catalog.get(connector_id)
         if not connector:
@@ -347,6 +428,14 @@ def _validate_and_plan(packet: Mapping[str, Any], root: Path = HERE) -> dict[str
                 "quality_checks": dict(request_row.get("quality_checks") or {}),
                 "connector_sha256": canonical_sha(connector),
             }
+        )
+
+    execution_modes = {
+        str(row.get("execution_mode") or "gateway") for row in planned
+    }
+    if PRC_LOCAL_EXECUTION_MODE in execution_modes and execution_modes != {PRC_LOCAL_EXECUTION_MODE}:
+        raise ValueError(
+            "PRC local intelligence requests must be isolated in their own [api] ticket"
         )
 
     if len(required_secrets) > 1:
