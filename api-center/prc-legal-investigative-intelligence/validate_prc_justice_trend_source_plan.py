@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from discover_prc_justice_trend_signals import select_query_rows
+
 HERE = Path(__file__).resolve().parent
 EXPECTED = {
     "law_and_norm",
@@ -32,6 +34,16 @@ def main() -> int:
         assert row.get("source_families")
         assert row.get("query_templates")
         assert all(str(q).strip() for q in row["query_templates"])
+
+    daily_types = set(plan["cadence"]["daily"])
+    weekly_types = daily_types | set(plan["cadence"]["weekly"])
+    daily_rows = select_query_rows(plan, daily_types, 6)
+    weekly_rows = select_query_rows(plan, weekly_types, 12)
+    assert {signal_type for signal_type, _ in daily_rows} == daily_types
+    assert {signal_type for signal_type, _ in weekly_rows} == weekly_types
+    assert len(daily_rows) <= 6
+    assert len(weekly_rows) <= 12
+
     procurement = next(row for row in rows if row["signal_type"] == "procurement_and_budget")
     assert "ccgp.gov.cn" in procurement.get("allowed_hosts", [])
     rules = set(plan.get("cross_source_rules") or [])
@@ -47,6 +59,10 @@ def main() -> int:
     print(json.dumps({
         "status": "PASS",
         "signal_layers": len(types),
+        "daily_signal_types": len(daily_types),
+        "weekly_signal_types": len(weekly_types),
+        "daily_query_coverage_complete": True,
+        "weekly_query_coverage_complete": True,
         "procurement_monitoring": True,
         "training_monitoring": True,
         "research_monitoring": True,
