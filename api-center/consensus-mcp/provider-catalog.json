@@ -6,34 +6,44 @@
     {
       "provider_id": "consensus-mcp",
       "display_name": "Consensus MCP",
-      "description": "通过 Consensus 官方 Streamable HTTP MCP Server 检索 2 亿+ 同行评审学术论文。默认使用无需账号的匿名免费模式；不抓取 Consensus 网页。",
+      "description": "通过 Consensus 官方 Streamable HTTP MCP Server 检索 2 亿+ 同行评审学术论文；不抓取 Consensus 网页。服务器端真实探测确认远程调用受 OAuth Bearer 保护。",
       "enabled": true,
+      "runtime_status": "oauth-gated",
+      "production_search_ready": false,
       "ticket_prefix": "[api-consensus-mcp]",
       "required_secret_environment_variable": null,
       "optional_secret_environment_variable": "CONSENSUS_MCP_BEARER_TOKEN",
-      "catalog_policy": "仅开放官方 MCP 上游实际发现并经仓库固定登记的只读 search 工具，以及本地能力目录和 tools/list；禁止任意 JSON-RPC 方法、任意工具名、网页抓取和付费 API 自动启用。",
-      "execution_policy": "每张票据只执行一个固定只读工具调用；默认匿名免费访问。仅当仓库显式配置 CONSENSUS_MCP_BEARER_TOKEN 时才注入 Authorization: Bearer，且不得记录凭证。",
+      "catalog_policy": "仅开放官方 MCP 上游实际发现并经仓库固定登记的只读 search 工具，以及本地能力目录和 OAuth/tools 探测；禁止任意 JSON-RPC 方法、任意工具名、网页抓取和付费 API 自动启用。",
+      "execution_policy": "远程 tools/list/search 必须取得 Consensus 接受的 OAuth Bearer。当前 GitHub Actions 不伪装匿名可用：无 Bearer 时真实上游返回 401。Free 账号的 OAuth Authorization Code 需要交互式授权；当前官方元数据未提供 client_credentials，因此在增加安全 OAuth 凭证桥前，服务器端论文搜索保持 fail-closed。",
       "official_origin": "https://mcp.consensus.app",
       "official_endpoint": "https://mcp.consensus.app/mcp",
       "mcp_transport": "StreamableHttp",
       "authentication": {
-        "default_mode": "anonymous-free",
-        "account_oauth_mode": "interactive-client-only-not-github-actions",
-        "bearer_mode": "optional-enterprise-or-api-key-only",
-        "free_account_note": "Free account OAuth yields 10 papers/search and 30 MCP searches/month in supported interactive MCP clients; GitHub Actions defaults to anonymous because OAuth is interactive.",
-        "anonymous_limits": {
-          "papers_per_search": 3,
-          "monthly_searches": "unlimited"
-        },
-        "free_account_limits": {
+        "resource_requires_bearer": true,
+        "verified_unauthenticated_http_status": 401,
+        "oauth_metadata_discoverable": true,
+        "authorization_code_supported": true,
+        "dynamic_client_registration_present": true,
+        "client_credentials_supported": false,
+        "free_account_mode": "interactive-oauth-client",
+        "github_actions_mode": "bearer-required-or-oauth-bridge-required",
+        "bearer_secret": "CONSENSUS_MCP_BEARER_TOKEN",
+        "bearer_secret_role": "optional externally provisioned bearer; never logged",
+        "free_account_limits_documented": {
           "papers_per_search": 10,
           "monthly_searches": 30
+        },
+        "guest_limits_documented": {
+          "papers_per_search": 3,
+          "monthly_searches": "unlimited",
+          "note": "Consensus client documentation calls this no-account access, but a raw headless MCP initialize without an OAuth token returned HTTP 401 during 2026-08-07 GitHub Actions validation."
         }
       },
       "operations": [
         {
           "operation_id": "catalog-capabilities",
           "description": "读取本地 Consensus MCP 安全能力目录，不访问上游。",
+          "credential_mode": "none",
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
@@ -44,6 +54,7 @@
         {
           "operation_id": "mcp-tools-list",
           "description": "通过 MCP initialize 和 tools/list 验证官方服务器及当前只读工具目录。",
+          "credential_mode": "oauth-bearer-required",
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
@@ -54,6 +65,7 @@
         {
           "operation_id": "search",
           "description": "检索 Consensus 同行评审论文索引。支持年份、研究类型、期刊质量、人类研究、样本量、医学模式、排除预印本和研究时长过滤。",
+          "credential_mode": "oauth-bearer-required",
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
