@@ -30,6 +30,7 @@ CATALOG_PATH = HERE / "provider-catalog.json"
 CHINA_CHECK_ENDPOINT = "https://www.china-check.com/api/mcp/mcp"
 SINOFacts_INDEX_URL = "https://raw.githubusercontent.com/SinoFacts/dataset/main/index.json"
 SINOFacts_RECORDS_URL = "https://raw.githubusercontent.com/SinoFacts/dataset/main/companies.jsonl"
+SINOFacts_UPSTREAM_MAX_BYTES = 5_000_000
 MCP_PROTOCOL_VERSION = "2025-06-18"
 
 HARD_STOP_HTTP = {
@@ -473,7 +474,11 @@ def _sinofacts_search(parameters: Mapping[str, Any], timeout: int, max_bytes: in
 
 def _sinofacts_profile(parameters: Mapping[str, Any], timeout: int, max_bytes: int) -> tuple[Any, dict[str, Any]]:
     query = _require_text(parameters.get("query"), "query").casefold()
-    raw, metadata = _http_bytes(SINOFacts_RECORDS_URL, timeout=timeout, max_bytes=max_bytes)
+    raw, metadata = _http_bytes(
+        SINOFacts_RECORDS_URL,
+        timeout=timeout,
+        max_bytes=max(max_bytes, SINOFacts_UPSTREAM_MAX_BYTES),
+    )
     selected: Mapping[str, Any] | None = None
     for raw_line in raw.decode("utf-8").splitlines():
         if not raw_line.strip():
