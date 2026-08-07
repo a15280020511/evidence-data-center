@@ -1,0 +1,170 @@
+{
+  "schema_version": "prc-public-security-knowledge-practice-matrix-v1",
+  "reviewed_at": "2026-08-07",
+  "jurisdiction": "PRC_MAINLAND",
+  "purpose": "Combine public police education, standards, institutional research, official news and public judicial/procuratorial cases to understand high-level investigative logic, evidence domains and demonstrated capabilities for defensive legal/compliance review.",
+  "safety_boundary": {
+    "public_or_authorized_sources_only": true,
+    "secret_or_internal_police_material_allowed": false,
+    "operational_surveillance_details_allowed": false,
+    "targeting_or_evasion_guidance_allowed": false,
+    "anti_forensics_allowed": false,
+    "training_material_ingestion_mode": "metadata_and_high_level_capability_abstraction_only",
+    "case_ingestion_mode": "public_fact_pattern_evidence_chain_and_procedure_only"
+  },
+  "two_view_model": {
+    "source_view": "Infer declared investigative doctrine and capability domains from public laws, police-school curricula, standards, official research, institutional media and forensic-science publications.",
+    "outcome_view": "Infer demonstrated evidence combinations and practical capability from public cases, judgments, procuratorial technical cases and official case reports.",
+    "cross_validation_rule": "A capability is stronger when the source view and outcome view independently converge; material conclusions still require current law and primary-case verification."
+  },
+  "source_families": [
+    {
+      "source_id": "mps-public-rules-news",
+      "name": "公安部公开法规、新闻发布与业务公开材料",
+      "authority_type": "PRIMARY_PUBLIC_SECURITY_OFFICIAL",
+      "hosts": ["mps.gov.cn"],
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "view": "SOURCE",
+      "use": ["investigative_policy", "public_procedure", "technology_governance", "public_case_reporting"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf_incremental"}
+    },
+    {
+      "source_id": "mps-public-security-standards",
+      "name": "公安标准化信息服务平台",
+      "authority_type": "PRIMARY_PUBLIC_SECURITY_STANDARD",
+      "hosts": ["ywtb.mps.gov.cn"],
+      "access_class": "A2_PUBLIC_SEARCH_DATABASE",
+      "view": "SOURCE",
+      "use": ["public_security_standards", "evidence_collection_standards", "cybersecurity", "video_image", "laboratory_and_forensics"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search_and_standard_metadata"}
+    },
+    {
+      "source_id": "ppsuc-public-education-research",
+      "name": "中国人民公安大学公开培养方案、科研与学术来源",
+      "authority_type": "MPS_DIRECT_UNIVERSITY_PUBLIC_SOURCE",
+      "hosts": ["ppsuc.edu.cn"],
+      "access_class": "A1_A2_PUBLIC_EDUCATION_RESEARCH",
+      "view": "SOURCE",
+      "use": ["investigation_science", "cybercrime", "electronic_evidence", "intelligence_analysis", "economic_crime", "research_centers"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_curriculum_research_metadata_only"}
+    },
+    {
+      "source_id": "cipuc-public-education-research",
+      "name": "中国刑事警察学院公开专业、培训目录、科研平台与学报",
+      "authority_type": "MPS_DIRECT_UNIVERSITY_PUBLIC_SOURCE",
+      "hosts": ["cipuc.edu.cn"],
+      "access_class": "A1_A2_PUBLIC_EDUCATION_RESEARCH",
+      "view": "SOURCE",
+      "use": ["criminal_investigation", "criminal_science_technology", "cybercrime", "electronic_evidence", "forensics", "police_intelligence", "data_policing"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_curriculum_journal_and_training_metadata_high_level_only"}
+    },
+    {
+      "source_id": "cppu-public-education-research",
+      "name": "中国人民警察大学公开专业、科研与学报",
+      "authority_type": "MPS_DIRECT_UNIVERSITY_PUBLIC_SOURCE",
+      "hosts": ["cppu.edu.cn"],
+      "access_class": "A1_A2_PUBLIC_EDUCATION_RESEARCH",
+      "view": "SOURCE",
+      "use": ["network_security_law_enforcement", "investigation_research", "smart_policing", "international_policing"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_curriculum_research_and_journal_metadata"}
+    },
+    {
+      "source_id": "people-public-security-media",
+      "name": "人民公安报/中国警察网公开警务报道",
+      "authority_type": "INSTITUTIONAL_PUBLIC_SECURITY_MEDIA",
+      "hosts": ["cpd.com.cn"],
+      "access_class": "A1_PUBLIC_MEDIA",
+      "view": "SOURCE_AND_OUTCOME",
+      "use": ["policing_practice", "digital_policing", "public_case_reporting", "technology_application"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "incremental_public_news_primary_claim_verification_required"}
+    },
+    {
+      "source_id": "spp-procuratorial-technology",
+      "name": "最高检检察技术、技术性证据审查与典型案例",
+      "authority_type": "PRIMARY_PROCURATORIAL_TECHNICAL_PRACTICE",
+      "hosts": ["spp.gov.cn"],
+      "access_class": "A1_PUBLIC_CASE_AND_RESEARCH",
+      "view": "OUTCOME",
+      "use": ["electronic_evidence_review", "forensic_review", "case_reconstruction", "digital_procuratorate", "technical_evidence"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "incremental_public_case_and_research"}
+    },
+    {
+      "source_id": "judicial-appraisal-science-institute",
+      "name": "司法鉴定科学研究院公开鉴定项目、科研与标准材料",
+      "authority_type": "JUSTICE_ADMIN_FORENSIC_RESEARCH_SOURCE",
+      "hosts": ["ssfjd.com"],
+      "access_class": "A1_PUBLIC_FORENSIC_REFERENCE",
+      "view": "SOURCE",
+      "use": ["electronic_data_appraisal", "audio_video", "documents", "forensic_science", "evidence_authenticity"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_service_research_and_standard_metadata"}
+    },
+    {
+      "source_id": "yuandian-spc-spp-case-outcome-family",
+      "name": "元典＋法院＋检察公开案例结果层",
+      "authority_type": "CASE_OUTCOME_COMPOSITE",
+      "hosts": ["court.gov.cn", "rmfyalk.court.gov.cn", "wenshu.court.gov.cn", "spp.gov.cn"],
+      "access_class": "MANAGED_API_PLUS_A1_A2_PUBLIC_CASES",
+      "view": "OUTCOME",
+      "use": ["fact_pattern", "evidence_chain", "investigative_result", "admissibility", "prosecution_and_judgment"],
+      "retrieval_route": {"providers": ["yuandian-law", "web-retrieval"], "mode": "yuandian_recall_then_primary_case_verification"}
+    },
+    {
+      "source_id": "local-public-security-official-family",
+      "name": "全国地方公安机关官方新闻、通报与公开案例来源族",
+      "authority_type": "PRIMARY_LOCAL_PUBLIC_SECURITY_FAMILY",
+      "hosts": ["gov.cn", "mps.gov.cn"],
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "view": "OUTCOME",
+      "use": ["local_case_reporting", "enforcement_pattern", "regional_policing_practice"],
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_domain_discovery_primary_source_only"}
+    }
+  ],
+  "capability_domains": [
+    {"domain_id": "investigative-organization-and-reasoning", "name": "侦查组织、线索研判与证据导向逻辑", "safe_scope": "High-level investigative workflow, hypothesis testing, evidence corroboration and case organization only."},
+    {"domain_id": "scene-and-physical-evidence", "name": "现场勘查与物证体系", "safe_scope": "Public forensic categories such as traces, documents, imaging, chemistry and scene reconstruction; no counter-forensics."},
+    {"domain_id": "electronic-data-forensics", "name": "电子数据取证与真实性/完整性审查", "safe_scope": "Devices, files, logs, databases, cloud/network records, imaging, integrity and authenticity at category level."},
+    {"domain_id": "cybercrime-investigation", "name": "网络犯罪侦查", "safe_scope": "Publicly documented network evidence, account/network/terminal attribution and cybercrime evidence logic; no exploitation or evasion detail."},
+    {"domain_id": "identity-account-network-attribution", "name": "身份、账号、网络活动与终端关联", "safe_scope": "How public cases combine registration, logs, terminal/network activity and other evidence to establish identity, without avoidance guidance."},
+    {"domain_id": "financial-transaction-analysis", "name": "资金流与交易证据分析", "safe_scope": "Bank/payment/merchant transaction evidence and corroboration at legal-evidence level."},
+    {"domain_id": "communications-content-evidence", "name": "通信与内容证据", "safe_scope": "Messages, email, platform content and related provenance/authenticity categories."},
+    {"domain_id": "video-image-audio-evidence", "name": "视频、图像与音频证据", "safe_scope": "Public forensic examination, enhancement/authenticity and evidentiary use at category level."},
+    {"domain_id": "forensic-medicine-and-biological-evidence", "name": "法医、生物与人体损伤证据", "safe_scope": "Public forensic medicine and biological-evidence categories."},
+    {"domain_id": "data-intelligence-and-cross-source-correlation", "name": "数据警务、情报研判与跨来源关联", "safe_scope": "High-level multi-source correlation and analytical reasoning; no covert collection instructions."},
+    {"domain_id": "geospatial-remote-sensing-and-field-evidence", "name": "地理、遥感、无人机与现场技术证据", "safe_scope": "Only publicly documented lawful evidence applications and geospatial compliance boundaries."},
+    {"domain_id": "provider-platform-and-institutional-records", "name": "平台、运营商及机构持有记录", "safe_scope": "Lawful request/cooperation and record categories, not access circumvention."},
+    {"domain_id": "interview-interrogation-and-statement-evidence", "name": "讯问、询问与言词证据", "safe_scope": "Legal procedure, voluntariness, corroboration and evidentiary review only; no coercive or manipulative tactics."},
+    {"domain_id": "technical-investigation-legal-boundary", "name": "技术侦查公开法定边界", "safe_scope": "Existence, statutory case scope, approval, target, duration and use restrictions only; no technical implementation."}
+  ],
+  "case_derived_extraction_fields": [
+    "case_source_and_date",
+    "case_type",
+    "publicly_described_evidence_sources",
+    "evidence_corroboration_graph",
+    "identity_attribution_factors",
+    "digital_or_forensic_review_type",
+    "lawful_provider_or_institutional_assistance_if_publicly_stated",
+    "procedure_or_admissibility_issue",
+    "prosecution_or_judgment_result",
+    "capability_domains_demonstrated",
+    "confidence_and_primary_source_status"
+  ],
+  "forbidden_extraction_fields": [
+    "secret_tool_name_or_internal_system",
+    "surveillance_sensor_parameters",
+    "covert_collection_configuration",
+    "target_selection_recipe",
+    "detection_threshold_or_blind_spot",
+    "anti_forensics_or_evasion_method",
+    "credential_or_private_endpoint",
+    "nonpublic_training_material"
+  ],
+  "decision_logic": [
+    "start_with_yuandian_and_public_case_recall",
+    "route_to_relevant_public_security_education_standard_and_research_sources",
+    "abstract_declared_capability_domains_from_public_source_view",
+    "extract_demonstrated_evidence_chain_from_primary_public_case_outcome_view",
+    "cross_validate_source_view_against_outcome_view",
+    "verify_against_current_law_and_evidence_rules",
+    "use_only_for_defensive_compliance_risk_assessment"
+  ]
+}
