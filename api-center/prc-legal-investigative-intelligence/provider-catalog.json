@@ -1,0 +1,85 @@
+{
+  "schema_version": "prc-legal-investigative-provider-catalog-v1",
+  "secret_values_exposed": false,
+  "providers": [
+    {
+      "provider_id": "prc-legal-investigative-intelligence",
+      "display_name": "中国大陆法律、司法与电子证据联合情报目录",
+      "description": "对元典、官方法条、最高法/最高检案例、公安电子数据规则、网信/市场监管/工信/自然资源/保密等来源进行确定性分级和路由，不重复建设网页爬虫。",
+      "enabled": true,
+      "ticket_prefix": "[intel-prc-legal]",
+      "required_secret_environment_variable": "",
+      "catalog_policy": "仅返回本地固定来源目录、来源路由和联合审计顺序；实际公开网页/PDF读取必须复用现有受控 web-retrieval；元典检索复用 yuandian-law。禁止自动登录、验证码破解、WAF绕过、拒绝后换IP/账号/Provider继续、隐藏API逆向和侦查规避。",
+      "execution_policy": "每张票据仅执行一个本地只读操作，零网络、零模型、零密钥。来源目录只包含公开官方或明确标注的辅助来源。",
+      "limits": {
+        "network_used": false,
+        "requests_per_ticket_max": 0,
+        "automatic_retry_allowed": false,
+        "automatic_pagination_allowed": false,
+        "automatic_login_allowed": false,
+        "captcha_solving_allowed": false,
+        "waf_bypass_allowed": false,
+        "identity_concealment_allowed": false,
+        "investigation_evasion_allowed": false,
+        "write_operations_allowed": false,
+        "personal_data_targeting_allowed": false,
+        "secret_values_exposed": false
+      },
+      "operations": [
+        {
+          "operation_id": "catalog-capabilities",
+          "description": "读取本地能力目录。",
+          "parameters": [],
+          "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "source-catalog",
+          "description": "按主题、来源等级或接入方式筛选中国大陆法律、司法、监管、公安电子证据和技术标准来源。",
+          "parameters": ["topic", "access_class", "evidence_weight", "limit"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "topic": {"type": "string", "minLength": 1, "maxLength": 80},
+              "access_class": {"type": "string", "minLength": 1, "maxLength": 80},
+              "evidence_weight": {"type": "string", "minLength": 1, "maxLength": 80},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+            }
+          },
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "source-route",
+          "description": "按 source_id 返回固定来源的权威等级、访问类别和现有 Provider 路由。",
+          "parameters": ["source_id"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source_id"],
+            "properties": {"source_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"}}
+          },
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "joint-audit-plan",
+          "description": "生成元典召回→官方法条复核→案例→公安电子证据规则→监管→技术标准→专项红线的确定性联合审计顺序。",
+          "parameters": ["risk_topics"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "risk_topics": {
+                "type": "array",
+                "maxItems": 20,
+                "uniqueItems": true,
+                "items": {"type": "string", "minLength": 1, "maxLength": 80}
+              }
+            }
+          },
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        }
+      ]
+    }
+  ]
+}
