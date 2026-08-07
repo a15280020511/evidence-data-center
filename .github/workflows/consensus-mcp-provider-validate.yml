@@ -25,6 +25,9 @@ jobs:
   validate:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      CONSENSUS_MCP_BEARER_TOKEN: ${{ secrets.CONSENSUS_MCP_BEARER_TOKEN }}
+      CONSENSUS_MCP_REFRESH_TOKEN: ${{ secrets.CONSENSUS_MCP_REFRESH_TOKEN }}
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -50,7 +53,11 @@ jobs:
           python -m py_compile \
             api-center/consensus-mcp/consensus_mcp_task.py \
             api-center/consensus-mcp/oauth_probe.py \
-            api-center/consensus-mcp/tests/test_consensus_mcp_task.py
+            api-center/consensus-mcp/oauth_bootstrap.py \
+            api-center/consensus-mcp/oauth_refresh.py \
+            api-center/consensus-mcp/oauth_browser_probe.py \
+            api-center/consensus-mcp/tests/test_consensus_mcp_task.py \
+            api-center/consensus-mcp/tests/test_consensus_oauth_bridge.py
           python -m unittest discover \
             -s api-center/consensus-mcp/tests -p 'test_*.py' -v
           python - <<'PY'
@@ -59,8 +66,15 @@ jobs:
           root = Path('api-center/consensus-mcp')
           provider = json.loads((root / 'provider-catalog.json').read_text())['providers'][0]
           snapshot = json.loads((root / 'tool-discovery-snapshot.json').read_text())
+          client = json.loads((root / 'oauth-client.json').read_text())
           assert provider['provider_id'] == 'consensus-mcp'
           assert provider['official_endpoint'] == 'https://mcp.consensus.app/mcp'
+          assert provider['runtime_status'] == 'oauth-bridge-ready-awaiting-secret'
+          assert provider['authentication']['public_client_id'] == client['client_id']
+          assert provider['authentication']['refresh_secret'] == 'CONSENSUS_MCP_REFRESH_TOKEN'
+          assert client['token_endpoint_auth_method'] == 'none'
+          assert client['pkce_method'] == 'S256'
+          assert client['contains_secret'] is False
           assert provider['limits']['fixed_mcp_tool_count'] == 1
           assert provider['limits']['arbitrary_jsonrpc_methods_allowed'] is False
           assert provider['limits']['arbitrary_mcp_tool_names_allowed'] is False
@@ -68,7 +82,7 @@ jobs:
           assert provider['limits']['web_scraping_allowed'] is False
           assert snapshot['tool_count'] == 1
           assert snapshot['tools'][0]['name'] == 'search'
-          print(json.dumps({'status': 'PASS', 'operations': 3, 'mcp_tools': 1, 'model_calls': 0}))
+          print(json.dumps({'status': 'PASS', 'operations': 3, 'mcp_tools': 1, 'oauth_bridge': True, 'model_calls': 0}))
           PY
           git diff --check
 
@@ -80,11 +94,15 @@ jobs:
           python api-center/consensus-mcp/oauth_probe.py \
             --output consensus-mcp-oauth-probe.json | tee consensus-mcp-oauth-probe-summary.json
 
+      - name: Resolve Free-account refresh token for canary
+        id: refresh
+        if: env.CONSENSUS_MCP_BEARER_TOKEN == '' && env.CONSENSUS_MCP_REFRESH_TOKEN != ''
+        continue-on-error: true
+        run: python api-center/consensus-mcp/oauth_refresh.py --timeout 20
+
       - name: Run real MCP canary
         id: canary
         continue-on-error: true
-        env:
-          CONSENSUS_MCP_BEARER_TOKEN: ${{ secrets.CONSENSUS_MCP_BEARER_TOKEN }}
         run: |
           set -o pipefail
           python api-center/consensus-mcp/consensus_mcp_task.py canary \
@@ -100,10 +118,10 @@ jobs:
           import json
           oauth = json.load(open('consensus-mcp-oauth-probe.json'))
           canary = json.load(open('consensus-mcp-canary.json'))
-          # A successful authenticated/anonymous canary is ideal. If the official
-          # resource requires interactive OAuth, require discoverable OAuth metadata
-          # instead of pretending a headless anonymous path exists.
           assert oauth['mcp_status_without_token'] in (200, 401)
+          assert oauth['supports_authorization_code'] is True
+          assert oauth['supports_client_credentials'] is False
+          assert oauth['registration_endpoint_present'] is True
           if canary['status'] != 'pass':
               assert oauth['mcp_status_without_token'] == 401
               assert oauth['resource_metadata']
@@ -125,6 +143,7 @@ jobs:
             api-center/consensus-mcp/provider-catalog.json
             api-center/consensus-mcp/ticket.schema.json
             api-center/consensus-mcp/tool-discovery-snapshot.json
+            api-center/consensus-mcp/oauth-client.json
             consensus-mcp-oauth-probe.json
             consensus-mcp-oauth-probe-summary.json
             consensus-mcp-canary.json
