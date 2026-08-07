@@ -1,0 +1,242 @@
+{
+  "schema_version": "prc-justice-capability-trend-system-v1",
+  "reviewed_at": "2026-08-07",
+  "jurisdiction": "PRC_MAINLAND",
+  "system_name": "中国大陆司法能力与趋势情报系统",
+  "mission": [
+    "持续回答公安、检察、法院及相关司法技术体系公开可验证地具备什么能力",
+    "持续回答这些能力在真实案件中的实践标准、证据标准和司法审查标准",
+    "持续识别技术能力的出现、建设、扩散、成熟、争议和衰减趋势",
+    "持续识别法律理论、司法政策、裁判方法和实际执行尺度的变化趋势"
+  ],
+  "coverage_contract": {
+    "scope": "全国公开或明确授权来源中的能力、实践、技术、法律理论与司法执行趋势，不声称覆盖非公开内部系统或秘密技术实施细节。",
+    "primary_source_priority": true,
+    "every_trend_claim_must_be_evidence_backed": true,
+    "absence_of_public_evidence_never_proves_absence_of_capability": true,
+    "single_case_never_generalizes_nationwide": true
+  },
+  "safety_boundary": {
+    "public_or_authorized_sources_only": true,
+    "secret_internal_systems": false,
+    "covert_surveillance_implementation_details": false,
+    "target_selection_or_tracking_playbook": false,
+    "investigation_evasion": false,
+    "anti_forensics": false,
+    "evidence_destruction": false,
+    "credential_or_hidden_endpoint_collection": false,
+    "operational_tactical_playbook": false,
+    "personal_targeting": false
+  },
+  "four_axes": [
+    {
+      "axis_id": "capability",
+      "name": "能力轴",
+      "question": "各机关当前公开可验证地具备什么能力、能力成熟度和覆盖范围如何",
+      "outputs": ["capability_map", "capability_lifecycle", "capability_evidence_score"]
+    },
+    {
+      "axis_id": "practice",
+      "name": "实践轴",
+      "question": "真实办案中这些能力如何形成、保存、审查、补强、采信或被否定",
+      "outputs": ["practice_standard_graph", "evidence_chain_graph", "practice_standardization_score"]
+    },
+    {
+      "axis_id": "technology_trend",
+      "name": "技术趋势轴",
+      "question": "哪些公开技术能力正在出现、投入、部署、扩散、成熟或衰减",
+      "outputs": ["technology_lifecycle_graph", "technology_momentum_score", "diffusion_index"]
+    },
+    {
+      "axis_id": "doctrine_and_enforcement",
+      "name": "法律理论与执行轴",
+      "question": "法律理论、司法政策、裁判尺度和执行重点正在如何变化",
+      "outputs": ["doctrine_graph", "enforcement_graph", "doctrine_shift_index", "enforcement_shift_index"]
+    }
+  ],
+  "signal_layers": [
+    {"signal_type":"law_and_norm","name":"法律规范","examples":["法律","修法草案","司法解释","两高规范","公安程序规定","证据规则","联合文件"],"role":"确定法定权限、程序和证据边界"},
+    {"signal_type":"policy_and_strategy","name":"政策战略","examples":["年度工作报告","改革纲要","五年规划","数字化建设方案","专项行动公开部署"],"role":"领先判断组织未来重点"},
+    {"signal_type":"education_and_training","name":"学院教育培训","examples":["专业设置","培养方案","课程","教材","培训班","竞赛"],"role":"判断人才储备和能力方向"},
+    {"signal_type":"research","name":"科研与课题","examples":["科研项目","论文","实验室研究方向","技术课题","学术会议"],"role":"判断潜在新能力和理论前沿"},
+    {"signal_type":"standard","name":"技术与业务标准","examples":["GB","GA","GA/T","司法鉴定标准","电子数据标准","检察技术规范"],"role":"判断能力制度化和标准化程度"},
+    {"signal_type":"procurement_and_budget","name":"采购与预算","examples":["采购意向","招标","中标","合同","预算","信息化建设项目"],"role":"判断是否存在真实资源投入和建设"},
+    {"signal_type":"talent_and_recruitment","name":"人才需求","examples":["公开招聘","岗位专业要求","实验室人才引进","技术岗位设置"],"role":"判断组织正在补强的能力"},
+    {"signal_type":"infrastructure_and_deployment","name":"基础设施与部署","examples":["实验室","技术中心","数据平台","试点","系统上线","能力验证"],"role":"判断能力是否由建设阶段进入部署阶段"},
+    {"signal_type":"case_practice","name":"案件实践","examples":["公安案例","检察典型案例","法院参考案例","公开裁判材料","纪检监察公开案例"],"role":"证明能力是否在真实实践中出现"},
+    {"signal_type":"judicial_outcome","name":"司法结果","examples":["起诉","不起诉","证据采信","非法证据排除","二审改判","再审纠正","检察监督"],"role":"判断能力形成的证据是否经受司法审查"},
+    {"signal_type":"statistics_and_report","name":"统计与工作报告","examples":["案件量","监督模型数量","办案效率","纠正数量","年度统计"],"role":"量化能力规模、执行强度和变化速度"},
+    {"signal_type":"doctrine_and_commentary","name":"法律理论与司法思想","examples":["法学会研究","法官学院研究","检察理论","司法政策文章","专业期刊","官方释义"],"role":"判断理论重心和制度化方向"}
+  ],
+  "institution_views": [
+    {
+      "institution_type": "public_security",
+      "focus": ["线索发现","案件研判","网络犯罪侦查","电子数据","刑事技术","数据关联","资金证据","视频图像","法医物证","现场勘查","技术标准化"]
+    },
+    {
+      "institution_type": "procuratorate",
+      "focus": ["提前介入","引导侦查","技术性证据审查","电子数据复核","鉴定复核","大数据法律监督","数字检察","检警协同","纠错监督"]
+    },
+    {
+      "institution_type": "court",
+      "focus": ["证据真实性审查","合法性审查","关联性审查","证明力评价","证据链完整性","证据排除","二审再审纠错","数字法院","裁判规则变化"]
+    },
+    {
+      "institution_type": "justice_administration_and_forensics",
+      "focus": ["司法鉴定","法援","律师","公证","调解","仲裁","社区矫正","监狱执行","行业标准与质量控制"]
+    },
+    {
+      "institution_type": "discipline_supervision",
+      "focus": ["公开审查调查程序","证据规则","监督执纪执法规范","公开案件结果","制度理论变化"]
+    }
+  ],
+  "capability_lifecycle": [
+    "CONCEPT",
+    "RESEARCH_SIGNAL",
+    "TRAINING_SIGNAL",
+    "STANDARDIZING",
+    "STANDARDIZED",
+    "INVESTING",
+    "DEPLOYING",
+    "FIRST_PRACTICE",
+    "REPEATED_PRACTICE",
+    "CROSS_REGION_OBSERVED",
+    "CROSS_INSTITUTION_OBSERVED",
+    "MATURE_PUBLIC_PRACTICE",
+    "CONTESTED",
+    "STALE_REVIEW_REQUIRED"
+  ],
+  "lifecycle_evidence_rules": {
+    "FIRST_PRACTICE": "至少一个一手官方公开案件结果显示该高层能力类别真实出现",
+    "REPEATED_PRACTICE": "至少两个独立一手案件观察支持",
+    "CROSS_REGION_OBSERVED": "至少两个不同地区的一手案件或机构实践支持",
+    "CROSS_INSTITUTION_OBSERVED": "至少两个不同机关类型的一手实践或结果支持",
+    "MATURE_PUBLIC_PRACTICE": "多地区、多机关、多案件并与现行规范或技术标准、教育科研至少一条源头链交叉收敛"
+  },
+  "practice_standard_fields": [
+    "collection_standard",
+    "preservation_standard",
+    "integrity_standard",
+    "review_standard",
+    "admissibility_standard",
+    "corroboration_standard",
+    "failure_pattern",
+    "current_authority",
+    "supporting_case_count",
+    "conflicting_case_count",
+    "last_verified"
+  ],
+  "trend_windows_days": [7,30,90,180,365,1095],
+  "indices": [
+    {
+      "index_id": "CES",
+      "name": "Capability Evidence Score",
+      "purpose": "现实能力证据强度",
+      "range": [0,100],
+      "inputs": ["primary_case_count","independent_institution_count","region_count","source_view_support","judicial_outcome_support","conflict_penalty","freshness"]
+    },
+    {
+      "index_id": "PSS",
+      "name": "Practice Standardization Score",
+      "purpose": "实践标准化成熟度",
+      "range": [0,100],
+      "inputs": ["current_norm_support","technical_standard_support","repeatable_case_pattern","judicial_review_consistency","conflict_penalty"]
+    },
+    {
+      "index_id": "TMS",
+      "name": "Technology Momentum Score",
+      "purpose": "技术上升、扩散或衰减速度",
+      "range": [0,100],
+      "inputs": ["recent_case_growth","new_region_growth","new_institution_growth","new_training_signal","new_standard_signal","new_procurement_signal","new_deployment_signal","duplicate_penalty","conflict_penalty"]
+    },
+    {
+      "index_id": "DI",
+      "name": "Diffusion Index",
+      "purpose": "跨地区和跨机关扩散程度",
+      "range": [0,100],
+      "inputs": ["region_count","institution_type_count","independent_institution_count","time_persistence"]
+    },
+    {
+      "index_id": "DSI",
+      "name": "Doctrine Shift Index",
+      "purpose": "法律理论、司法政策和解释方法变化强度",
+      "range": [0,100],
+      "inputs": ["new_doctrine_terms","institutional_adoption","case_adoption","guidance_adoption","formal_rule_adoption","conflicting_doctrine"]
+    },
+    {
+      "index_id": "ESI",
+      "name": "Enforcement Shift Index",
+      "purpose": "实际司法执行与裁判尺度变化强度",
+      "range": [0,100],
+      "inputs": ["case_volume_change","prosecution_change","non_prosecution_change","evidence_acceptance_change","appeal_correction_change","supervision_change","regional_dispersion"]
+    }
+  ],
+  "graphs": [
+    {"graph_id":"capability_map","nodes":["capability","institution","region","time"],"edges":["observed_by","supported_by","deployed_by","diffused_to"]},
+    {"graph_id":"practice_standard_graph","nodes":["capability","procedure_stage","evidence_type","standard","case_outcome"],"edges":["collected_under","preserved_under","reviewed_under","corroborated_by","accepted_by","rejected_by"]},
+    {"graph_id":"technology_lifecycle_graph","nodes":["technology_term","research","training","standard","procurement","deployment","case","judicial_outcome"],"edges":["precedes","supports","implements","validates","contradicts"]},
+    {"graph_id":"doctrine_graph","nodes":["doctrine","academic_source","institutional_commentary","case","guidance","formal_rule"],"edges":["proposes","adopts","applies","institutionalizes","contradicts"]},
+    {"graph_id":"enforcement_graph","nodes":["legal_domain","case_type","procedure_stage","institution","region","outcome","time"],"edges":["handled_by","results_in","changes_over_time","differs_by_region"]}
+  ],
+  "analysis_layers": {
+    "deterministic_layer": {
+      "role": "事实抽取、来源验证、日期、机构、标准号、案件号、去重、哈希、安全门",
+      "may_assert_facts": true
+    },
+    "model_layer": {
+      "role": "语义归一、新技术术语识别、跨案例关系抽取、理论变化归纳、趋势解释",
+      "may_assert_unverified_fact": false,
+      "must_reference_evidence_ids": true,
+      "must_expose_uncertainty": true,
+      "must_not_infer_secret_capability_from_absence": true
+    },
+    "compute_layer": {
+      "role": "时间序列、增长率、变化点、地区扩散、机构扩散、网络图、指数计算和置信区间",
+      "network_required": false,
+      "input_must_be_structured": true
+    },
+    "governance_layer": {
+      "role": "跨中心路由、Schema验证、来源与安全边界复核、版本与合并门禁",
+      "direct_center_to_center_calls": false
+    }
+  },
+  "handoff_contract": {
+    "intelligence_to_governance": ["verified_signal_events","primary_source_receipts","case_observations","trend_candidate_pack"],
+    "governance_to_expert": ["model_analysis_packet"],
+    "governance_to_compute": ["justice_trend_numeric_pack"],
+    "expert_to_governance": ["evidence_cited_semantic_findings"],
+    "compute_to_governance": ["quantitative_trend_metrics"],
+    "governance_to_intelligence": ["approved_trend_findings_for_versioned_storage"]
+  },
+  "report_contract": {
+    "daily": ["material_new_signal_alerts","new_case_practice","new_standard_or_procurement","review_required_conflicts"],
+    "weekly": ["technology_change_summary","capability_lifecycle_changes","cross_institution_signals","new_doctrine_signals"],
+    "monthly": ["major_changes","public_security_capability_trends","procuratorate_capability_trends","court_evidence_and_adjudication_trends","technology_radar","capability_lifecycle","practice_standard_changes","regional_diffusion","doctrine_trends","enforcement_trends","conflicts_and_counterexamples","next_watchpoints"]
+  },
+  "mandatory_trend_evidence_card": [
+    "trend_id",
+    "subject",
+    "time_window",
+    "first_seen",
+    "latest_seen",
+    "primary_source_count",
+    "independent_institution_count",
+    "region_count",
+    "case_count",
+    "standard_signal",
+    "training_signal",
+    "research_signal",
+    "procurement_signal",
+    "deployment_signal",
+    "judicial_outcome_signal",
+    "lifecycle_stage",
+    "CES",
+    "PSS",
+    "TMS",
+    "DI",
+    "confidence",
+    "supporting_evidence_ids",
+    "conflicting_evidence_ids",
+    "limitations"
+  ]
+}
