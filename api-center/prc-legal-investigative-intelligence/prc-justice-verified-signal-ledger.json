@@ -12,7 +12,132 @@
     "anti_forensics": false,
     "history_deletion_on_conflict": false
   },
-  "events": [],
+  "events": [
+    {
+      "event_id": "verified-law_and_norm-20260717-fd4686d8770812",
+      "event_date": "2026-07-17",
+      "publication_date": "2026-07-17",
+      "institution_type": "court",
+      "institution_name": "人民法院公开来源",
+      "region": null,
+      "signal_type": "law_and_norm",
+      "subject_type": "institutional_capacity",
+      "capability_ids": [],
+      "technology_terms": [],
+      "legal_domains": [],
+      "procedural_stage": null,
+      "case_type": null,
+      "metrics": {},
+      "lifecycle_stage": null,
+      "support_or_conflict": "CONFLICTS",
+      "source": {
+        "url": "https://www.court.gov.cn/fabu/xiangqing/506411.html",
+        "host": "www.court.gov.cn",
+        "source_class": "official_primary",
+        "primary": true,
+        "title": "权威发布- 中华人民共和国最高人民法院",
+        "content_fingerprint": "92a555c8658cd5596b50e567235b9326edb9ee35dc6a3187905194804177e14a",
+        "retrieved_at": "2026-08-07T12:53:36+00:00"
+      },
+      "evidence_ids": [
+        "discover-law_and_norm-de39a1b8b37eb44b"
+      ],
+      "model_analysis": null,
+      "review_status": "CONTESTED",
+      "safety": {
+        "public_or_authorized": true,
+        "contains_secret_operational_detail": false,
+        "contains_targeting_or_evasion_detail": false,
+        "contains_personal_targeting": false
+      }
+    },
+    {
+      "event_id": "verified-policy_and_strategy-20260707-7b139fb4f1f763",
+      "event_date": "2026-07-07",
+      "publication_date": "2026-07-07",
+      "institution_type": "legislature_or_rulemaker",
+      "institution_name": "官方公开来源",
+      "region": null,
+      "signal_type": "policy_and_strategy",
+      "subject_type": "institutional_capacity",
+      "capability_ids": [
+        "electronic-data-forensics",
+        "communications-content-evidence",
+        "video-image-investigation",
+        "fingerprint-trace-document-forensics",
+        "geospatial-remote-sensing-and-mapping"
+      ],
+      "technology_terms": [],
+      "legal_domains": [],
+      "procedural_stage": null,
+      "case_type": null,
+      "metrics": {},
+      "lifecycle_stage": null,
+      "support_or_conflict": "SUPPORTS",
+      "source": {
+        "url": "https://www.he.jcy.gov.cn/jcxw/jjyw/202607/t20260708_7809250.shtml",
+        "host": "www.he.jcy.gov.cn",
+        "source_class": "official_primary",
+        "primary": true,
+        "title": "董开军：深入推进检察大数据智能化平台建设和应用 切实提升新时代法律监督能力",
+        "content_fingerprint": "191dd27693558634b34f4eac2fec57b0592e24bb6e33096d3ccee31cd66045df",
+        "retrieved_at": "2026-08-07T12:53:55+00:00"
+      },
+      "evidence_ids": [
+        "discover-policy_and_strategy-0858a3efc65fe80c"
+      ],
+      "model_analysis": null,
+      "review_status": "PRIMARY_VERIFIED",
+      "safety": {
+        "public_or_authorized": true,
+        "contains_secret_operational_detail": false,
+        "contains_targeting_or_evasion_detail": false,
+        "contains_personal_targeting": false
+      }
+    },
+    {
+      "event_id": "verified-policy_and_strategy-20260707-cdc606f25242dc",
+      "event_date": "2026-07-07",
+      "publication_date": "2026-07-07",
+      "institution_type": "legislature_or_rulemaker",
+      "institution_name": "官方公开来源",
+      "region": null,
+      "signal_type": "policy_and_strategy",
+      "subject_type": "institutional_capacity",
+      "capability_ids": [
+        "investigation-command-and-case-analysis",
+        "network-crime-investigation",
+        "data-intelligence-and-correlation"
+      ],
+      "technology_terms": [],
+      "legal_domains": [],
+      "procedural_stage": null,
+      "case_type": null,
+      "metrics": {},
+      "lifecycle_stage": null,
+      "support_or_conflict": "SUPPORTS",
+      "source": {
+        "url": "https://www.zjjcy.gov.cn/art/2026/7/7/art_26_206519.html",
+        "host": "www.zjjcy.gov.cn",
+        "source_class": "official_primary",
+        "primary": true,
+        "title": "以“数智检察”创新实践助推社会治理现代化",
+        "content_fingerprint": "9d872b3959ad7ba1f9b0b6cd4de143b67ac419d1515c5a8d878a259164b87122",
+        "retrieved_at": "2026-08-07T12:54:15+00:00"
+      },
+      "evidence_ids": [
+        "discover-policy_and_strategy-16a329f95e893cef"
+      ],
+      "model_analysis": null,
+      "review_status": "PRIMARY_VERIFIED",
+      "safety": {
+        "public_or_authorized": true,
+        "contains_secret_operational_detail": false,
+        "contains_targeting_or_evasion_detail": false,
+        "contains_personal_targeting": false
+      }
+    }
+  ],
   "iteration_rules": {
     "append_only_history": true,
     "deduplicate_by_event_id_and_source_fingerprint": true,
