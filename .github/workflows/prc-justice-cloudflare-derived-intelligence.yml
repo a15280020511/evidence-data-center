@@ -9,6 +9,7 @@ on:
       - "api-center/prc-legal-investigative-intelligence/prc-justice-derived-intelligence-record.schema.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-intelligence-mesh.json"
       - "api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py"
+      - "api-center/prc-legal-investigative-intelligence/encrypt_prc_justice_hf_handoff.py"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py"
       - ".github/workflows/prc-justice-cloudflare-derived-intelligence.yml"
   workflow_dispatch:
@@ -23,6 +24,7 @@ on:
       - "api-center/prc-legal-investigative-intelligence/prc-justice-derived-intelligence-record.schema.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-intelligence-mesh.json"
       - "api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py"
+      - "api-center/prc-legal-investigative-intelligence/encrypt_prc_justice_hf_handoff.py"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py"
       - ".github/workflows/prc-justice-cloudflare-derived-intelligence.yml"
 
@@ -41,9 +43,10 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      GH_TOKEN: ${{ secrets.PRC_JUSTICE_AUTOMATION_TOKEN || github.token }}
+      GH_TOKEN: ${{ github.token }}
       MAX_PAGES: ${{ inputs.max_pages || '6' }}
       OUT_DIR: prc-justice-derived-intelligence
+      ENCRYPTED_DIR: prc-justice-encrypted-handoffs
       LEDGER: api-center/prc-legal-investigative-intelligence/prc-justice-verified-signal-ledger.json
       RECENT_HOURS: "30"
     steps:
@@ -60,25 +63,29 @@ jobs:
       - name: Install bounded dependencies
         run: |
           set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input 'requests==2.32.5' 'jsonschema==4.25.1'
+          python -m pip install --disable-pip-version-check --no-input \
+            'requests==2.32.5' 'jsonschema==4.25.1' 'cryptography==45.0.6'
           python -m pip check
 
-      - name: Validate derived intelligence contracts
+      - name: Validate derived intelligence and encrypted-handoff contracts
         run: |
           set -euo pipefail
           python -m py_compile \
             api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py \
+            api-center/prc-legal-investigative-intelligence/encrypt_prc_justice_hf_handoff.py \
             api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py
           python api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py | tee prc-justice-derived-validation.json
           python api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py \
             --validate-only --output-dir "$OUT_DIR" | tee prc-justice-cloudflare-transform-validation.json
+          python api-center/prc-legal-investigative-intelligence/encrypt_prc_justice_hf_handoff.py validate | tee prc-justice-encrypted-handoff-validation.json
           git diff --check
 
-      - name: Stop after zero-network PR validation
+      - name: Stop after zero-source-network PR validation
         if: github.event_name == 'pull_request'
         run: |
           set -euo pipefail
           test ! -e "$OUT_DIR/derived-intelligence.jsonl"
+          test ! -e "$ENCRYPTED_DIR/handoff-001.json"
           git diff --quiet
 
       - name: Build recent PRIMARY_VERIFIED input JSONL
@@ -151,66 +158,104 @@ jobs:
           Path('prc-justice-derived-intelligence/transform-receipt.json').write_text(json.dumps(row, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
           PY
 
-      - name: Read governed handoff metadata
+      - name: Read transform metadata
         id: handoff
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           python - <<'PY' >> "$GITHUB_OUTPUT"
-          import hashlib, json
+          import json
           from pathlib import Path
           receipt = json.loads(Path('prc-justice-derived-intelligence/transform-receipt.json').read_text(encoding='utf-8'))
-          path = Path('prc-justice-derived-intelligence/governance-hf-justice-export.json')
           print('record_count=' + str(receipt.get('record_count', 0)))
           print('model_calls=' + str(receipt.get('model_calls', 0)))
           print('cloudflare_requests=' + str(receipt.get('cloudflare_requests', 0)))
           print('fallback_count=' + str(receipt.get('in_memory_html_fallback_count', 0)))
           print('quota_exhausted=' + ('true' if receipt.get('quota_exhausted') else 'false'))
-          print('export_sha256=' + (hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ''))
           PY
 
-      - name: Upload sanitized governance handoff artifact
+      - name: Fetch current Governance transport public key
+        if: github.event_name != 'pull_request' && steps.handoff.outputs.record_count != '0'
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, urllib.request
+          from pathlib import Path
+          url = 'https://api.github.com/repos/a15280020511/decision-system-governance/issues?state=open&per_page=100'
+          request = urllib.request.Request(url, headers={
+              'Accept':'application/vnd.github+json',
+              'User-Agent':'prc-justice-evidence-public-key-reader/1',
+              'X-GitHub-Api-Version':'2022-11-28',
+          })
+          with urllib.request.urlopen(request, timeout=30) as response:
+              rows = json.loads(response.read(1024 * 1024))
+          matches = [row for row in rows if row.get('title') == '[hf-justice-transport-key]' and 'pull_request' not in row]
+          if len(matches) != 1:
+              raise SystemExit('exactly one open Governance transport-key Issue is required')
+          body = json.loads(matches[0].get('body') or '')
+          if body.get('schema_version') != 'governance-prc-justice-transport-public-key-v1':
+              raise SystemExit('Governance transport public-key schema mismatch')
+          Path('/tmp/governance-hf-justice-public-key.json').write_text(json.dumps(body, ensure_ascii=False, separators=(',', ':')), encoding='utf-8')
+          print(json.dumps({'key_id':body.get('key_id'),'issue_number':matches[0].get('number')}, ensure_ascii=False))
+          PY
+
+      - name: Encrypt sanitized HF handoffs
+        id: encrypted
+        if: github.event_name != 'pull_request' && steps.handoff.outputs.record_count != '0'
+        run: |
+          set -euo pipefail
+          rm -rf "$ENCRYPTED_DIR"
+          python api-center/prc-legal-investigative-intelligence/encrypt_prc_justice_hf_handoff.py build \
+            --export "$OUT_DIR/governance-hf-justice-export.json" \
+            --public-key /tmp/governance-hf-justice-public-key.json \
+            --output-dir "$ENCRYPTED_DIR" | tee prc-justice-encrypted-handoff-run.json
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          row = json.loads(Path('prc-justice-encrypted-handoffs/manifest.json').read_text(encoding='utf-8'))
+          print('chunk_count=' + str(row['chunk_count']))
+          print('key_id=' + str(row['key_id']))
+          PY
+
+      - name: Create local encrypted handoff Issues for Governance polling
+        id: issue_handoff
+        if: github.event_name != 'pull_request' && steps.handoff.outputs.record_count != '0'
+        run: |
+          set -euo pipefail
+          count=0
+          for path in "$ENCRYPTED_DIR"/handoff-*.json; do
+            test -f "$path"
+            gh issue create \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "[hf-justice-handoff]" \
+              --body-file "$path"
+            count=$((count + 1))
+          done
+          test "$count" -eq "${{ steps.encrypted.outputs.chunk_count }}"
+          echo "created_count=$count" >> "$GITHUB_OUTPUT"
+
+      - name: Upload safe encrypted transport evidence
         if: github.event_name != 'pull_request' && steps.handoff.outputs.record_count != '0'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: prc-justice-derived-${{ github.run_id }}
+          name: prc-justice-encrypted-handoff-${{ github.run_id }}
           path: |
-            prc-justice-derived-intelligence/derived-intelligence.jsonl
-            prc-justice-derived-intelligence/governance-hf-justice-export.json
             prc-justice-derived-intelligence/transform-receipt.json
             prc-justice-cloudflare-transform-run.json
+            prc-justice-encrypted-handoffs/manifest.json
+            prc-justice-encrypted-handoffs/handoff-*.json
+            prc-justice-encrypted-handoff-run.json
           if-no-files-found: error
           retention-days: 30
 
-      - name: Request governance Hugging Face ingestion
-        if: github.event_name != 'pull_request' && steps.handoff.outputs.record_count != '0'
-        continue-on-error: true
+      - name: Delete plaintext derived files before workflow completion
+        if: always() && github.event_name != 'pull_request'
         run: |
-          set -euo pipefail
-          body="$(python - <<'PY'
-          import json, os
-          print(json.dumps({
-            'schema_version': 'governance-hf-justice-ingest-ticket-v1',
-            'source_repository': os.environ['GITHUB_REPOSITORY'],
-            'source_run_id': int(os.environ['GITHUB_RUN_ID']),
-            'source_commit': os.environ['GITHUB_SHA'],
-            'artifact_name': 'prc-justice-derived-' + os.environ['GITHUB_RUN_ID'],
-            'export_path': 'governance-hf-justice-export.json',
-            'export_sha256': os.environ['EXPORT_SHA'],
-            'record_count': int(os.environ['RECORD_COUNT']),
-            'raw_source_text_included': False,
-            'raw_source_url_included': False,
-            'raw_model_response_included': False
-          }, ensure_ascii=False, separators=(',', ':')))
-          PY
-          )"
-          gh issue create \
-            --repo a15280020511/decision-system-governance \
-            --title "[hf-justice-ingest]" \
-            --body "$body"
-        env:
-          EXPORT_SHA: ${{ steps.handoff.outputs.export_sha256 }}
-          RECORD_COUNT: ${{ steps.handoff.outputs.record_count }}
+          rm -f \
+            "$OUT_DIR/derived-intelligence.jsonl" \
+            "$OUT_DIR/governance-hf-justice-export.json" \
+            /tmp/prc-justice-primary.jsonl \
+            /tmp/governance-hf-justice-public-key.json
 
       - name: Write safe summary
         if: always() && github.event_name != 'pull_request'
@@ -223,6 +268,11 @@ jobs:
             echo "- Cloudflare requests: ${{ steps.handoff.outputs.cloudflare_requests || '0' }}"
             echo "- In-memory HTML fallbacks: ${{ steps.handoff.outputs.fallback_count || '0' }}"
             echo "- Quota exhausted: ${{ steps.handoff.outputs.quota_exhausted || 'false' }}"
+            echo "- Encrypted handoff chunks: ${{ steps.issue_handoff.outputs.created_count || '0' }}"
+            echo '- Handoff transport: X25519 + HKDF-SHA256 + ChaCha20-Poly1305'
+            echo '- GitHub cross-repo Actions permission required: false'
+            echo '- GitHub cross-repo Contents permission required: false'
+            echo '- Plaintext Issue transport: false'
             echo '- Reprocess window: last 30 hours only'
             echo '- Raw HTML persisted: false'
             echo '- Raw source text persisted: false'

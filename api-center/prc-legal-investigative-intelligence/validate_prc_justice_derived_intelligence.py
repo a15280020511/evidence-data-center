@@ -11,6 +11,7 @@ HERE = Path(__file__).resolve().parent
 SCHEMA = HERE / "prc-justice-derived-intelligence-record.schema.json"
 MESH = HERE / "prc-justice-intelligence-mesh.json"
 TRANSFORM = HERE / "transform_prc_justice_with_cloudflare_v2.py"
+ENCRYPT = HERE / "encrypt_prc_justice_hf_handoff.py"
 
 
 def load(path: Path) -> Any:
@@ -45,11 +46,32 @@ def validate() -> dict[str, Any]:
     strategy = mesh.get("collection_strategy") or {}
     if int(strategy.get("max_cloudflare_ai_pages_per_cycle") or 0) != 6:
         raise RuntimeError("Cloudflare AI cycle bound must remain six pages")
-    if "cloudflare_schema_constrained_transform" not in (mesh.get("data_flow") or []):
-        raise RuntimeError("Cloudflare semantic transform is missing from data flow")
+    data_flow = mesh.get("data_flow") or []
+    for stage in (
+        "cloudflare_schema_constrained_transform",
+        "encrypt_export_for_governance_with_current_public_key",
+        "post_ciphertext_only_to_evidence_handoff_issue",
+        "governance_poll_decrypt_validate_and_write_private_hf_dataset",
+    ):
+        if stage not in data_flow:
+            raise RuntimeError(f"required derived-intelligence data-flow stage missing: {stage}")
+    transport = mesh.get("cross_repository_transport") or {}
+    expected_transport = {
+        "mode": "encrypted_issue_mailbox",
+        "algorithm": "X25519-HKDF-SHA256-CHACHA20POLY1305",
+        "cross_repo_actions_permission_required": False,
+        "cross_repo_contents_permission_required": False,
+        "plaintext_issue_transport": False,
+        "hf_token_in_evidence_center": False,
+        "raw_source_in_transport": False,
+        "raw_model_response_in_transport": False,
+    }
+    for key, expected in expected_transport.items():
+        if transport.get(key) != expected:
+            raise RuntimeError(f"encrypted transport contract mismatch: {key}")
 
-    text = TRANSFORM.read_text(encoding="utf-8")
-    markers = (
+    transform_text = TRANSFORM.read_text(encoding="utf-8")
+    transform_markers = (
         'f"{API_BASE}/accounts/{account}/browser-rendering/json"',
         '"raw_source_text_persisted": False',
         '"raw_source_url_in_hf_export": False',
@@ -63,16 +85,36 @@ def validate() -> dict[str, Any]:
         '_fetch_verified_html(url)',
         '"simple-json-schema-plus-local-strict-validation"',
     )
-    missing = [item for item in markers if item not in text]
+    missing = [item for item in transform_markers if item not in transform_text]
     if missing:
         raise RuntimeError("transform v2 safety/resilience markers missing: " + ", ".join(missing))
+
+    encrypt_text = ENCRYPT.read_text(encoding="utf-8")
+    encrypt_markers = (
+        'ENVELOPE_SCHEMA = "governance-prc-justice-encrypted-handoff-v1"',
+        'KDF_CONTEXT = b"prc-justice-hf-encrypted-issue-v1"',
+        'ChaCha20Poly1305(key).encrypt',
+        'x25519.X25519PrivateKey.generate()',
+        'MAX_PLAINTEXT_BYTES = 36 * 1024',
+        '"plaintext_issue_transport":False',
+        '"raw_source_text_in_transport":False',
+        '"github_cross_repo_actions_permission_required":False',
+        '"hf_token_required_in_evidence_center":False',
+    )
+    missing = [item for item in encrypt_markers if item not in encrypt_text]
+    if missing:
+        raise RuntimeError("encrypted handoff builder markers missing: " + ", ".join(missing))
     return {
-        "status": "PRC_JUSTICE_DERIVED_INTELLIGENCE_V2_VALIDATED",
+        "status": "PRC_JUSTICE_DERIVED_INTELLIGENCE_ENCRYPTED_TRANSPORT_VALIDATED",
         "core_dimension_count": 6,
         "hf_section_count": len(sections),
         "cloudflare_ai_pages_per_cycle": 6,
         "cloudflare_url_first": True,
         "bounded_in_memory_html_fallback_on_422": True,
+        "encrypted_issue_transport": True,
+        "cross_repo_actions_permission_required": False,
+        "cross_repo_contents_permission_required": False,
+        "hf_token_in_evidence_center": False,
         "raw_html_persisted": False,
         "raw_source_in_hf": False,
         "raw_model_response_in_hf": False,
