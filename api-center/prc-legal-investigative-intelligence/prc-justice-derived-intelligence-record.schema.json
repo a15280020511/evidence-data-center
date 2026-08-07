@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "prc-justice-derived-intelligence-record-v1",
+  "title": "PRC Justice Derived Intelligence Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["record_id","as_of_date","institution_type","signal_type","subject_type","summary","confidence","evidence_ref_ids","safety"],
+  "properties": {
+    "record_id": {"type":"string","pattern":"^[a-z0-9][a-z0-9._:-]{5,180}$"},
+    "as_of_date": {"type":"string","format":"date"},
+    "event_date": {"type":["string","null"],"format":"date"},
+    "institution_type": {"enum":["public_security","procuratorate","court","justice_administration_and_forensics","discipline_supervision","legislature_or_rulemaker","judicial_education_or_research","cross_institution"]},
+    "institution_name": {"type":["string","null"],"maxLength":300},
+    "region": {"type":["string","null"],"maxLength":120},
+    "industry_or_case_domain": {"type":["string","null"],"maxLength":160},
+    "signal_type": {"enum":["law_and_norm","policy_and_strategy","education_and_training","research","standard","procurement_and_budget","talent_and_recruitment","infrastructure_and_deployment","case_practice","judicial_outcome","statistics_and_report","doctrine_and_commentary"]},
+    "subject_type": {"enum":["capability","technology","practice_standard","doctrine","enforcement","institutional_capacity"]},
+    "capability_ids": {"type":"array","maxItems":20,"uniqueItems":true,"items":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{2,100}$"}},
+    "technology_terms": {"type":"array","maxItems":30,"uniqueItems":true,"items":{"type":"string","minLength":1,"maxLength":160}},
+    "legal_domains": {"type":"array","maxItems":20,"uniqueItems":true,"items":{"type":"string","minLength":1,"maxLength":120}},
+    "procedural_stage": {"type":["string","null"],"maxLength":160},
+    "lifecycle_stage": {"type":["string","null"],"enum":[null,"CONCEPT","RESEARCH_SIGNAL","TRAINING_SIGNAL","STANDARDIZING","STANDARDIZED","INVESTING","DEPLOYING","FIRST_PRACTICE","REPEATED_PRACTICE","CROSS_REGION_OBSERVED","CROSS_INSTITUTION_OBSERVED","MATURE_PUBLIC_PRACTICE","CONTESTED","STALE_REVIEW_REQUIRED"]},
+    "trend_direction": {"enum":["NEW","RISING","STABLE","DECLINING","CONTESTED","INSUFFICIENT_DATA"]},
+    "summary": {"type":"string","minLength":1,"maxLength":1800},
+    "practice_standard_summary": {"type":["string","null"],"maxLength":1800},
+    "doctrine_or_enforcement_summary": {"type":["string","null"],"maxLength":1800},
+    "relationships": {"type":"array","maxItems":50,"items":{"type":"object","additionalProperties":false,"required":["relation","target_ref","strength"],"properties":{"relation":{"enum":["SUPPORTS","PRECEDES","IMPLEMENTS","VALIDATES","CONTRADICTS","SAME_CAPABILITY","SAME_INSTITUTION","SAME_REGION","SAME_DOMAIN"]},"target_ref":{"type":"string","minLength":3,"maxLength":180},"strength":{"enum":["DIRECT","STRONG_ASSOCIATION","CONTEXTUAL_ASSOCIATION","UNRESOLVED"]}}}},
+    "confidence": {"enum":["LOW","MEDIUM","MEDIUM_HIGH","HIGH"]},
+    "evidence_ref_ids": {"type":"array","minItems":1,"maxItems":100,"uniqueItems":true,"items":{"type":"string","pattern":"^evref:[0-9a-f]{32,64}$"}},
+    "model_transform": {"type":"object","additionalProperties":false,"required":["provider","method","schema_version"],"properties":{"provider":{"const":"cloudflare"},"method":{"const":"browser-rendering-json"},"schema_version":{"const":"prc-justice-derived-intelligence-record-v1"}}},
+    "safety": {"type":"object","additionalProperties":false,"required":["public_or_authorized","raw_source_text_stored","raw_source_url_stored","raw_model_response_stored","personal_targeting","secret_operational_detail","evasion_or_anti_forensics"],"properties":{"public_or_authorized":{"const":true},"raw_source_text_stored":{"const":false},"raw_source_url_stored":{"const":false},"raw_model_response_stored":{"const":false},"personal_targeting":{"const":false},"secret_operational_detail":{"const":false},"evasion_or_anti_forensics":{"const":false}}}
+  }
+}
