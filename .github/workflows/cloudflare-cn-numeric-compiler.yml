@@ -98,7 +98,7 @@ jobs:
           git diff --check
 
       - name: Upload validation evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: cloudflare-cn-numeric-validation-${{ github.run_id }}
           path: cloudflare-cn-numeric-validation/
@@ -231,7 +231,7 @@ jobs:
 
       - name: Upload immutable governance baseline Artifact
         if: steps.export.outcome == 'success'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: ${{ steps.export.outputs.artifact_name }}
           path: governance-baseline-export/
@@ -240,7 +240,7 @@ jobs:
 
       - name: Upload safe execution evidence
         if: always() && steps.duplicate.outputs.duplicate != 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: cloudflare-cn-numeric-evidence-${{ github.event.issue.number }}-${{ github.run_id }}
           path: |
