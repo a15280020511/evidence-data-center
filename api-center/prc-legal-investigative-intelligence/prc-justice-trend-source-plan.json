@@ -9,6 +9,20 @@
   },
   "discovery_engines": ["tavily","exa"],
   "source_confirmation_rule": "search engine result is discovery evidence only; trend facts require primary or explicitly authorized source verification",
+  "local_source_families": [
+    {
+      "source_id": "china-government-procurement-public",
+      "name": "中国政府采购网公开采购、采购意向、中标与合同信息",
+      "hosts": ["ccgp.gov.cn"],
+      "signal_types": ["procurement_and_budget","infrastructure_and_deployment"],
+      "access_class": "A1_A2_PUBLIC_OFFICIAL_PROCUREMENT",
+      "retrieval": "tavily_or_exa_discovery_then_direct_official_public_page_verification",
+      "primary_fact_rule": "only direct public ccgp.gov.cn page or explicitly linked official procuring-agency page can create PRIMARY_VERIFIED event",
+      "authenticated_or_internal_api_assumed": false,
+      "automatic_login": false,
+      "captcha_or_waf_bypass": false
+    }
+  ],
   "signal_plans": [
     {
       "signal_type": "law_and_norm",
@@ -43,7 +57,7 @@
     {
       "signal_type": "procurement_and_budget",
       "priority": "CRITICAL",
-      "source_families": ["china-government-procurement-public","court-public-procurement-family","procuratorate-public-procurement-family","public-security-public-procurement-family"],
+      "source_families": ["china-government-procurement-public","spc-official","spp-official","mps-public-rules-news","moj-national-regulations"],
       "allowed_hosts": ["ccgp.gov.cn","court.gov.cn","spp.gov.cn","mps.gov.cn","moj.gov.cn"],
       "query_templates": ["site:ccgp.gov.cn 公安 电子数据 刑事技术 大数据 采购","site:ccgp.gov.cn 检察 技术 电子数据 数字检察 采购","site:ccgp.gov.cn 法院 数字法院 智能审判 采购"]
     },
@@ -62,7 +76,7 @@
     {
       "signal_type": "case_practice",
       "priority": "CRITICAL",
-      "source_families": ["yuandian-spc-spp-case-outcome-family","court-disclosure-and-case-platform-family","procuratorate-disclosure-and-case-family","public-security-public-case-family","discipline-supervision-public-case-family"],
+      "source_families": ["yuandian-spc-spp-case-outcome-family","court-disclosure-and-case-platform-family","procuratorate-disclosure-and-case-family","public-security-public-case-family","ccdi-nsc-public-system","discipline-supervision-local-family"],
       "query_templates": ["典型案例 电子数据 技术性证据审查 网络犯罪","参考案例 电子数据 证据链 技术审查"]
     },
     {
