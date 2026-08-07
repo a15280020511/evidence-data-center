@@ -23,13 +23,27 @@
     "oauth_protected_resource_metadata": "reachable",
     "authorization_server_metadata": "reachable",
     "authorization_code_supported": true,
+    "refresh_token_supported": true,
     "dynamic_client_registration_present": true,
-    "client_credentials_supported": false
+    "client_credentials_supported": false,
+    "token_endpoint_auth_method": "none",
+    "pkce_s256_supported": true,
+    "browser_registration_cors_usable": false,
+    "browser_token_cors_usable": false,
+    "public_client_registered": true
+  },
+  "oauth_bridge": {
+    "client_config": "oauth-client.json",
+    "local_bootstrap": "oauth_bootstrap.py",
+    "runner_refresh_resolver": "oauth_refresh.py",
+    "refresh_secret": "CONSENSUS_MCP_REFRESH_TOKEN",
+    "bearer_secret": "CONSENSUS_MCP_BEARER_TOKEN",
+    "refresh_rotation_policy": "fail-closed-until-secret-can-be-safely-updated"
   },
   "notes": [
     "Consensus documents fetch as ChatGPT-only; generic MCP clients use search.",
-    "Free-account use is available through supported interactive OAuth clients.",
-    "Headless GitHub Actions cannot derive a Free-account token via client_credentials because that grant is not advertised.",
-    "Remote search remains OAuth-gated until a safe credential bridge or accepted Bearer is provisioned."
+    "Free-account authorization is bootstrapped locally through loopback PKCE, not through browser JavaScript or public GitHub artifacts.",
+    "GitHub Actions can exchange the stored refresh token for a runner-only Bearer when CONSENSUS_MCP_REFRESH_TOKEN is configured.",
+    "No access or refresh token is committed, commented, or uploaded as an artifact."
   ]
 }
