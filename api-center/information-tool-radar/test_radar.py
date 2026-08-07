@@ -52,7 +52,7 @@ def main() -> int:
         10,
     )
     assert len(eonet_result.candidates) == 1
-    assert eonet_result.candidates[0]["raw"]["event_backend"] == "nasa-eonet"
+    assert eonet_result.candidates[0]["evidence"]["event_backend"] == "nasa-eonet"
 
     results = [
         radar.AdapterResult(
