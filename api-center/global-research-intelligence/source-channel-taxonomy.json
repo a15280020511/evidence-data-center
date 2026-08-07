@@ -1,0 +1,49 @@
+{
+  "schema_version": "global-source-channel-taxonomy-v1",
+  "reviewed_at": "2026-08-07",
+  "purpose": "Classify global information acquisition channels beyond APIs for governed intelligence collection.",
+  "principles": [
+    "Prefer machine-published official channels before browser automation",
+    "Prefer incremental retrieval over full rescans",
+    "Preserve source identity, publication time, license and provenance",
+    "Do not bypass authentication, CAPTCHA, WAF, robots-enforced access restrictions or provider denial",
+    "Treat a channel as transport; legal and data-content controls remain independent"
+  ],
+  "tiers": {
+    "A0_MACHINE_NATIVE": "Machine-oriented public feeds and downloads",
+    "A1_STABLE_PUBLIC_DOCUMENT": "Stable public pages, documents and notices",
+    "A2_PUBLIC_SEARCH_DATABASE": "Public searchable databases requiring bounded queries/pagination",
+    "A3_AUTHENTICATED_OR_CONDITIONAL": "Account, member, paid, licensed or otherwise conditional access requiring separate authorization review"
+  },
+  "channels": [
+    {"channel_id": "api", "tier": "A0_MACHINE_NATIVE", "examples": ["REST", "GraphQL", "SPARQL", "OData"], "best_for": ["structured_current_data", "queryable_records"], "automation_fit": "excellent"},
+    {"channel_id": "rss-atom-feed", "tier": "A0_MACHINE_NATIVE", "examples": ["RSS", "Atom"], "best_for": ["news", "notices", "research_updates", "security_advisories"], "automation_fit": "excellent"},
+    {"channel_id": "sitemap", "tier": "A0_MACHINE_NATIVE", "examples": ["sitemap.xml", "sitemap-index"], "best_for": ["URL_discovery", "incremental_site_monitoring"], "automation_fit": "excellent"},
+    {"channel_id": "oai-pmh", "tier": "A0_MACHINE_NATIVE", "examples": ["OAI-PMH"], "best_for": ["libraries", "institutional_repositories", "archives", "scholarly_metadata"], "automation_fit": "excellent"},
+    {"channel_id": "bulk-download", "tier": "A0_MACHINE_NATIVE", "examples": ["CSV", "TSV", "XLSX", "JSON", "XML", "Parquet", "ZIP"], "best_for": ["statistics", "open_data", "historical_snapshots"], "automation_fit": "excellent"},
+    {"channel_id": "public-object-storage", "tier": "A0_MACHINE_NATIVE", "examples": ["public_bucket", "static_dataset_repository"], "best_for": ["large_public_datasets", "versioned_files"], "automation_fit": "excellent"},
+    {"channel_id": "ftp-sftp-authorized", "tier": "A0_MACHINE_NATIVE", "examples": ["anonymous_FTP", "authorized_SFTP"], "best_for": ["official_bulk_delivery", "licensed_data_feeds"], "automation_fit": "high", "authorization_note": "SFTP normally belongs in A3 when credentials or a license are required."},
+    {"channel_id": "html-page", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["official_article", "notice", "press_release", "policy_page"], "best_for": ["policy", "regulation", "news", "announcements"], "automation_fit": "high"},
+    {"channel_id": "pdf-document", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["report", "law", "standard", "whitepaper", "filing"], "best_for": ["long_form_primary_documents", "reports", "standards"], "automation_fit": "high"},
+    {"channel_id": "office-attachment", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["XLSX", "DOCX", "PPTX"], "best_for": ["tables", "government_attachments", "budget_and_statistics"], "automation_fit": "high"},
+    {"channel_id": "government-gazette", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["official_gazette", "bulletin"], "best_for": ["authoritative_publication", "historical_legal_record"], "automation_fit": "high"},
+    {"channel_id": "court-regulator-case-publication", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["guiding_case", "typical_case", "enforcement_case"], "best_for": ["law_in_practice", "enforcement_patterns"], "automation_fit": "high"},
+    {"channel_id": "consultation-and-hearing", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["draft_rule", "public_comment", "hearing_transcript"], "best_for": ["policy_leading_indicators", "regulatory_intent"], "automation_fit": "high"},
+    {"channel_id": "press-conference-transcript", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["official_transcript", "Q&A"], "best_for": ["policy_interpretation", "official_position"], "automation_fit": "high"},
+    {"channel_id": "standards-and-technical-guidance", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["national_standard", "industry_standard", "practice_guide"], "best_for": ["engineering_controls", "compliance_implementation"], "automation_fit": "high"},
+    {"channel_id": "corporate-filing-and-exchange-disclosure", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["annual_report", "exchange_filing", "bond_disclosure"], "best_for": ["company_financials", "corporate_events", "risk"], "automation_fit": "high"},
+    {"channel_id": "procurement-and-tender", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["tender", "award_notice", "public_procurement"], "best_for": ["projects", "spending", "supplier_intelligence", "industrial_activity"], "automation_fit": "high"},
+    {"channel_id": "patent-and-trademark-publication", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["patent_publication", "trademark_notice"], "best_for": ["technology", "competitive_intelligence", "innovation"], "automation_fit": "high"},
+    {"channel_id": "repository-and-library-catalog", "tier": "A1_STABLE_PUBLIC_DOCUMENT", "examples": ["institutional_repository", "library_catalog", "archive_finding_aid"], "best_for": ["books", "papers", "archives", "historical_sources"], "automation_fit": "high"},
+    {"channel_id": "public-search-database", "tier": "A2_PUBLIC_SEARCH_DATABASE", "examples": ["legal_database", "case_database", "company_registry", "statistics_search"], "best_for": ["targeted_lookup", "record_discovery"], "automation_fit": "medium", "controls": ["bounded_queries", "bounded_pagination", "cache", "incremental_collection", "stop_on_login_or_captcha"]},
+    {"channel_id": "interactive-dashboard", "tier": "A2_PUBLIC_SEARCH_DATABASE", "examples": ["public_dashboard", "chart_portal"], "best_for": ["current_indicators", "regional_statistics"], "automation_fit": "medium", "controls": ["prefer_download_link", "prefer_documented_data_export", "avoid_private_endpoint_reverse_engineering"]},
+    {"channel_id": "map-and-tile-public-service", "tier": "A2_PUBLIC_SEARCH_DATABASE", "examples": ["public_map", "WMS", "WFS", "WMTS"], "best_for": ["geospatial", "land_use", "environment"], "automation_fit": "medium_to_high", "controls": ["license_review", "geospatial_classification", "bounded_extent_and_resolution"]},
+    {"channel_id": "public-web-search-engine", "tier": "A2_PUBLIC_SEARCH_DATABASE", "examples": ["search_engine", "site_search"], "best_for": ["discovery", "freshness", "cross_source_recall"], "automation_fit": "medium", "controls": ["use_as_discovery_not_final_authority", "verify_primary_source"]},
+    {"channel_id": "social-public-page", "tier": "A2_PUBLIC_SEARCH_DATABASE", "examples": ["public_post", "public_channel", "public_profile_page"], "best_for": ["public_sentiment", "announcements", "event_signals"], "automation_fit": "medium_to_low", "controls": ["personal_information_gate", "terms_review", "no_private_messages", "no_individual_profiling"]},
+    {"channel_id": "authenticated-official-api", "tier": "A3_AUTHENTICATED_OR_CONDITIONAL", "examples": ["API_key", "OAuth"], "best_for": ["official_structured_data"], "automation_fit": "high", "controls": ["account_scope", "quota", "license", "secret_isolation", "identity_attribution_review"]},
+    {"channel_id": "member-paid-database", "tier": "A3_AUTHENTICATED_OR_CONDITIONAL", "examples": ["subscription_database", "licensed_research_platform"], "best_for": ["premium_data", "reports"], "automation_fit": "conditional", "controls": ["automation_permission", "download_scope", "storage_scope", "redistribution_scope", "cross_border_review"]},
+    {"channel_id": "authenticated-web-portal", "tier": "A3_AUTHENTICATED_OR_CONDITIONAL", "examples": ["account_dashboard", "member_backend"], "best_for": ["authorized_account_data"], "automation_fit": "conditional", "controls": ["prefer_official_export_or_API", "no_credential_sharing", "no_captcha_bypass", "stop_on_denial"]},
+    {"channel_id": "email-newsletter-alert", "tier": "A3_AUTHENTICATED_OR_CONDITIONAL", "examples": ["official_newsletter", "regulatory_alert"], "best_for": ["incremental_updates", "notices"], "automation_fit": "high_when_user_authorized", "controls": ["mailbox_authorization", "personal_data_minimization"]},
+    {"channel_id": "manual-authorized-export", "tier": "A3_AUTHENTICATED_OR_CONDITIONAL", "examples": ["manual_download", "official_export", "licensed_mirror"], "best_for": ["sources_where_automation_is_not_authorized"], "automation_fit": "handoff", "controls": ["provenance", "license", "hash", "data_classification"]}
+  ]
+}
