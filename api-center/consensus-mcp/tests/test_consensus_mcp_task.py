@@ -1,0 +1,90 @@
+from __future__ import annotations
+
+import json
+import sys
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+import consensus_mcp_task as task  # noqa: E402
+
+
+class ConsensusMcpTests(unittest.TestCase):
+    def sample_ticket(self) -> dict:
+        return {
+            "task_id": "consensus-test-001",
+            "provider": "consensus-mcp",
+            "operation": "search",
+            "objective": "test search",
+            "parameters": {
+                "query": "causal inference",
+                "year_min": 2020,
+                "year_max": 2026,
+                "exclude_preprints": True,
+            },
+            "data_policy": {
+                "classification": "public",
+                "contains_personal_data": False,
+            },
+            "acceptance": {
+                "timeout_seconds": 30,
+                "max_response_bytes": 1000000,
+                "max_rows": 3,
+            },
+        }
+
+    def test_catalog_is_fixed_read_only_anonymous_first(self) -> None:
+        provider = task.provider_catalog()
+        self.assertEqual(provider["provider_id"], "consensus-mcp")
+        self.assertEqual(provider["official_endpoint"], "https://mcp.consensus.app/mcp")
+        self.assertIsNone(provider["required_secret_environment_variable"])
+        self.assertEqual(provider["authentication"]["default_mode"], "anonymous-free")
+        self.assertFalse(provider["limits"]["arbitrary_jsonrpc_methods_allowed"])
+        self.assertFalse(provider["limits"]["arbitrary_mcp_tool_names_allowed"])
+        self.assertFalse(provider["limits"]["write_operations_allowed"])
+        self.assertFalse(provider["limits"]["web_scraping_allowed"])
+        remote_tools = {
+            row.get("execution", {}).get("mcp_tool_name")
+            for row in provider["operations"]
+            if row.get("execution", {}).get("mcp_tool_name")
+        }
+        self.assertEqual(remote_tools, {"search"})
+
+    def test_ticket_validation(self) -> None:
+        ticket = self.sample_ticket()
+        task.validate_ticket(ticket)
+        ticket["parameters"]["year_min"] = 2027
+        ticket["parameters"]["year_max"] = 2026
+        with self.assertRaisesRegex(ValueError, "year_min"):
+            task.validate_ticket(ticket)
+
+    def test_unknown_operation_rejected(self) -> None:
+        ticket = self.sample_ticket()
+        ticket["operation"] = "arbitrary-tool"
+        with self.assertRaises(ValueError):
+            task.validate_ticket(ticket)
+
+    def test_sse_payload_parser(self) -> None:
+        payload = b'event: message\ndata: {"jsonrpc":"2.0","id":1,"result":{"ok":true}}\n\n'
+        parsed = task.parse_mcp_payload(payload, "text/event-stream")
+        self.assertTrue(parsed["result"]["ok"])
+
+    def test_extract_and_cap_papers(self) -> None:
+        result = {
+            "content": [
+                {
+                    "type": "text",
+                    "text": json.dumps({"papers": [{"title": "a"}, {"title": "b"}, {"title": "c"}]})
+                }
+            ]
+        }
+        structured = task.extract_structured_result(result)
+        capped = task.truncate_papers(structured, 2)
+        self.assertEqual(len(capped["papers"]), 2)
+        self.assertEqual(capped["returned_papers_after_local_cap"], 2)
+
+
+if __name__ == "__main__":
+    unittest.main()
