@@ -27,6 +27,7 @@ SOURCE_CATALOG_PATH = HERE / "source-catalog.json"
 INVESTIGATIVE_MATRIX_PATH = HERE / "investigative-evidence-matrix.json"
 LEGAL_SYSTEM_MATRIX_PATH = HERE / "legal-system-matrix.json"
 PRACTICE_MATRIX_PATH = HERE / "public-security-knowledge-practice-matrix.json"
+FULL_SPECTRUM_MATRIX_PATH = HERE / "prc-politico-legal-full-spectrum-matrix.json"
 
 
 def normalized(value: Any) -> str:
@@ -244,18 +245,95 @@ def filter_practice_matrix(matrix: Mapping[str, Any], parameters: Mapping[str, A
     }
 
 
-def joint_audit_plan(catalog: Mapping[str, Any], matrix: Mapping[str, Any], legal_matrix: Mapping[str, Any], practice_matrix: Mapping[str, Any], parameters: Mapping[str, Any]) -> Mapping[str, Any]:
+def filter_full_spectrum_matrix(matrix: Mapping[str, Any], parameters: Mapping[str, Any]) -> Mapping[str, Any]:
+    topic = normalized(parameters.get("topic"))
+    domain = normalized(parameters.get("domain"))
+    view = normalized(parameters.get("view"))
+    limit = bounded_int(parameters.get("limit"), default=100, minimum=1, maximum=100, name="limit")
+    domains: list[dict[str, Any]] = []
+    for row in matrix.get("system_domains") or []:
+        if not isinstance(row, Mapping):
+            continue
+        if domain and normalized(row.get("domain_id")) != domain:
+            continue
+        text = " ".join([normalized(row.get("domain_id")), normalized(row.get("name")), normalized(row.get("weight"))])
+        if topic and topic not in text:
+            continue
+        domains.append(dict(row))
+        if len(domains) >= limit:
+            break
+    selected_domain_ids = {normalized(row.get("domain_id")) for row in domains}
+    sources: list[dict[str, Any]] = []
+    for row in matrix.get("source_families") or []:
+        if not isinstance(row, Mapping):
+            continue
+        row_domain = normalized(row.get("domain"))
+        if domain and row_domain != domain:
+            continue
+        if selected_domain_ids and row_domain not in selected_domain_ids and (domain or topic):
+            continue
+        if view and view not in normalized(row.get("view")):
+            continue
+        text = " ".join([
+            normalized(row.get("source_id")), normalized(row.get("name")), row_domain,
+            normalized(row.get("view")), normalized(row.get("access_class")),
+            " ".join(normalized(item) for item in row.get("hosts") or []),
+        ])
+        if topic and not domains and topic not in text:
+            continue
+        sources.append(dict(row))
+        if len(sources) >= limit:
+            break
+    if not topic and not domain:
+        domains = [dict(row) for row in (matrix.get("system_domains") or []) if isinstance(row, Mapping)][:limit]
+    return {
+        "schema_version": matrix.get("schema_version"),
+        "reviewed_at": matrix.get("reviewed_at"),
+        "jurisdiction": matrix.get("jurisdiction"),
+        "purpose": matrix.get("purpose"),
+        "coverage_contract": matrix.get("coverage_contract"),
+        "safety_boundary": matrix.get("safety_boundary"),
+        "knowledge_layers": matrix.get("knowledge_layers"),
+        "domain_count": len(domains),
+        "source_count": len(sources),
+        "system_domains": domains,
+        "source_families": sources,
+        "cross_validation_model": matrix.get("cross_validation_model"),
+        "case_derived_fields": matrix.get("case_derived_fields"),
+        "forbidden_fields": matrix.get("forbidden_fields"),
+        "retrieval_policy": matrix.get("retrieval_policy"),
+        "analysis_pipeline": matrix.get("analysis_pipeline"),
+    }
+
+
+def joint_audit_plan(
+    catalog: Mapping[str, Any],
+    matrix: Mapping[str, Any],
+    legal_matrix: Mapping[str, Any],
+    practice_matrix: Mapping[str, Any],
+    full_spectrum_matrix: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> Mapping[str, Any]:
     topics_raw = parameters.get("risk_topics") or []
     if not isinstance(topics_raw, list):
         raise ValueError("risk_topics must be an array")
     topics = {normalized(item) for item in topics_raw if normalized(item)}
     candidates = stage_sources(catalog, topics)
     candidate_ids = {str(row.get("source_id")) for row in candidates}
+    full_spectrum_ids = {
+        str(row.get("source_id")) for row in full_spectrum_matrix.get("source_families") or []
+        if isinstance(row, Mapping) and row.get("source_id")
+    }
     stage_map = [
         ("yuandian_recall", ["yuandian-law"]),
         ("legal_system_lane_selection", ["npc-national-law-database", "spc-official", "spp-guiding-cases", "public-security-electronic-evidence-rules", "moj-national-regulations"]),
+        ("politico_legal_governance_view", ["central-politico-legal-commission-public", "china-law-society-network", "party-regulation-public-family"]),
+        ("discipline_supervision_view", ["ccdi-nsc-public-system", "discipline-inspection-supervision-academy", "discipline-inspection-nine-textbooks", "discipline-supervision-local-family"]),
+        ("education_training_theory_view", ["national-judge-college-and-case-research", "national-prosecutor-college-and-research", "justice-administration-academy", "mps-direct-police-universities", "national-law-school-research-family"]),
         ("public_security_source_view", ["mps-public-rules-news", "mps-public-security-standards", "ppsuc-public-education-research", "cipuc-public-education-research", "cppu-public-education-research"]),
-        ("case_derived_outcome_view", ["yuandian-spc-spp-case-outcome-family", "spp-procuratorial-technology", "local-public-security-official-family"]),
+        ("standards_forensics_technology_view", ["mps-standards-and-tc179", "mps-forensic-center-public", "judicial-appraisal-science-family"]),
+        ("specialized_criminal_enforcement_view", ["national-security-public-law-platform", "coast-guard-public-law-cases", "customs-anti-smuggling-public-family", "immigration-enforcement-public-family", "joint-interagency-criminal-justice-rules"]),
+        ("case_derived_outcome_view", ["yuandian-spc-spp-case-outcome-family", "spp-procuratorial-technology", "local-public-security-official-family", "court-disclosure-and-case-platform-family", "procuratorate-disclosure-and-case-family", "public-security-public-case-family", "justice-administration-case-family"]),
         ("current_official_law_validation", ["npc-national-law-database", "moj-national-regulations"]),
         ("criminal_and_administrative_procedure", ["spc-official", "spp-guiding-cases", "public-security-electronic-evidence-rules"]),
         ("judicial_and_procuratorial_cases", ["spc-case-library", "spc-official", "spp-guiding-cases"]),
@@ -267,11 +345,28 @@ def joint_audit_plan(catalog: Mapping[str, Any], matrix: Mapping[str, Any], lega
     stages = []
     always_include = {"yuandian-law", "npc-national-law-database", "public-security-electronic-evidence-rules"}
     practice_ids = {str(row.get("source_id")) for row in practice_matrix.get("source_families") or [] if isinstance(row, Mapping)}
+    full_spectrum_stages = {
+        "politico_legal_governance_view",
+        "discipline_supervision_view",
+        "education_training_theory_view",
+        "standards_forensics_technology_view",
+        "specialized_criminal_enforcement_view",
+    }
+    practice_stages = {"public_security_source_view", "case_derived_outcome_view"}
+    legacy_practice_ids = {
+        "mps-public-rules-news", "mps-public-security-standards", "ppsuc-public-education-research",
+        "cipuc-public-education-research", "cppu-public-education-research", "yuandian-spc-spp-case-outcome-family",
+        "spp-procuratorial-technology", "local-public-security-official-family",
+    }
     for stage_name, source_ids in stage_map:
-        if topics and stage_name not in {"public_security_source_view", "case_derived_outcome_view"}:
+        if stage_name in full_spectrum_stages:
+            routed = [source_id for source_id in source_ids if source_id in full_spectrum_ids]
+        elif stage_name in practice_stages:
+            routed = [source_id for source_id in source_ids if source_id in practice_ids or source_id in full_spectrum_ids]
+        elif topics:
             routed = [source_id for source_id in source_ids if source_id in candidate_ids or source_id in always_include]
         else:
-            routed = [source_id for source_id in source_ids if source_id in practice_ids or source_id not in {"mps-public-rules-news", "mps-public-security-standards", "ppsuc-public-education-research", "cipuc-public-education-research", "cppu-public-education-research", "yuandian-spc-spp-case-outcome-family", "spp-procuratorial-technology", "local-public-security-official-family"}]
+            routed = [source_id for source_id in source_ids if source_id in practice_ids or source_id in full_spectrum_ids or source_id not in legacy_practice_ids]
         stages.append({"stage": stage_name, "source_ids": routed})
     matrix_view = filter_investigative_matrix(matrix, {"limit": 100})
     matched_authorities = []
@@ -303,11 +398,26 @@ def joint_audit_plan(catalog: Mapping[str, Any], matrix: Mapping[str, Any], lega
         text = " ".join([normalized(row.get("domain_id")), normalized(row.get("name")), normalized(row.get("safe_scope"))])
         if not topics or any(topic in text for topic in topics):
             matched_practice_domains.append(row.get("domain_id"))
+    matched_full_spectrum_domains = []
+    for row in full_spectrum_matrix.get("system_domains") or []:
+        if not isinstance(row, Mapping):
+            continue
+        text = " ".join([normalized(row.get("domain_id")), normalized(row.get("name")), normalized(row.get("weight"))])
+        if not topics or any(topic in text for topic in topics):
+            matched_full_spectrum_domains.append(row.get("domain_id"))
+    if topics and not matched_full_spectrum_domains:
+        matched_full_spectrum_domains = [
+            "national_legislation",
+            "court_system",
+            "procuratorate_system",
+            "public_security",
+            "discipline_supervision",
+        ]
     return {
         "jurisdiction": "PRC_MAINLAND",
         "risk_topics": sorted(topics),
         "purpose": "defensive_compliance_and_evidence_review_only",
-        "decision_rule": "YuanDian provides broad recall; public police education/standards/research describe declared capability domains; public cases provide demonstrated outcome evidence; current official law and primary judicial/procuratorial/public-security sources control final verification.",
+        "decision_rule": "YuanDian provides broad recall; the full-spectrum politico-legal matrix selects governance, justice, discipline-supervision, training, standards and specialized-enforcement source families; public case outcomes test demonstrated practice; current official law and primary sources control final verification.",
         "investigation_evasion_allowed": False,
         "identity_concealment_allowed": False,
         "technical_surveillance_implementation_details_allowed": False,
@@ -316,6 +426,7 @@ def joint_audit_plan(catalog: Mapping[str, Any], matrix: Mapping[str, Any], lega
         "matched_authority_ids": matched_authorities,
         "matched_investigative_category_ids": matched_categories,
         "matched_public_security_capability_domain_ids": matched_practice_domains,
+        "matched_full_spectrum_domain_ids": matched_full_spectrum_domains,
         "final_output": ["GREEN", "YELLOW", "ORANGE", "RED", "REVIEW_BEFORE_PRODUCTION"],
     }
 
@@ -342,6 +453,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         matrix = load_json(INVESTIGATIVE_MATRIX_PATH)
         legal_matrix = load_json(LEGAL_SYSTEM_MATRIX_PATH)
         practice_matrix = load_json(PRACTICE_MATRIX_PATH)
+        full_spectrum_matrix = load_json(FULL_SPECTRUM_MATRIX_PATH)
         if operation == "catalog-capabilities":
             if parameters:
                 raise ValueError("catalog-capabilities accepts no parameters")
@@ -351,6 +463,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
                 "investigative_matrix_summary": {"schema_version": matrix.get("schema_version"), "reviewed_at": matrix.get("reviewed_at"), "authority_count": len(matrix.get("authority_layers") or []), "category_count": len(matrix.get("evidence_and_investigative_categories") or [])},
                 "legal_system_matrix_summary": {"schema_version": legal_matrix.get("schema_version"), "reviewed_at": legal_matrix.get("reviewed_at"), "lane_count": len(legal_matrix.get("system_lanes") or []), "source_count": len(legal_matrix.get("sources") or [])},
                 "public_security_practice_matrix_summary": {"schema_version": practice_matrix.get("schema_version"), "reviewed_at": practice_matrix.get("reviewed_at"), "source_count": len(practice_matrix.get("source_families") or []), "capability_domain_count": len(practice_matrix.get("capability_domains") or [])},
+                "politico_legal_full_spectrum_summary": {"schema_version": full_spectrum_matrix.get("schema_version"), "reviewed_at": full_spectrum_matrix.get("reviewed_at"), "domain_count": len(full_spectrum_matrix.get("system_domains") or []), "source_count": len(full_spectrum_matrix.get("source_families") or [])},
             }
         elif operation == "source-catalog":
             snapshot = {"source_catalog": filter_sources(catalog, parameters)}
@@ -362,8 +475,10 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
             snapshot = {"legal_system_matrix": filter_legal_system_matrix(legal_matrix, parameters)}
         elif operation == "public-security-practice-matrix":
             snapshot = {"public_security_practice_matrix": filter_practice_matrix(practice_matrix, parameters)}
+        elif operation == "politico-legal-full-spectrum-matrix":
+            snapshot = {"politico_legal_full_spectrum_matrix": filter_full_spectrum_matrix(full_spectrum_matrix, parameters)}
         elif operation == "joint-audit-plan":
-            snapshot = {"joint_audit_plan": joint_audit_plan(catalog, matrix, legal_matrix, practice_matrix, parameters)}
+            snapshot = {"joint_audit_plan": joint_audit_plan(catalog, matrix, legal_matrix, practice_matrix, full_spectrum_matrix, parameters)}
         else:
             raise ValueError(f"unsupported operation: {operation}")
         status = "INTEL_PRC_LEGAL_INVESTIGATIVE_COMPLETED"

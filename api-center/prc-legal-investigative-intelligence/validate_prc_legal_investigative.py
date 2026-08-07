@@ -14,6 +14,7 @@ SAMPLES = {
     "legal-system-matrix": {"system_lane": "court_system", "limit": 100},
     "investigative-evidence-matrix": {"limit": 100},
     "public-security-practice-matrix": {"limit": 100},
+    "politico-legal-full-spectrum-matrix": {"limit": 100},
     "joint-audit-plan": {"risk_topics": ["electronic_evidence", "personal_information", "geospatial"]},
 }
 
@@ -81,12 +82,47 @@ def validate(operation: str) -> dict[str, object]:
             assert required_sources <= source_ids
             assert "anti_forensics_or_evasion_method" in view["forbidden_extraction_fields"]
             assert "operational_tactical_playbook" in view["forbidden_extraction_fields"]
+        if operation == "politico-legal-full-spectrum-matrix":
+            view = snapshot["politico_legal_full_spectrum_matrix"]
+            assert view["schema_version"] == "prc-politico-legal-full-spectrum-matrix-v1"
+            assert view["domain_count"] >= 14
+            assert view["source_count"] >= 30
+            assert view["coverage_contract"]["dynamic_local_discovery"] is True
+            assert view["safety_boundary"]["secret_or_internal_operational_material_allowed"] is False
+            assert view["safety_boundary"]["private_training_platform_auto_login_allowed"] is False
+            source_ids = {row["source_id"] for row in view["source_families"]}
+            required_sources = {
+                "central-politico-legal-commission-public",
+                "china-law-society-network",
+                "party-regulation-public-family",
+                "ccdi-nsc-public-system",
+                "discipline-inspection-supervision-academy",
+                "national-judge-college-and-case-research",
+                "national-prosecutor-college-and-research",
+                "justice-administration-academy",
+                "mps-direct-police-universities",
+                "mps-standards-and-tc179",
+                "national-security-public-law-platform",
+                "coast-guard-public-law-cases",
+                "customs-anti-smuggling-public-family",
+                "immigration-enforcement-public-family",
+                "local-justice-full-family",
+            }
+            assert required_sources <= source_ids
+            assert "anti_forensics_or_investigation_evasion_method" in view["forbidden_fields"]
+            assert "operational_tactical_playbook" in view["forbidden_fields"]
         if operation == "joint-audit-plan":
             plan = snapshot["joint_audit_plan"]
             assert plan["matched_legal_system_lane_ids"]
             assert plan["investigation_evasion_allowed"] is False
-            assert "public_security_source_view" in {stage["stage"] for stage in plan["stages"]}
-            assert "case_derived_outcome_view" in {stage["stage"] for stage in plan["stages"]}
+            stage_names = {stage["stage"] for stage in plan["stages"]}
+            assert "politico_legal_governance_view" in stage_names
+            assert "discipline_supervision_view" in stage_names
+            assert "education_training_theory_view" in stage_names
+            assert "standards_forensics_technology_view" in stage_names
+            assert "specialized_criminal_enforcement_view" in stage_names
+            assert "case_derived_outcome_view" in stage_names
+            assert plan["matched_full_spectrum_domain_ids"]
         return {"status": "PASS", "operation": operation, "provider_catalog": CATALOG_PATH.name}
 
 
