@@ -405,6 +405,14 @@ def joint_audit_plan(
         text = " ".join([normalized(row.get("domain_id")), normalized(row.get("name")), normalized(row.get("weight"))])
         if not topics or any(topic in text for topic in topics):
             matched_full_spectrum_domains.append(row.get("domain_id"))
+    if topics and not matched_full_spectrum_domains:
+        matched_full_spectrum_domains = [
+            "national_legislation",
+            "court_system",
+            "procuratorate_system",
+            "public_security",
+            "discipline_supervision",
+        ]
     return {
         "jurisdiction": "PRC_MAINLAND",
         "risk_topics": sorted(topics),
