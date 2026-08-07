@@ -366,7 +366,7 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         "auth_mode": "bearer" if token else "anonymous-free",
         "model_calls": 0,
         "write_operations": 0,
-        "web_scraping": false,
+        "web_scraping": False,
     }
     try:
         if operation == "catalog-capabilities":
