@@ -35,17 +35,24 @@ class ConsensusMcpTests(unittest.TestCase):
             },
         }
 
-    def test_catalog_is_fixed_read_only_oauth_gated(self) -> None:
+    def test_catalog_is_fixed_read_only_oauth_bridge(self) -> None:
         provider = task.provider_catalog()
         self.assertEqual(provider["provider_id"], "consensus-mcp")
         self.assertEqual(provider["official_endpoint"], "https://mcp.consensus.app/mcp")
-        self.assertEqual(provider["runtime_status"], "oauth-gated")
+        self.assertEqual(provider["runtime_status"], "oauth-bridge-ready-awaiting-secret")
         self.assertFalse(provider["production_search_ready"])
         self.assertIsNone(provider["required_secret_environment_variable"])
+        self.assertIn("CONSENSUS_MCP_REFRESH_TOKEN", provider["optional_secret_environment_variables"])
+        self.assertIn("CONSENSUS_MCP_BEARER_TOKEN", provider["optional_secret_environment_variables"])
         self.assertTrue(provider["authentication"]["resource_requires_bearer"])
         self.assertEqual(provider["authentication"]["verified_unauthenticated_http_status"], 401)
         self.assertTrue(provider["authentication"]["authorization_code_supported"])
+        self.assertTrue(provider["authentication"]["refresh_token_supported"])
         self.assertFalse(provider["authentication"]["client_credentials_supported"])
+        self.assertEqual(provider["authentication"]["token_endpoint_auth_method"], "none")
+        self.assertEqual(provider["authentication"]["pkce_method"], "S256")
+        self.assertEqual(provider["authentication"]["public_client_id"], "ee123d14-833d-428c-bc28-e796c2e4b25f")
+        self.assertEqual(provider["authentication"]["refresh_secret"], "CONSENSUS_MCP_REFRESH_TOKEN")
         self.assertFalse(provider["limits"]["arbitrary_jsonrpc_methods_allowed"])
         self.assertFalse(provider["limits"]["arbitrary_mcp_tool_names_allowed"])
         self.assertFalse(provider["limits"]["write_operations_allowed"])
@@ -57,7 +64,7 @@ class ConsensusMcpTests(unittest.TestCase):
         }
         self.assertEqual(remote_tools, {"search"})
         remote_ops = [row for row in provider["operations"] if not row.get("execution", {}).get("local")]
-        self.assertTrue(all(row["credential_mode"] == "oauth-bearer-required" for row in remote_ops))
+        self.assertTrue(all(row["credential_mode"] == "oauth-bearer-or-refresh-bridge" for row in remote_ops))
 
     def test_ticket_validation(self) -> None:
         ticket = self.sample_ticket()
