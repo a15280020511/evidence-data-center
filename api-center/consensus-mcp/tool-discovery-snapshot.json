@@ -17,9 +17,19 @@
       ]
     }
   ],
+  "live_auth_observation": {
+    "observed_at": "2026-08-07",
+    "raw_initialize_without_token_http_status": 401,
+    "oauth_protected_resource_metadata": "reachable",
+    "authorization_server_metadata": "reachable",
+    "authorization_code_supported": true,
+    "dynamic_client_registration_present": true,
+    "client_credentials_supported": false
+  },
   "notes": [
     "Consensus documents fetch as ChatGPT-only; generic MCP clients use search.",
-    "Anonymous access is the default GitHub Actions mode and requires no account or secret.",
-    "Free-account OAuth is interactive and is not persisted in GitHub Actions by this provider."
+    "Free-account use is available through supported interactive OAuth clients.",
+    "Headless GitHub Actions cannot derive a Free-account token via client_credentials because that grant is not advertised.",
+    "Remote search remains OAuth-gated until a safe credential bridge or accepted Bearer is provisioned."
   ]
 }
