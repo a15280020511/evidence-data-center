@@ -1,0 +1,42 @@
+{
+  "schema_version": "shadow-library-wikimedia-registry-v1",
+  "reviewed_at": "2026-08-07",
+  "purpose": "Discover Wikipedia-documented shadow-library projects without persisting their domains.",
+  "policy": {
+    "wikipedia_wikidata_only_for_domain_discovery": true,
+    "persist_shadow_domains": false,
+    "discard_runtime_domains_after_run": true,
+    "metadata_only": true,
+    "detail_pages_allowed": false,
+    "download_links_allowed": false,
+    "file_retrieval_allowed": false,
+    "ipfs_magnet_md5_resolution_allowed": false,
+    "access_control_bypass_allowed": false,
+    "captcha_bypass_allowed": false,
+    "paywall_bypass_allowed": false
+  },
+  "wikimedia": {
+    "wikipedia_api": "https://en.wikipedia.org/w/api.php",
+    "wikidata_api": "https://www.wikidata.org/w/api.php",
+    "root_article": "Shadow library",
+    "candidate_rule": "Wikipedia page is retained only when its own extract identifies it as a shadow/pirate library or it is an explicitly reviewed seed.",
+    "website_property": "P856"
+  },
+  "reviewed_seeds": [
+    {"id":"annas-archive","name":"Anna's Archive","wikipedia_titles":["Anna's Archive"],"lifecycle":"active","metadata_adapter":"catalog_runtime_search"},
+    {"id":"library-genesis","name":"Library Genesis","wikipedia_titles":["Library Genesis"],"lifecycle":"active","metadata_adapter":"discovery-only"},
+    {"id":"sci-hub","name":"Sci-Hub","wikipedia_titles":["Sci-Hub"],"lifecycle":"active","metadata_adapter":"discovery-only"},
+    {"id":"z-library","name":"Z-Library","wikipedia_titles":["Z-Library"],"lifecycle":"active","metadata_adapter":"discovery-only"},
+    {"id":"ubuweb","name":"UbuWeb","wikipedia_titles":["UbuWeb"],"lifecycle":"active","metadata_adapter":"discovery-only"},
+    {"id":"flibusta","name":"Flibusta","wikipedia_titles":["Flibusta"],"lifecycle":"historical-or-transitioning","metadata_adapter":"discovery-only"},
+    {"id":"library-nu","name":"Library.nu / Gigapedia","wikipedia_titles":["Library.nu"],"lifecycle":"defunct","metadata_adapter":"none"},
+    {"id":"monoskop","name":"Monoskop","wikipedia_titles":["Monoskop"],"lifecycle":"historical-shadow-context","metadata_adapter":"discovery-only"},
+    {"id":"textz","name":"Textz.org","wikipedia_titles":["Shadow library"],"aliases":["Textz.org"],"lifecycle":"historical","metadata_adapter":"none"},
+    {"id":"librusec","name":"Librusec","wikipedia_titles":["Librusec"],"lifecycle":"regional-historical","metadata_adapter":"discovery-only"},
+    {"id":"nexus-stc","name":"Nexus / STC","wikipedia_titles":["Anna's Archive"],"aliases":["Nexus","STC"],"lifecycle":"active-or-changing","metadata_adapter":"discovery-only"},
+    {"id":"oceanofpdf","name":"OceanofPDF","wikipedia_titles":["Anna's Archive"],"aliases":["OceanofPDF"],"lifecycle":"active-or-changing","metadata_adapter":"discovery-only"},
+    {"id":"magzdb","name":"MagzDB","wikipedia_titles":["Anna's Archive"],"aliases":["MagzDB"],"lifecycle":"active-or-changing","metadata_adapter":"discovery-only"},
+    {"id":"pirate-library-mirror","name":"Pirate Library Mirror","wikipedia_titles":["Anna's Archive"],"aliases":["Pirate Library Mirror","PiLiMi"],"lifecycle":"project-historical","metadata_adapter":"none"},
+    {"id":"scorser","name":"Scorser","wikipedia_titles":["Shadow library"],"aliases":["Scorser"],"lifecycle":"specialized","metadata_adapter":"discovery-only"}
+  ]
+}
