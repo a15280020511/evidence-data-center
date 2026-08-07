@@ -46,6 +46,37 @@ def parse_result_date(value: str) -> str | None:
     return None
 
 
+def select_query_rows(plan: Mapping[str, Any], selected_types: set[str], query_limit: int) -> list[tuple[str, str]]:
+    by_type: dict[str, list[str]] = {}
+    ordered_types: list[str] = []
+    for row in plan.get("signal_plans") or []:
+        signal_type = str(row.get("signal_type") or "")
+        if signal_type not in selected_types:
+            continue
+        queries = [str(q).strip() for q in row.get("query_templates") or [] if str(q).strip()]
+        if not queries:
+            continue
+        ordered_types.append(signal_type)
+        by_type[signal_type] = queries
+
+    limit = max(1, int(query_limit))
+    rows: list[tuple[str, str]] = []
+    index = 0
+    while len(rows) < limit:
+        progressed = False
+        for signal_type in ordered_types:
+            queries = by_type[signal_type]
+            if index < len(queries):
+                rows.append((signal_type, queries[index]))
+                progressed = True
+                if len(rows) >= limit:
+                    break
+        if not progressed:
+            break
+        index += 1
+    return rows
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--profile", choices=("auto", "daily", "weekly"), default="auto")
@@ -66,16 +97,13 @@ def main() -> int:
     if profile == "weekly":
         selected_types |= set(plan["cadence"]["weekly"])
 
-    query_rows: list[tuple[str, str]] = []
-    for row in plan.get("signal_plans") or []:
-        signal_type = str(row.get("signal_type") or "")
-        if signal_type not in selected_types:
-            continue
-        for query in row.get("query_templates") or []:
-            query_rows.append((signal_type, str(query)))
-
     query_limit = args.max_queries_weekly if profile == "weekly" else args.max_queries_daily
-    query_rows = query_rows[: max(1, query_limit)]
+    query_rows = select_query_rows(plan, selected_types, query_limit)
+    queried_types = {signal_type for signal_type, _ in query_rows}
+    if query_limit >= len(selected_types) and queried_types != selected_types:
+        missing = sorted(selected_types - queried_types)
+        raise RuntimeError(f"query_planner_failed_to_cover_selected_signal_types:{missing}")
+
     result_limit = max(1, min(args.results_per_query, 8))
     timeout = int(policy["limits"]["request_timeout_seconds"])
     start_date = (now - timedelta(days=int(policy["cadence"]["maximum_age_days_for_search"]))).isoformat()
@@ -174,6 +202,8 @@ def main() -> int:
         "active_search_engines": active,
         "query_count": len(query_rows),
         "selected_signal_types": sorted(selected_types),
+        "queried_signal_types": sorted(queried_types),
+        "signal_type_coverage_complete": queried_types == selected_types if query_limit >= len(selected_types) else None,
         "raw_result_count": len(found),
         "official_or_approved_url_count": len(dedup),
         "discovered_event_count": len(events),
