@@ -3,9 +3,9 @@
 
 This module is intentionally read-only. It produces a source plan for the
 controller; network adapters remain bounded by each source's declared access
-mode. Shadow-library entries are discovery/risk metadata only and can never be
-promoted into detail-page, download-link, file-retrieval, paywall-bypass or
-access-control-bypass routes.
+mode. Shadow-library entries are discovery/risk metadata only. Their site
+domains must never be persisted: every shadow source is resolved transiently
+through Wikipedia/Wikidata and discarded after the run.
 """
 from __future__ import annotations
 
@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 SCHEMA = "global-knowledge-source-registry-v1"
+SHADOW_DISCOVERY_PROFILE = "shadow-library-wikimedia-registry-v1"
 ALLOWED_MODES = {
     "metadata",
     "metadata-only",
@@ -40,9 +41,10 @@ ALLOWED_MODES = {
     "fulltext-when-oa",
     "oa-location-discovery",
     "catalog",
+    "directory",
 }
 SHADOW_CATEGORY = "shadow-library"
-SHADOW_ALLOWED_ACCESS = {"wikimedia-dynamic-discovery", "name-only-risk-registry"}
+SHADOW_ALLOWED_ACCESS = {"wikimedia-dynamic-discovery"}
 KEY_HINTS = {
     "openalex": "OPENALEX_API_KEY",
     "europeana": "EUROPEANA_API_KEY",
@@ -73,6 +75,8 @@ def validate_registry(registry: Mapping[str, Any]) -> list[str]:
         "read_only",
         "rights_check_required_before_fulltext",
         "provider_declared_fulltext_only",
+        "shadow_library_discovery_via_wikimedia_only",
+        "shadow_library_runtime_domain_discard_after_run",
     )
     for key in required_true:
         if policy.get(key) is not True:
@@ -80,6 +84,7 @@ def validate_registry(registry: Mapping[str, Any]) -> list[str]:
     if policy.get("shadow_library_mode") != "metadata-only":
         errors.append("policy.shadow_library_mode must be metadata-only")
     for key in (
+        "shadow_library_domains_persisted",
         "shadow_library_detail_pages_allowed",
         "shadow_library_download_links_allowed",
         "shadow_library_file_retrieval_allowed",
@@ -117,11 +122,13 @@ def validate_registry(registry: Mapping[str, Any]) -> list[str]:
             if raw.get("mode") != "metadata-only":
                 errors.append(f"{source_id}: shadow source must be metadata-only")
             if raw.get("access") not in SHADOW_ALLOWED_ACCESS:
-                errors.append(f"{source_id}: shadow access mode is not allowed")
+                errors.append(f"{source_id}: shadow source must use Wikimedia dynamic discovery")
+            if raw.get("discovery_profile") != SHADOW_DISCOVERY_PROFILE:
+                errors.append(f"{source_id}: shadow discovery_profile must be {SHADOW_DISCOVERY_PROFILE}")
             if endpoint is not None:
                 errors.append(f"{source_id}: shadow source endpoint must not be persisted")
             lowered = json.dumps(raw, ensure_ascii=False).casefold()
-            for forbidden in ("direct-download", "ipfs://", "magnet:", "/md5/"):
+            for forbidden in ("direct-download", "ipfs://", "magnet:", "/md5/", ".onion"):
                 if forbidden in lowered:
                     errors.append(f"{source_id}: forbidden shadow locator material: {forbidden}")
     return errors
@@ -131,7 +138,7 @@ def source_available(row: Mapping[str, Any], env: Mapping[str, str]) -> tuple[bo
     status = str(row.get("status") or "")
     source_id = str(row.get("id") or "")
     if row.get("category") == SHADOW_CATEGORY:
-        return True, "metadata-only"
+        return True, "wikimedia-metadata-only"
     if "key-required" in status:
         env_name = KEY_HINTS.get(source_id)
         if env_name and env.get(env_name):
@@ -158,9 +165,13 @@ def plan_sources(
         if not include_shadow and row.get("category") == SHADOW_CATEGORY:
             continue
         available, reason = source_available(row, env)
+        is_shadow = row.get("category") == SHADOW_CATEGORY
         row["runtime_available"] = available
         row["runtime_reason"] = reason
-        row["network_access_allowed"] = row.get("category") != SHADOW_CATEGORY
+        row["network_access_allowed"] = not is_shadow
+        row["shadow_site_network_access_allowed"] = False if is_shadow else None
+        row["wikimedia_discovery_network_access_allowed"] = True if is_shadow else None
+        row["runtime_domain_persisted"] = False if is_shadow else None
         row["fulltext_requires_rights_check"] = row.get("mode") != "metadata-only"
         if available_only and not available:
             continue
@@ -181,6 +192,9 @@ def summarize(registry: Mapping[str, Any], rows: list[dict[str, Any]]) -> dict[s
         "shadow_metadata_source_count": sum(row.get("category") == SHADOW_CATEGORY for row in rows),
         "shadow_network_access_count": sum(
             row.get("category") == SHADOW_CATEGORY and row.get("network_access_allowed") for row in rows
+        ),
+        "shadow_persisted_domain_count": sum(
+            row.get("category") == SHADOW_CATEGORY and bool(row.get("endpoint")) for row in rows
         ),
         "sources": rows,
     }
@@ -214,7 +228,15 @@ def main() -> int:
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(rendered, encoding="utf-8")
-    print(json.dumps({k: report.get(k) for k in ("status", "source_count", "category_count", "runtime_available_count", "shadow_metadata_source_count", "shadow_network_access_count")}, ensure_ascii=False))
+    print(json.dumps({k: report.get(k) for k in (
+        "status",
+        "source_count",
+        "category_count",
+        "runtime_available_count",
+        "shadow_metadata_source_count",
+        "shadow_network_access_count",
+        "shadow_persisted_domain_count",
+    )}, ensure_ascii=False))
     return code if args.enforce else 0
 
 

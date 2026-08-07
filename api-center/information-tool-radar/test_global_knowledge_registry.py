@@ -17,16 +17,28 @@ def main() -> int:
 
     rows = registry_mod.plan_sources(registry, env={})
     report = registry_mod.summarize(registry, rows)
-    assert report["source_count"] >= 50, report["source_count"]
-    assert report["category_count"] >= 12, report["category_count"]
-    assert report["shadow_metadata_source_count"] >= 7
+    assert report["source_count"] >= 60, report["source_count"]
+    assert report["category_count"] >= 13, report["category_count"]
+    assert report["shadow_metadata_source_count"] >= 15
     assert report["shadow_network_access_count"] == 0
+    assert report["shadow_persisted_domain_count"] == 0
 
     shadow = [row for row in rows if row["category"] == "shadow-library"]
     assert shadow
     assert all(row["mode"] == "metadata-only" for row in shadow)
     assert all(row["endpoint"] is None for row in shadow)
+    assert all(row["access"] == "wikimedia-dynamic-discovery" for row in shadow)
+    assert all(row["discovery_profile"] == registry_mod.SHADOW_DISCOVERY_PROFILE for row in shadow)
     assert all(row["network_access_allowed"] is False for row in shadow)
+    assert all(row["shadow_site_network_access_allowed"] is False for row in shadow)
+    assert all(row["wikimedia_discovery_network_access_allowed"] is True for row in shadow)
+    assert all(row["runtime_domain_persisted"] is False for row in shadow)
+
+    library_discovery = [row for row in rows if row["category"] == "library-discovery"]
+    assert len(library_discovery) >= 5, library_discovery
+    assert {"ifla-library-map", "ifla-national-libraries", "opendoar", "wikidata-libraries"}.issubset(
+        {row["id"] for row in library_discovery}
+    )
 
     openalex = next(row for row in rows if row["id"] == "openalex")
     assert openalex["runtime_available"] is False
@@ -39,9 +51,11 @@ def main() -> int:
     bad = next(row for row in malicious["sources"] if row["id"] == "library-genesis")
     bad["endpoint"] = "https://example.invalid/download"
     bad["mode"] = "fulltext-when-rights-open"
+    bad["access"] = "name-only-risk-registry"
     bad_errors = registry_mod.validate_registry(malicious)
     assert any("shadow source must be metadata-only" in item for item in bad_errors)
     assert any("shadow source endpoint must not be persisted" in item for item in bad_errors)
+    assert any("must use Wikimedia dynamic discovery" in item for item in bad_errors)
 
     without_shadow = registry_mod.plan_sources(registry, include_shadow=False, env={})
     assert all(row["category"] != "shadow-library" for row in without_shadow)
@@ -50,10 +64,12 @@ def main() -> int:
         "registry_validation": "passed",
         "source_count": report["source_count"],
         "category_count": report["category_count"],
+        "library_discovery_source_count": len(library_discovery),
         "shadow_metadata_source_count": report["shadow_metadata_source_count"],
         "shadow_network_access_count": report["shadow_network_access_count"],
+        "shadow_persisted_domain_count": report["shadow_persisted_domain_count"],
         "key_gate": "passed",
-        "shadow_isolation": "passed"
+        "shadow_wikimedia_only": "passed"
     }, ensure_ascii=False, sort_keys=True))
     return 0
 

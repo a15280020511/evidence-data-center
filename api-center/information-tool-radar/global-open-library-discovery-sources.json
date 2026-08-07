@@ -1,0 +1,31 @@
+{
+  "schema_version": "global-open-library-discovery-v1",
+  "reviewed_at": "2026-08-07",
+  "strategy": "global aggregators and directories first; national, university and repository endpoints are discovered as children and promoted only after verification",
+  "policy": {
+    "read_only": true,
+    "https_required": true,
+    "automatic_child_endpoint_promotion": false,
+    "rights_check_required_before_fulltext": true,
+    "provider_declared_fulltext_only": true,
+    "credentials_must_not_be_submitted_during_discovery": true,
+    "billing_activation_allowed": false
+  },
+  "discovery_sources": [
+    {"id":"ifla-library-map","name":"IFLA Library Map of the World","scope":"global-library-landscape","coverage_note":"country and territory level global library mapping","endpoint":"https://librarymap.ifla.org/","auth":"none","mode":"directory"},
+    {"id":"ifla-national-libraries","name":"IFLA National Libraries Section","scope":"national-libraries-global","endpoint":"https://www.ifla.org/units/national-libraries/","auth":"none","mode":"directory"},
+    {"id":"openalex-institutions","name":"OpenAlex Institutions","scope":"research-institutions-global","endpoint":"https://api.openalex.org/institutions","auth":"free-api-key-current-policy","mode":"metadata"},
+    {"id":"openalex-sources","name":"OpenAlex Sources","scope":"journals-repositories-conferences-global","endpoint":"https://api.openalex.org/sources","auth":"free-api-key-current-policy","mode":"metadata"},
+    {"id":"opendoar","name":"OpenDOAR","scope":"open-access-repositories-global","endpoint":"https://v2.sherpa.ac.uk/opendoar/","auth":"service-specific","mode":"directory"},
+    {"id":"openaire","name":"OpenAIRE Explore / Graph","scope":"repositories-and-research-outputs-global","endpoint":"https://graph.openaire.eu/","auth":"service-specific","mode":"metadata"},
+    {"id":"base","name":"BASE","scope":"academic-repositories-global","endpoint":"https://www.base-search.net/","auth":"service-specific","mode":"metadata"},
+    {"id":"worldcat","name":"WorldCat","scope":"union-catalog-global","endpoint":"https://www.worldcat.org/","auth":"public-web-or-key-by-api","mode":"catalog"},
+    {"id":"internet-archive","name":"Internet Archive","scope":"digital-library-global","endpoint":"https://archive.org/advancedsearch.php","auth":"none-for-public-metadata","mode":"metadata"},
+    {"id":"open-library","name":"Open Library","scope":"books-global","endpoint":"https://openlibrary.org/search.json","auth":"none","mode":"metadata"},
+    {"id":"europeana","name":"Europeana","scope":"europe-cultural-heritage-aggregator","endpoint":"https://api.europeana.eu/","auth":"free-key","mode":"metadata"},
+    {"id":"dpla","name":"Digital Public Library of America","scope":"us-cultural-heritage-aggregator","endpoint":"https://dp.la/info/developers/","auth":"key","mode":"metadata"},
+    {"id":"trove","name":"Trove","scope":"australia-library-archive-aggregator","endpoint":"https://trove.nla.gov.au/about/create-something/using-api","auth":"key","mode":"metadata"},
+    {"id":"ndl-search","name":"National Diet Library Search","scope":"japan-library-aggregator","endpoint":"https://ndlsearch.ndl.go.jp/api","auth":"service-specific","mode":"metadata"},
+    {"id":"wikidata-libraries","name":"Wikidata library/institution graph","scope":"global-library-entity-discovery","endpoint":"https://www.wikidata.org/w/api.php","auth":"none","mode":"metadata"}
+  ]
+}
