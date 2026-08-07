@@ -16,7 +16,7 @@ import requests
 
 ORIGIN = "https://example.invalid"
 REGISTRATION_ENDPOINT = "https://consensus.app/oauth/register/"
-TOKEN_ENDPOINT = "https://consensus.app/oauth/token/"
+OAUTH_EXCHANGE_URL = "https://consensus.app/oauth/token/"
 UA = "evidence-data-center-consensus-browser-oauth-probe/1"
 
 
@@ -52,7 +52,7 @@ def preflight(url: str) -> dict[str, Any]:
 
 def invalid_token_post() -> dict[str, Any]:
     response = requests.post(
-        TOKEN_ENDPOINT,
+        OAUTH_EXCHANGE_URL,
         headers={
             "Origin": ORIGIN,
             "Content-Type": "application/x-www-form-urlencoded",
@@ -86,7 +86,7 @@ def main() -> int:
     args = parser.parse_args()
 
     registration = preflight(REGISTRATION_ENDPOINT)
-    token_preflight = preflight(TOKEN_ENDPOINT)
+    token_preflight = preflight(OAUTH_EXCHANGE_URL)
     token_simple_post = invalid_token_post()
     report = {
         "schema_version": "consensus-mcp-browser-oauth-probe-v2",
