@@ -1,0 +1,39 @@
+{
+  "schema_version": "prc-justice-watch-targets-v1",
+  "reviewed_at": "2026-08-07",
+  "max_targets": 20,
+  "targets": [
+    {"id":"npc-law-db","name":"国家法律法规数据库","url":"https://flk.npc.gov.cn/","cadence":"daily"},
+    {"id":"npc","name":"全国人大","url":"https://www.npc.gov.cn/","cadence":"daily"},
+    {"id":"gov-cn","name":"中国政府网/国务院","url":"https://www.gov.cn/","cadence":"daily"},
+    {"id":"spc","name":"最高人民法院","url":"https://www.court.gov.cn/","cadence":"daily"},
+    {"id":"spc-case-library","name":"人民法院案例库","url":"https://rmfyalk.court.gov.cn/","cadence":"daily"},
+    {"id":"spp","name":"最高人民检察院","url":"https://www.spp.gov.cn/","cadence":"daily"},
+    {"id":"procuratorate-12309","name":"12309中国检察网","url":"https://www.12309.gov.cn/","cadence":"daily"},
+    {"id":"mps","name":"公安部","url":"https://www.mps.gov.cn/","cadence":"daily"},
+    {"id":"mps-standards","name":"公安标准化信息服务平台","url":"https://ywtb.mps.gov.cn/gabzh/portal/xxcx/std","cadence":"daily"},
+    {"id":"moj","name":"司法部","url":"https://www.moj.gov.cn/","cadence":"daily"},
+    {"id":"administrative-reconsideration","name":"全国行政复议公开服务","url":"https://xzfy.moj.gov.cn/","cadence":"daily"},
+    {"id":"ccdi-nsc","name":"中央纪委国家监委","url":"https://www.ccdi.gov.cn/","cadence":"daily"},
+    {"id":"party-regulations","name":"共产党员网/党内法规公开来源","url":"https://www.12371.cn/","cadence":"daily"},
+    {"id":"politico-legal","name":"中国长安网/政法委公开来源","url":"https://www.chinapeace.gov.cn/","cadence":"daily"},
+    {"id":"state-security-public-law","name":"国家安全机关公开法治平台","url":"https://www.12339.gov.cn/","cadence":"daily"},
+    {"id":"coast-guard","name":"中国海警局","url":"https://www.ccg.gov.cn/","cadence":"daily"},
+    {"id":"customs","name":"海关总署/缉私公开来源","url":"https://www.customs.gov.cn/","cadence":"daily"},
+    {"id":"immigration","name":"国家移民管理局","url":"https://www.nia.gov.cn/","cadence":"daily"},
+    {"id":"china-law-society","name":"中国法学会","url":"https://www.chinalaw.org.cn/","cadence":"daily"},
+    {"id":"national-standards","name":"全国标准信息公共服务平台","url":"https://std.samr.gov.cn/","cadence":"daily"}
+  ],
+  "rules": {
+    "https_only": true,
+    "same_request_no_retry": true,
+    "allow_form_submission": false,
+    "allow_login": false,
+    "allow_captcha_solving": false,
+    "allow_waf_bypass": false,
+    "allow_proxy_rotation": false,
+    "allow_hidden_api_discovery": false,
+    "max_response_bytes_per_target": 524288,
+    "request_interval_seconds": 10
+  }
+}
