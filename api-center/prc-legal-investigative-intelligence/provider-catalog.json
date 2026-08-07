@@ -1,16 +1,16 @@
 {
-  "schema_version": "prc-legal-investigative-provider-catalog-v4",
+  "schema_version": "prc-legal-investigative-provider-catalog-v5",
   "secret_values_exposed": false,
   "providers": [
     {
       "provider_id": "prc-legal-investigative-intelligence",
-      "display_name": "中国大陆法律、司法与电子证据联合情报目录",
-      "description": "对元典、全国司法法治体系、公安公开程序、公安院校/标准/研究、公开案例结果与防御性证据类别进行确定性分级和路由。",
+      "display_name": "中国大陆政法、司法、纪检监察与电子证据联合情报目录",
+      "description": "对元典、全国政法治理、立法法源、法院、检察、公安、司法行政、纪委监委、国家安全公开法治、专项刑事执法、院校培训、标准科研、公开案例结果与防御性证据类别进行确定性分级和路由。",
       "enabled": true,
       "ticket_prefix": "[intel-prc-legal]",
       "required_secret_environment_variable": "",
-      "catalog_policy": "本地目录仅保存公开来源、法律体系、公开公安知识/案例能力抽象和证据矩阵。实际网页/PDF读取复用受控 web-retrieval；元典检索复用 yuandian-law。禁止自动登录、验证码/WAF绕过、隐藏API逆向、反取证、销毁证据、身份隐藏和侦查规避。",
-      "execution_policy": "每张票据仅执行一个本地只读操作，零网络、零模型、零密钥。公安课程/培训只保留公开元数据与高层能力分类；案例只提取公开证据链、程序和结果，不保存秘密设备、内部系统、监控参数或规避细节。",
+      "catalog_policy": "本地目录仅保存公开或明确授权来源、法律体系、政法/司法/纪检监察组织与培训研究来源、公开案例能力抽象和证据矩阵。实际网页/PDF读取复用受控 web-retrieval；元典检索复用 yuandian-law。禁止自动登录、验证码/WAF绕过、隐藏API逆向、反取证、销毁证据、身份隐藏和侦查规避。",
+      "execution_policy": "每张票据仅执行一个本地只读操作，零网络、零模型、零密钥。课程和培训只保留公开元数据、官方摘要与高层能力分类；案例只提取公开事实、证据链、程序和结果；不保存秘密设备、内部系统、监控参数、目标选择、非公开培训或规避细节。",
       "limits": {
         "network_used": false,
         "requests_per_ticket_max": 0,
@@ -34,8 +34,9 @@
         {"operation_id":"source-route","description":"按基础 source_id 返回固定来源路由。","parameters":["source_id"],"parameter_schema":{"type":"object","additionalProperties":false,"required":["source_id"],"properties":{"source_id":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{2,80}$"}}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}},
         {"operation_id":"legal-system-matrix","description":"读取中国大陆全国司法/法治体系矩阵。","parameters":["topic","system_lane","limit"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"topic":{"type":"string","minLength":1,"maxLength":80},"system_lane":{"type":"string","pattern":"^[a-z0-9][a-z0-9_]{2,80}$"},"limit":{"type":"integer","minimum":1,"maximum":100}}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}},
         {"operation_id":"investigative-evidence-matrix","description":"读取现行法律依据与防御性证据/侦查类别。","parameters":["topic","limit"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"topic":{"type":"string","minLength":1,"maxLength":80},"limit":{"type":"integer","minimum":1,"maximum":100}}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}},
-        {"operation_id":"public-security-practice-matrix","description":"读取公安公开源头层与案例结果层：公安部公开材料、公安标准、公安院校课程/科研、人民公安媒体、检察技术、司法鉴定及法院/检察案例，并返回高层侦查能力类别。","parameters":["topic","view","limit"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"topic":{"type":"string","minLength":1,"maxLength":80},"view":{"type":"string","enum":["SOURCE","OUTCOME","SOURCE_AND_OUTCOME"]},"limit":{"type":"integer","minimum":1,"maximum":100}}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}},
-        {"operation_id":"joint-audit-plan","description":"生成元典召回→司法体系→公安公开源头层→案例结果层→现行法条/程序/证据→监管/标准/专项红线的联合审计顺序。","parameters":["risk_topics"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"risk_topics":{"type":"array","maxItems":20,"uniqueItems":true,"items":{"type":"string","minLength":1,"maxLength":80}}}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}}
+        {"operation_id":"public-security-practice-matrix","description":"兼容读取既有司法/公安/检察/纪检监察公开培训、标准、科研与案例结果能力矩阵。","parameters":["topic","view","limit"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"topic":{"type":"string","minLength":1,"maxLength":80},"view":{"type":"string","enum":["SOURCE","OUTCOME","SOURCE_AND_OUTCOME"]},"limit":{"type":"integer","minimum":1,"maximum":100}}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}},
+        {"operation_id":"politico-legal-full-spectrum-matrix","description":"读取中国大陆政法—司法—纪检监察全景矩阵：政法委、立法、法院、检察、公安、国家安全公开法治、司法行政、纪委监委、行政复议、专项刑事执法、院校培训、标准科研、理论期刊、案例结果和地方来源族。","parameters":["topic","domain","view","limit"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"topic":{"type":"string","minLength":1,"maxLength":80},"domain":{"type":"string","pattern":"^[a-z0-9][a-z0-9_]{2,80}$"},"view":{"type":"string","enum":["SOURCE","OUTCOME","SOURCE_AND_OUTCOME"]},"limit":{"type":"integer","minimum":1,"maximum":100}}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}},
+        {"operation_id":"joint-audit-plan","description":"生成元典召回→政法治理/纪委监委/培训理论/标准科研/专项执法→司法体系→公开案例结果→现行法条/程序/证据→监管/专项红线的联合审计顺序。","parameters":["risk_topics"],"parameter_schema":{"type":"object","additionalProperties":false,"properties":{"risk_topics":{"type":"array","maxItems":20,"uniqueItems":true,"items":{"type":"string","minLength":1,"maxLength":80}}}},"result_contract":{"official_endpoint":"LOCAL","http_method":"LOCAL","read_only":true,"credential_mode":"none"}}
       ]
     }
   ]
