@@ -15,12 +15,7 @@
       "probe_domains": [
         "openalex.org",
         "datacite.org",
-        "modelcontextprotocol.io",
-        "flk.npc.gov.cn",
-        "court.gov.cn",
-        "spp.gov.cn",
-        "mps.gov.cn",
-        "ccdi.gov.cn"
+        "modelcontextprotocol.io"
       ]
     },
     "wayback": {
@@ -32,12 +27,7 @@
       "probe_domains": [
         "openalex.org",
         "datacite.org",
-        "modelcontextprotocol.io",
-        "flk.npc.gov.cn",
-        "court.gov.cn",
-        "spp.gov.cn",
-        "mps.gov.cn",
-        "ccdi.gov.cn"
+        "modelcontextprotocol.io"
       ]
     },
     "gdelt": {
