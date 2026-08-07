@@ -56,8 +56,15 @@ def main() -> int:
         if key != "public_or_authorized_sources_only":
             require(value is False, f"unsafe safety capability enabled: {key}")
 
+    event_rules = policy["event_rules"]
+    require(event_rules["conflict_detection_applies_only_to_case_practice_and_judicial_outcome"] is True, "conflict detection scope must be constrained")
+    require(event_rules["contested_event_is_artifact_and_review_queue_only"] is True, "contested events must be review-only")
+    require(verifier.CONFLICT_APPLICABLE_SIGNAL_TYPES == {"case_practice", "judicial_outcome"}, "runtime conflict scope drift")
+
     write = policy["automatic_ledger_write"]
     require(write["enabled"] is True and write["append_only"] is True, "append-only ledger write required")
+    require(write["accepted_review_status"] == ["PRIMARY_VERIFIED"], "automatic ledger must be primary-verified only")
+    require(write["contested_events_allowed"] is False, "contested events forbidden in automatic ledger")
     require(write["only_paths_allowed"] == ["api-center/prc-legal-investigative-intelligence/prc-justice-verified-signal-ledger.json"], "automatic write scope widened")
     require(write["existing_events_must_not_be_mutated_or_deleted"] is True, "existing events must be immutable")
     require(write["branch_protection_bypass"] is False, "branch protection bypass forbidden")
@@ -68,9 +75,18 @@ def main() -> int:
         require(required_host in allowed, f"required verified-source host missing: {required_host}")
     require("edu.cn" not in allowed, "generic edu.cn must not be auto-ingestion allowlist")
 
+    # Specific judicial host classifiers must win over generic gov.cn.
+    require(verifier.classify_institution("www.he.jcy.gov.cn") == "procuratorate", "local procuratorate misclassified")
+    require(verifier.classify_institution("www.zjjcy.gov.cn") == "procuratorate", "compact local procuratorate host misclassified")
+    require(verifier.classify_institution("www.court.gov.cn") == "court", "court host misclassified")
+    require(verifier.classify_institution("example.gov.cn") == "legislature_or_rulemaker", "generic gov host classifier changed")
+
     ledger_safety = ledger["safety_boundary"]
     require(ledger_safety["public_or_authorized_sources_only"] is True, "ledger source gate missing")
     require(ledger_safety["full_page_text_stored"] is False, "ledger must not store full page text")
+    ledger_rules = ledger["iteration_rules"]
+    require(ledger_rules["accepted_review_status"] == ["PRIMARY_VERIFIED"], "ledger accepted status drift")
+    require(ledger_rules["contested_events_are_review_only_not_automatic_ledger"] is True, "ledger must exclude contested")
     for key in ["personal_targeting", "secret_operational_details", "targeting_or_evasion_details", "anti_forensics"]:
         require(ledger_safety[key] is False, f"unsafe ledger field enabled: {key}")
 
@@ -82,7 +98,8 @@ def main() -> int:
         event_id = str(event.get("event_id") or "")
         require(event_id and event_id not in event_ids, "duplicate or empty event_id")
         event_ids.add(event_id)
-        require(event.get("review_status") in {"PRIMARY_VERIFIED", "CONTESTED"}, "ledger event not primary verified/contested")
+        require(event.get("review_status") == "PRIMARY_VERIFIED", "automatic ledger contains non-primary event")
+        require(event.get("support_or_conflict") == "SUPPORTS", "automatic ledger contains contested/conflicting event")
         source = event.get("source") or {}
         require(source.get("primary") is True, "ledger event source must be primary")
         require(source.get("source_class") in {"official_primary", "academic_primary", "authorized_database"}, "invalid primary source class")
@@ -97,17 +114,25 @@ def main() -> int:
         for capability_id in event.get("capability_ids") or []:
             require(str(capability_id) in capability_ids, f"unknown capability id in verified ledger: {capability_id}")
 
-    fixture = {
-        "event_id": "verified-test-20260807-abcdef",
+    primary_fixture = {
+        "event_id": "verified-test-20260807-primary",
         "review_status": "PRIMARY_VERIFIED",
+        "support_or_conflict": "SUPPORTS",
         "source": {"content_fingerprint": "a" * 64},
     }
+    contested_fixture = {
+        "event_id": "verified-test-20260807-contested",
+        "review_status": "CONTESTED",
+        "support_or_conflict": "CONFLICTS",
+        "source": {"content_fingerprint": "b" * 64},
+    }
     original = copy.deepcopy(ledger)
-    once, added_once = verifier.append_new_events(copy.deepcopy(ledger), [fixture])
-    twice, added_twice = verifier.append_new_events(copy.deepcopy(once), [fixture])
+    once, added_once = verifier.append_new_events(copy.deepcopy(ledger), [primary_fixture, contested_fixture])
+    twice, added_twice = verifier.append_new_events(copy.deepcopy(once), [primary_fixture, contested_fixture])
     require(ledger == original, "append helper mutated source ledger")
-    require(added_once == [fixture["event_id"]], "first append must add fixture")
-    require(added_twice == [], "second append must deduplicate fixture")
+    require(added_once == [primary_fixture["event_id"]], "only primary fixture may auto-append")
+    require(added_twice == [], "second append must deduplicate primary and continue excluding contested")
+    require(all(row.get("event_id") != contested_fixture["event_id"] for row in once.get("events") or []), "contested fixture entered automatic ledger")
     require(len(twice.get("events") or []) == len(once.get("events") or []), "dedup changed event count")
 
     storage_tiers = {row.get("tier_id"): row for row in storage.get("tiers") or [] if isinstance(row, Mapping)}
@@ -126,6 +151,10 @@ def main() -> int:
         "max_primary_pages_per_run": controls["maximum_primary_pages_per_run"],
         "minimum_seconds_between_fetches": controls["minimum_seconds_between_primary_fetches"],
         "append_only_ledger": True,
+        "primary_only_automatic_ledger": True,
+        "contested_auto_append": False,
+        "judicial_host_classification_regression": True,
+        "conflict_scope": sorted(verifier.CONFLICT_APPLICABLE_SIGNAL_TYPES),
         "dedup_regression": True,
         "single_automatic_write_path": True,
         "full_page_text_stored": False,
