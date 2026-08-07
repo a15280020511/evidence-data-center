@@ -1,6 +1,6 @@
 {
   "schema_version": "prc-open-intelligence-provider-catalog-v1",
-  "ticket_prefix": "[api-prc-open]",
+  "ticket_prefix": "[api]",
   "required_secret_environment_variable": "",
   "secret_values_exposed": false,
   "replaced_legacy_connectors": [],
@@ -215,5 +215,7 @@
         "upstream_snapshot_max_bytes": 5000000
       }
     }
-  ]
+  ],
+  "execution_surface": "generic-api-local-bridge",
+  "direct_issue_route_enabled": false
 }

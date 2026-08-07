@@ -33,42 +33,36 @@
 - `weiboSpider`：登录态和用户级字段风险较高，只允许受控、聚合化品牌/事件研究候选。
 - `MediaCrawler`、`DrissionPage`、`pywencai`、公共代理池：不满足当前生产准入要求，保持拒绝状态。
 
-## 票据
+## 正式治理入口
 
-Issue 标题前缀：
+本模块不提供独立 Issue 执行入口。网页 GPT 与其他上层调用者必须继续使用治理仓既有 `intelligence` 路由；治理仓会创建标准 `[api]` 子 Issue，由情报中心通用 API Center 校验后进入 `local-prc-open` 本地只读模式。
 
-```text
-[api-prc-open]
-```
+允许的 4 个固定连接器：
 
-China-Check 企业搜索：
+- `prc-china-check-company-search`
+- `prc-china-check-company-snapshot`
+- `prc-sinofacts-company-search`
+- `prc-sinofacts-company-profile`
+
+示例子票据（由治理仓生成 `task_id` 后派发）：
 
 ```json
 {
-  "task_id": "prc-open-company-search-001",
-  "provider": "china-check",
-  "operation": "company-search",
+  "task_id": "gov-123-intelligence",
   "objective": "核验公开企业基础登记信息",
-  "parameters": {"query": "示例公司", "language": "zh"},
   "data_policy": {"classification": "public", "contains_personal_data": false},
-  "acceptance": {"timeout_seconds": 20, "max_response_bytes": 1000000}
+  "requests": [
+    {
+      "request_id": "company-1",
+      "connector_id": "prc-china-check-company-search",
+      "parameters": {"query": "示例公司", "language": "zh"}
+    }
+  ],
+  "acceptance": {"require_all": true, "minimum_successful_requests": 1}
 }
 ```
 
-SinoFacts 企业搜索：
-
-```json
-{
-  "task_id": "prc-open-sinofacts-search-001",
-  "provider": "sinofacts",
-  "operation": "company-search",
-  "objective": "查找中国科技/出海企业公开事实",
-  "parameters": {"query": "01.AI", "max_results": 10},
-  "data_policy": {"classification": "public", "contains_personal_data": false},
-  "acceptance": {"timeout_seconds": 20, "max_response_bytes": 1000000}
-}
-```
-
+PRC 本地连接器不得与普通网关连接器混装在同一张 `[api]` 票据中；它们不启动 KrakenD 网关、不读取 Repository Secret，也不允许在上游拒绝后改用代理、身份或付费服务。
 ## 稳定性机制
 
 ```text
