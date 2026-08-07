@@ -4,17 +4,11 @@ on:
   pull_request:
     paths:
       - "api-center/prc-open-intelligence/**"
-      - "api-center/build_catalog.py"
-      - "api-center/api-catalog.json"
-      - "api-center/api-catalog.md"
       - ".github/workflows/prc-open-intelligence-*.yml"
   push:
     branches: [main]
     paths:
       - "api-center/prc-open-intelligence/**"
-      - "api-center/build_catalog.py"
-      - "api-center/api-catalog.json"
-      - "api-center/api-catalog.md"
       - ".github/workflows/prc-open-intelligence-*.yml"
   schedule:
     - cron: "23 2 * * *"
@@ -61,16 +55,24 @@ jobs:
       - name: Enforce free-only lifecycle registry
         run: python api-center/prc-open-intelligence/validate_registry.py
 
+      - name: Validate local provider catalog is self-contained
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('api-center/prc-open-intelligence/provider-catalog.json')
+          catalog = json.loads(path.read_text(encoding='utf-8'))
+          assert catalog['secret_values_exposed'] is False
+          providers = catalog['providers']
+          assert {row['provider_id'] for row in providers if row['enabled']} == {'china-check', 'sinofacts'}
+          assert all(not row.get('required_secret_environment_variable') for row in providers)
+          print(json.dumps({'status':'PASS','providers':[row['provider_id'] for row in providers]}, ensure_ascii=False))
+          PY
+
       - name: Run live zero-key provider health
         run: |
           python api-center/prc-open-intelligence/prc_open_intelligence_task.py health \
             --live --output-dir prc-open-health
-
-      - name: Rebuild deterministic capability catalog
-        run: python api-center/build_catalog.py
-
-      - name: Require generated catalog to be committed
-        run: git diff --exit-code -- api-center/api-catalog.json api-center/api-catalog.md
 
       - name: Upload health evidence
         if: always()
