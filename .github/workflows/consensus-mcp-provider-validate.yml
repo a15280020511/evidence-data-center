@@ -49,6 +49,7 @@ jobs:
           set -euo pipefail
           python -m py_compile \
             api-center/consensus-mcp/consensus_mcp_task.py \
+            api-center/consensus-mcp/oauth_probe.py \
             api-center/consensus-mcp/tests/test_consensus_mcp_task.py
           python -m unittest discover \
             -s api-center/consensus-mcp/tests -p 'test_*.py' -v
@@ -60,8 +61,6 @@ jobs:
           snapshot = json.loads((root / 'tool-discovery-snapshot.json').read_text())
           assert provider['provider_id'] == 'consensus-mcp'
           assert provider['official_endpoint'] == 'https://mcp.consensus.app/mcp'
-          assert provider['required_secret_environment_variable'] is None
-          assert provider['authentication']['default_mode'] == 'anonymous-free'
           assert provider['limits']['fixed_mcp_tool_count'] == 1
           assert provider['limits']['arbitrary_jsonrpc_methods_allowed'] is False
           assert provider['limits']['arbitrary_mcp_tool_names_allowed'] is False
@@ -73,13 +72,49 @@ jobs:
           PY
           git diff --check
 
-      - name: Run real anonymous-free MCP canary
+      - name: Discover official MCP OAuth metadata
+        id: oauth
+        continue-on-error: true
         run: |
-          set -euo pipefail
+          set -o pipefail
+          python api-center/consensus-mcp/oauth_probe.py \
+            --output consensus-mcp-oauth-probe.json | tee consensus-mcp-oauth-probe-summary.json
+
+      - name: Run real MCP canary
+        id: canary
+        continue-on-error: true
+        env:
+          CONSENSUS_MCP_BEARER_TOKEN: ${{ secrets.CONSENSUS_MCP_BEARER_TOKEN }}
+        run: |
+          set -o pipefail
           python api-center/consensus-mcp/consensus_mcp_task.py canary \
             --output consensus-mcp-canary.json | tee consensus-mcp-canary-summary.json
+
+      - name: Validate live evidence envelope
+        run: |
+          python -m json.tool consensus-mcp-oauth-probe.json >/dev/null
+          python -m json.tool consensus-mcp-oauth-probe-summary.json >/dev/null
           python -m json.tool consensus-mcp-canary.json >/dev/null
           python -m json.tool consensus-mcp-canary-summary.json >/dev/null
+          python - <<'PY'
+          import json
+          oauth = json.load(open('consensus-mcp-oauth-probe.json'))
+          canary = json.load(open('consensus-mcp-canary.json'))
+          # A successful authenticated/anonymous canary is ideal. If the official
+          # resource requires interactive OAuth, require discoverable OAuth metadata
+          # instead of pretending a headless anonymous path exists.
+          assert oauth['mcp_status_without_token'] in (200, 401)
+          if canary['status'] != 'pass':
+              assert oauth['mcp_status_without_token'] == 401
+              assert oauth['resource_metadata']
+              assert oauth['authorization_metadata']
+          print(json.dumps({
+              'canary_status': canary['status'],
+              'oauth_discovered': bool(oauth['authorization_metadata']),
+              'client_credentials': oauth['supports_client_credentials'],
+              'authorization_code': oauth['supports_authorization_code'],
+          }))
+          PY
 
       - name: Upload safe validation evidence
         if: always()
@@ -90,6 +125,8 @@ jobs:
             api-center/consensus-mcp/provider-catalog.json
             api-center/consensus-mcp/ticket.schema.json
             api-center/consensus-mcp/tool-discovery-snapshot.json
+            consensus-mcp-oauth-probe.json
+            consensus-mcp-oauth-probe-summary.json
             consensus-mcp-canary.json
             consensus-mcp-canary-summary.json
           if-no-files-found: warn
