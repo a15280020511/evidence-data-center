@@ -57,11 +57,30 @@ def validate(operation: str) -> dict[str, object]:
             assert view["system_lanes"][0]["lane_id"] == "court_system"
         if operation == "public-security-practice-matrix":
             view = snapshot["public_security_practice_matrix"]
-            assert view["schema_version"] == "prc-public-security-knowledge-practice-matrix-v1"
-            assert view["source_count"] >= 10
-            assert view["capability_domain_count"] >= 14
+            assert view["schema_version"] == "prc-justice-knowledge-practice-matrix-v2"
+            assert view["source_count"] >= 30
+            assert view["capability_domain_count"] >= 20
             assert view["safety_boundary"]["operational_surveillance_details_allowed"] is False
+            assert view["safety_boundary"]["private_training_platform_login_allowed"] is False
+            source_ids = {row["source_id"] for row in view["source_families"]}
+            required_sources = {
+                "mps-public-rules-news",
+                "national-criminal-technology-standardization",
+                "ppsuc-public-education-research",
+                "cipuc-public-education-research",
+                "spc-national-judge-college",
+                "spp-national-prosecutor-college",
+                "spp-procuratorial-technology",
+                "judicial-appraisal-science-institute",
+                "central-judicial-police-officer-college",
+                "ccdi-nsc-public-law-practice",
+                "china-academy-discipline-inspection-supervision",
+                "discipline-inspection-nine-textbooks",
+                "yuandian-spc-spp-case-outcome-family",
+            }
+            assert required_sources <= source_ids
             assert "anti_forensics_or_evasion_method" in view["forbidden_extraction_fields"]
+            assert "operational_tactical_playbook" in view["forbidden_extraction_fields"]
         if operation == "joint-audit-plan":
             plan = snapshot["joint_audit_plan"]
             assert plan["matched_legal_system_lane_ids"]
