@@ -1,0 +1,35 @@
+{
+  "schema_version": "consensus-mcp-tool-discovery-snapshot-v1",
+  "reviewed_at": "2026-08-07",
+  "official_documentation": "https://docs.consensus.app/docs/mcp",
+  "official_endpoint": "https://mcp.consensus.app/mcp",
+  "transport": "Streamable HTTP",
+  "credential_value_exposed": false,
+  "tool_count": 1,
+  "tools": [
+    {
+      "name": "search",
+      "read_only": true,
+      "purpose": "Search peer-reviewed academic papers in the Consensus index",
+      "documented_parameters": [
+        "query", "year_min", "year_max", "study_types", "sjr_max", "human",
+        "sample_size_min", "medical_mode", "exclude_preprints", "duration_min", "duration_max"
+      ]
+    }
+  ],
+  "live_auth_observation": {
+    "observed_at": "2026-08-07",
+    "raw_initialize_without_token_http_status": 401,
+    "oauth_protected_resource_metadata": "reachable",
+    "authorization_server_metadata": "reachable",
+    "authorization_code_supported": true,
+    "dynamic_client_registration_present": true,
+    "client_credentials_supported": false
+  },
+  "notes": [
+    "Consensus documents fetch as ChatGPT-only; generic MCP clients use search.",
+    "Free-account use is available through supported interactive OAuth clients.",
+    "Headless GitHub Actions cannot derive a Free-account token via client_credentials because that grant is not advertised.",
+    "Remote search remains OAuth-gated until a safe credential bridge or accepted Bearer is provisioned."
+  ]
+}
