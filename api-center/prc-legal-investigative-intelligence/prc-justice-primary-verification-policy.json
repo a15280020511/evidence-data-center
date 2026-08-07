@@ -1,0 +1,63 @@
+{
+  "schema_version": "prc-justice-primary-verification-policy-v1",
+  "reviewed_at": "2026-08-07",
+  "purpose": "把趋势发现层的 DISCOVERED 候选回到公开或明确授权的一手页面复核，只把可重现、可定日期、安全边界内的结构化元数据事件纳入追加式长期账本。",
+  "verification_gate": {
+    "source_must_resolve_from_registered_source_family": true,
+    "https_only": true,
+    "public_global_ip_resolution_required": true,
+    "direct_primary_or_authorized_page_required": true,
+    "publication_date_required": true,
+    "maximum_age_days": 60,
+    "future_date_rejected": true,
+    "minimum_text_characters": 160,
+    "full_page_text_persisted": false,
+    "discovery_snippet_is_not_fact": true
+  },
+  "network_controls": {
+    "maximum_primary_pages_per_run": 12,
+    "minimum_seconds_between_primary_fetches": 10,
+    "request_timeout_seconds": 18,
+    "maximum_page_bytes": 524288,
+    "automatic_retry": false,
+    "follow_redirects": false,
+    "automatic_login": false,
+    "captcha_solving": false,
+    "waf_bypass": false,
+    "proxy_rotation": false,
+    "identity_rotation": false,
+    "hidden_api_reverse_engineering": false,
+    "pdf_auto_ingestion": false
+  },
+  "event_rules": {
+    "primary_page_success_promotes_discovery_to_primary_verified_metadata": true,
+    "conflict_or_admissibility_signal_is_preserved_as_contested": true,
+    "historical_or_undated_event_is_review_only": true,
+    "sensitive_operational_signal_is_review_only": true,
+    "too_many_capability_matches_suppresses_capability_attribution": true,
+    "single_primary_event_never_generalizes_nationwide": true,
+    "procurement_event_never_equals_deployed_capability": true,
+    "training_or_research_event_never_equals_operational_capability": true,
+    "case_or_outcome_capability_tag_is_only_an_observed_high_level_signal": true
+  },
+  "automatic_ledger_write": {
+    "enabled": true,
+    "append_only": true,
+    "only_paths_allowed": ["api-center/prc-legal-investigative-intelligence/prc-justice-verified-signal-ledger.json"],
+    "deduplicate_by": ["event_id", "source.content_fingerprint"],
+    "existing_events_must_not_be_mutated_or_deleted": true,
+    "branch_protection_bypass": false,
+    "requires_deterministic_validation_before_merge": true
+  },
+  "safety_boundary": {
+    "public_or_authorized_sources_only": true,
+    "secret_internal_system_collection": false,
+    "covert_surveillance_implementation_details": false,
+    "target_selection_or_tracking_playbook": false,
+    "surveillance_blind_spot_collection": false,
+    "investigation_evasion": false,
+    "anti_forensics": false,
+    "evidence_destruction": false,
+    "personal_targeting": false
+  }
+}
