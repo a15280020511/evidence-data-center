@@ -1,0 +1,77 @@
+name: Catalog Metadata to Lawful Full Text
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "api-center/information-tool-radar/catalog_lawful_resolver.py"
+      - "api-center/information-tool-radar/test_catalog_lawful_resolver.py"
+      - "api-center/information-tool-radar/ANNA_METADATA_TO_LAWFUL_FULLTEXT.md"
+      - ".github/workflows/catalog-lawful-resolver-quality.yml"
+  push:
+    branches: [main]
+    paths:
+      - "api-center/information-tool-radar/catalog_lawful_resolver.py"
+      - "api-center/information-tool-radar/test_catalog_lawful_resolver.py"
+      - "api-center/information-tool-radar/ANNA_METADATA_TO_LAWFUL_FULLTEXT.md"
+      - ".github/workflows/catalog-lawful-resolver-quality.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: catalog-lawful-resolver-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - name: Checkout current ref
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Compile resolver
+        working-directory: api-center/information-tool-radar
+        run: |
+          python -m py_compile \
+            catalog_lawful_resolver.py \
+            test_catalog_lawful_resolver.py
+
+      - name: Run deterministic resolver tests
+        working-directory: api-center/information-tool-radar
+        run: |
+          set -o pipefail
+          python test_catalog_lawful_resolver.py | tee ../../catalog-lawful-resolver-unit.json
+
+      - name: Enforce Anna boundary and lawful handoff
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          report = json.loads(Path("catalog-lawful-resolver-unit.json").read_text(encoding="utf-8"))
+          assert report["catalog_metadata_bridge"] == "passed"
+          assert report["anna_link_rejection"] == "passed"
+          assert report["rights_attestation_gate"] == "passed"
+          assert report["approved_reader_handoff"] == "passed"
+
+          code = Path("api-center/information-tool-radar/catalog_lawful_resolver.py").read_text(encoding="utf-8")
+          assert "anna_download_links_followed" in code
+          assert '"book_files_retrieved_from_anna": False' in code
+          assert "lawful_book_reader.run_reader" in code
+          PY
+
+      - name: Upload quality evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: catalog-lawful-resolver-${{ github.run_id }}
+          path: catalog-lawful-resolver-unit.json
+          if-no-files-found: warn
+          retention-days: 7
