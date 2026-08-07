@@ -1,0 +1,27 @@
+name: prc-legal-investigative-validate
+
+on:
+  pull_request:
+    paths:
+      - 'api-center/prc-legal-investigative-intelligence/**'
+      - '.github/workflows/prc-legal-investigative-validate.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check jsonschema requests
+      - name: Compile
+        run: python -m compileall api-center/prc-legal-investigative-intelligence
+      - name: Validate catalog and all local operations
+        working-directory: api-center/prc-legal-investigative-intelligence
+        run: python validate_prc_legal_investigative.py
