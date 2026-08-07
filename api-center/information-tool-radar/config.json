@@ -18,13 +18,21 @@
         "modelcontextprotocol.io",
         "flk.npc.gov.cn",
         "court.gov.cn",
+        "rmfyalk.court.gov.cn",
         "spp.gov.cn",
+        "12309.gov.cn",
         "mps.gov.cn",
         "moj.gov.cn",
+        "xzfy.moj.gov.cn",
         "ccdi.gov.cn",
+        "12371.cn",
         "chinapeace.gov.cn",
+        "12339.gov.cn",
         "ccg.gov.cn",
-        "nia.gov.cn"
+        "customs.gov.cn",
+        "nia.gov.cn",
+        "chinalaw.org.cn",
+        "std.samr.gov.cn"
       ]
     },
     "wayback": {
@@ -39,13 +47,21 @@
         "modelcontextprotocol.io",
         "flk.npc.gov.cn",
         "court.gov.cn",
+        "rmfyalk.court.gov.cn",
         "spp.gov.cn",
+        "12309.gov.cn",
         "mps.gov.cn",
         "moj.gov.cn",
+        "xzfy.moj.gov.cn",
         "ccdi.gov.cn",
+        "12371.cn",
         "chinapeace.gov.cn",
+        "12339.gov.cn",
         "ccg.gov.cn",
-        "nia.gov.cn"
+        "customs.gov.cn",
+        "nia.gov.cn",
+        "chinalaw.org.cn",
+        "std.samr.gov.cn"
       ]
     },
     "gdelt": {
@@ -144,18 +160,9 @@
       "category": "software_security",
       "endpoint": "https://api.osv.dev/v1/querybatch",
       "packages": [
-        {
-          "ecosystem": "PyPI",
-          "name": "requests"
-        },
-        {
-          "ecosystem": "PyPI",
-          "name": "numpy"
-        },
-        {
-          "ecosystem": "npm",
-          "name": "axios"
-        }
+        {"ecosystem": "PyPI", "name": "requests"},
+        {"ecosystem": "PyPI", "name": "numpy"},
+        {"ecosystem": "npm", "name": "axios"}
       ]
     },
     "github": {
