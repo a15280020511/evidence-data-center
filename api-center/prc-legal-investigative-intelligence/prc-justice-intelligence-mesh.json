@@ -45,7 +45,9 @@
     "validate_derived_record",
     "associate_by_capability_institution_region_domain_and_time",
     "emit_governance_hf_export_without_raw_source",
-    "governance_validate_and_write_private_hf_dataset",
+    "encrypt_export_for_governance_with_current_public_key",
+    "post_ciphertext_only_to_evidence_handoff_issue",
+    "governance_poll_decrypt_validate_and_write_private_hf_dataset",
     "expert_semantic_cross_case_analysis_via_governance",
     "compute_quantitative_trend_analysis_via_governance",
     "governance_approve_versioned_trend_snapshot",
@@ -60,6 +62,19 @@
     "allowed": ["model_normalized_structured_records","opaque_evidence_ref_ids","relationship_edges","approved_metrics","approved_report_snapshots"],
     "forbidden": ["raw_web_page_text","raw_pdf_text","raw_source_url","raw_model_response","credentials","personal_targeting_data","secret_operational_details","evasion_or_anti_forensics_content"],
     "source_resolution": "opaque evidence_ref_id resolves only inside Evidence Center provenance store"
+  },
+  "cross_repository_transport": {
+    "mode": "encrypted_issue_mailbox",
+    "algorithm": "X25519-HKDF-SHA256-CHACHA20POLY1305",
+    "public_key_owner": "a15280020511/decision-system-governance",
+    "ciphertext_issue_owner": "a15280020511/evidence-data-center",
+    "control_plane_token_permissions": ["metadata_read","issues_read_write"],
+    "cross_repo_actions_permission_required": false,
+    "cross_repo_contents_permission_required": false,
+    "plaintext_issue_transport": false,
+    "hf_token_in_evidence_center": false,
+    "raw_source_in_transport": false,
+    "raw_model_response_in_transport": false
   },
   "collision_analysis": {
     "join_keys": ["capability_id","technology_term","institution_type","institution_name","region","legal_domain","case_domain","time_window","evidence_ref_id"],
