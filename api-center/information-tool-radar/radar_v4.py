@@ -113,13 +113,93 @@ def wayback(config: Mapping[str, Any], runtime: Mapping[str, int]) -> base.Adapt
     return result
 
 
+def _append_reliefweb_candidates(
+    result: base.AdapterResult,
+    rows: list[Any],
+    max_records: int,
+) -> None:
+    for item in rows[:max_records]:
+        if not isinstance(item, Mapping):
+            continue
+        fields = item.get("fields") if isinstance(item.get("fields"), Mapping) else {}
+        title = str(fields.get("name") or fields.get("title") or item.get("id") or "ReliefWeb disaster")
+        locator = str(fields.get("url") or item.get("href") or "")
+        if not locator:
+            continue
+        countries = fields.get("country") if isinstance(fields.get("country"), list) else []
+        country = None
+        if countries and isinstance(countries[0], Mapping):
+            country = str(countries[0].get("name") or "") or None
+        result.candidates.append(base.make_candidate(
+            result.name,
+            result.category,
+            title,
+            locator,
+            {
+                "id": item.get("id"),
+                "status": fields.get("status"),
+                "date": fields.get("date"),
+                "glide": fields.get("glide"),
+                "coverage_level": "curated-humanitarian-event-metadata",
+                "event_backend": "reliefweb",
+            },
+            country=country,
+            status="change_signal",
+        ))
+
+
+def _append_eonet_candidates(
+    result: base.AdapterResult,
+    rows: list[Any],
+    max_records: int,
+) -> None:
+    for item in rows[:max_records]:
+        if not isinstance(item, Mapping):
+            continue
+        title = str(item.get("title") or item.get("id") or "NASA EONET event")
+        locator = str(item.get("link") or "")
+        if not locator:
+            sources = item.get("sources") if isinstance(item.get("sources"), list) else []
+            if sources and isinstance(sources[0], Mapping):
+                locator = str(sources[0].get("url") or "")
+        if not locator:
+            continue
+        categories = item.get("categories") if isinstance(item.get("categories"), list) else []
+        category_ids = [
+            str(row.get("id") or row.get("title") or "")
+            for row in categories
+            if isinstance(row, Mapping)
+        ]
+        geometry = item.get("geometry") if isinstance(item.get("geometry"), list) else []
+        latest_geometry = geometry[-1] if geometry and isinstance(geometry[-1], Mapping) else {}
+        result.candidates.append(base.make_candidate(
+            result.name,
+            result.category,
+            title,
+            locator,
+            {
+                "id": item.get("id"),
+                "closed": item.get("closed"),
+                "categories": category_ids,
+                "latest_date": latest_geometry.get("date"),
+                "coverage_level": "public-natural-event-metadata",
+                "event_backend": "nasa-eonet",
+            },
+            status="change_signal",
+        ))
+
+
 def reliefweb(config: Mapping[str, Any], runtime: Mapping[str, int]) -> base.AdapterResult:
-    """Read recent UN OCHA ReliefWeb disaster metadata as an event source."""
+    """Read ReliefWeb, falling back to NASA EONET without weakening the gate."""
     result = base.AdapterResult("reliefweb", str(config["category"]))
-    result.probes = 1
+    primary = str(config.get("endpoint") or "")
+    fallback = str(config.get("fallback_endpoint") or "")
+    result.details["backend_success"] = {"reliefweb": 0, "nasa-eonet": 0}
+
+    result.probes += 1
     try:
         data = base.request_json(
-            base.query_url(str(config["endpoint"]), {
+            base.query_url(primary, {
                 "appname": str(config.get("appname") or "evidence-data-center"),
                 "preset": "latest",
                 "profile": "list",
@@ -128,41 +208,40 @@ def reliefweb(config: Mapping[str, Any], runtime: Mapping[str, int]) -> base.Ada
             }),
             timeout=runtime["timeout"],
             max_bytes=runtime["max_bytes"],
-            attempts=3,
+            attempts=1,
         )
         rows = data.get("data") if isinstance(data, Mapping) else []
-        if not isinstance(rows, list):
+        if not isinstance(rows, list) or not rows:
             raise RuntimeError("ReliefWeb data missing")
-        result.successful_probes = 1
-        for item in rows[: runtime["max_records"]]:
-            if not isinstance(item, Mapping):
-                continue
-            fields = item.get("fields") if isinstance(item.get("fields"), Mapping) else {}
-            title = str(fields.get("name") or fields.get("title") or item.get("id") or "ReliefWeb disaster")
-            locator = str(fields.get("url") or item.get("href") or "")
-            if not locator:
-                continue
-            countries = fields.get("country") if isinstance(fields.get("country"), list) else []
-            country = None
-            if countries and isinstance(countries[0], Mapping):
-                country = str(countries[0].get("name") or "") or None
-            result.candidates.append(base.make_candidate(
-                result.name,
-                result.category,
-                title,
-                locator,
-                {
-                    "id": item.get("id"),
-                    "status": fields.get("status"),
-                    "date": fields.get("date"),
-                    "glide": fields.get("glide"),
-                    "coverage_level": "curated-humanitarian-event-metadata",
-                },
-                country=country,
-                status="change_signal",
-            ))
+        _append_reliefweb_candidates(result, rows, runtime["max_records"])
+        if result.candidates:
+            result.successful_probes += 1
+            result.details["backend_success"]["reliefweb"] += 1
     except Exception as exc:
-        result.add_error(exc)
+        result.add_error(f"ReliefWeb primary: {type(exc).__name__}: {exc}")
+
+    if not result.candidates and fallback:
+        result.probes += 1
+        try:
+            data = base.request_json(
+                base.query_url(fallback, {
+                    "status": "open",
+                    "limit": runtime["max_records"],
+                }),
+                timeout=runtime["timeout"],
+                max_bytes=runtime["max_bytes"],
+                attempts=1,
+            )
+            rows = data.get("events") if isinstance(data, Mapping) else []
+            if not isinstance(rows, list) or not rows:
+                raise RuntimeError("NASA EONET events missing")
+            _append_eonet_candidates(result, rows, runtime["max_records"])
+            if result.candidates:
+                result.successful_probes += 1
+                result.details["backend_success"]["nasa-eonet"] += 1
+        except Exception as exc:
+            result.add_error(f"NASA EONET fallback: {type(exc).__name__}: {exc}")
+
     result.success = result.successful_probes > 0 and bool(result.candidates)
     return result
 
