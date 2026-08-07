@@ -46,7 +46,7 @@ jobs:
     env:
       TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
       EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
-      GH_TOKEN: ${{ github.token }}
+      GH_TOKEN: ${{ secrets.PRC_JUSTICE_AUTOMATION_TOKEN || github.token }}
       PROFILE: ${{ github.event.inputs.profile || 'auto' }}
       DISCOVERY_DIR: prc-justice-trend-discovery
       VERIFY_DIR: prc-justice-primary-verification
@@ -136,11 +136,12 @@ jobs:
           from pathlib import Path
           r = json.loads(Path("prc-justice-primary-verification/verification-report.json").read_text(encoding="utf-8"))
           changed = bool(r.get("ledger_changed"))
-          contested = int(r.get("contested_count") or 0)
           review = int(r.get("review_only_count") or 0)
+          contested = int(r.get("contested_count") or 0)
           print(f"changed={'true' if changed else 'false'}")
-          print(f"eligible={'true' if changed and contested == 0 else 'false'}")
+          print(f"eligible={'true' if changed else 'false'}")
           print(f"new_count={int(r.get('new_ledger_event_count') or 0)}")
+          print(f"primary_verified_count={int(r.get('primary_verified_count') or 0)}")
           print(f"contested_count={contested}")
           print(f"review_count={review}")
           PY
@@ -160,7 +161,7 @@ jobs:
           test "${changed[0]}" = "$LEDGER"
           test "${{ steps.gate.outputs.git_changed }}" = "true"
 
-      - name: Create auditable verified-signal PR
+      - name: Create auditable verified-signal update branch and PR when permitted
         id: pr
         if: github.event_name != 'pull_request' && steps.gate.outputs.changed == 'true'
         shell: bash
@@ -173,33 +174,60 @@ jobs:
           git add "$LEDGER"
           git commit -m "chore: append verified PRC justice trend signals"
           git push origin "$branch"
+          head_sha="$(git rev-parse HEAD)"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+
           cat > /tmp/pr-body.md <<EOF
           Automated bounded PRC justice trend signal verification.
 
-          - New primary-verified/contested metadata events: ${{ steps.gate.outputs.new_count }}
-          - Contested events: ${{ steps.gate.outputs.contested_count }}
+          - New PRIMARY_VERIFIED metadata events written to the automatic ledger: ${{ steps.gate.outputs.new_count }}
+          - Contested candidates retained outside the automatic ledger: ${{ steps.gate.outputs.contested_count }}
           - Review-only candidates: ${{ steps.gate.outputs.review_count }}
-          - Auto-merge eligible: ${{ steps.gate.outputs.eligible }}
           - Only the append-only verified signal ledger is changed.
           - Full source pages are not committed.
           - No login, redirect following, retry, CAPTCHA/WAF bypass, proxy/identity rotation, secret operational collection, targeting, evasion, or anti-forensics.
           - Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
           EOF
+
+          set +e
           pr_url="$(gh pr create \
             --repo "$GITHUB_REPOSITORY" \
             --base main \
             --head "$branch" \
             --title "chore: append verified PRC justice trend signals ${GITHUB_RUN_ID}" \
-            --body-file /tmp/pr-body.md)"
-          pr_number="$(gh pr view "$pr_url" --repo "$GITHUB_REPOSITORY" --json number --jq .number)"
-          head_sha="$(git rev-parse HEAD)"
-          echo "branch=$branch" >> "$GITHUB_OUTPUT"
-          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
-          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
-          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+            --body-file /tmp/pr-body.md 2>/tmp/pr-create-error.txt)"
+          rc=$?
+          set -e
+          if [[ "$rc" -eq 0 && -n "$pr_url" ]]; then
+            pr_number="$(gh pr view "$pr_url" --repo "$GITHUB_REPOSITORY" --json number --jq .number)"
+            echo "created=true" >> "$GITHUB_OUTPUT"
+            echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+            echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+          else
+            echo "created=false" >> "$GITHUB_OUTPUT"
+            echo "number=" >> "$GITHUB_OUTPUT"
+            echo "url=" >> "$GITHUB_OUTPUT"
+            echo "PR creation was blocked; verified branch preserved: $branch"
+            cat /tmp/pr-create-error.txt || true
+          fi
 
-      - name: Dispatch required checks for non-contested verified ledger update
-        if: github.event_name != 'pull_request' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
+      - name: Record PR creation policy block without losing verified branch
+        if: github.event_name != 'pull_request' && steps.gate.outputs.changed == 'true' && steps.pr.outputs.created != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="[prc-justice-trend-automation] verified branch awaits PR creation"
+          body="Run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} produced ${{ steps.gate.outputs.new_count }} PRIMARY_VERIFIED events and preserved them on branch `${{ steps.pr.outputs.branch }}` at `${{ steps.pr.outputs.head_sha }}`, but the current GitHub Actions credential/repository policy did not permit creating the PR. No direct main write or branch-protection bypass was attempted. A dedicated PR-capable `PRC_JUSTICE_AUTOMATION_TOKEN` may be used if configured."
+          number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
+          if [[ -n "$number" ]]; then
+            gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          fi
+
+      - name: Dispatch required checks for verified ledger update
+        if: github.event_name != 'pull_request' && steps.pr.outputs.created == 'true' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -222,7 +250,7 @@ jobs:
           printf '%s\n' "${workflows[@]}" > /tmp/dispatched-workflows.txt
 
       - name: Wait for required checks
-        if: github.event_name != 'pull_request' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
+        if: github.event_name != 'pull_request' && steps.pr.outputs.created == 'true' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -250,8 +278,8 @@ jobs:
             gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
           done
 
-      - name: Merge non-contested verified ledger update without bypass
-        if: github.event_name != 'pull_request' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
+      - name: Merge verified ledger update without bypass
+        if: github.event_name != 'pull_request' && steps.pr.outputs.created == 'true' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -266,7 +294,7 @@ jobs:
         run: |
           set -euo pipefail
           title="[prc-justice-trend-review] verified signal candidates require review"
-          body="Run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} produced ${{ steps.gate.outputs.review_count }} review-only and ${{ steps.gate.outputs.contested_count }} contested candidates. Contested signals are not auto-merged. Review the Artifact and any generated PR; do not bypass authentication, CAPTCHA/WAF, redirects, or collect secret operational details."
+          body="Run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} produced ${{ steps.gate.outputs.review_count }} review-only and ${{ steps.gate.outputs.contested_count }} contested candidates. CONTESTED signals were not written to the automatic verified ledger. Review the Artifact; do not bypass authentication, CAPTCHA/WAF, redirects, or collect secret operational details."
           number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
           if [[ -n "$number" ]]; then
             gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"

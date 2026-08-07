@@ -1,7 +1,7 @@
 {
   "schema_version": "prc-justice-primary-verification-policy-v1",
   "reviewed_at": "2026-08-07",
-  "purpose": "把趋势发现层的 DISCOVERED 候选回到公开或明确授权的一手页面复核，只把可重现、可定日期、安全边界内的结构化元数据事件纳入追加式长期账本。",
+  "purpose": "把趋势发现层的 DISCOVERED 候选回到公开或明确授权的一手页面复核；只有无争议的 PRIMARY_VERIFIED 结构化元数据事件可进入自动追加式长期账本，CONTESTED 只进入复核队列和证据 Artifact。",
   "verification_gate": {
     "source_must_resolve_from_registered_source_family": true,
     "https_only": true,
@@ -32,6 +32,8 @@
   "event_rules": {
     "primary_page_success_promotes_discovery_to_primary_verified_metadata": true,
     "conflict_or_admissibility_signal_is_preserved_as_contested": true,
+    "conflict_detection_applies_only_to_case_practice_and_judicial_outcome": true,
+    "contested_event_is_artifact_and_review_queue_only": true,
     "historical_or_undated_event_is_review_only": true,
     "sensitive_operational_signal_is_review_only": true,
     "too_many_capability_matches_suppresses_capability_attribution": true,
@@ -43,6 +45,8 @@
   "automatic_ledger_write": {
     "enabled": true,
     "append_only": true,
+    "accepted_review_status": ["PRIMARY_VERIFIED"],
+    "contested_events_allowed": false,
     "only_paths_allowed": ["api-center/prc-legal-investigative-intelligence/prc-justice-verified-signal-ledger.json"],
     "deduplicate_by": ["event_id", "source.content_fingerprint"],
     "existing_events_must_not_be_mutated_or_deleted": true,

@@ -44,6 +44,11 @@ SIGNAL_LIFECYCLE = {
     "doctrine_and_commentary": "CONCEPT",
 }
 
+# These terms mean an evidentiary/procedural contradiction only in concrete
+# case/outcome materials. The same words in a statute, interpretation, policy,
+# training text, or standard do not by themselves make that source contested.
+CONFLICT_APPLICABLE_SIGNAL_TYPES = {"case_practice", "judicial_outcome"}
+
 
 def load_jsonl(path: Path) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
@@ -96,7 +101,8 @@ def allowed_hosts(plan: Mapping[str, Any], registry: Mapping[str, Mapping[str, A
             text = str(host).casefold().strip().rstrip(".")
             if text and text not in {"edu.cn"}:
                 hosts.add(text)
-    # Generic edu.cn is useful for discovery but too broad for automatic primary ingestion.
+    # Generic edu.cn is useful for discovery but is intentionally too broad for
+    # automatic primary ingestion. Explicitly registered academy hosts remain allowed.
     for signal in plan.get("signal_plans") or []:
         if isinstance(signal, Mapping):
             for host in signal.get("allowed_hosts") or []:
@@ -107,21 +113,37 @@ def allowed_hosts(plan: Mapping[str, Any], registry: Mapping[str, Mapping[str, A
 
 
 def classify_institution(host: str) -> str:
-    host = host.casefold()
-    rules = [
-        (("mps.gov.cn", "cipuc.edu.cn", "ppsuc.edu.cn", "cppu.edu.cn", "njpu.edu.cn"), "public_security"),
-        (("spp.gov.cn",), "procuratorate"),
-        (("court.gov.cn",), "court"),
-        (("moj.gov.cn", "ssfjd.com", "ssfjd.cn"), "justice_administration_and_forensics"),
-        (("ccdi.gov.cn",), "discipline_supervision"),
-        (("npc.gov.cn", "gov.cn", "12371.cn"), "legislature_or_rulemaker"),
-        (("chinalaw.org.cn",), "judicial_education_or_research"),
-    ]
-    for suffixes, kind in rules:
-        for suffix in suffixes:
-            if host == suffix or host.endswith("." + suffix):
-                return kind
+    host = host.casefold().strip().rstrip(".")
+
+    # Specific judicial/procuratorial host patterns must precede generic gov.cn.
+    if host == "spp.gov.cn" or host.endswith(".spp.gov.cn") or host.endswith("jcy.gov.cn"):
+        return "procuratorate"
+    if host == "court.gov.cn" or host.endswith(".court.gov.cn") or host.endswith("fy.gov.cn"):
+        return "court"
+    if host == "mps.gov.cn" or host.endswith(".mps.gov.cn"):
+        return "public_security"
+    if host.endswith(("cipuc.edu.cn", "ppsuc.edu.cn", "cppu.edu.cn", "njpu.edu.cn")):
+        return "public_security"
+    if host == "moj.gov.cn" or host.endswith(".moj.gov.cn") or host.endswith(("ssfjd.com", "ssfjd.cn")):
+        return "justice_administration_and_forensics"
+    if host == "ccdi.gov.cn" or host.endswith(".ccdi.gov.cn"):
+        return "discipline_supervision"
+    if host.endswith("chinalaw.org.cn"):
+        return "judicial_education_or_research"
+    if host == "npc.gov.cn" or host.endswith(".npc.gov.cn") or host == "gov.cn" or host.endswith(".gov.cn") or host.endswith("12371.cn"):
+        return "legislature_or_rulemaker"
     return "cross_institution"
+
+
+def institution_name_for_host(host: str, institution_type: str) -> str:
+    host = host.casefold()
+    if institution_type == "procuratorate" and host != "spp.gov.cn" and not host.endswith(".spp.gov.cn"):
+        return "地方检察机关公开来源"
+    if institution_type == "court" and host != "court.gov.cn" and not host.endswith(".court.gov.cn"):
+        return "地方法院公开来源"
+    if institution_type == "judicial_education_or_research":
+        return "公开司法教育/研究来源"
+    return base.institution_for_host(host)
 
 
 def source_class(host: str) -> str:
@@ -205,19 +227,23 @@ def verify_event(
         capabilities = []
         record["capability_attribution_suppressed"] = "too_many_page_level_matches"
 
-    conflict = base.any_signal(page_text, policy.get("conflict_or_review_signals") or [])
+    conflict = (
+        signal_type in CONFLICT_APPLICABLE_SIGNAL_TYPES
+        and base.any_signal(page_text, policy.get("conflict_or_review_signals") or [])
+    )
     host = str(urllib.parse.urlsplit(safe).hostname or "").casefold()
+    institution_type = classify_institution(host)
     page_fingerprint = hashlib.sha256(base.normalized_text(page_text).encode("utf-8")).hexdigest()
     lifecycle = SIGNAL_LIFECYCLE.get(signal_type)
-    if lifecycle in {"FIRST_PRACTICE"} and not capabilities:
+    if lifecycle == "FIRST_PRACTICE" and not capabilities:
         lifecycle = None
 
     verified = {
         "event_id": stable_event_id(signal_type, safe, pub_date, page_fingerprint),
         "event_date": pub_date,
         "publication_date": pub_date,
-        "institution_type": classify_institution(host),
-        "institution_name": base.institution_for_host(host) if classify_institution(host) != "judicial_education_or_research" else "公开司法教育/研究来源",
+        "institution_type": institution_type,
+        "institution_name": institution_name_for_host(host, institution_type),
         "region": None,
         "signal_type": signal_type,
         "subject_type": event.get("subject_type") or "institutional_capacity",
@@ -253,6 +279,7 @@ def verify_event(
         "reason": None,
         "publication_date": pub_date,
         "host": host,
+        "institution_type": institution_type,
         "matched_capability_ids": capabilities,
         "bytes_sampled": fetch_meta.get("bytes_sampled"),
         "content_type": fetch_meta.get("content_type"),
@@ -261,6 +288,11 @@ def verify_event(
 
 
 def append_new_events(ledger: dict[str, Any], events: list[dict[str, Any]]) -> tuple[dict[str, Any], list[str]]:
+    """Append only non-contested PRIMARY_VERIFIED events.
+
+    CONTESTED observations remain in run artifacts/review queues and are never
+    silently promoted into the automatic long-term fact ledger.
+    """
     existing_events = [dict(row) for row in ledger.get("events") or [] if isinstance(row, Mapping)]
     existing_ids = {str(row.get("event_id")) for row in existing_events if row.get("event_id")}
     existing_fingerprints = {
@@ -270,6 +302,8 @@ def append_new_events(ledger: dict[str, Any], events: list[dict[str, Any]]) -> t
     }
     added: list[str] = []
     for event in events:
+        if event.get("review_status") != "PRIMARY_VERIFIED" or event.get("support_or_conflict") != "SUPPORTS":
+            continue
         event_id = str(event.get("event_id") or "")
         fingerprint = str((event.get("source") or {}).get("content_fingerprint") or "")
         if not event_id or event_id in existing_ids or (fingerprint and fingerprint in existing_fingerprints):
@@ -318,12 +352,16 @@ def main() -> int:
         if item is not None:
             verified.append(item)
 
-    updated_ledger, added_ids = append_new_events(ledger, verified)
+    safe_verified = [row for row in verified if row.get("review_status") == "PRIMARY_VERIFIED"]
+    contested = [row for row in verified if row.get("review_status") == "CONTESTED"]
+    updated_ledger, added_ids = append_new_events(ledger, safe_verified)
     if args.write_ledger and added_ids:
         base.save_json(LEDGER_PATH, updated_ledger)
 
     output_dir = Path(args.output_dir)
     base.save_jsonl(output_dir / "verified-signal-events.jsonl", verified)
+    base.save_jsonl(output_dir / "primary-verified-signal-events.jsonl", safe_verified)
+    base.save_jsonl(output_dir / "contested-signal-events.jsonl", contested)
     base.save_jsonl(output_dir / "verification-receipts.jsonl", receipts)
     report = {
         "status": "PASS",
@@ -332,10 +370,12 @@ def main() -> int:
         "discovered_input_count": len(discovered),
         "primary_pages_attempted": len(receipts),
         "primary_verified_or_contested_count": len(verified),
+        "primary_verified_count": len(safe_verified),
+        "contested_count": len(contested),
         "new_ledger_event_count": len(added_ids),
         "new_ledger_event_ids": added_ids,
         "review_only_count": sum(1 for row in receipts if row.get("status") == "REVIEW_ONLY"),
-        "contested_count": sum(1 for row in verified if row.get("review_status") == "CONTESTED"),
+        "contested_written_to_automatic_ledger": False,
         "ledger_changed": bool(added_ids),
         "allowed_host_count": len(allowed),
         "full_page_text_stored": False,
