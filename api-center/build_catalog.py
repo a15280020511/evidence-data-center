@@ -20,7 +20,6 @@ MANAGED_PROVIDER_CATALOG_PATHS = (
     HERE / "aifin-market/provider-catalog.json",
     HERE / "yuandian/provider-catalog.json",
     HERE / "company-intelligence/provider-catalog.json",
-    HERE / "prc-open-intelligence/provider-catalog.json",
     HERE / "web-retrieval/provider-catalog.json",
 )
 
@@ -336,7 +335,6 @@ def build(manifest_path: Path, metadata_path: Path, connector_root: Path) -> dic
             "aifin-market/readonly-tools.snapshot.json",
             "yuandian/provider-catalog.json",
             "yuandian/readonly-apis.snapshot.json",
-            "prc-open-intelligence/provider-catalog.json",
             "catalog-metadata.json",
             "connector-manifest.json",
             "connectors/<connector>.connector.json",
