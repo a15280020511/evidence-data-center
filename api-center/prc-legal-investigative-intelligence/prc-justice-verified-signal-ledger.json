@@ -12,10 +12,93 @@
     "anti_forensics": false,
     "history_deletion_on_conflict": false
   },
-  "events": [],
+  "events": [
+    {
+      "event_id": "verified-law_and_norm-20260717-fd4686d8770812",
+      "event_date": "2026-07-17",
+      "publication_date": "2026-07-17",
+      "institution_type": "court",
+      "institution_name": "人民法院公开来源",
+      "region": null,
+      "signal_type": "law_and_norm",
+      "subject_type": "institutional_capacity",
+      "capability_ids": [],
+      "technology_terms": [],
+      "legal_domains": [],
+      "procedural_stage": null,
+      "case_type": null,
+      "metrics": {},
+      "lifecycle_stage": null,
+      "support_or_conflict": "SUPPORTS",
+      "source": {
+        "url": "https://www.court.gov.cn/fabu/xiangqing/506411.html",
+        "host": "www.court.gov.cn",
+        "source_class": "official_primary",
+        "primary": true,
+        "title": "权威发布- 中华人民共和国最高人民法院",
+        "content_fingerprint": "92a555c8658cd5596b50e567235b9326edb9ee35dc6a3187905194804177e14a",
+        "retrieved_at": "2026-08-07T13:08:31+00:00"
+      },
+      "evidence_ids": [
+        "discover-law_and_norm-73c168e0058c015e"
+      ],
+      "model_analysis": null,
+      "review_status": "PRIMARY_VERIFIED",
+      "safety": {
+        "public_or_authorized": true,
+        "contains_secret_operational_detail": false,
+        "contains_targeting_or_evasion_detail": false,
+        "contains_personal_targeting": false
+      }
+    },
+    {
+      "event_id": "verified-policy_and_strategy-20260707-cdc606f25242dc",
+      "event_date": "2026-07-07",
+      "publication_date": "2026-07-07",
+      "institution_type": "procuratorate",
+      "institution_name": "地方检察机关公开来源",
+      "region": null,
+      "signal_type": "policy_and_strategy",
+      "subject_type": "institutional_capacity",
+      "capability_ids": [
+        "investigation-command-and-case-analysis",
+        "network-crime-investigation",
+        "data-intelligence-and-correlation"
+      ],
+      "technology_terms": [],
+      "legal_domains": [],
+      "procedural_stage": null,
+      "case_type": null,
+      "metrics": {},
+      "lifecycle_stage": null,
+      "support_or_conflict": "SUPPORTS",
+      "source": {
+        "url": "https://www.zjjcy.gov.cn/art/2026/7/7/art_26_206519.html",
+        "host": "www.zjjcy.gov.cn",
+        "source_class": "official_primary",
+        "primary": true,
+        "title": "以“数智检察”创新实践助推社会治理现代化",
+        "content_fingerprint": "9d872b3959ad7ba1f9b0b6cd4de143b67ac419d1515c5a8d878a259164b87122",
+        "retrieved_at": "2026-08-07T13:08:59+00:00"
+      },
+      "evidence_ids": [
+        "discover-policy_and_strategy-16a329f95e893cef"
+      ],
+      "model_analysis": null,
+      "review_status": "PRIMARY_VERIFIED",
+      "safety": {
+        "public_or_authorized": true,
+        "contains_secret_operational_detail": false,
+        "contains_targeting_or_evasion_detail": false,
+        "contains_personal_targeting": false
+      }
+    }
+  ],
   "iteration_rules": {
     "append_only_history": true,
-    "accepted_review_status": ["PRIMARY_VERIFIED"],
+    "accepted_review_status": [
+      "PRIMARY_VERIFIED"
+    ],
     "contested_events_are_review_only_not_automatic_ledger": true,
     "deduplicate_by_event_id_and_source_fingerprint": true,
     "source_page_required_for_primary_verified": true,
