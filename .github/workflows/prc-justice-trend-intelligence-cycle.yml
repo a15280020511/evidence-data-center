@@ -218,7 +218,7 @@ jobs:
         run: |
           set -euo pipefail
           title="[prc-justice-trend-automation] verified branch awaits PR creation"
-          body="Run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} produced ${{ steps.gate.outputs.new_count }} PRIMARY_VERIFIED events and preserved them on branch `${{ steps.pr.outputs.branch }}` at `${{ steps.pr.outputs.head_sha }}`, but the current GitHub Actions credential/repository policy did not permit creating the PR. No direct main write or branch-protection bypass was attempted. A dedicated PR-capable `PRC_JUSTICE_AUTOMATION_TOKEN` may be used if configured."
+          body="Run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} produced ${{ steps.gate.outputs.new_count }} PRIMARY_VERIFIED events and preserved them on branch ${{ steps.pr.outputs.branch }} at ${{ steps.pr.outputs.head_sha }}, but the current GitHub Actions credential/repository policy did not permit creating the PR. No direct main write or branch-protection bypass was attempted. A dedicated PR-capable PRC_JUSTICE_AUTOMATION_TOKEN may be used if configured."
           number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
           if [[ -n "$number" ]]; then
             gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"
