@@ -33,7 +33,7 @@
     {
       "signal_type": "policy_and_strategy",
       "priority": "HIGH",
-      "source_families": ["central-politico-legal-commission-public","spc-official","spp-official","mps-public-rules-news","moj-justice-administration-training-practice"],
+      "source_families": ["central-politico-legal-commission-public","spc-official","spp-official","mps-public-rules-news","justice-administration-academy"],
       "query_templates": ["法院 检察 公安 数字化 智能化 工作部署 2026","公检法 工作报告 技术 建设 数字 司法"]
     },
     {
@@ -51,7 +51,7 @@
     {
       "signal_type": "standard",
       "priority": "CRITICAL",
-      "source_families": ["mps-standards-and-tc179","national-standards-public-platform","judicial-appraisal-science-family","public-security-electronic-evidence-rules"],
+      "source_families": ["mps-standards-and-tc179","judicial-appraisal-science-family","public-security-electronic-evidence-rules"],
       "query_templates": ["GA/T 电子物证 刑事技术 标准 发布 修订","司法鉴定 电子数据 标准 发布 修订 废止"]
     },
     {
