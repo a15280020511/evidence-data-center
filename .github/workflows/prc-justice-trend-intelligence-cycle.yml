@@ -18,14 +18,22 @@ on:
       - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-analysis-contract.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-source-plan.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-storage-contract.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-primary-verification-policy.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-verified-signal-ledger.json"
       - "api-center/prc-legal-investigative-intelligence/discover_prc_justice_trend_signals.py"
+      - "api-center/prc-legal-investigative-intelligence/verify_prc_justice_trend_signals.py"
       - "api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py"
+      - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_primary_signal_verification.py"
       - ".github/workflows/prc-justice-trend-intelligence-cycle.yml"
+      - ".github/workflows/prc-justice-primary-signal-validate.yml"
 
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  actions: write
+  issues: write
 
 concurrency:
   group: prc-justice-trend-intelligence-${{ github.event_name == 'pull_request' && github.ref || 'scheduled-main' }}
@@ -34,16 +42,21 @@ concurrency:
 jobs:
   trend-cycle:
     runs-on: ubuntu-24.04
-    timeout-minutes: 35
+    timeout-minutes: 55
     env:
       TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
       EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+      GH_TOKEN: ${{ github.token }}
       PROFILE: ${{ github.event.inputs.profile || 'auto' }}
       DISCOVERY_DIR: prc-justice-trend-discovery
+      VERIFY_DIR: prc-justice-primary-verification
       PACKET_DIR: prc-justice-trend-packets
+      LEDGER: api-center/prc-legal-investigative-intelligence/prc-justice-verified-signal-ledger.json
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
@@ -55,11 +68,15 @@ jobs:
           set -euo pipefail
           python -m py_compile \
             api-center/prc-legal-investigative-intelligence/discover_prc_justice_trend_signals.py \
+            api-center/prc-legal-investigative-intelligence/verify_prc_justice_trend_signals.py \
             api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py \
             api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py \
-            api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py
+            api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py \
+            api-center/prc-legal-investigative-intelligence/validate_prc_justice_primary_signal_verification.py
           python api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py | tee prc-justice-capability-trend-validation.json
           python api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py | tee prc-justice-trend-source-validation.json
+          python api-center/prc-legal-investigative-intelligence/validate_prc_justice_primary_signal_verification.py | tee prc-justice-primary-signal-validation.json
+          rm -rf "$PACKET_DIR"
           python api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py \
             --output-dir "$PACKET_DIR" \
             --as-of 2026-08-07 | tee prc-justice-trend-packet-validation.json
@@ -71,27 +88,191 @@ jobs:
           set -euo pipefail
           python -m json.tool "$PACKET_DIR/build-receipt.json" >/dev/null
           test "$(python -c 'import json; print(json.load(open("prc-justice-trend-packets/build-receipt.json"))["network_used"])')" = "False"
+          git diff --quiet
 
       - name: Discover bounded public trend signals
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
-          rm -rf "$DISCOVERY_DIR" "$PACKET_DIR"
+          rm -rf "$DISCOVERY_DIR" "$VERIFY_DIR" "$PACKET_DIR"
           python api-center/prc-legal-investigative-intelligence/discover_prc_justice_trend_signals.py \
             --profile "$PROFILE" \
             --output-dir "$DISCOVERY_DIR" | tee prc-justice-trend-discovery-run.json
 
-      - name: Build governed model and compute packets
+      - name: Verify recent signals against registered primary pages
+        id: verify
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          python api-center/prc-legal-investigative-intelligence/verify_prc_justice_trend_signals.py \
+            --discovered-events "$DISCOVERY_DIR/discovered-signal-events.jsonl" \
+            --output-dir "$VERIFY_DIR" \
+            --write-ledger | tee prc-justice-primary-verification-run.json
+          python api-center/prc-legal-investigative-intelligence/validate_prc_justice_primary_signal_verification.py
+          git diff --check
+
+      - name: Build governed model and compute packets from verified signals
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
           python api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py \
-            --signal-events "$DISCOVERY_DIR/discovered-signal-events.jsonl" \
+            --discovered-events "$DISCOVERY_DIR/discovered-signal-events.jsonl" \
+            --verified-events "$VERIFY_DIR/verified-signal-events.jsonl" \
             --output-dir "$PACKET_DIR" | tee prc-justice-trend-packet-run.json
           python -m json.tool "$DISCOVERY_DIR/discovery-report.json" >/dev/null
+          python -m json.tool "$VERIFY_DIR/verification-report.json" >/dev/null
           python -m json.tool "$PACKET_DIR/model-analysis-packet.json" >/dev/null
           python -m json.tool "$PACKET_DIR/justice-trend-numeric-pack.json" >/dev/null
           python -m json.tool "$PACKET_DIR/build-receipt.json" >/dev/null
+
+      - name: Read primary verification gate
+        id: gate
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+          r = json.loads(Path("prc-justice-primary-verification/verification-report.json").read_text(encoding="utf-8"))
+          changed = bool(r.get("ledger_changed"))
+          contested = int(r.get("contested_count") or 0)
+          review = int(r.get("review_only_count") or 0)
+          print(f"changed={'true' if changed else 'false'}")
+          print(f"eligible={'true' if changed and contested == 0 else 'false'}")
+          print(f"new_count={int(r.get('new_ledger_event_count') or 0)}")
+          print(f"contested_count={contested}")
+          print(f"review_count={review}")
+          PY
+          if git diff --quiet -- "$LEDGER"; then
+            echo "git_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "git_changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Enforce verified-ledger-only automatic write
+        if: github.event_name != 'pull_request' && steps.gate.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          mapfile -t changed < <(git diff --name-only)
+          printf '%s\n' "${changed[@]}"
+          test "${#changed[@]}" -eq 1
+          test "${changed[0]}" = "$LEDGER"
+          test "${{ steps.gate.outputs.git_changed }}" = "true"
+
+      - name: Create auditable verified-signal PR
+        id: pr
+        if: github.event_name != 'pull_request' && steps.gate.outputs.changed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="automation/prc-justice-verified-signals-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add "$LEDGER"
+          git commit -m "chore: append verified PRC justice trend signals"
+          git push origin "$branch"
+          cat > /tmp/pr-body.md <<EOF
+          Automated bounded PRC justice trend signal verification.
+
+          - New primary-verified/contested metadata events: ${{ steps.gate.outputs.new_count }}
+          - Contested events: ${{ steps.gate.outputs.contested_count }}
+          - Review-only candidates: ${{ steps.gate.outputs.review_count }}
+          - Auto-merge eligible: ${{ steps.gate.outputs.eligible }}
+          - Only the append-only verified signal ledger is changed.
+          - Full source pages are not committed.
+          - No login, redirect following, retry, CAPTCHA/WAF bypass, proxy/identity rotation, secret operational collection, targeting, evasion, or anti-forensics.
+          - Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
+          EOF
+          pr_url="$(gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$branch" \
+            --title "chore: append verified PRC justice trend signals ${GITHUB_RUN_ID}" \
+            --body-file /tmp/pr-body.md)"
+          pr_number="$(gh pr view "$pr_url" --repo "$GITHUB_REPOSITORY" --json number --jq .number)"
+          head_sha="$(git rev-parse HEAD)"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Dispatch required checks for non-contested verified ledger update
+        if: github.event_name != 'pull_request' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="${{ steps.pr.outputs.branch }}"
+          workflows=(
+            prc-justice-primary-signal-validate.yml
+            prc-justice-capability-trend-validate.yml
+            prc-legal-investigative-validate.yml
+            prc-compliance-policy-validate.yml
+            repository-line-audit.yml
+            evidence-standardization-validate.yml
+            governance-topology-validate.yml
+            api-center-validate.yml
+            api-catalog-validate.yml
+            codeql.yml
+          )
+          for workflow in "${workflows[@]}"; do
+            gh workflow run "$workflow" --repo "$GITHUB_REPOSITORY" --ref "$branch"
+          done
+          printf '%s\n' "${workflows[@]}" > /tmp/dispatched-workflows.txt
+
+      - name: Wait for required checks
+        if: github.event_name != 'pull_request' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          branch="${{ steps.pr.outputs.branch }}"
+          head_sha="${{ steps.pr.outputs.head_sha }}"
+          mapfile -t workflows < /tmp/dispatched-workflows.txt
+          for workflow in "${workflows[@]}"; do
+            run_id=""
+            for _ in $(seq 1 40); do
+              run_id="$(gh run list \
+                --repo "$GITHUB_REPOSITORY" \
+                --workflow "$workflow" \
+                --branch "$branch" \
+                --event workflow_dispatch \
+                --limit 10 \
+                --json databaseId,headSha \
+                --jq ".[] | select(.headSha == \"$head_sha\") | .databaseId" | head -n 1)"
+              if [[ -n "$run_id" ]]; then break; fi
+              sleep 4
+            done
+            if [[ -z "$run_id" ]]; then
+              echo "No dispatched run found for $workflow"
+              exit 1
+            fi
+            gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
+          done
+
+      - name: Merge non-contested verified ledger update without bypass
+        if: github.event_name != 'pull_request' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh pr merge "${{ steps.pr.outputs.number }}" \
+            --repo "$GITHUB_REPOSITORY" \
+            --merge \
+            --delete-branch
+
+      - name: Record primary verification review queue
+        if: github.event_name != 'pull_request' && (steps.gate.outputs.review_count != '0' || steps.gate.outputs.contested_count != '0')
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="[prc-justice-trend-review] verified signal candidates require review"
+          body="Run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} produced ${{ steps.gate.outputs.review_count }} review-only and ${{ steps.gate.outputs.contested_count }} contested candidates. Contested signals are not auto-merged. Review the Artifact and any generated PR; do not bypass authentication, CAPTCHA/WAF, redirects, or collect secret operational details."
+          number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
+          if [[ -n "$number" ]]; then
+            gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
+          fi
 
       - name: Upload trend intelligence evidence
         if: always()
@@ -101,10 +282,13 @@ jobs:
           path: |
             prc-justice-capability-trend-validation.json
             prc-justice-trend-source-validation.json
+            prc-justice-primary-signal-validation.json
             prc-justice-trend-packet-validation.json
             prc-justice-trend-discovery-run.json
+            prc-justice-primary-verification-run.json
             prc-justice-trend-packet-run.json
             prc-justice-trend-discovery/
+            prc-justice-primary-verification/
             prc-justice-trend-packets/
           if-no-files-found: warn
           retention-days: 45
