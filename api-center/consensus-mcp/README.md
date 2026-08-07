@@ -21,9 +21,49 @@
 - 纯浏览器 Token Bridge：**不可用**；2026-08-07 实测注册与 token 端点没有可用 CORS
 - GitHub Actions Free 账号路径：**本地一次 PKCE 授权 → Repository Secret → runner 内 refresh → 临时 Bearer → MCP**
 
+## 只有安卓手机时
+
+可以直接在 Android 的 Termux 中完成，不需要电脑，也不需要手工复制 refresh token。
+
+仓库提供：
+
+`api-center/consensus-mcp/android_termux_setup.sh`
+
+该脚本会自动：
+
+1. 安装 Python、Git、GitHub CLI；
+2. 获取情报中心最新 `main`；
+3. 安装 Consensus MCP 固定依赖；
+4. 如 GitHub CLI 尚未登录，启动 GitHub 官方网页登录；
+5. 在 Termux 内监听 `127.0.0.1:8765` 并生成 Consensus PKCE 授权链接；
+6. 用户只需在同一台手机浏览器登录 Consensus Free 账号并同意授权；
+7. refresh token 只保存在手机本地临时文件中；
+8. 通过标准输入直接交给 `gh secret set CONSENSUS_MCP_REFRESH_TOKEN`；
+9. GitHub CLI 在本地加密 Secret 后上传；
+10. Secret 写入成功后删除手机本地 token 文件。
+
+手机端执行：
+
+```bash
+bash api-center/consensus-mcp/android_termux_setup.sh
+```
+
+如果手机还没有仓库，可以先在 Termux 中执行：
+
+```bash
+pkg update -y
+pkg install -y git
+cd ~
+git clone https://github.com/a15280020511/evidence-data-center.git
+cd evidence-data-center
+bash api-center/consensus-mcp/android_termux_setup.sh
+```
+
+全过程不要把 refresh token 发到聊天、Issue、PR 或普通文件中。
+
 ## 一次性 Free 账号授权
 
-这一步必须在可信电脑上执行，因为 Consensus 的 OAuth 需要浏览器交互，而且回调绑定 `127.0.0.1`。
+常规电脑路径如下。Consensus 的 OAuth 需要浏览器交互，而且回调绑定 `127.0.0.1`。
 
 安装依赖：
 
@@ -55,11 +95,11 @@ python api-center/consensus-mcp/oauth_bootstrap.py bootstrap
 python api-center/consensus-mcp/oauth_bootstrap.py bootstrap --no-browser
 ```
 
-终端会给出授权 URL，你在同一台电脑浏览器打开即可。
+终端会给出授权 URL，你在同一台设备浏览器打开即可。
 
 ## 写入 GitHub Secret
 
-授权完成后，仅在你自己的电脑上执行：
+授权完成后，仅在可信设备上执行：
 
 ```bash
 python api-center/consensus-mcp/oauth_bootstrap.py show-refresh-token
@@ -106,7 +146,7 @@ Access token 会先通过 GitHub `add-mask` 隐藏，只写入当前 runner 的 
 - 如果 Consensus 刷新时**不旋转** refresh token：自动调用可以长期工作；
 - 如果 Consensus 返回了**新的 refresh token**：`oauth_refresh.py` 会 **fail-closed**，不会把新 token 写进日志或 Artifact；需要重新跑本地 bootstrap 并更新 Secret。
 
-这一点必须用你的真实 Free 账号完成第一次授权后再实测，仓库不会预先假设官方一定采用稳定 refresh token。
+这一点必须用真实 Free 账号完成第一次授权后再实测，仓库不会预先假设官方一定采用稳定 refresh token。
 
 ## 免费额度
 
