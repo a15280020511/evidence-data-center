@@ -12,11 +12,7 @@
       "required_for_gate": true,
       "category": "present_web",
       "index_catalog": "https://index.commoncrawl.org/collinfo.json",
-      "probe_domains": [
-        "openalex.org",
-        "datacite.org",
-        "modelcontextprotocol.io"
-      ]
+      "probe_domains": ["openalex.org", "datacite.org", "modelcontextprotocol.io"]
     },
     "wayback": {
       "enabled": true,
@@ -24,11 +20,7 @@
       "category": "historical_web",
       "endpoint": "https://web.archive.org/cdx/search/cdx",
       "fallback_endpoint": "https://arquivo.pt/wayback/cdx",
-      "probe_domains": [
-        "openalex.org",
-        "datacite.org",
-        "modelcontextprotocol.io"
-      ]
+      "probe_domains": ["openalex.org", "datacite.org", "modelcontextprotocol.io"]
     },
     "gdelt": {
       "enabled": true,
@@ -38,14 +30,8 @@
       "fallback_feed": "https://data.gdeltproject.org/gdeltv3/web/ngrams/LASTUPDATE.TXT",
       "queries": [
         "artificial intelligence",
-        "最高人民法院",
-        "最高人民检察院",
-        "公安部 司法",
-        "中央纪委国家监委",
-        "司法部 行政复议",
-        "中国政法",
-        "中国海警 执法",
-        "国家移民管理局 典型案例"
+        "China court procuratorate police justice reform",
+        "China discipline inspection supervision law"
       ]
     },
     "reliefweb": {
@@ -61,20 +47,7 @@
       "category": "multilingual_entities",
       "request_delay_seconds": 0.4,
       "maxlag": 5,
-      "languages": [
-        "en",
-        "zh",
-        "ja",
-        "ko",
-        "fr",
-        "es",
-        "de",
-        "pt",
-        "ru",
-        "ar",
-        "hi",
-        "id"
-      ]
+      "languages": ["en", "zh", "ja", "ko", "fr", "es", "de", "pt", "ru", "ar", "hi", "id"]
     },
     "datacite": {
       "enabled": true,
@@ -86,16 +59,10 @@
         "remote sensing",
         "public procurement",
         "agent based modeling",
-        "China criminal justice",
-        "China electronic evidence",
-        "China procuratorial system",
-        "China supervision law",
-        "China forensic science"
+        "China criminal justice electronic evidence",
+        "China forensic science supervision law"
       ],
-      "fallback_parameters": {
-        "resource-type-id": "dataset",
-        "sort": "-updated"
-      }
+      "fallback_parameters": {"resource-type-id": "dataset", "sort": "-updated"}
     },
     "crossref": {
       "enabled": true,
@@ -106,12 +73,9 @@
         "causal inference",
         "remote sensing",
         "agent based modeling",
-        "China criminal procedure",
-        "China policing electronic evidence",
-        "China procuratorial reform",
-        "China discipline inspection supervision",
-        "China forensic science standards",
-        "China judicial reform"
+        "China criminal justice electronic evidence",
+        "China procuratorial judicial reform",
+        "China discipline inspection forensic science"
       ]
     },
     "pypi": {
@@ -143,10 +107,8 @@
         "causal inference",
         "agent based modeling",
         "open data Africa",
-        "China legal data API",
-        "legal research MCP",
-        "court case data MCP",
-        "forensic evidence open source"
+        "China legal data API MCP",
+        "legal research court case MCP"
       ]
     }
   },
