@@ -3,10 +3,18 @@ name: PRC Justice Cloudflare Derived Intelligence
 on:
   schedule:
     - cron: "25 4 * * *"
+  push:
+    branches: [main]
+    paths:
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-derived-intelligence-record.schema.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-intelligence-mesh.json"
+      - "api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare.py"
+      - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py"
+      - ".github/workflows/prc-justice-cloudflare-derived-intelligence.yml"
   workflow_dispatch:
     inputs:
       max_pages:
-        description: "Maximum PRIMARY_VERIFIED pages to transform"
+        description: "Maximum recent PRIMARY_VERIFIED pages to transform"
         required: false
         default: "6"
   pull_request:
@@ -37,6 +45,7 @@ jobs:
       MAX_PAGES: ${{ inputs.max_pages || '6' }}
       OUT_DIR: prc-justice-derived-intelligence
       LEDGER: api-center/prc-legal-investigative-intelligence/prc-justice-verified-signal-ledger.json
+      RECENT_HOURS: "30"
     steps:
       - name: Checkout repository
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -72,21 +81,40 @@ jobs:
           test ! -e "$OUT_DIR/derived-intelligence.jsonl"
           git diff --quiet
 
-      - name: Build PRIMARY_VERIFIED input JSONL
+      - name: Build recent PRIMARY_VERIFIED input JSONL
+        id: recent
         if: github.event_name != 'pull_request'
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import json
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os
+          from datetime import datetime, timedelta, timezone
           from pathlib import Path
-          ledger = json.loads(Path('api-center/prc-legal-investigative-intelligence/prc-justice-verified-signal-ledger.json').read_text(encoding='utf-8'))
-          rows = [row for row in ledger.get('events', []) if row.get('review_status') == 'PRIMARY_VERIFIED']
-          Path('/tmp/prc-justice-primary.jsonl').write_text(''.join(json.dumps(row, ensure_ascii=False, separators=(',', ':')) + '\n' for row in rows), encoding='utf-8')
-          print(json.dumps({'primary_verified_input_count': len(rows)}, ensure_ascii=False))
+
+          ledger = json.loads(Path(os.environ['LEDGER']).read_text(encoding='utf-8'))
+          cutoff = datetime.now(timezone.utc) - timedelta(hours=int(os.environ['RECENT_HOURS']))
+          rows = []
+          for row in ledger.get('events', []):
+              if row.get('review_status') != 'PRIMARY_VERIFIED':
+                  continue
+              retrieved = str(((row.get('source') or {}).get('retrieved_at')) or '')
+              try:
+                  stamp = datetime.fromisoformat(retrieved.replace('Z', '+00:00'))
+              except ValueError:
+                  continue
+              if stamp.tzinfo is None:
+                  stamp = stamp.replace(tzinfo=timezone.utc)
+              if stamp >= cutoff:
+                  rows.append(row)
+          Path('/tmp/prc-justice-primary.jsonl').write_text(
+              ''.join(json.dumps(row, ensure_ascii=False, separators=(',', ':')) + '\n' for row in rows),
+              encoding='utf-8',
+          )
+          print('recent_count=' + str(len(rows)))
           PY
 
-      - name: Transform verified public pages with Cloudflare managed AI
-        if: github.event_name != 'pull_request'
+      - name: Transform recent verified public pages with Cloudflare managed AI
+        if: github.event_name != 'pull_request' && steps.recent.outputs.recent_count != '0'
         run: |
           set -euo pipefail
           rm -rf "$OUT_DIR"
@@ -96,6 +124,31 @@ jobs:
             --max-pages "$MAX_PAGES" | tee prc-justice-cloudflare-transform-run.json
           python -m json.tool "$OUT_DIR/transform-receipt.json" >/dev/null
           python -m json.tool "$OUT_DIR/governance-hf-justice-export.json" >/dev/null
+
+      - name: Create empty-cycle receipt when no recent verified signals exist
+        if: github.event_name != 'pull_request' && steps.recent.outputs.recent_count == '0'
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT_DIR"
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row = {
+              'status': 'PRC_JUSTICE_DERIVED_NO_NEW_PRIMARY_SIGNALS',
+              'eligible_event_count': 0,
+              'selected_page_count': 0,
+              'record_count': 0,
+              'failure_count': 0,
+              'quota_exhausted': False,
+              'network_used': False,
+              'model_calls': 0,
+              'raw_source_text_persisted': False,
+              'raw_source_url_in_hf_export': False,
+              'raw_model_response_persisted': False,
+              'direct_huggingface_write': False,
+          }
+          Path('prc-justice-derived-intelligence/transform-receipt.json').write_text(json.dumps(row, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
 
       - name: Read governed handoff metadata
         id: handoff
@@ -110,11 +163,11 @@ jobs:
           print('record_count=' + str(receipt.get('record_count', 0)))
           print('model_calls=' + str(receipt.get('model_calls', 0)))
           print('quota_exhausted=' + ('true' if receipt.get('quota_exhausted') else 'false'))
-          print('export_sha256=' + hashlib.sha256(path.read_bytes()).hexdigest())
+          print('export_sha256=' + (hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ''))
           PY
 
       - name: Upload sanitized governance handoff artifact
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.handoff.outputs.record_count != '0'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: prc-justice-derived-${{ github.run_id }}
@@ -161,9 +214,11 @@ jobs:
         run: |
           {
             echo '## PRC Justice Cloudflare Derived Intelligence'
+            echo "- Recent PRIMARY_VERIFIED inputs: ${{ steps.recent.outputs.recent_count || '0' }}"
             echo "- Derived records: ${{ steps.handoff.outputs.record_count || '0' }}"
             echo "- Cloudflare model calls: ${{ steps.handoff.outputs.model_calls || '0' }}"
             echo "- Quota exhausted: ${{ steps.handoff.outputs.quota_exhausted || 'false' }}"
+            echo '- Reprocess window: last 30 hours only'
             echo '- Raw source text persisted: false'
             echo '- Raw source URL exported to HF: false'
             echo '- Raw model response persisted: false'
