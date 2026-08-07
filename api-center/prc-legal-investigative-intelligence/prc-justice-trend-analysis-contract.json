@@ -1,0 +1,158 @@
+{
+  "schema_version": "prc-justice-trend-analysis-contract-v1",
+  "reviewed_at": "2026-08-07",
+  "purpose": "定义司法能力与趋势情报的模型语义分析、计算中心量化分析以及治理中心跨中心路由合同。",
+  "architecture": {
+    "intelligence_center": "采集、验证、结构化并形成 evidence-linked signal events；不直接调用专家模型或计算中心。",
+    "governance_center": "唯一跨中心路由和验收平面。",
+    "expert_center": "仅对治理中心提供的证据包进行语义归一、趋势解释、理论变化归纳和新颖性判断；禁止联网和工具调用。",
+    "compute_center": "仅对治理中心提供的结构化数值包进行趋势、扩散、变化点、指数和置信区间计算；network=deny。"
+  },
+  "model_analysis_packet": {
+    "required_fields": [
+      "packet_id",
+      "time_window",
+      "subject_scope",
+      "signal_event_ids",
+      "evidence_cards",
+      "existing_capability_ids",
+      "allowed_tasks",
+      "forbidden_inferences"
+    ],
+    "allowed_tasks": [
+      "semantic_normalization",
+      "technology_alias_resolution",
+      "possible_new_capability_detection",
+      "cross_case_pattern_synthesis",
+      "capability_lifecycle_interpretation",
+      "practice_standard_change_interpretation",
+      "doctrine_shift_interpretation",
+      "enforcement_shift_interpretation",
+      "evidence_conflict_summary",
+      "uncertainty_explanation"
+    ],
+    "forbidden_inferences": [
+      "secret_internal_capability_inference",
+      "covert_surveillance_implementation_inference",
+      "target_selection_or_tracking_inference",
+      "surveillance_blind_spot_inference",
+      "investigation_evasion_advice",
+      "anti_forensics_advice",
+      "claiming_nationwide_deployment_from_single_case",
+      "claiming_fact_without_evidence_id"
+    ],
+    "response_contract": {
+      "required": ["packet_id","findings","unresolved_terms","conflicts","limitations"],
+      "finding_fields": [
+        "finding_id",
+        "finding_type",
+        "subject",
+        "direction",
+        "interpretation",
+        "supporting_evidence_ids",
+        "conflicting_evidence_ids",
+        "confidence",
+        "generalization_limit"
+      ],
+      "finding_types": ["CAPABILITY_CHANGE","TECHNOLOGY_TREND","PRACTICE_STANDARD_CHANGE","DOCTRINE_SHIFT","ENFORCEMENT_SHIFT","POSSIBLE_NEW_CAPABILITY"],
+      "confidence_levels": ["LOW","MEDIUM","MEDIUM_HIGH","HIGH"]
+    }
+  },
+  "justice_trend_numeric_pack": {
+    "required_fields": ["pack_id","as_of_date","time_windows_days","signal_rows","capability_rows","outcome_rows"],
+    "signal_row_fields": [
+      "event_id",
+      "event_date",
+      "institution_type",
+      "region",
+      "signal_type",
+      "capability_id",
+      "lifecycle_stage",
+      "source_primary",
+      "support_or_conflict",
+      "freshness_weight"
+    ],
+    "capability_row_fields": [
+      "capability_id",
+      "first_seen",
+      "latest_seen",
+      "primary_case_count",
+      "independent_institution_count",
+      "institution_type_count",
+      "region_count",
+      "standard_signal_count",
+      "training_signal_count",
+      "research_signal_count",
+      "procurement_signal_count",
+      "deployment_signal_count",
+      "judicial_outcome_support_count",
+      "conflict_count"
+    ],
+    "outcome_row_fields": [
+      "period",
+      "institution_type",
+      "region",
+      "legal_domain",
+      "case_type",
+      "case_volume",
+      "prosecution_count",
+      "non_prosecution_count",
+      "evidence_acceptance_count",
+      "evidence_exclusion_count",
+      "appeal_correction_count",
+      "supervision_count"
+    ],
+    "required_computations": [
+      "windowed_counts",
+      "growth_rates",
+      "change_point_detection",
+      "regional_diffusion",
+      "institutional_diffusion",
+      "network_centrality_where_applicable",
+      "CES",
+      "PSS",
+      "TMS",
+      "DI",
+      "DSI",
+      "ESI",
+      "confidence_intervals_where_data_supports"
+    ],
+    "deterministic_constraints": {
+      "no_network": true,
+      "no_raw_web_content": true,
+      "no_personal_data": true,
+      "missing_values_must_not_be_silently_imputed": true,
+      "all_indices_must_expose_input_counts": true
+    }
+  },
+  "index_semantics": {
+    "CES": "衡量公开现实能力证据强度，不等价于秘密能力、全国覆盖率或绝对能力水平。",
+    "PSS": "衡量公开实践标准是否形成稳定、可重复、经司法审查的模式。",
+    "TMS": "衡量近期技术信号、投入、部署、案件和跨机构扩散的动量。",
+    "DI": "衡量公开证据中的跨地区和跨机关扩散程度。",
+    "DSI": "衡量理论或司法政策从学术讨论向机构采纳、案例使用和正式规范转化的变化强度。",
+    "ESI": "衡量案件量、起诉不起诉、证据采信、二审再审纠正和监督等公开执行指标的变化强度。"
+  },
+  "trend_claim_gate": {
+    "minimum_requirements": [
+      "at_least_one_primary_or_authorized_evidence_source",
+      "time_window_explicit",
+      "supporting_evidence_ids_present",
+      "limitations_present",
+      "institution_and_region_scope_explicit"
+    ],
+    "high_confidence_requirements": [
+      "multiple_independent_primary_sources",
+      "cross_source_view_and_outcome_view_support_where_applicable",
+      "no_unresolved_material_conflict",
+      "fresh_evidence_within_relevant_window"
+    ],
+    "never_allowed": [
+      "single_news_item_equals_capability",
+      "course_title_equals_operational_deployment",
+      "procurement_intent_equals_deployed_capability",
+      "absence_of_case_equals_absence_of_capability",
+      "secret_capability_extrapolation"
+    ]
+  }
+}

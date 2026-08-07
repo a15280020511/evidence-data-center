@@ -1,0 +1,94 @@
+{
+  "schema_version": "prc-justice-trend-storage-contract-v1",
+  "reviewed_at": "2026-08-07",
+  "purpose": "将来源证据、结构化事件、模型解释和计算指标分层存储，防止把原始事实、模型推断和数值衍生物混为一体。",
+  "tiers": [
+    {
+      "tier_id": "source_receipt",
+      "owner": "intelligence-center",
+      "content": ["primary_source_url","publication_date","retrieved_at","content_fingerprint","source_class","bounded_extraction_receipt"],
+      "stores_full_copyrighted_page_by_default": false,
+      "mutable": false,
+      "purpose": "可复核来源与证据链"
+    },
+    {
+      "tier_id": "signal_event_store",
+      "owner": "intelligence-center",
+      "format": ["jsonl","parquet_artifact"],
+      "schema": "prc-justice-signal-event.schema.json",
+      "append_only": true,
+      "purpose": "长期保存法律、政策、培训、科研、标准、采购、部署、案件、结果、统计和理论等结构化事件"
+    },
+    {
+      "tier_id": "case_capability_ledger",
+      "owner": "intelligence-center",
+      "format": ["json"],
+      "artifact": "case-derived-investigative-capability-ledger.json",
+      "append_only_observation_history": true,
+      "purpose": "保存真实案件对公开高层能力的支持、冲突和验证等级"
+    },
+    {
+      "tier_id": "model_semantic_findings",
+      "owner": "governance-controlled-expert-output",
+      "format": ["json"],
+      "fact_status": "DERIVED_INTERPRETATION_NOT_PRIMARY_FACT",
+      "must_reference_evidence_ids": true,
+      "purpose": "保存语义归一、新颖性判断、理论变化和趋势解释"
+    },
+    {
+      "tier_id": "quantitative_trend_metrics",
+      "owner": "governance-controlled-compute-output",
+      "format": ["json","parquet_artifact"],
+      "fact_status": "DERIVED_METRIC",
+      "must_expose_inputs": true,
+      "purpose": "保存时间序列、增长率、扩散、变化点以及CES/PSS/TMS/DI/DSI/ESI"
+    },
+    {
+      "tier_id": "approved_trend_snapshot",
+      "owner": "intelligence-center-after-governance-approval",
+      "format": ["json"],
+      "versioned": true,
+      "purpose": "形成可查询的阶段性能力与趋势快照；不得覆盖历史冲突证据"
+    }
+  ],
+  "identity_keys": [
+    "event_id",
+    "capability_id",
+    "institution_type",
+    "institution_name",
+    "region",
+    "event_date",
+    "signal_type",
+    "source.content_fingerprint"
+  ],
+  "join_keys": [
+    "capability_id",
+    "institution_type",
+    "region",
+    "time_window",
+    "legal_domain",
+    "procedural_stage",
+    "evidence_id"
+  ],
+  "retention_rules": {
+    "source_receipts": "retain_for_reproducibility_subject_to_source_and_copyright_policy",
+    "signal_events": "retain_versioned_history",
+    "model_findings": "retain_with_model_and_prompt_contract_version",
+    "compute_metrics": "retain_with_input_snapshot_hash",
+    "conflicts": "never_silently_delete"
+  },
+  "data_boundary": {
+    "personal_targeting_data": false,
+    "secret_operational_details": false,
+    "credentials_or_private_endpoints": false,
+    "investigation_evasion_or_anti_forensics": false,
+    "raw_source_text_in_compute_pack": false,
+    "raw_source_text_in_model_packet": false
+  },
+  "database_guidance": {
+    "authoritative_long_term_store": "structured event store plus versioned ledgers, not model prose",
+    "repository_role": "schemas, compact ledgers, contracts, validators and immutable audit references",
+    "large_scale_runtime_storage": "artifact/parquet or approved database behind governance; do not commit large crawled corpora to git",
+    "numeric_baseline_rule": "only approved numeric aggregates may be exported to the compute baseline asset; raw legal/case text remains in intelligence evidence storage"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "schema_version": "prc-justice-trend-source-plan-v1",
+  "reviewed_at": "2026-08-07",
+  "purpose": "为能力、实践标准、技术趋势、法律理论与司法执行趋势提供分层监测计划。发现层可使用 Tavily/Exa 等现有检索器；事实确认必须回到公开或明确授权的一手来源。",
+  "cadence": {
+    "daily": ["case_practice","judicial_outcome","law_and_norm","policy_and_strategy"],
+    "weekly": ["standard","education_and_training","research","procurement_and_budget","talent_and_recruitment","infrastructure_and_deployment","statistics_and_report","doctrine_and_commentary"],
+    "monthly": ["full_cross_source_revalidation","lifecycle_recalculation","doctrine_execution_gap_review"]
+  },
+  "discovery_engines": ["tavily","exa"],
+  "source_confirmation_rule": "search engine result is discovery evidence only; trend facts require primary or explicitly authorized source verification",
+  "local_source_families": [
+    {
+      "source_id": "china-government-procurement-public",
+      "name": "中国政府采购网公开采购、采购意向、中标与合同信息",
+      "hosts": ["ccgp.gov.cn"],
+      "signal_types": ["procurement_and_budget","infrastructure_and_deployment"],
+      "access_class": "A1_A2_PUBLIC_OFFICIAL_PROCUREMENT",
+      "retrieval": "tavily_or_exa_discovery_then_direct_official_public_page_verification",
+      "primary_fact_rule": "only direct public ccgp.gov.cn page or explicitly linked official procuring-agency page can create PRIMARY_VERIFIED event",
+      "authenticated_or_internal_api_assumed": false,
+      "automatic_login": false,
+      "captcha_or_waf_bypass": false
+    }
+  ],
+  "signal_plans": [
+    {
+      "signal_type": "law_and_norm",
+      "priority": "CRITICAL",
+      "source_families": ["npc-national-law-database","spc-official","spp-guiding-cases","mps-public-rules-news","moj-national-regulations","joint-interagency-criminal-justice-rules"],
+      "query_templates": ["中国 司法解释 证据规则 新规 修订 公安 检察 法院","电子数据 证据 司法解释 公安 程序规定 修订"]
+    },
+    {
+      "signal_type": "policy_and_strategy",
+      "priority": "HIGH",
+      "source_families": ["central-politico-legal-commission-public","spc-official","spp-official","mps-public-rules-news","justice-administration-academy"],
+      "query_templates": ["法院 检察 公安 数字化 智能化 工作部署 2026","公检法 工作报告 技术 建设 数字 司法"]
+    },
+    {
+      "signal_type": "education_and_training",
+      "priority": "HIGH",
+      "source_families": ["national-judge-college-and-case-research","national-prosecutor-college-and-research","mps-direct-police-universities","justice-administration-academy","national-law-school-research-family"],
+      "query_templates": ["公安学院 网络犯罪侦查 电子数据取证 培训 课程","法官学院 检察官学院 证据 数字司法 培训 课程"]
+    },
+    {
+      "signal_type": "research",
+      "priority": "HIGH",
+      "source_families": ["mps-direct-police-universities","spp-procuratorial-technology","judicial-appraisal-science-family","china-law-society-network","national-law-school-research-family"],
+      "query_templates": ["刑事技术 电子数据 检察技术 科研 项目 课题","数字司法 证据科学 网络犯罪侦查 研究 项目"]
+    },
+    {
+      "signal_type": "standard",
+      "priority": "CRITICAL",
+      "source_families": ["mps-standards-and-tc179","judicial-appraisal-science-family","public-security-electronic-evidence-rules"],
+      "query_templates": ["GA/T 电子物证 刑事技术 标准 发布 修订","司法鉴定 电子数据 标准 发布 修订 废止"]
+    },
+    {
+      "signal_type": "procurement_and_budget",
+      "priority": "CRITICAL",
+      "source_families": ["china-government-procurement-public","spc-official","spp-official","mps-public-rules-news","moj-national-regulations"],
+      "allowed_hosts": ["ccgp.gov.cn","court.gov.cn","spp.gov.cn","mps.gov.cn","moj.gov.cn"],
+      "query_templates": ["site:ccgp.gov.cn 公安 电子数据 刑事技术 大数据 采购","site:ccgp.gov.cn 检察 技术 电子数据 数字检察 采购","site:ccgp.gov.cn 法院 数字法院 智能审判 采购"]
+    },
+    {
+      "signal_type": "talent_and_recruitment",
+      "priority": "MEDIUM_HIGH",
+      "source_families": ["mps-direct-police-universities","spc-official","spp-official","judicial-appraisal-science-family","local-public-security-official-family"],
+      "query_templates": ["公安 检察 法院 电子数据 网络安全 算法 招聘 技术岗位","司法鉴定 刑事技术 数据分析 招聘 人才"]
+    },
+    {
+      "signal_type": "infrastructure_and_deployment",
+      "priority": "CRITICAL",
+      "source_families": ["public-security-public-case-family","spp-procuratorial-technology","court-disclosure-and-case-platform-family","china-government-procurement-public"],
+      "query_templates": ["公安 技术中心 实验室 数据平台 建成 上线 试点","检察 数字检察 技术中心 模型平台 上线","法院 数字法院 智能辅助 系统 上线 试点"]
+    },
+    {
+      "signal_type": "case_practice",
+      "priority": "CRITICAL",
+      "source_families": ["yuandian-spc-spp-case-outcome-family","court-disclosure-and-case-platform-family","procuratorate-disclosure-and-case-family","public-security-public-case-family","ccdi-nsc-public-system","discipline-supervision-local-family"],
+      "query_templates": ["典型案例 电子数据 技术性证据审查 网络犯罪","参考案例 电子数据 证据链 技术审查"]
+    },
+    {
+      "signal_type": "judicial_outcome",
+      "priority": "CRITICAL",
+      "source_families": ["spc-case-library","court-disclosure-and-case-platform-family","spp-guiding-cases","procuratorate-disclosure-and-case-family"],
+      "query_templates": ["电子数据 不予采信 非法证据排除 二审 再审","技术性证据 鉴定意见 采信 排除 检察监督"]
+    },
+    {
+      "signal_type": "statistics_and_report",
+      "priority": "HIGH",
+      "source_families": ["spc-official","spp-official","mps-public-rules-news","moj-national-regulations","central-politico-legal-commission-public"],
+      "query_templates": ["最高法 工作报告 数字法院 案件 数据 2026","最高检 工作报告 数字检察 大数据监督 模型 2026","公安 工作报告 网络犯罪 刑事技术 数据 2026"]
+    },
+    {
+      "signal_type": "doctrine_and_commentary",
+      "priority": "HIGH",
+      "source_families": ["china-law-society-network","spc-case-research-media-family","spp-theory-research-institute","procuratorial-media-publication-family","national-law-school-research-family"],
+      "query_templates": ["电子数据 证据 实质审查 理论 司法实践","数字司法 人工智能 证据规则 裁判 理论","检察理论 技术性证据审查 数字检察"]
+    }
+  ],
+  "cross_source_rules": [
+    "training_signal_alone_never_equals_operational_capability",
+    "research_signal_alone_never_equals_operational_capability",
+    "procurement_intent_alone_never_equals_deployment",
+    "deployment_announcement_requires_case_or_outcome_evidence_for_practice_confirmation",
+    "case_practice_requires_primary_source_for_automatic_absorption",
+    "judicial_outcome_can_confirm_or_downgrade_practice_inference",
+    "standard_change_triggers_revalidation_of_related_capabilities",
+    "doctrine_claim_must_distinguish_academic_discussion_from_formal_rule"
+  ]
+}

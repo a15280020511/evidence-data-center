@@ -1,0 +1,110 @@
+name: PRC Justice Trend Intelligence Cycle
+
+on:
+  schedule:
+    - cron: "50 3 * * *"
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "Trend discovery profile"
+        required: false
+        default: "auto"
+        type: choice
+        options: [auto, daily, weekly]
+  pull_request:
+    paths:
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-capability-trend-system.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-signal-event.schema.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-analysis-contract.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-source-plan.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-storage-contract.json"
+      - "api-center/prc-legal-investigative-intelligence/discover_prc_justice_trend_signals.py"
+      - "api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py"
+      - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py"
+      - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py"
+      - ".github/workflows/prc-justice-trend-intelligence-cycle.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prc-justice-trend-intelligence-${{ github.event_name == 'pull_request' && github.ref || 'scheduled-main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  trend-cycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+      PROFILE: ${{ github.event.inputs.profile || 'auto' }}
+      DISCOVERY_DIR: prc-justice-trend-discovery
+      PACKET_DIR: prc-justice-trend-packets
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+
+      - name: Validate contracts and compile cycle
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            api-center/prc-legal-investigative-intelligence/discover_prc_justice_trend_signals.py \
+            api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py \
+            api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py \
+            api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py
+          python api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py | tee prc-justice-capability-trend-validation.json
+          python api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py | tee prc-justice-trend-source-validation.json
+          python api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py \
+            --output-dir "$PACKET_DIR" \
+            --as-of 2026-08-07 | tee prc-justice-trend-packet-validation.json
+          git diff --check
+
+      - name: Stop after zero-network pull request validation
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          python -m json.tool "$PACKET_DIR/build-receipt.json" >/dev/null
+          test "$(python -c 'import json; print(json.load(open("prc-justice-trend-packets/build-receipt.json"))["network_used"])')" = "False"
+
+      - name: Discover bounded public trend signals
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          rm -rf "$DISCOVERY_DIR" "$PACKET_DIR"
+          python api-center/prc-legal-investigative-intelligence/discover_prc_justice_trend_signals.py \
+            --profile "$PROFILE" \
+            --output-dir "$DISCOVERY_DIR" | tee prc-justice-trend-discovery-run.json
+
+      - name: Build governed model and compute packets
+        if: github.event_name != 'pull_request'
+        run: |
+          set -euo pipefail
+          python api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py \
+            --signal-events "$DISCOVERY_DIR/discovered-signal-events.jsonl" \
+            --output-dir "$PACKET_DIR" | tee prc-justice-trend-packet-run.json
+          python -m json.tool "$DISCOVERY_DIR/discovery-report.json" >/dev/null
+          python -m json.tool "$PACKET_DIR/model-analysis-packet.json" >/dev/null
+          python -m json.tool "$PACKET_DIR/justice-trend-numeric-pack.json" >/dev/null
+          python -m json.tool "$PACKET_DIR/build-receipt.json" >/dev/null
+
+      - name: Upload trend intelligence evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: prc-justice-trend-intelligence-${{ github.run_id }}
+          path: |
+            prc-justice-capability-trend-validation.json
+            prc-justice-trend-source-validation.json
+            prc-justice-trend-packet-validation.json
+            prc-justice-trend-discovery-run.json
+            prc-justice-trend-packet-run.json
+            prc-justice-trend-discovery/
+            prc-justice-trend-packets/
+          if-no-files-found: warn
+          retention-days: 45

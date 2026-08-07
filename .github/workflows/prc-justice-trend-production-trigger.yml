@@ -1,0 +1,35 @@
+name: PRC Justice Trend Production Trigger
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-capability-trend-system.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-signal-event.schema.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-analysis-contract.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-source-plan.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-storage-contract.json"
+      - "api-center/prc-legal-investigative-intelligence/discover_prc_justice_trend_signals.py"
+      - "api-center/prc-legal-investigative-intelligence/build_prc_justice_trend_packets.py"
+      - ".github/workflows/prc-justice-trend-intelligence-cycle.yml"
+      - ".github/workflows/prc-justice-trend-production-trigger.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  dispatch-live-trend-cycle:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Dispatch one bounded daily production cycle
+        run: |
+          set -euo pipefail
+          gh workflow run prc-justice-trend-intelligence-cycle.yml \
+            --repo "$GITHUB_REPOSITORY" \
+            --ref main \
+            -f profile=daily
