@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import ipaddress
 import math
 import json
@@ -32,6 +33,7 @@ SAFE_ENV_KEYS = (
 ENV_NAME_RE = re.compile(r"^[A-Z][A-Z0-9_]{2,127}$")
 TRANSIENT_HTTP = {408, 425, 500, 502, 503, 504}
 SOURCE_SIDE_HARD_STOP_HTTP = {401, 403, 429}
+PRC_LOCAL_EXECUTION_MODE = "local-prc-open"
 
 
 def utc_now() -> str:
@@ -330,11 +332,50 @@ def validate_gateway_base_url(base_url: str, mode: str) -> str:
     return base_url.rstrip("/")
 
 
+def _plan_execution_modes(plan: Mapping[str, Any]) -> set[str]:
+    rows = plan.get("requests") if isinstance(plan, Mapping) else None
+    if not isinstance(rows, list):
+        return set()
+    return {
+        str(row.get("execution_mode") or "gateway")
+        for row in rows
+        if isinstance(row, Mapping)
+    }
+
+
+def _load_prc_local_bridge():
+    path = Path(__file__).resolve().parent / "prc-open-intelligence/generic_bridge.py"
+    spec = importlib.util.spec_from_file_location("prc_open_generic_bridge", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load PRC open-intelligence generic bridge")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def resolve_mode(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     remote_url = str(os.getenv("API_GATEWAY_BASE_URL") or "").strip()
     remote_token = str(os.getenv("API_GATEWAY_AUTH_TOKEN") or "").strip()
     required = [str(item) for item in plan.get("required_secret_environment_variables", [])]
+    execution_modes = _plan_execution_modes(plan)
     result: dict[str, Any]
+    if PRC_LOCAL_EXECUTION_MODE in execution_modes:
+        if execution_modes != {PRC_LOCAL_EXECUTION_MODE}:
+            raise ValueError("PRC local intelligence requests cannot be mixed with gateway requests")
+        if required:
+            raise ValueError("PRC local intelligence mode must not require Repository Secrets")
+        result = {
+            "mode": PRC_LOCAL_EXECUTION_MODE,
+            "base_url": "",
+            "reason": "governance-compatible local execution of approved zero-key PRC providers",
+            "required_secret_count": 0,
+            "secret_source": "none",
+        }
+        write_json(output_dir / "gateway-mode.json", result)
+        for name in ("mode", "base_url", "reason"):
+            write_output(name, result.get(name, ""))
+        write_output("env_file", "")
+        return result
     if remote_url and remote_token:
         result = {
             "mode": "remote",
@@ -580,6 +621,57 @@ def _fetch_one(
     }
 
 
+def _execute_prc_local_one(
+    *,
+    request_row: Mapping[str, Any],
+    timeout_seconds: int,
+    max_bytes: int,
+) -> dict[str, Any]:
+    started = time.perf_counter()
+    bridge = _load_prc_local_bridge()
+    outcome = bridge.execute_request(
+        str(request_row["connector_id"]),
+        dict(request_row.get("parameters") or {}),
+        timeout_seconds=timeout_seconds,
+        max_response_bytes=max_bytes,
+        allow_empty=bool(request_row.get("allow_empty", False)),
+    )
+    metadata = (
+        outcome.get("upstream_metadata")
+        if isinstance(outcome.get("upstream_metadata"), Mapping)
+        else {}
+    )
+    attempt_count = int(metadata.get("request_count") or 1)
+    return {
+        "request_id": str(request_row["request_id"]),
+        "connector_id": str(request_row["connector_id"]),
+        "connector_sha256": str(request_row["connector_sha256"]),
+        "endpoint": str(request_row["endpoint"]),
+        "parameters": dict(request_row.get("parameters") or {}),
+        "observed_at": utc_now(),
+        "http_status": metadata.get("http_status"),
+        "response_headers": {},
+        "attempts": [
+            {
+                "mode": PRC_LOCAL_EXECUTION_MODE,
+                "elapsed_seconds": round(time.perf_counter() - started, 6),
+            }
+        ],
+        "attempt_count": attempt_count,
+        "source_side_hard_stop": bool(outcome.get("source_side_hard_stop")),
+        "state": str(outcome.get("state") or "upstream_error"),
+        "success": bool(outcome.get("success")),
+        "business_status": f"{outcome.get('provider')}/{outcome.get('operation')}",
+        "business_code": outcome.get("error_type"),
+        "message": str(outcome.get("message") or ""),
+        "data_present": bool(outcome.get("data_present")),
+        "quality": {"blocking_failure": False, "local_prc_open": True},
+        "response": outcome.get("response"),
+        "upstream_metadata": dict(metadata),
+        "error_type": outcome.get("error_type"),
+    }
+
+
 def _diagnostics(
     *,
     status: str,
@@ -622,6 +714,8 @@ def _diagnostics(
             "source_side_hard_stop_http": sorted(SOURCE_SIDE_HARD_STOP_HTTP),
             "automatic_429_retry_allowed": False,
             "environment_allowlist": [key.lower() for key in SAFE_ENV_KEYS],
+            "local_prc_open_execution": gateway_mode == PRC_LOCAL_EXECUTION_MODE,
+            "local_prc_open_secrets_required": 0,
         },
     }
 
@@ -654,6 +748,43 @@ def execute(plan_path: Path, output_dir: Path) -> int:
             "message": str(os.getenv("API_GATEWAY_BLOCK_REASON") or "no usable gateway mode"),
             "retryable": False,
         }
+    elif mode == PRC_LOCAL_EXECUTION_MODE:
+        acceptance = dict(plan["acceptance"])
+        results = [
+            _execute_prc_local_one(
+                request_row=dict(row),
+                timeout_seconds=int(acceptance["timeout_seconds"]),
+                max_bytes=int(acceptance["max_response_bytes_per_request"]),
+            )
+            for row in plan["requests"]
+        ]
+        successful = sum(bool(item["success"]) for item in results)
+        required = int(acceptance["minimum_successful_requests"])
+        if successful == len(results):
+            status = "API_COMPLETED"
+        elif successful >= required:
+            status = "API_PARTIAL"
+        else:
+            status = "API_FAILED"
+        failed = next((item for item in results if not item["success"]), None)
+        primary_failure = (
+            {
+                "code": "NONE",
+                "stage": "complete",
+                "message": "",
+                "retryable": False,
+            }
+            if status == "API_COMPLETED"
+            else {
+                "code": f"API_REQUEST_{str((failed or {}).get('state') or 'FAILED').upper()}",
+                "stage": "execute_requests",
+                "message": str(
+                    (failed or {}).get("message") or "one or more PRC local requests failed"
+                ),
+                "request_id": (failed or {}).get("request_id"),
+                "retryable": False,
+            }
+        )
     else:
         base_url = validate_gateway_base_url(base_url, mode)
         acceptance = dict(plan["acceptance"])
