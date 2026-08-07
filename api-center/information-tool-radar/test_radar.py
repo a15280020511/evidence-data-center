@@ -37,6 +37,23 @@ def main() -> int:
     assert len(archive_rows) == 2
     assert archive_rows[1]["original"].endswith("/b")
 
+    eonet_result = radar.AdapterResult("reliefweb", "global_events")
+    radar_v4._append_eonet_candidates(
+        eonet_result,
+        [{
+            "id": "EONET_TEST",
+            "title": "Example natural event",
+            "link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_TEST",
+            "closed": None,
+            "categories": [{"id": "wildfires", "title": "Wildfires"}],
+            "sources": [{"id": "TEST", "url": "https://example.org/event"}],
+            "geometry": [{"date": "2026-08-07T00:00:00Z", "type": "Point", "coordinates": [0, 0]}],
+        }],
+        10,
+    )
+    assert len(eonet_result.candidates) == 1
+    assert eonet_result.candidates[0]["evidence"]["event_backend"] == "nasa-eonet"
+
     results = [
         radar.AdapterResult(
             name="common_crawl",
@@ -99,6 +116,7 @@ def main() -> int:
         "deduplication": "passed",
         "fallback_manifest": "passed",
         "archive_jsonl": "passed",
+        "eonet_fallback_mapping": "passed",
         "required_gate": "passed",
         "optional_failure_visibility": "passed",
         "safety_invariants": "passed"

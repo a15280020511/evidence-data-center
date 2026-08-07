@@ -25,3 +25,6 @@ jobs:
       - name: Validate catalog and all local operations
         working-directory: api-center/prc-legal-investigative-intelligence
         run: python validate_prc_legal_investigative.py
+      - name: Validate complete PRC justice node DAG and monitoring registry
+        working-directory: api-center/prc-legal-investigative-intelligence
+        run: python validate_prc_justice_complete_coverage.py

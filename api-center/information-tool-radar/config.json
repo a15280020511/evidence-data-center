@@ -12,11 +12,7 @@
       "required_for_gate": true,
       "category": "present_web",
       "index_catalog": "https://index.commoncrawl.org/collinfo.json",
-      "probe_domains": [
-        "openalex.org",
-        "datacite.org",
-        "modelcontextprotocol.io"
-      ]
+      "probe_domains": ["openalex.org", "datacite.org", "modelcontextprotocol.io"]
     },
     "wayback": {
       "enabled": true,
@@ -24,11 +20,7 @@
       "category": "historical_web",
       "endpoint": "https://web.archive.org/cdx/search/cdx",
       "fallback_endpoint": "https://arquivo.pt/wayback/cdx",
-      "probe_domains": [
-        "openalex.org",
-        "datacite.org",
-        "modelcontextprotocol.io"
-      ]
+      "probe_domains": ["openalex.org", "datacite.org", "modelcontextprotocol.io"]
     },
     "gdelt": {
       "enabled": true,
@@ -37,7 +29,9 @@
       "endpoint": "https://api.gdeltproject.org/api/v2/doc/doc",
       "fallback_feed": "https://data.gdeltproject.org/gdeltv3/web/ngrams/LASTUPDATE.TXT",
       "queries": [
-        "artificial intelligence"
+        "artificial intelligence",
+        "China court procuratorate police justice reform",
+        "China discipline inspection supervision law"
       ]
     },
     "reliefweb": {
@@ -45,6 +39,7 @@
       "required_for_gate": true,
       "category": "global_events",
       "endpoint": "https://api.reliefweb.int/v2/disasters",
+      "fallback_endpoint": "https://eonet.gsfc.nasa.gov/api/v3/events",
       "appname": "evidence-data-center"
     },
     "wikimedia": {
@@ -53,20 +48,7 @@
       "category": "multilingual_entities",
       "request_delay_seconds": 0.4,
       "maxlag": 5,
-      "languages": [
-        "en",
-        "zh",
-        "ja",
-        "ko",
-        "fr",
-        "es",
-        "de",
-        "pt",
-        "ru",
-        "ar",
-        "hi",
-        "id"
-      ]
+      "languages": ["en", "zh", "ja", "ko", "fr", "es", "de", "pt", "ru", "ar", "hi", "id"]
     },
     "datacite": {
       "enabled": true,
@@ -77,12 +59,11 @@
         "causal inference",
         "remote sensing",
         "public procurement",
-        "agent based modeling"
+        "agent based modeling",
+        "China criminal justice electronic evidence",
+        "China forensic science supervision law"
       ],
-      "fallback_parameters": {
-        "resource-type-id": "dataset",
-        "sort": "-updated"
-      }
+      "fallback_parameters": {"resource-type-id": "dataset", "sort": "-updated"}
     },
     "crossref": {
       "enabled": true,
@@ -92,7 +73,10 @@
       "queries": [
         "causal inference",
         "remote sensing",
-        "agent based modeling"
+        "agent based modeling",
+        "China criminal justice electronic evidence",
+        "China procuratorial judicial reform",
+        "China discipline inspection forensic science"
       ]
     },
     "pypi": {
@@ -107,18 +91,9 @@
       "category": "software_security",
       "endpoint": "https://api.osv.dev/v1/querybatch",
       "packages": [
-        {
-          "ecosystem": "PyPI",
-          "name": "requests"
-        },
-        {
-          "ecosystem": "PyPI",
-          "name": "numpy"
-        },
-        {
-          "ecosystem": "npm",
-          "name": "axios"
-        }
+        {"ecosystem": "PyPI", "name": "requests"},
+        {"ecosystem": "PyPI", "name": "numpy"},
+        {"ecosystem": "npm", "name": "axios"}
       ]
     },
     "github": {
@@ -132,7 +107,9 @@
         "entity resolution",
         "causal inference",
         "agent based modeling",
-        "open data Africa"
+        "open data Africa",
+        "China legal data API MCP",
+        "legal research court case MCP"
       ]
     }
   },

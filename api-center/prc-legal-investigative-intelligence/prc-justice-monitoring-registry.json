@@ -1,0 +1,125 @@
+{
+  "schema_version": "prc-justice-monitoring-registry-v1",
+  "reviewed_at": "2026-08-07",
+  "jurisdiction": "PRC_MAINLAND",
+  "purpose": "持续监控中国大陆公开或明确授权的政法、司法、纪检监察制度、培训、标准、科研和案例变化，并把变化映射回完整司法节点DAG。",
+  "monitoring_policy": {
+    "mode": "bounded_read_only_public_source_monitoring",
+    "daily_priority_sources_max": 20,
+    "concurrency": 1,
+    "minimum_interval_seconds_for_prc_primary_hosts": 10,
+    "automatic_retry": false,
+    "automatic_login": false,
+    "captcha_solving": false,
+    "waf_bypass": false,
+    "hidden_api_reverse_engineering": false,
+    "stop_on": ["401", "403", "429", "login_required", "captcha", "waf", "provider_denial", "terms_or_authorization_uncertainty"],
+    "change_detection": ["publication_date", "title", "document_identifier", "effective_date", "status", "content_fingerprint", "source_url"],
+    "cadence": {
+      "A_DAILY": "国家法源、两高、公安、司法部、纪委监委、政法委及关键专项执法公开更新",
+      "B_3DAY": "培训、技术标准、司法鉴定、专业媒体与地方重点来源",
+      "C_WEEKLY": "全国地方来源族、院校科研、专业期刊、学术索引完整扫描"
+    },
+    "primary_source_rule": "搜索引擎、新闻聚合和学术索引只负责发现；重大事实必须回到一手官方来源或原始论文/案例核验。"
+  },
+  "source_groups": [
+    {
+      "group_id": "national_normative",
+      "cadence": "A_DAILY",
+      "sources": [
+        {"source_id":"npc-national-law-database","name":"国家法律法规数据库","hosts":["flk.npc.gov.cn"],"access":"public_search_database","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"npc-official-legislation","name":"全国人大及其常委会","hosts":["npc.gov.cn"],"access":"public_html_pdf","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"state-council-gazette","name":"国务院公报/中国政府网","hosts":["gov.cn"],"access":"public_html_pdf","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"moj-regulation-rulemaking","name":"司法部行政法规、规章与立法征求意见","hosts":["moj.gov.cn","xzfg.moj.gov.cn"],"access":"public_html_search","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"}
+      ]
+    },
+    {
+      "group_id": "courts",
+      "cadence": "A_DAILY",
+      "sources": [
+        {"source_id":"spc-official","name":"最高人民法院","hosts":["court.gov.cn"],"access":"public_html_pdf","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"spc-gazette","name":"最高人民法院公报","hosts":["gongbao.court.gov.cn"],"access":"public_search_document","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"spc-case-library","name":"人民法院案例库","hosts":["rmfyalk.court.gov.cn"],"access":"bounded_public_search","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"court-public-platform-family","name":"裁判文书、庭审、流程、执行、公告、破产及专项审判公开平台族","hosts":["court.gov.cn"],"access":"public_or_conditional_search","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API","auto_login":false},
+        {"source_id":"special-and-local-court-family","name":"军事/海事/知识产权/金融/互联网/铁路运输/兵团及地方各级法院公开来源族","hosts":["court.gov.cn","gov.cn"],"access":"official_discovery_then_primary_site","route":"tavily_or_exa_then_web-retrieval"}
+      ]
+    },
+    {
+      "group_id": "procuratorates",
+      "cadence": "A_DAILY",
+      "sources": [
+        {"source_id":"spp-official","name":"最高人民检察院","hosts":["spp.gov.cn"],"access":"public_html_pdf","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"spp-case-family","name":"指导性案例、典型案例、检察技术案例","hosts":["spp.gov.cn"],"access":"public_case_document","route":"web-retrieval"},
+        {"source_id":"12309-public","name":"12309中国检察网公开信息","hosts":["12309.gov.cn"],"access":"public_plus_authenticated_party_services","route":"web-retrieval","auto_login":false,"official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"special-and-local-procuratorate-family","name":"军事/兵团及地方各级检察机关公开来源族","hosts":["spp.gov.cn","gov.cn"],"access":"official_discovery_then_primary_site","route":"tavily_or_exa_then_web-retrieval"}
+      ]
+    },
+    {
+      "group_id": "public_security_and_forensics",
+      "cadence": "A_DAILY",
+      "sources": [
+        {"source_id":"mps-official","name":"公安部公开法规、政策、新闻及业务材料","hosts":["mps.gov.cn"],"access":"public_html_pdf","route":"web-retrieval"},
+        {"source_id":"mps-standards","name":"公安标准化信息服务平台","hosts":["ywtb.mps.gov.cn"],"access":"public_search_database","route":"bounded_web_search","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"tc179","name":"全国刑事技术标准化技术委员会及分技术委员会","hosts":["ywtb.mps.gov.cn","std.samr.gov.cn"],"access":"public_standard_metadata","route":"web-retrieval"},
+        {"source_id":"mps-forensic-research","name":"公安刑事技术/物证鉴定公开科研与标准来源","hosts":["mps.gov.cn","ywtb.mps.gov.cn","std.samr.gov.cn"],"access":"public_metadata_document","route":"web-retrieval"},
+        {"source_id":"local-public-security-family","name":"省市县公安机关公开法规、通报、案例与业务来源族","hosts":["mps.gov.cn","gov.cn"],"access":"official_discovery_then_primary_site","route":"tavily_or_exa_then_web-retrieval"}
+      ]
+    },
+    {
+      "group_id": "discipline_supervision",
+      "cadence": "A_DAILY",
+      "sources": [
+        {"source_id":"ccdi-nsc","name":"中央纪委国家监委","hosts":["ccdi.gov.cn"],"access":"public_html_pdf","route":"web-retrieval","official_api_status":"NO_DOCUMENTED_GENERAL_PUBLIC_API"},
+        {"source_id":"party-regulation-family","name":"党内法规、纪律处分、巡视巡察与监督执纪公开来源","hosts":["12371.cn","ccdi.gov.cn","gov.cn"],"access":"public_normative","route":"web-retrieval"},
+        {"source_id":"discipline-training","name":"中国纪检监察学院、统编教材、公开培训与研究","hosts":["ccdi.gov.cn","edu.cn"],"access":"public_metadata_open_material","route":"web-retrieval"},
+        {"source_id":"local-discipline-supervision-family","name":"省市县纪委监委和巡视巡察公开来源族","hosts":["ccdi.gov.cn","gov.cn"],"access":"official_discovery_then_primary_site","route":"tavily_or_exa_then_web-retrieval"}
+      ]
+    },
+    {
+      "group_id": "justice_administration_and_remedies",
+      "cadence": "A_DAILY",
+      "sources": [
+        {"source_id":"moj-official","name":"司法部","hosts":["moj.gov.cn"],"access":"public_html_pdf","route":"web-retrieval"},
+        {"source_id":"12348-case-service","name":"12348及司法行政案例/公共法律服务","hosts":["12348.gov.cn","moj.gov.cn"],"access":"public_case_service","route":"web-retrieval"},
+        {"source_id":"administrative-reconsideration","name":"全国行政复议公开服务与案例","hosts":["xzfy.moj.gov.cn","moj.gov.cn"],"access":"public_plus_application_service","route":"web-retrieval","auto_login_or_submission":false},
+        {"source_id":"forensic-science-justice-admin","name":"司法鉴定科学研究、规范、能力验证及公开案例","hosts":["ssfjd.com","ssfjd.cn","moj.gov.cn"],"access":"public_metadata_document","route":"web-retrieval"}
+      ]
+    },
+    {
+      "group_id": "politico_legal_and_specialized_enforcement",
+      "cadence": "A_DAILY",
+      "sources": [
+        {"source_id":"central-politico-legal","name":"中央政法委/中国长安网","hosts":["chinapeace.gov.cn"],"access":"public_html","route":"web-retrieval"},
+        {"source_id":"state-security-public-law","name":"国家安全机关公开法治材料","hosts":["12339.gov.cn","npc.gov.cn","gov.cn"],"access":"public_law_policy_only","route":"web-retrieval","reporting_submission":false},
+        {"source_id":"coast-guard","name":"中国海警公开法律、执法规则、工作与案例","hosts":["ccg.gov.cn"],"access":"public_html","route":"web-retrieval"},
+        {"source_id":"customs-anti-smuggling","name":"海关缉私公开法源、职责与案件","hosts":["customs.gov.cn"],"access":"public_html","route":"web-retrieval"},
+        {"source_id":"immigration-border","name":"国家移民管理局公开执法司法意见、典型案件与业务材料","hosts":["nia.gov.cn"],"access":"public_html","route":"web-retrieval"}
+      ]
+    },
+    {
+      "group_id": "education_research_theory",
+      "cadence": "C_WEEKLY",
+      "sources": [
+        {"source_id":"judge-training","name":"国家法官学院/司法案例研究院/法官培训公开元数据","hosts":["court.gov.cn","peixun.court.gov.cn"],"access":"public_metadata_only","route":"web-retrieval","auto_login":false},
+        {"source_id":"prosecutor-training","name":"国家检察官学院、检察理论研究和检察技术","hosts":["spp.gov.cn"],"access":"public_metadata_document","route":"web-retrieval"},
+        {"source_id":"police-academy-family","name":"公安部直属及全国公安院校公开专业、课程、培训、科研与学报","hosts":["mps.gov.cn","moe.gov.cn","edu.cn"],"access":"official_school_metadata_open_material","route":"tavily_or_exa_then_web-retrieval"},
+        {"source_id":"law-school-family","name":"全国政法院校、重点法学院、证据科学/刑事司法/监察研究机构","hosts":["moe.gov.cn","edu.cn"],"access":"public_academic_metadata_open_material","route":"tavily_or_exa_then_web-retrieval"},
+        {"source_id":"china-law-society","name":"中国法学会及专业研究会","hosts":["chinalaw.org.cn"],"access":"public_research","route":"web-retrieval"},
+        {"source_id":"academic-index-layer","name":"学术二级发现层","providers":["openalex","crossref","datacite","opencitations","unpaywall","consensus"],"access":"metadata_or_peer_reviewed_search","route":"existing_research_connectors","authority":"SECONDARY_DISCOVERY_ONLY"}
+      ]
+    }
+  ],
+  "discovery_and_retrieval_connectors": [
+    {"id":"yuandian-law","status":"INTEGRATED","role":"中国法律/案例高召回，最终结论必须官方复核"},
+    {"id":"exa-api","status":"INTEGRATED","role":"公开网页发现与内容读取","credential":"EXA_API_KEY"},
+    {"id":"tavily-api","status":"INTEGRATED","role":"搜索、提取、站点Map/Crawl","credential":"TAVILY_API_KEY"},
+    {"id":"jina-reader","status":"INTEGRATED","role":"公开网页/PDF转Markdown，匿名基础额度可用"},
+    {"id":"openalex-crossref-datacite-opencitations-unpaywall","status":"INTEGRATED","role":"理论、论文、引用和开放获取发现"},
+    {"id":"exa-mcp","status":"OPTIONAL_REDUNDANT","official_url":"https://mcp.exa.ai/mcp","credential":"none_for_free_tier","reason":"仓库已有Exa API，MCP可作为无Key人工/代理后备，不必重复建设生产主链"},
+    {"id":"tavily-mcp","status":"OPTIONAL_REDUNDANT","official_url":"https://mcp.tavily.com/mcp/","credential":"OAuth_or_API_key","reason":"仓库已有Tavily API；MCP适合代理交互，不替代固定后端API"},
+    {"id":"firecrawl-mcp","status":"RECOMMENDED_OPTIONAL","credential":"FIRECRAWL_API_KEY","role":"大型公开站点map/crawl/extract后备","production_rule":"只允许白名单公开域名，禁登录、验证码/WAF绕过和代理规避"},
+    {"id":"playwright-mcp","status":"RECOMMENDED_LOCAL_FALLBACK","credential":"none_local","role":"复杂公开网页的结构化浏览器后备","production_rule":"必须域名白名单、隔离上下文、只读；禁止表单提交、登录、文件上传、任意JS和绕过反自动化"},
+    {"id":"browserless-mcp","status":"NOT_RECOMMENDED_AS_DEFAULT_FOR_PRC_JUSTICE","reason":"完整MCP包含代理/反自动化能力，超出本矩阵最小权限；如复用现有Browserless，仅允许普通公开读取能力且禁CAPTCHA/隐匿/代理规避"}
+  ],
+  "official_api_conclusion": "截至2026-08-07，国家法律法规数据库、最高法主要公开平台、12309、公安标准化、中央纪委国家监委等核心官方来源未发现可作为通用生产接口使用的公开稳定文档化API/MCP，因此主链采用官方公开网页/公开检索库+受控检索读取，不伪造API。"
+}
