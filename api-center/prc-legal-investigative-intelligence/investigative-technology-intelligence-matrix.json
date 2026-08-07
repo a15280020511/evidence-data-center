@@ -1,0 +1,122 @@
+{
+  "schema_version": "prc-investigative-technology-intelligence-matrix-v1",
+  "reviewed_at": "2026-08-07",
+  "jurisdiction": "PRC_MAINLAND",
+  "purpose": "对公开或明确授权来源中的侦查、网络侦查、刑事技术、电子数据、司法鉴定和检察技术能力进行可复核、可验证、可吸收、可迭代的高层能力建模，并通过公开案件结果持续校验。",
+  "safety_boundary": {
+    "public_or_authorized_sources_only": true,
+    "secret_internal_systems": false,
+    "covert_surveillance_implementation_details": false,
+    "target_selection_or_tracking_playbook": false,
+    "investigation_evasion": false,
+    "anti_forensics": false,
+    "evidence_destruction": false,
+    "credential_or_hidden_endpoint_collection": false,
+    "operational_tactical_playbook": false,
+    "allowed_abstraction": "公开能力类别、法定程序、证据类型、技术标准、课程科研方向以及公开案件中已经披露的证据组合和技术性审查类型"
+  },
+  "technology_domains": [
+    {"capability_id":"investigation-command-and-case-analysis","name":"侦查组织、案件分析与合成研判","scope":"公开课程、案例和制度中体现的案件组织、信息汇聚与分析能力，不记录战术部署细节。"},
+    {"capability_id":"crime-scene-investigation","name":"现场勘查与证据发现固定","scope":"公开的现场勘查、证据发现、提取、固定、包装送检和质量规范。"},
+    {"capability_id":"network-crime-investigation","name":"网络犯罪侦查","scope":"公开课程、标准、研究和案件中体现的网络案件线索分析、电子证据和网络事实重建能力，不记录秘密监控或攻击实施方法。"},
+    {"capability_id":"electronic-data-forensics","name":"电子数据取证与检验","scope":"计算机、移动终端、存储介质、服务器和依法取得的在线数据的公开取证、完整性和检验类别。"},
+    {"capability_id":"network-log-and-connection-evidence","name":"网络日志与连接类证据分析","scope":"公开案件中对应用日志、登录/访问记录、网络连接记录等进行证据审查和关联的能力类别。"},
+    {"capability_id":"online-cloud-platform-evidence","name":"在线、云端与平台记录证据","scope":"依法调取或公开披露的平台、云服务、运营商及机构记录的证据类别和程序。"},
+    {"capability_id":"data-intelligence-and-correlation","name":"数据侦查、情报分析与跨源关联","scope":"公开资料中体现的数据分析、情报研判、跨来源证据关联和模型辅助能力，不包含个人目标画像或秘密数据源。"},
+    {"capability_id":"financial-transaction-evidence","name":"资金流与交易证据分析","scope":"公开案件和规则中银行、支付、交易、商户及对手方记录的证据关联。"},
+    {"capability_id":"communications-content-evidence","name":"通信与内容类电子证据","scope":"依法取得的短信、邮件、即时通信、公开网页和其他电子内容的证据类别及审查。"},
+    {"capability_id":"video-image-investigation","name":"视频、图像与影像技术","scope":"公开视频侦查、图像处理、视频现场勘查、影像检验和证据审查能力类别。"},
+    {"capability_id":"audio-voice-evidence","name":"音频、声纹与语音证据","scope":"公开的音频取证、声纹/语音检验和证据审查类别。"},
+    {"capability_id":"fingerprint-trace-document-forensics","name":"指纹、痕迹与文件检验","scope":"公开刑事技术标准、课程与案件中的手印、足迹、工具痕迹、文件和材料检验。"},
+    {"capability_id":"forensic-medicine-and-dna","name":"法医、生物物证与DNA","scope":"公开法医、DNA、生物检材、医学影像、伤情和死因技术性证据审查。"},
+    {"capability_id":"toxicology-chemistry-microtrace","name":"毒物、理化与微量物证","scope":"公开的毒物分析、理化检验和微量物证检验类别及质量标准。"},
+    {"capability_id":"geospatial-remote-sensing-and-mapping","name":"地理空间、遥感与测绘类调查证据","scope":"公开案件中依法使用的遥感、公开地理数据、现场测量、无人机航拍和三维建模等高层证据能力。"},
+    {"capability_id":"technical-evidence-specialist-review","name":"技术性证据专门审查","scope":"检察、法院及鉴定环节对电子数据、法医、鉴定意见、视听资料等技术性证据的实质审查。"},
+    {"capability_id":"provider-and-institutional-assistance","name":"平台、运营商及机构依法协助","scope":"公开法律和案件中依法调取、协助、保存和提供记录的程序与证据类别。"},
+    {"capability_id":"interagency-evidence-cooperation","name":"跨机关证据协作与补强","scope":"公开案件中公安、检察、法院、鉴定机构及行政机关之间的证据移送、补强和技术协作。"},
+    {"capability_id":"technical-investigation-legal-category","name":"技术侦查法定类别","scope":"只记录法定适用条件、审批、对象、期限、证据使用和保密边界，不记录秘密技术实施、设备或参数。"}
+  ],
+  "source_view_inputs": [
+    "current_law_and_public_procedure_rules",
+    "public_security_and_forensic_standards",
+    "police_academy_public_curricula_and_training_metadata",
+    "procuratorial_technical_research_and_training",
+    "judicial_appraisal_public_standards_and_research",
+    "official_research_and_peer_reviewed_literature",
+    "official_public_security_and_procuratorial_media"
+  ],
+  "outcome_view_inputs": [
+    "yuandian_case_recall_then_primary_source_verification",
+    "spc_reference_guiding_typical_and_public_judgment_materials",
+    "spp_guiding_typical_and_technical_evidence_cases",
+    "public_security_official_case_materials",
+    "discipline_supervision_public_cases_when_relevant",
+    "justice_administration_and_forensic_public_cases"
+  ],
+  "case_observation_schema": {
+    "required": ["observation_id","case_source","publication_date","case_type","procedural_stage","capability_ids","public_evidence_chain","verification_status"],
+    "fields": [
+      "observation_id",
+      "case_source",
+      "primary_source_url",
+      "publication_date",
+      "case_type",
+      "jurisdiction_or_institution",
+      "procedural_stage",
+      "publicly_described_clue_origin",
+      "public_evidence_chain",
+      "digital_or_forensic_review_type",
+      "lawful_provider_or_institutional_assistance_if_public",
+      "interagency_cooperation_if_public",
+      "procedure_or_admissibility_issue",
+      "outcome",
+      "capability_ids",
+      "verification_status",
+      "corroborates_observation_ids",
+      "conflicts_with_observation_ids",
+      "source_fingerprint",
+      "reviewed_at"
+    ]
+  },
+  "verification_levels": [
+    {"level":"CLAIM_ONLY","rule":"仅有二级报道、课程宣传或单一未核验来源，不能用于现实能力确认。"},
+    {"level":"PRIMARY_OBSERVED","rule":"至少一个可复核的一手官方公开案件明确展示该高层能力类别，只能证明该案件中出现过。"},
+    {"level":"CORROBORATED_PRACTICE","rule":"至少两个相互独立的一手公开案件或机构结果来源支持，且与公开课程、标准、科研或程序至少一类源头证据一致。"},
+    {"level":"STRONGLY_CORROBORATED","rule":"至少三个一手案件观察，跨至少两个地区或机构，并同时有现行规范/标准和公开教育科研来源支持；仍不外推秘密能力或全国普遍部署。"},
+    {"level":"CONTESTED","rule":"存在相互冲突的一手来源、程序争议、鉴定推翻或后续规则变化，必须保留冲突而非覆盖旧记录。"},
+    {"level":"STALE_REVIEW_REQUIRED","rule":"支撑能力的法律、标准、课程或案例链已过期、被废止或长期未复核。"}
+  ],
+  "learning_loop": [
+    "discover_new_public_case_or_training_standard_research_material",
+    "retrieve_primary_source_or_mark_unverified",
+    "extract_only_allowed_high_level_case_observation_fields",
+    "normalize_to_stable_capability_ids",
+    "deduplicate_by_source_and_case_fingerprint",
+    "cross_check_current_law_standard_and_procedure",
+    "compare_with_existing_case_observations",
+    "record_support_conflict_or_non_support_without_deleting_history",
+    "recalculate_verification_level_from_explicit_rules",
+    "version_the_ledger_and_preserve_provenance",
+    "feed_verified_changes_back_to_capability_matrix_source_routes_and_radar_queries",
+    "schedule_revalidation_when_law_standard_or_source_changes"
+  ],
+  "iteration_governance": {
+    "intelligence_center_role":"发现、检索、提取、交叉核验并生成候选观察Artifact；本地目录读取仍保持零网络零写入。",
+    "governance_role":"仅在来源、Schema、安全边界和复核规则通过后，把候选观察纳入版本化账本。",
+    "no_silent_overwrite":true,
+    "contradictions_are_preserved":true,
+    "primary_source_required_for_promotion":true,
+    "single_case_cannot_establish_general_capability":true,
+    "case_outcome_can_downgrade_prior_inference":true
+  },
+  "forbidden_case_learning_fields": [
+    "secret_tool_or_internal_system_name_when_not_lawfully_public",
+    "covert_collection_parameter",
+    "surveillance_blind_spot",
+    "target_selection_method",
+    "investigation_evasion_method",
+    "anti_forensics_method",
+    "credential_private_endpoint_or_internal_network_detail",
+    "operational_tactical_playbook"
+  ]
+}
