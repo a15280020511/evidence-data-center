@@ -11,6 +11,7 @@ SAMPLES = {
     "catalog-capabilities": {},
     "source-catalog": {"topic": "electronic_evidence", "limit": 20},
     "source-route": {"source_id": "public-security-electronic-evidence-rules"},
+    "legal-system-matrix": {"system_lane": "court_system", "limit": 100},
     "investigative-evidence-matrix": {"limit": 100},
     "joint-audit-plan": {"risk_topics": ["electronic_evidence", "personal_information", "geospatial"]},
 }
@@ -46,6 +47,17 @@ def validate(operation: str) -> dict[str, object]:
         assert metadata["technical_surveillance_details"] is False
         assert diagnostics["secret_values_exposed"] is False
         assert diagnostics["model_calls"] == 0
+        snapshot = json.loads((output_dir / "snapshot.json").read_text(encoding="utf-8"))
+        if operation == "legal-system-matrix":
+            view = snapshot["legal_system_matrix"]
+            assert view["schema_version"] == "prc-legal-system-matrix-v1"
+            assert view["lane_count"] == 1
+            assert view["source_count"] >= 8
+            assert view["system_lanes"][0]["lane_id"] == "court_system"
+        if operation == "joint-audit-plan":
+            plan = snapshot["joint_audit_plan"]
+            assert plan["matched_legal_system_lane_ids"]
+            assert plan["investigation_evasion_allowed"] is False
         return {"status": "PASS", "operation": operation, "provider_catalog": CATALOG_PATH.name}
 
 

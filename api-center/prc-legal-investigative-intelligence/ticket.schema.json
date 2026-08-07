@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://decision-system.example/schemas/prc-legal-investigative-ticket-v2.json",
+  "$id": "https://decision-system.example/schemas/prc-legal-investigative-ticket-v3.json",
   "title": "PRC Legal Investigative Intelligence Ticket",
   "type": "object",
   "additionalProperties": false,
@@ -8,13 +8,14 @@
   "properties": {
     "task_id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{2,119}$"},
     "provider": {"const": "prc-legal-investigative-intelligence"},
-    "operation": {"type": "string", "enum": ["catalog-capabilities", "source-catalog", "source-route", "investigative-evidence-matrix", "joint-audit-plan"]},
+    "operation": {"type": "string", "enum": ["catalog-capabilities", "source-catalog", "source-route", "legal-system-matrix", "investigative-evidence-matrix", "joint-audit-plan"]},
     "objective": {"type": "string", "minLength": 3, "maxLength": 1500},
     "parameters": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "topic": {"type": "string", "minLength": 1, "maxLength": 80},
+        "system_lane": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_]{2,80}$"},
         "access_class": {"type": "string", "minLength": 1, "maxLength": 80},
         "evidence_weight": {"type": "string", "minLength": 1, "maxLength": 80},
         "limit": {"type": "integer", "minimum": 1, "maximum": 100},
@@ -56,12 +57,16 @@
       "then": {"properties": {"parameters": {"required": ["source_id"], "maxProperties": 1}}}
     },
     {
-      "if": {"properties": {"operation": {"const": "investigative-evidence-matrix"}}},
+      "if": {"properties": {"operation": {"const": "legal-system-matrix"}}},
       "then": {"properties": {"parameters": {"not": {"anyOf": [{"required": ["source_id"]}, {"required": ["access_class"]}, {"required": ["evidence_weight"]}, {"required": ["risk_topics"]}]}}}}
     },
     {
+      "if": {"properties": {"operation": {"const": "investigative-evidence-matrix"}}},
+      "then": {"properties": {"parameters": {"not": {"anyOf": [{"required": ["source_id"]}, {"required": ["system_lane"]}, {"required": ["access_class"]}, {"required": ["evidence_weight"]}, {"required": ["risk_topics"]}]}}}}
+    },
+    {
       "if": {"properties": {"operation": {"const": "joint-audit-plan"}}},
-      "then": {"properties": {"parameters": {"not": {"anyOf": [{"required": ["source_id"]}, {"required": ["topic"]}, {"required": ["access_class"]}, {"required": ["evidence_weight"]}, {"required": ["limit"]}]}}}}
+      "then": {"properties": {"parameters": {"not": {"anyOf": [{"required": ["source_id"]}, {"required": ["topic"]}, {"required": ["system_lane"]}, {"required": ["access_class"]}, {"required": ["evidence_weight"]}, {"required": ["limit"]}]}}}}
     }
   ]
 }

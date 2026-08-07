@@ -1,0 +1,876 @@
+{
+  "schema_version": "prc-legal-system-matrix-v1",
+  "reviewed_at": "2026-08-07",
+  "jurisdiction": "PRC_MAINLAND",
+  "purpose": "Nationwide public-source legal-system matrix combining YuanDian recall with current official legislation, courts, procuratorates, public-security procedure, justice administration, administrative review/enforcement, dispute resolution and specialized adjudication sources. It is for defensive legal research and compliance only.",
+  "safety_boundary": {
+    "public_or_authorized_sources_only": true,
+    "automatic_login_allowed": false,
+    "captcha_or_waf_bypass_allowed": false,
+    "hidden_api_reverse_engineering_allowed": false,
+    "investigation_evasion_allowed": false,
+    "personal_targeting_allowed": false,
+    "official_current_text_controls_final_validation": true
+  },
+  "pairing_model": {
+    "recall_layer": "yuandian-law",
+    "official_validation_layers": [
+      "national_legislation",
+      "court_system",
+      "procuratorate_system",
+      "public_security_and_investigation",
+      "justice_administration",
+      "administrative_review_and_enforcement",
+      "specialized_adjudication_and_execution"
+    ],
+    "rule": "Use YuanDian for broad statute/case recall and terminology expansion. Verify material propositions against current official law, judicial/procuratorial materials, official case/publication systems and provider authorization terms before a final risk decision."
+  },
+  "system_lanes": [
+    {
+      "lane_id": "national_legislation",
+      "name": "国家立法、行政法规与法源有效性",
+      "role": "Resolve current text, hierarchy, effective date, amendment/repeal status and authoritative publication.",
+      "source_ids": [
+        "yuandian-law",
+        "npc-national-law-database",
+        "npc-official-legislation",
+        "state-council-gazette",
+        "moj-administrative-regulation-database",
+        "moj-legislative-consultation"
+      ],
+      "law_families": [
+        "constitution",
+        "legislation_law",
+        "criminal_law",
+        "civil_code",
+        "criminal_procedure_law",
+        "civil_procedure_law",
+        "administrative_litigation_law",
+        "administrative_reconsideration_law",
+        "state_compensation_law",
+        "administrative_penalty_law",
+        "administrative_compulsion_law",
+        "administrative_licensing_law"
+      ]
+    },
+    {
+      "lane_id": "court_system",
+      "name": "人民法院审判与司法公开",
+      "role": "Cover judicial interpretations, guiding/reference/typical cases, judgments, hearings, process disclosure, enforcement and court announcements.",
+      "source_ids": [
+        "spc-official",
+        "spc-gazette",
+        "spc-case-library",
+        "china-judgments-online",
+        "china-trial-process-disclosure",
+        "china-trial-open",
+        "china-enforcement-disclosure",
+        "people-court-announcements",
+        "local-court-official-family"
+      ],
+      "law_families": [
+        "organic_law_of_peoples_courts",
+        "judges_law",
+        "peoples_assessors_law",
+        "judicial_interpretations",
+        "civil_evidence_rules",
+        "administrative_evidence_rules",
+        "criminal_evidence_rules"
+      ]
+    },
+    {
+      "lane_id": "procuratorate_system",
+      "name": "人民检察院检察监督与案件公开",
+      "role": "Cover guiding/typical cases, legal documents, important case information, hearings, criminal/civil/administrative/public-interest prosecution and legal supervision.",
+      "source_ids": [
+        "spp-official",
+        "spp-guiding-cases",
+        "spp-typical-cases",
+        "china-procuratorate-12309-public",
+        "china-procuratorate-12309-authenticated-case-query",
+        "local-procuratorate-official-family"
+      ],
+      "law_families": [
+        "organic_law_of_peoples_procuratorates",
+        "procurators_law",
+        "criminal_procedure_law",
+        "public_interest_litigation_rules",
+        "procuratorial_case_information_disclosure_rules"
+      ]
+    },
+    {
+      "lane_id": "public_security_and_investigation",
+      "name": "公安侦查、行政案件与电子数据程序",
+      "role": "Cover publicly available criminal/administrative procedure, electronic-evidence collection and lawful provider-assistance rules without operational surveillance or evasion detail.",
+      "source_ids": [
+        "mps-official-rules",
+        "public-security-criminal-procedure-rules",
+        "public-security-administrative-case-procedure-rules",
+        "public-security-electronic-evidence-rules",
+        "npc-current-criminal-procedure-law",
+        "spp-spc-electronic-data-rules"
+      ],
+      "law_families": [
+        "criminal_procedure_law",
+        "public_security_criminal_case_procedure",
+        "public_security_administrative_case_procedure",
+        "electronic_data_evidence_rules",
+        "public_security_administration_punishments_law",
+        "anti_telecom_fraud_law",
+        "cybersecurity_law",
+        "data_security_law",
+        "personal_information_protection_law"
+      ]
+    },
+    {
+      "lane_id": "justice_administration",
+      "name": "司法行政与公共法律服务",
+      "role": "Cover lawyers, legal aid, notary, judicial appraisal, people's mediation, arbitration, community correction, prison/drug-rehabilitation public rules and administrative-service cases.",
+      "source_ids": [
+        "moj-official",
+        "china-legal-service-12348",
+        "moj-legal-service-case-library",
+        "moj-lawyer-service",
+        "moj-legal-aid-service",
+        "moj-notary-service",
+        "moj-judicial-appraisal-service",
+        "moj-peoples-mediation-service",
+        "moj-arbitration-service",
+        "moj-community-correction-and-corrections-cases"
+      ],
+      "law_families": [
+        "lawyers_law",
+        "legal_aid_law",
+        "notarization_law",
+        "peoples_mediation_law",
+        "arbitration_law",
+        "community_correction_law",
+        "prison_law",
+        "judicial_appraisal_rules"
+      ]
+    },
+    {
+      "lane_id": "administrative_review_and_enforcement",
+      "name": "行政复议、行政执法监督与监管执法",
+      "role": "Cover administrative reconsideration, administrative-law-enforcement supervision and national regulator enforcement patterns relevant to legality and proportionality review.",
+      "source_ids": [
+        "national-administrative-reconsideration-platform",
+        "moj-administrative-reconsideration-cases",
+        "moj-administrative-law-enforcement-supervision",
+        "samr-enforcement",
+        "cac-data-governance",
+        "miit-data-security",
+        "national-data-administration",
+        "cnipa-copyright-data-rights"
+      ],
+      "law_families": [
+        "administrative_reconsideration_law",
+        "administrative_reconsideration_implementation_regulation",
+        "administrative_penalty_law",
+        "administrative_compulsion_law",
+        "administrative_litigation_law",
+        "anti_unfair_competition_law",
+        "network_data_security_regulation"
+      ]
+    },
+    {
+      "lane_id": "execution_bankruptcy_and_post_sentence",
+      "name": "执行、破产重整与刑罚变更公开",
+      "role": "Cover enforcement status, debtor/credit information, bankruptcy/reorganization/compulsory liquidation and public commutation/parole/temporary-release information.",
+      "source_ids": [
+        "china-enforcement-disclosure",
+        "national-bankruptcy-reorganization",
+        "national-commutation-parole-temporary-release",
+        "people-court-announcements",
+        "china-judgments-online"
+      ],
+      "law_families": [
+        "civil_procedure_enforcement",
+        "enterprise_bankruptcy_law",
+        "criminal_procedure_sentence_execution",
+        "community_correction_law"
+      ]
+    },
+    {
+      "lane_id": "specialized_adjudication_and_execution",
+      "name": "知识产权、海事、涉外商事、互联网等专项审判",
+      "role": "Cover nationally authoritative specialized-court material and official local specialized-court families.",
+      "source_ids": [
+        "spc-ip-court",
+        "foreign-commercial-maritime-justice-family",
+        "internet-court-official-family",
+        "financial-court-official-family",
+        "maritime-court-official-family",
+        "ip-court-official-family"
+      ],
+      "law_families": [
+        "intellectual_property_laws",
+        "anti_monopoly_law",
+        "anti_unfair_competition_law",
+        "maritime_law",
+        "foreign_related_civil_procedure",
+        "internet_court_procedure_rules"
+      ]
+    },
+    {
+      "lane_id": "supervision_and_duty_crime_adjacent",
+      "name": "监察与职务犯罪衔接（相邻法治体系）",
+      "role": "Supplement duty-crime analysis with publicly available supervision law and official transfer/prosecution materials; this is adjacent to, not a substitute for, court/procuratorate/public-security sources.",
+      "source_ids": [
+        "national-supervision-public-source",
+        "spp-duty-crime-cases",
+        "npc-national-law-database"
+      ],
+      "law_families": [
+        "supervision_law",
+        "criminal_law_duty_crimes",
+        "criminal_procedure_transfer_and_prosecution"
+      ]
+    },
+    {
+      "lane_id": "local_judicial_hierarchy",
+      "name": "省市县地方司法机关官方来源族",
+      "role": "Extend national coverage to provincial high courts, intermediate/grassroots courts, provincial/municipal/county procuratorates and justice-administration agencies using official-domain discovery and primary-source verification.",
+      "source_ids": [
+        "local-court-official-family",
+        "local-procuratorate-official-family",
+        "local-justice-administration-official-family"
+      ],
+      "law_families": [
+        "local_regulations",
+        "local_judicial_publications",
+        "local_enforcement_and_reconsideration_cases"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "yuandian-law",
+      "name": "元典法律智能开放平台",
+      "authority_type": "SECONDARY_RECALL",
+      "access_class": "MANAGED_API",
+      "hosts": [],
+      "public_access": false,
+      "authentication": "backend_api_key",
+      "role": "Broad statute/case recall, terminology expansion and hallucination checking; never sole final authority.",
+      "retrieval_route": {"provider": "yuandian-law", "operations": ["law_vector_search", "case_vector_search", "readonly_api"]}
+    },
+    {
+      "source_id": "npc-national-law-database",
+      "name": "国家法律法规数据库",
+      "authority_type": "PRIMARY_OFFICIAL",
+      "access_class": "A2_PUBLIC_SEARCH_DATABASE",
+      "hosts": ["flk.npc.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_search",
+      "role": "Current official law/regulation/judicial-interpretation validation.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search_or_primary_page"}
+    },
+    {
+      "source_id": "npc-official-legislation",
+      "name": "全国人大及其常委会官网",
+      "authority_type": "PRIMARY_OFFICIAL",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["npc.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Laws, legislative decisions, explanations, reports and official legislative materials.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "state-council-gazette",
+      "name": "国务院公报/中国政府网",
+      "authority_type": "PRIMARY_OFFICIAL",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Administrative regulations, State Council documents and authoritative policy publication.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_gazette_html_pdf"}
+    },
+    {
+      "source_id": "moj-administrative-regulation-database",
+      "name": "司法部行政法规/规章公开来源",
+      "authority_type": "PRIMARY_OFFICIAL",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["moj.gov.cn", "xzfg.moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Administrative regulations, departmental rules and justice-administration rulemaking materials.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search_or_document"}
+    },
+    {
+      "source_id": "moj-legislative-consultation",
+      "name": "司法部立法意见征集",
+      "authority_type": "PRIMARY_POLICY_PROCESS",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_reading",
+      "role": "Draft regulations and regulatory-intent leading indicators; drafts must be labeled non-final.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html"}
+    },
+    {
+      "source_id": "spc-official",
+      "name": "最高人民法院官网",
+      "authority_type": "PRIMARY_OFFICIAL_JUDICIAL",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["court.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Judicial interpretations, typical/guiding materials, white papers, explanations and court-system rules.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "spc-gazette",
+      "name": "最高人民法院公报",
+      "authority_type": "PRIMARY_OFFICIAL_JUDICIAL_PUBLICATION",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["gongbao.court.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Authoritative judicial documents, cases and official publication history.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search_or_document", "stop_on_403_or_timeout": true}
+    },
+    {
+      "source_id": "spc-case-library",
+      "name": "人民法院案例库",
+      "authority_type": "PRIMARY_JUDICIAL_REFERENCE",
+      "access_class": "A2_PUBLIC_SEARCH_DATABASE",
+      "hosts": ["rmfyalk.court.gov.cn"],
+      "public_access": true,
+      "authentication": "public_search_only",
+      "role": "Guiding/reference cases for similar-case comparison.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_on_demand_search", "stop_on_login_or_captcha": true}
+    },
+    {
+      "source_id": "china-judgments-online",
+      "name": "中国裁判文书网",
+      "authority_type": "PRIMARY_JUDICIAL_PUBLIC_DOCUMENT",
+      "access_class": "A2_PUBLIC_SEARCH_DATABASE",
+      "hosts": ["wenshu.court.gov.cn"],
+      "public_access": true,
+      "authentication": "public_pages_subject_to_platform_controls",
+      "role": "Published court judgments and court hierarchy browsing; use bounded lookup, not bulk mirroring.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search", "stop_on_login_captcha_403_429": true}
+    },
+    {
+      "source_id": "china-trial-process-disclosure",
+      "name": "中国审判流程信息公开网",
+      "authority_type": "PRIMARY_JUDICIAL_PROCESS",
+      "access_class": "A3_AUTHENTICATED_OR_CONDITIONAL",
+      "hosts": ["splcgk.court.gov.cn"],
+      "public_access": "limited_public_plus_party_specific",
+      "authentication": "party_or_authorized_participant_for_case_specific_information",
+      "role": "Trial-process information; general public material may be read, party-specific queries are not automated by this center.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_material_only", "automatic_login": false}
+    },
+    {
+      "source_id": "china-trial-open",
+      "name": "中国庭审公开网",
+      "authority_type": "PRIMARY_JUDICIAL_PUBLIC_HEARING",
+      "access_class": "A2_PUBLIC_SEARCH_AND_MEDIA",
+      "hosts": ["tingshen.court.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Public hearing/live-trial information where lawfully published.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_metadata_and_transcript_when_available", "stop_on_method_or_platform_denial": true}
+    },
+    {
+      "source_id": "china-enforcement-disclosure",
+      "name": "中国执行信息公开网",
+      "authority_type": "PRIMARY_JUDICIAL_EXECUTION",
+      "access_class": "A2_PLUS_A3_PUBLIC_AND_PARTY_SPECIFIC",
+      "hosts": ["zxgk.court.gov.cn"],
+      "public_access": "public_execution_information_plus_authenticated_case_process",
+      "authentication": "not_used_by_center",
+      "role": "Public enforcement, dishonest-enforcement, consumption-restriction and terminal-case information; no automated authenticated case access.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_material_only", "stop_on_403_captcha_or_login": true}
+    },
+    {
+      "source_id": "people-court-announcements",
+      "name": "人民法院公告网",
+      "authority_type": "PRIMARY_JUDICIAL_NOTICE",
+      "access_class": "A2_PUBLIC_SEARCH_DATABASE",
+      "hosts": ["rmfygg.court.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_notice_search; publishing_account_requires_login",
+      "role": "Court notices including service, hearing, judgment, enforcement, bankruptcy and related public notices.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search", "automatic_login": false}
+    },
+    {
+      "source_id": "national-bankruptcy-reorganization",
+      "name": "全国企业破产重整案件信息网",
+      "authority_type": "PRIMARY_JUDICIAL_BANKRUPTCY",
+      "access_class": "A2_PUBLIC_SEARCH_DATABASE",
+      "hosts": ["pccz.court.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_cases_and_notices",
+      "role": "Bankruptcy review, reorganization, compulsory liquidation, notices, documents and debtor information.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search_and_document"}
+    },
+    {
+      "source_id": "national-commutation-parole-temporary-release",
+      "name": "全国法院减刑、假释、暂予监外执行信息公开来源",
+      "authority_type": "PRIMARY_JUDICIAL_SENTENCE_EXECUTION",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["court.gov.cn", "wenshu.court.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Public commutation/parole/temporary-release notices, decisions, cases and governing rules; discover through current official court links rather than hard-coding an unverified legacy host.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_link_discovery_and_public_document"}
+    },
+    {
+      "source_id": "spc-ip-court",
+      "name": "最高人民法院知识产权法庭",
+      "authority_type": "PRIMARY_SPECIALIZED_JUDICIAL",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["ipc.court.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "IP appellate judgments, holdings, selected cases, hearing notices, legal materials and data analysis.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_and_bounded_search"}
+    },
+    {
+      "source_id": "foreign-commercial-maritime-justice-family",
+      "name": "涉外商事与海事审判官方来源族",
+      "authority_type": "PRIMARY_SPECIALIZED_JUDICIAL_FAMILY",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["court.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Supreme-court and official maritime/foreign-commercial publications, cases and white papers; resolve live official destination from current court links.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_domain_discovery_then_primary_source"}
+    },
+    {
+      "source_id": "local-court-official-family",
+      "name": "全国地方各级人民法院官方来源族",
+      "authority_type": "PRIMARY_LOCAL_JUDICIAL_FAMILY",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["court.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Provincial high courts, intermediate and grassroots courts; discover only through official court/government links and verify the primary domain before use.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_link_discovery_primary_source_only"}
+    },
+    {
+      "source_id": "spp-official",
+      "name": "最高人民检察院官网",
+      "authority_type": "PRIMARY_OFFICIAL_PROCURATORIAL",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["spp.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Procuratorial rules, explanations, reports, legal supervision and public-interest litigation materials.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "spp-guiding-cases",
+      "name": "最高人民检察院指导性案例",
+      "authority_type": "PRIMARY_PROCURATORIAL_REFERENCE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["spp.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Guiding cases for facts, evidence use, legal application and procuratorial policy.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "incremental_publication"}
+    },
+    {
+      "source_id": "spp-typical-cases",
+      "name": "最高人民检察院典型案例",
+      "authority_type": "PRIMARY_PROCURATORIAL_PRACTICE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["spp.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "High-volume current prosecutorial practice and legal-supervision patterns.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "incremental_publication"}
+    },
+    {
+      "source_id": "china-procuratorate-12309-public",
+      "name": "12309中国检察网公开信息",
+      "authority_type": "PRIMARY_PROCURATORIAL_DISCLOSURE",
+      "access_class": "A2_PUBLIC_SEARCH_DATABASE",
+      "hosts": ["12309.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_legal_documents_case_information_and_hearing_notices",
+      "role": "Public legal documents, important case information, hearing notices and procuratorial disclosure.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search"}
+    },
+    {
+      "source_id": "china-procuratorate-12309-authenticated-case-query",
+      "name": "12309中国检察网当事人案件查询",
+      "authority_type": "PRIMARY_PROCURATORIAL_PARTY_SERVICE",
+      "access_class": "A3_AUTHENTICATED_OR_CONDITIONAL",
+      "hosts": ["12309.gov.cn"],
+      "public_access": false,
+      "authentication": "identity_verified_authorized_participants_only",
+      "role": "Party/authorized-representative case queries. The intelligence center records availability but does not automate login or submit personal case queries.",
+      "retrieval_route": {"provider": "manual_or_authorized_export", "automatic_login": false}
+    },
+    {
+      "source_id": "local-procuratorate-official-family",
+      "name": "全国地方各级人民检察院官方来源族",
+      "authority_type": "PRIMARY_LOCAL_PROCURATORIAL_FAMILY",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["spp.gov.cn", "12309.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Provincial, municipal and county procuratorate public materials discovered through official links and verified domains.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_link_discovery_primary_source_only"}
+    },
+    {
+      "source_id": "mps-official-rules",
+      "name": "公安部公开法律法规与执法规范来源",
+      "authority_type": "PRIMARY_PUBLIC_SECURITY_RULE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["mps.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Public-security laws, departmental rules, procedural notices and publicly released enforcement materials.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "public-security-criminal-procedure-rules",
+      "name": "公安机关办理刑事案件程序规定",
+      "authority_type": "PRIMARY_PUBLIC_SECURITY_PROCEDURE",
+      "access_class": "A1_FIXED_RULESET",
+      "hosts": ["mps.gov.cn", "gov.cn", "moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Criminal investigation procedure and safeguards; current text must be officially verified before high-stakes reliance.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_current_text"}
+    },
+    {
+      "source_id": "public-security-administrative-case-procedure-rules",
+      "name": "公安机关办理行政案件程序规定",
+      "authority_type": "PRIMARY_PUBLIC_SECURITY_ADMIN_PROCEDURE",
+      "access_class": "A1_FIXED_RULESET",
+      "hosts": ["mps.gov.cn", "moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Administrative-case investigation/evidence procedure; verify current text and later amendments.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_current_text"}
+    },
+    {
+      "source_id": "public-security-electronic-evidence-rules",
+      "name": "公安电子数据取证规则及两高一部电子数据规定",
+      "authority_type": "PRIMARY_ELECTRONIC_EVIDENCE_PROCEDURE",
+      "access_class": "A1_FIXED_RULESET",
+      "hosts": ["mps.gov.cn", "court.gov.cn", "spp.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Electronic-data collection, preservation, integrity and review rules for defensive evidence-risk analysis only.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_current_text_and_joint_rules"}
+    },
+    {
+      "source_id": "npc-current-criminal-procedure-law",
+      "name": "刑事诉讼法现行官方文本",
+      "authority_type": "PRIMARY_LAW",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["flk.npc.gov.cn", "npc.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Primary statutory framework for investigation, evidence, compulsory measures, search/seizure, query/freeze and technical investigation legal gates.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_current_text"}
+    },
+    {
+      "source_id": "spp-spc-electronic-data-rules",
+      "name": "两高一部电子数据收集提取和审查判断规定",
+      "authority_type": "PRIMARY_JOINT_JUDICIAL_RULE",
+      "access_class": "A1_FIXED_RULESET",
+      "hosts": ["spp.gov.cn", "court.gov.cn", "mps.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Cross-institution electronic-evidence categories, integrity and admissibility guidance.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_joint_rule"}
+    },
+    {
+      "source_id": "moj-official",
+      "name": "司法部官网",
+      "authority_type": "PRIMARY_JUSTICE_ADMINISTRATION",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Justice administration, rulemaking, administrative reconsideration, legal services and public-law materials.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "china-legal-service-12348",
+      "name": "中国法律服务网（12348）",
+      "authority_type": "SUPPLEMENTARY_PUBLIC_LEGAL_SERVICE",
+      "access_class": "A1_A2_PUBLIC_SERVICE",
+      "hosts": ["12348.gov.cn"],
+      "public_access": true,
+      "authentication": "public_information_only",
+      "role": "Public legal-service information and navigation; never sole legal authority.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_information"}
+    },
+    {
+      "source_id": "moj-legal-service-case-library",
+      "name": "司法行政（法律服务）案例库",
+      "authority_type": "PRIMARY_JUSTICE_ADMIN_PRACTICE",
+      "access_class": "A2_PUBLIC_SEARCH_DATABASE",
+      "hosts": ["alk.12348.gov.cn", "moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_case_search",
+      "role": "People's mediation, legal aid, notary, judicial appraisal, community correction, lawyer, drug-rehabilitation, prison, administrative-law-enforcement supervision and arbitration cases.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_search"}
+    },
+    {
+      "source_id": "national-administrative-reconsideration-platform",
+      "name": "全国行政复议服务平台",
+      "authority_type": "PRIMARY_ADMINISTRATIVE_RECONSIDERATION",
+      "access_class": "A1_PLUS_A3_PUBLIC_AND_AUTHENTICATED_SERVICE",
+      "hosts": ["xzfy.moj.gov.cn"],
+      "public_access": "public_rules_news_guides_plus_authenticated_application",
+      "authentication": "not_used_by_center",
+      "role": "Administrative-reconsideration rules, guidance and service information; online personal applications are not automated.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_material_only", "automatic_login": false}
+    },
+    {
+      "source_id": "moj-administrative-reconsideration-cases",
+      "name": "司法部行政复议典型案例",
+      "authority_type": "PRIMARY_ADMIN_REVIEW_PRACTICE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Current administrative-reconsideration handling patterns and legality/proportionality review.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "incremental_publication"}
+    },
+    {
+      "source_id": "moj-administrative-law-enforcement-supervision",
+      "name": "司法部行政执法协调监督",
+      "authority_type": "PRIMARY_ADMIN_ENFORCEMENT_SUPERVISION",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Administrative-law-enforcement supervision rules, standards and typical supervision cases.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf_and_case_publication"}
+    },
+    {
+      "source_id": "moj-lawyer-service",
+      "name": "司法部律师服务/律师查找",
+      "authority_type": "PRIMARY_JUSTICE_ADMIN_SERVICE",
+      "access_class": "A1_A2_PUBLIC_SERVICE",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_information",
+      "role": "Lawyer service rules and public professional-service information.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_information_bounded_lookup"}
+    },
+    {
+      "source_id": "moj-legal-aid-service",
+      "name": "司法部法律援助",
+      "authority_type": "PRIMARY_JUSTICE_ADMIN_SERVICE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Legal-aid law, procedures, complaint rules and public guidance.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "moj-notary-service",
+      "name": "司法部公证服务",
+      "authority_type": "PRIMARY_JUSTICE_ADMIN_SERVICE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Notary law, procedures, evidentiary preservation and service guidance.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "moj-judicial-appraisal-service",
+      "name": "司法部司法鉴定",
+      "authority_type": "PRIMARY_JUSTICE_ADMIN_SERVICE",
+      "access_class": "A1_A2_PUBLIC_SERVICE",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Forensic, physical-evidence and audio-visual appraisal categories, procedures, standards and complaint information.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf_and_bounded_lookup"}
+    },
+    {
+      "source_id": "moj-peoples-mediation-service",
+      "name": "司法部人民调解",
+      "authority_type": "PRIMARY_JUSTICE_ADMIN_SERVICE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["moj.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "People's mediation law, procedure, effect and case guidance.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_and_case_publication"}
+    },
+    {
+      "source_id": "moj-arbitration-service",
+      "name": "司法部仲裁服务",
+      "authority_type": "PRIMARY_JUSTICE_ADMIN_SERVICE",
+      "access_class": "A1_A2_PUBLIC_SERVICE",
+      "hosts": ["moj.gov.cn", "alk.12348.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Arbitration service rules, institution information and public arbitration cases where published.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_information_and_bounded_case_search"}
+    },
+    {
+      "source_id": "moj-community-correction-and-corrections-cases",
+      "name": "社区矫正、监狱、戒毒等司法行政公开案例",
+      "authority_type": "PRIMARY_JUSTICE_ADMIN_PRACTICE",
+      "access_class": "A1_A2_PUBLIC_CASE_LIBRARY",
+      "hosts": ["moj.gov.cn", "alk.12348.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_case_material",
+      "role": "Publicly released community-correction, prison and drug-rehabilitation rules and anonymized practice cases.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "bounded_public_case_search"}
+    },
+    {
+      "source_id": "samr-enforcement",
+      "name": "国家市场监督管理总局执法案例",
+      "authority_type": "PRIMARY_ADMIN_ENFORCEMENT",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["samr.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Administrative enforcement, unfair competition, platform/data and consumer-protection practice.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "incremental_publication"}
+    },
+    {
+      "source_id": "cac-data-governance",
+      "name": "国家互联网信息办公室/中国网信网",
+      "authority_type": "PRIMARY_CYBER_DATA_REGULATOR",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["cac.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Personal information, network data security, important data, cross-border and compliance-audit rules.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "miit-data-security",
+      "name": "工业和信息化部",
+      "authority_type": "PRIMARY_SECTOR_REGULATOR",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["miit.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Telecom, internet-user information and industrial-sector data/security rules.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "national-data-administration",
+      "name": "国家数据局",
+      "authority_type": "PRIMARY_DATA_POLICY",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["nda.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Data-governance, public-data and data-market policy.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "cnipa-copyright-data-rights",
+      "name": "国家知识产权局/国家版权公开来源",
+      "authority_type": "PRIMARY_IP_REGULATORY",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["cnipa.gov.cn", "ncac.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "IP, copyright, software, database-content and trade-secret risk.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_html_pdf"}
+    },
+    {
+      "source_id": "internet-court-official-family",
+      "name": "互联网法院官方来源族",
+      "authority_type": "PRIMARY_SPECIALIZED_LOCAL_JUDICIAL_FAMILY",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["court.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Beijing/Hangzhou/Guangzhou internet-court public rules, cases and judgments discovered through official links.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_link_discovery_primary_source_only"}
+    },
+    {
+      "source_id": "financial-court-official-family",
+      "name": "金融法院官方来源族",
+      "authority_type": "PRIMARY_SPECIALIZED_LOCAL_JUDICIAL_FAMILY",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["court.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Financial-court public rules, cases and judicial materials discovered and verified via official domains.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_link_discovery_primary_source_only"}
+    },
+    {
+      "source_id": "maritime-court-official-family",
+      "name": "海事法院官方来源族",
+      "authority_type": "PRIMARY_SPECIALIZED_LOCAL_JUDICIAL_FAMILY",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["court.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "National maritime-court public judgments, cases, guidance and litigation information through official sources.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_link_discovery_primary_source_only"}
+    },
+    {
+      "source_id": "ip-court-official-family",
+      "name": "知识产权法院/法庭官方来源族",
+      "authority_type": "PRIMARY_SPECIALIZED_LOCAL_JUDICIAL_FAMILY",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["ipc.court.gov.cn", "court.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Specialized IP court/tribunal public cases, rulings and guidance.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_link_discovery_primary_source_only"}
+    },
+    {
+      "source_id": "national-supervision-public-source",
+      "name": "国家监察公开法治来源",
+      "authority_type": "ADJACENT_PRIMARY_PUBLIC_LAW_SOURCE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["ccdi.gov.cn", "npc.gov.cn", "flk.npc.gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Public Supervision Law, implementing rules and publicly released duty-crime/supervision materials; used only as an adjacent source for duty-crime chain analysis.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_primary_source"}
+    },
+    {
+      "source_id": "spp-duty-crime-cases",
+      "name": "最高检职务犯罪检察案例",
+      "authority_type": "PRIMARY_PROCURATORIAL_PRACTICE",
+      "access_class": "A1_PUBLIC_WEB_DOCUMENT",
+      "hosts": ["spp.gov.cn"],
+      "public_access": true,
+      "authentication": "none",
+      "role": "Public prosecutorial handling of duty-crime cases after transfer for prosecution.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "public_case_search"}
+    },
+    {
+      "source_id": "local-justice-administration-official-family",
+      "name": "地方司法行政机关官方来源族",
+      "authority_type": "PRIMARY_LOCAL_JUSTICE_ADMIN_FAMILY",
+      "access_class": "A1_A2_PUBLIC_OFFICIAL",
+      "hosts": ["moj.gov.cn", "gov.cn"],
+      "public_access": true,
+      "authentication": "none_for_public_material",
+      "role": "Provincial/municipal/county justice-administration public rules, reconsideration, law-enforcement supervision and legal-service material discovered via official domains.",
+      "retrieval_route": {"provider": "web-retrieval", "mode": "official_link_discovery_primary_source_only"}
+    }
+  ],
+  "decision_pipeline": [
+    "classify_legal_issue_and_jurisdiction",
+    "yuandian_broad_recall",
+    "select_legal_system_lanes",
+    "verify_current_law_and_hierarchy",
+    "retrieve_authoritative_cases_and_publications",
+    "apply_procedure_and_evidence_matrix",
+    "apply_sector_and_specialized_rules",
+    "verify_provider_contract_and_data_rights_when_relevant",
+    "issue_green_yellow_orange_red_or_review"
+  ],
+  "final_rule": "YuanDian improves recall; current official law and primary judicial/procuratorial/administrative sources control final validation. Authenticated party-specific systems are cataloged for completeness but are never auto-logged-in or scraped by this intelligence center."
+}
