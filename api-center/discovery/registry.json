@@ -1,6 +1,6 @@
 {
   "schema_version": "global-source-registry-v2",
-  "source_count": 59,
+  "source_count": 69,
   "sources": [
     {
       "auth": "none",
@@ -59,6 +59,35 @@
       "title": "A Time Series of Sea Surface Nitrate and Nitrate Based New Production in the Global Oceans | NASA Earthdata",
       "trusted_domain": true,
       "url": "https://www.earthdata.nasa.gov/about/competitive-programs/measures/time-series-sea-surface-nitrate"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Travel and Tourism Forecasts\n\n# Travel and Tourism Forecasts\n\n## The National Travel and Tourism Office’s International Visitor Forecast\n\nThe National Travel and Tourism Office (NTTO) International Visitor Forecast provides a five-year outlook on international travel to the United States, projecting increased visitor arrivals from 2026 through 2030.1 The forecast covers the top 12 U.S. source markets, overseas visitation2, and aggregate arrivals from all countries worldwide. Published by NTTO—a part of the International Trade Administration’s Industry & Analysis business unit at the U.S. Department of Commerce—the forecast serves as the official U.S. Government resource for understanding future trends in inbound tourism demand.\n\n### Forecast of Total International Visitation to the United ",
+      "discovery_engine": "exa",
+      "discovery_query": "publication::tourism forecast",
+      "first_seen_at": "2026-08-07T04:10:14+00:00",
+      "high_value": true,
+      "host": "www.trade.gov",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:10:14+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-07T04:10:27+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "03c8f2a207b7cfe802c5",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Travel and Tourism Forecasts",
+      "trusted_domain": true,
+      "url": "https://www.trade.gov/travel-and-tourism-forecasts"
     },
     {
       "auth": "none",
@@ -273,7 +302,7 @@
       "host": "www.ncei.noaa.gov",
       "integrated_at": "2026-08-06T04:43:25+00:00",
       "integration_mode": "fixed-url-read-only-registry",
-      "last_seen_at": "2026-08-06T04:42:17+00:00",
+      "last_seen_at": "2026-08-07T04:09:53+00:00",
       "license": "unknown",
       "probe": {
         "bytes_sampled": 19246,
@@ -377,6 +406,35 @@
       "title": "CPI - IMF Data - International Monetary Fund",
       "trusted_domain": true,
       "url": "https://data.imf.org/en/datasets/IMF.STA:CPI"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Industry research sponsors also have important contributions to make in this area. Clinical trial data constitute a prominent specific example. Over the years, the share of clinical trials funded by industry has grown (Buchkowsky and Jewesson, 2004). At the same time, pressure has grown to make the clinical trial process more transparent through mechanisms such as public registration of all trials and encouraging the release of all results, including negative results. A recent report states that there are “compelling justifications for sharing clinical trial data to benefit society and future patients” (IOM, 2015). There is a need to ensure that data sharing is done responsibly and protects privacy. Lack of timely reporting of clinical trials is not solely or even primarily an issue in [...] clinical trials is not solely or even primarily an issue in industry-performed or industry-sponsored work; clinical trials performed at academic medical centers and sponsored by federal agencies and other nonindustry sources also need to improve their practices (Chen et al., 2016). Still, since clinical trials are an important component of industry-sponsored research that is published in peer-reviewed journals, industry sponsors can make an important contribution by registering all of their trials, reporting all results in a timely way, and sharing data responsibly. [...] In some settings and some cases, data, models, and code may not be made available, or sharing may be delayed due to legal or regulatory restrictions, including those related to privacy, intellectual property protection",
+      "discovery_engine": "tavily",
+      "discovery_query": "institution::industry organization research integrity data portal",
+      "first_seen_at": "2026-08-07T04:10:13+00:00",
+      "high_value": true,
+      "host": "www.ncbi.nlm.nih.gov",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:10:13+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-07T04:10:27+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "437b70d03d1024f3203d",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Identifying and Promoting Best Practices for Research Integrity - Fostering Integrity in Research - NCBI Bookshelf",
+      "trusted_domain": true,
+      "url": "https://www.ncbi.nlm.nih.gov/books/NBK475944"
     },
     {
       "auth": "none",
@@ -784,6 +842,35 @@
     {
       "auth": "none",
       "catalog_url": null,
+      "description": "Sensitivity analysis of a dynamical system using C++ - Boise State University\n\n# Sensitivity analysis of a dynamical system using C++\n\n- Donna Calhoun\n- , Roy Overstreet\n\n- Mathematics Department\n\n- National Oceanic and Atmospheric Administration\n\n## Abstract\n\nThis article introduces basic principles of first order sensitivityanalysis and presents an algorithm that can be used to compute the sensitivityof a dynamical system to a selected parameter. This analysis is performed byextending with sensitivity equations the set of differential equationsdescribing the dynamical system. These additional equations requirethe evaluation of partial derivatives, and so a technique known as the tablealgorithm, which can be used to exactly and automatically compute thesederivatives, is described. A C++ c",
+      "discovery_engine": "exa",
+      "discovery_query": "compute_tool::sensitivity analysis C++",
+      "first_seen_at": "2026-08-07T04:10:19+00:00",
+      "high_value": true,
+      "host": "experts.boisestate.edu",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:10:19+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 43996,
+        "checked_at": "2026-08-07T04:10:28+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "74f98e460d64a6ec83c0",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Sensitivity analysis of a dynamical system using C++\n      -  Boise State University",
+      "trusted_domain": true,
+      "url": "https://experts.boisestate.edu/en/publications/sensitivity-analysis-of-a-dynamical-system-using-c-2/"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
       "description": "Data Home\n\nSkip to main menuSkip to main content\n\n# IMF DATA\n\n### ACCESS TO ECONOMIC AND FINANCIAL DATA\n\nPopular search requests:\n\n### Latest Updates\n\n### Global Trusted Data Commons with StatGPT\n\nAI TOOL FOR ACCESSING OFFICIAL STATISTICS (PREVIEW RELEASE)Disclaimer: Performance, availability, and functionality may vary as the service continues to mature.\n\n### IMF Data Brief: Monetary and Financial Statistics\n\nDATA BRIEFCurrency Liquid Deposits Continue to Rise\n\n### 14th IMF Statistical Forum\n\nNEWSMeasuring the Economy in the Era of Big Data and AI\n\n### World Economic Outlook July 2026\n\nNEWSGlobal Economy in Crosscurrents of War and Technology\n\n### New Global Standards for Macroeconomic Statistics\n\nNEWSThe International Monetary Fund (IMF) has released the seventh edition of the Integrated",
       "discovery_engine": "exa",
       "discovery_query": "\"API\" \"macroeconomics\" (department OR \"research report\") \"global\"",
@@ -809,6 +896,35 @@
       "title": "Data Home",
       "trusted_domain": true,
       "url": "https://data.imf.org/"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "# American Samoa Data Project\n\nDecember 23, 2024\n\nThis dashboard provides information on American Samoa coral reef monitoring programs, data collection methods, and site-specific location data. Benthic cover, coral reef fish surveys, and environmental data can easily be displayed in interactive ways to support and inform American Samoa coral reef stewardship.\n\nThis dashboard provides information on American Samoa coral reef monitoring programs, data collection methods, and site-specific location data. Benthic cover, coral reef fish surveys, and environmental data can easily be displayed in interactive ways to support and inform American Samoa coral reef stewardship. [...] Within American Samoa, there are five distinct coral reef-related groups associated with various agencies, each with their unique areas of focus and survey methods in support of their respective goals. Additionally, the NOAA Pacific Islands Fisheries Science Center conducts coral reef monitoring in American Samoa every 3–5 years. Other coral reef data sources in American Samoa may also originate from standalone projects that are not a part of any long-term monitoring programs and objectives. The objectives of this project are to:\n\nLast updated by\nPacific Islands Fisheries Science Center\non 01/21/2025\n\nScroll to Top Icon\nSign Up Mail Button\nNOAA Logo [...] Internet Explorer lacks support for the features of this website. For the best experience, please use a modern browser such as Chrome, Firefox, or Edge.\n\nU.S. flag\n\nA .gov website belongs to an official government organization in the United States.\n\nA loc",
+      "discovery_engine": "tavily",
+      "discovery_query": "regional_source::research integrity American Samoa open data",
+      "first_seen_at": "2026-08-07T04:09:45+00:00",
+      "high_value": true,
+      "host": "www.fisheries.noaa.gov",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:09:45+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-07T04:10:25+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "7909e9e091e83aaa5237",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "American Samoa Data Project | NOAA Fisheries",
+      "trusted_domain": true,
+      "url": "https://www.fisheries.noaa.gov/resource/tool-app/american-samoa-data-project"
     },
     {
       "auth": "none",
@@ -955,6 +1071,64 @@
     {
       "auth": "none",
       "catalog_url": null,
+      "description": "Log in \n\n\n\nImage 11: PMC search open iconImage 12: PMC search close ison\n\nSearch PMC Full-Text Archive \n\nSearch in PMCImage 13: Search\n\n   Journal List\n   User Guide\n\n As a library, NLM provides access to scientific literature. Inclusion in an NLM database does not imply endorsement of, or agreement with, the contents by NLM or the National Institutes of Health.\n\n Learn more: PMC Disclaimer | PMC Copyright Notice\n\nImage 14: Accountability in research logo\n\nAccount Res\n\n. 2017 May 26;24(6):367. doi: 10.1080/08989621.2017.1334556\n\n   Search in PMC\n   Search in PubMed\n   View in NLM Catalog\n   Add to search\n\n# Fostering Research Integrity\n\nDavid B Resnik\n\n### David B Resnik\n\n Find articles by David B Resnik\n\n, Adil E Shamoo\n\n### Adil E Shamoo\n\n Find articles by Adil E Shamoo [...] ## :e5738. doi: 10.1371/journal.pone.0005738 [DOI] [PMC free article] [PubMed] [Google Scholar]\n   .Kalichman MW. Responding to challenges in educating for the responsible conduct of research. _Academic Medicine_. 2007. 82(9):870-875. doi: 10.1097/ACM.0b013e31812f77fe [DOI] [PubMed] [Google Scholar]\n   .Kornfeld DS. Perspective: research misconduct: the search for a remedy. _Academic Medicine_. 2012. 87(7):877-882. doi: 10.1097/ACM.0b013e318257ee6a [DOI] [PubMed] [Google Scholar]\n   .In: Macrina F, editors. _Scientific Integrity_. Washington, DC: American Society for Microbiology Press; 2014.  [Google Scholar]\n   ._Responsible Science: Ensuring the Integrity of the Research Process_. Washington, DC: National Academies Press; 1992. 1: [Google Scholar] [...] .Shamoo AE, Annau Z. Ensuring scientific int",
+      "discovery_engine": "tavily",
+      "discovery_query": "publication::research integrity archive",
+      "first_seen_at": "2026-08-07T04:09:59+00:00",
+      "high_value": true,
+      "host": "pmc.ncbi.nlm.nih.gov",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:09:59+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-07T04:10:25+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "8434449ebee952426343",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Fostering Research Integrity",
+      "trusted_domain": true,
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6092950"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Due to lags in the availability of data for various components of GDP, the statistics presented today for 2022 are preliminary estimates. For example, data covering government spending and imports of goods for the fourth quarter of 2022 were not available in time for incorporation into this year’s estimates of GDP. As additional source data become available, BEA will incorporate the information and will release updated estimates once a year.\n\nFor more information on the data sources underlying these estimates, see Summary of Methodologies: Gross Domestic Product for American Samoa, the Commonwealth of the Northern Mariana Islands, Guam, and the U.S. Virgin Islands. [...] Updates to American Samoa GDP and Its Components\n\nEstimates for 2018–2021 that were released on September 1, 2022, have been revised to incorporate updates to source data including the following:\n\n Value of imported goods by type from the American Samoa Department of Commerce.\n Audited financial statements for the American Samoa government and its independent agencies.\n Residential electricity revenue and sales for American Samoa from the U.S. Energy Information Administration’s Annual Electric Power Industry Report.\n Wage and employment information from the U.S. Census Bureau County Business Patterns.\n\nThe revised estimates exhibit a pattern of inflation-adjusted GDP growth similar to the previously published estimates (table 1.7). [...] Exports of goods and services increased 3.0 percent, primarily reflecting an increase in exports of canned tuna and related products. Data from the U.S. Census Bureau U.S.",
+      "discovery_engine": "tavily",
+      "discovery_query": "regional_source::research integrity American Samoa open data",
+      "first_seen_at": "2026-08-07T04:09:45+00:00",
+      "high_value": true,
+      "host": "www.bea.gov",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:09:45+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 50351,
+        "checked_at": "2026-08-07T04:10:25+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 206
+      },
+      "score": 72,
+      "source_id": "8578a0ba34ea9f8f697c",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Gross Domestic Product for American Samoa, 2022 | U.S. Bureau of Economic Analysis (BEA)",
+      "trusted_domain": true,
+      "url": "https://www.bea.gov/news/2023/gross-domestic-product-american-samoa-2022"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
       "description": "##### \n\nPublications, tabular data, and climate related resources for American Samoa\n\n##### \n\nReal time weather station and stream gauge data for American Samoa\n\n## Top Climate Datasets\n\nThe ASCDP provides a list of top climate datasets for American Samoa\n\n## Coral Reef Advisory Group (CRAG) Library\n\nAccess literature on coral reefs in American Samoa through the CRAG Library on the ASCDP\n\n# Other American Samoa Data Tools\n\nThe Coastal Resilience Evaluation & Siting Tool is an interactive display of the Regional Coastal Resilience Assessments\n\nThis NOAA Sea Level Rise viewer provides a preliminary look at sea level rise and coastal flooding impacts\n\nThe PacIOOS American Samoa Coral Reef Drivers tool reveals how environmental and human factors shape coral reef spatial patterns [...] A partner project of the Hawai‘i Climate Data Portal\n\n# American Samoa Climate Data Portal\n\nThe American Samoa Climate Data Portal’s goal is to assist climate adaptation and natural resource managers in American Samoa by providing access to new and existing web-based tools that provide open access to GIS and climate-related data. These tools can enable managers and community members to collect, download, and view relevant data, facilitating a wide range of adaptation and management activities.\n\n### Geospatial Portal\n\n### Environmental Data Portal\n\n### Real-Time Monitoring and Gridded Data Portal\n\nExplore American Samoa’s geospatial data including shapefiles and rasters of biological, geological, political, and climate related data\n\n##### [...] SONEL provides high-quality continuous measurements of",
       "discovery_engine": "tavily",
       "discovery_query": "institution::library climate data portal",
@@ -963,7 +1137,7 @@
       "host": "www.hawaii.edu",
       "integrated_at": "2026-08-06T04:43:25+00:00",
       "integration_mode": "fixed-url-read-only-registry",
-      "last_seen_at": "2026-08-06T04:42:17+00:00",
+      "last_seen_at": "2026-08-07T04:09:45+00:00",
       "license": "unknown",
       "probe": {
         "bytes_sampled": 65536,
@@ -1038,6 +1212,35 @@
       "title": "Jeff Dean | Stanford HAI",
       "trusted_domain": true,
       "url": "https://hai.stanford.edu/people/jeff-dean"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Bhutan - World Bank Enterprise Survey 2024\n\n- Data files\n- Bhutan-2024-full-data.dta\n\n## Total number of hotel rooms in the last FY (d1a6a)\n\n##### Data file: Bhutan-2024-full-data.dta\n\n### Overview\n\nValid: 17\n\nInvalid: 138\n\nMinimum: 15\n\nMaximum: 83\n\nType: Discrete\n\nDecimal: 0\n\nStart: 236\n\nEnd: 237\n\nWidth: 2\n\nRange: 15 - 83\n\nFormat: Numeric\n\n## Questions and instructions\n\nCategories\n\n0%\n\n5.9%\n\n5.9%\n\n17.6%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n5.9%\n\n| Value | Category | Cases |\n| --- | --- | --- |\n| -9 | Don't know (spontaneous) | 0 |\n| 15 | 1 |\n| 16 | 1 |\n| 20 | 3 |\n| 21 | 1 |\n| 30 | 1 |\n| 31 | 1 |\n| 33 | 1 |\n| 38 | 1 |\n| 44 | 1 |\n| 45 | 1 |\n| 47 | 1 |\n| 51 | 1 |\n| 66 | 1 |\n| 70 | 1 |\n| 83 | 1 |\n| Sysmiss | 138 |\n\nWarning: these figures indicate the number of ca",
+      "discovery_engine": "exa",
+      "discovery_query": "regional_source::tourism Bhutan open data",
+      "first_seen_at": "2026-08-07T04:10:01+00:00",
+      "high_value": true,
+      "host": "microdata.worldbank.org",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:10:01+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 56165,
+        "checked_at": "2026-08-07T04:10:25+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "8feac28a83589ab6b0a4",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Bhutan - World Bank Enterprise Survey 2024",
+      "trusted_domain": true,
+      "url": "https://microdata.worldbank.org/catalog/6417/variable/F1/V81?name=d1a6a"
     },
     {
       "auth": "none",
@@ -1152,6 +1355,35 @@
       "title": "API - Documents - Open Data Portal - USPTO",
       "trusted_domain": true,
       "url": "https://data.uspto.gov/apis/patent-file-wrapper/documents"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "There are currently 574 federally recognized tribes in the U.S.6 Although the UNDRIP grants all Indigenous peoples inherent rights to self-determination, there are approximately 400 nonfederally recognized Indigenous tribes in the U.S.,7 and the Indigenous communities in Puerto Rico, Guam, American Samoa, the Virgin Islands, the Northern Mariana Islands, the Republic of the Marshall Islands, the Federated States of Micronesia, and the Republic of Palau are also not federally recognized.8 Although tribal sovereignty in the U.S. was affirmed in _Worcester v. Georgia_9 and despite continual Indigenous resistance, history abounds with examples of theft of lands; genocide; forced relocation, sterilization, and assimilation; and other grave harms perpetuated by colonial governments and federal [...] the cultural sensitivity of survey and interview questions while maintaining scientific integrity. These changes, along with tribal IRB approval, which helps ensure study participants that the research has direct oversight from the Band, likely improved participant recruitment.77 [...] 59..For example, University of Minnesota, “_Board of Regents Policy”; “Open Research and Free Interchange of Information_,” University of Wisconsin, policy number UW-4006, revised January 28, 2015,  University, Harvard University Research Policy: _Openness in Research, effective date_ September 2014,  University, “_Brown University Openness in Research Policy_,” last updated January 4, 2018,  [Google Scholar] [Google Scholar] [Google Scholar]\n   60.. Robinson, “_Corrupting Research Integrity_.” [Google ",
+      "discovery_engine": "tavily",
+      "discovery_query": "regional_source::research integrity American Samoa open data",
+      "first_seen_at": "2026-08-07T04:09:45+00:00",
+      "high_value": true,
+      "host": "pmc.ncbi.nlm.nih.gov",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:09:45+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-07T04:10:24+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "9717b12ec31d115aed2e",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Navigating University Openness in Research Policy Inconsistent with Indigenous Data Sovereignty: A Case Analysis",
+      "trusted_domain": true,
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11044593"
     },
     {
       "auth": "none",
@@ -1329,6 +1561,35 @@
     {
       "auth": "none",
       "catalog_url": null,
+      "description": "laboratories, other public or private institutions, and individuals are eligible to apply for an award under this opportunity. Eligible entities include faith-based organizations, community-based organizations, and American Indian/Alaska Native/Native American (AI/AN/NA) organizations. Eligible entities include foreign organizations and foreign components of domestic organizations, if the proposed activity provides a domestic benefit, such as promoting research integrity among PHS-funded institutions both within the U.S. and abroad. [...] --\n\n## Grantor contact information\n\n### Description\n\nArmineh Ghazarian Armineh.Ghazarian@hhs.gov\n\n#### Email\n\nArmineh.Ghazarian@hhs.gov\n\nArmineh.Ghazarian@hhs.gov\n\n## Documents\n\n| File name | Description | Last updated |\n --- \n| IR-ORI-25-001\\_Research\\_on\\_Research\\_Integrity.pdf | IR-ORI-25-001 Research on Research Integrity.pdf | Jul 18, 2025 03:43 PM UTC |\n\n### Link to additional information\n\n--\n\nClosed: July 30, 2025\n\nApplication process\n\nThis site is a work in progress. Go to www.grants.gov to apply, track application status, and subscribe to updates.\n\n## Award\n\n$500,000\n\nProgram Funding\n\n2\n\nExpected awards\n\n$150,000\n\nAward Minimum\n\n$250,000\n\nAward Maximum\n\nFunding opportunity number:\n\nIR-ORI-25-001\n\nCost sharing or matching requirement:\n\nNo\n\nFunding instrument type:\n\nGrant [...] of misconduct and their impact on deterring future issues, ensuring that responses reinforce a commitment to integrity and accountability. We expect to fund awards in 12-month budget periods for a total period of performance up to 24 months. Recipients must ",
+      "discovery_engine": "tavily",
+      "discovery_query": "regional_source::research integrity American Samoa open data",
+      "first_seen_at": "2026-08-07T04:09:45+00:00",
+      "high_value": true,
+      "host": "simpler.grants.gov",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:09:45+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-07T04:10:24+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "a70b13028bccd9cf093b",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Opportunity Listing - Ensuring Research Integrity - Research on Research Integrity (RRI)",
+      "trusted_domain": true,
+      "url": "https://simpler.grants.gov/opportunity/13432101-8cbc-4700-bb10-b7051b776d64"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
       "description": "Methodology and Overview \nof the IMF’s World Revenue \nLongitudinal Database \nMario Mansour, Marijn Verhoeven, Fayçal Sawadogo, \nand Benedict Chu Sheen Tan \nTNM/2025/04 \n\nNOTES & MANUALS\n\nTECHNICAL\n\nTECHNICAL NOTES AND MANUALS\n\nMethodology and Overview of the IMF’s World Revenue\n\nLongitudinal Database Mario Mansour, Marijn Verhoeven, Fayçal Sawadogo, and Benedict Chu Sheen Tan\n\nAuthorized for distribution by Ruud de Mooij\n\nThis note presents the methodology behind the IMF’s World Revenue Longitudinal Database, a comprehensive data set that tracks government revenue trends since the early 1990s. With data for 193 countries, including 190 IMF member countries, the World Revenue Longitudinal Database provides policymakers, researchers, and the public with invaluable insights into the evolution",
       "discovery_engine": "exa",
       "discovery_query": "\"data catalog\" \"macroeconomics\" (department OR \"research report\") \"global\"",
@@ -1383,6 +1644,35 @@
       "title": "World Bank Open Data | Data",
       "trusted_domain": true,
       "url": "https://data.worldbank.org/"
+    },
+    {
+      "auth": "none",
+      "catalog_url": null,
+      "description": "Log in \n\n\n\nImage 11: PMC search open iconImage 12: PMC search close ison\n\nSearch PMC Full-Text Archive \n\nSearch in PMCImage 13: Search\n\n   Journal List\n   User Guide\n\n As a library, NLM provides access to scientific literature. Inclusion in an NLM database does not imply endorsement of, or agreement with, the contents by NLM or the National Institutes of Health.\n\n Learn more: PMC Disclaimer | PMC Copyright Notice\n\nImage 14: Journal of Korean Medical Science logo\n\nJ Korean Med Sci\n\n. 2023 Nov 27;38(47):e405. doi: 10.3346/jkms.2023.38.e405\n\n   Search in PMC\n   Search in PubMed\n   View in NLM Catalog\n   Add to search\n\n# Research Integrity: Where We Are and Where We Are Heading\n\nAlikhan Zhaksylyk\n\n### Alikhan Zhaksylyk [...] ##  refers to a set of moral and ethical standards that serve as the foundation for the execution of research activities. Integrity in research is the incorporation of principles of honesty, transparency, and respect for ethical standards and norms throughout all stages of the research endeavor, encompassing study design, data collecting, analysis, reporting, and publishing. The preservation of RI is of utmost importance to uphold the credibility and amplify the influence of scientific research while also preventing and dealing with instances of scientific misconduct. Researchers, institutions, journals, and readers share responsibilities for preserving RI. Researchers must adhere to the highest ethical standards. Institutions have a role in establishing an atmosphere that supports [...] 17.Silver JK, Gavini N. The push-pull mentoring model: ensuring the su",
+      "discovery_engine": "tavily",
+      "discovery_query": "publication::research integrity archive",
+      "first_seen_at": "2026-08-07T04:09:59+00:00",
+      "high_value": true,
+      "host": "pmc.ncbi.nlm.nih.gov",
+      "integrated_at": "2026-08-07T04:10:54+00:00",
+      "integration_mode": "fixed-url-read-only-registry",
+      "last_seen_at": "2026-08-07T04:09:59+00:00",
+      "license": "unknown",
+      "probe": {
+        "bytes_sampled": 65536,
+        "checked_at": "2026-08-07T04:10:25+00:00",
+        "content_type": "text/html",
+        "machine_readable": false,
+        "ok": true,
+        "status": 200
+      },
+      "score": 72,
+      "source_id": "b0d86fac03e4e87228da",
+      "source_type": "web_read",
+      "status": "integrated",
+      "title": "Research Integrity: Where We Are and Where We Are Heading",
+      "trusted_domain": true,
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10695751"
     },
     {
       "auth": "none",
@@ -1702,5 +1992,5 @@
       "url": "https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/consumerpriceinflation"
     }
   ],
-  "updated_at": "2026-08-06T04:43:26+00:00"
+  "updated_at": "2026-08-07T04:10:54+00:00"
 }
