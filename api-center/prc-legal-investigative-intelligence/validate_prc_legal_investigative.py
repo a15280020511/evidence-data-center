@@ -11,6 +11,7 @@ SAMPLES = {
     "catalog-capabilities": {},
     "source-catalog": {"topic": "electronic_evidence", "limit": 20},
     "source-route": {"source_id": "public-security-electronic-evidence-rules"},
+    "investigative-evidence-matrix": {"limit": 100},
     "joint-audit-plan": {"risk_topics": ["electronic_evidence", "personal_information", "geospatial"]},
 }
 
@@ -42,6 +43,7 @@ def validate(operation: str) -> dict[str, object]:
         assert metadata["captcha_solving"] is False
         assert metadata["waf_bypass"] is False
         assert metadata["investigation_evasion"] is False
+        assert metadata["technical_surveillance_details"] is False
         assert diagnostics["secret_values_exposed"] is False
         assert diagnostics["model_calls"] == 0
         return {"status": "PASS", "operation": operation, "provider_catalog": CATALOG_PATH.name}

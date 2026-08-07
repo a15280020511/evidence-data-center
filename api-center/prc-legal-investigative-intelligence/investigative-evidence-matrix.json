@@ -1,0 +1,260 @@
+{
+  "schema_version": "prc-investigative-evidence-matrix-v1",
+  "reviewed_at": "2026-08-07",
+  "jurisdiction": "PRC_MAINLAND",
+  "purpose": "Public-law defensive compliance matrix describing legal authority, evidence classes, procedural safeguards and provider-cooperation duties relevant to data/tool risk review. It is not an operational surveillance manual and must not be used for investigation evasion, identity concealment, evidence destruction or defeating lawful access.",
+  "safety_boundary": {
+    "investigation_evasion_allowed": false,
+    "identity_concealment_allowed": false,
+    "evidence_destruction_allowed": false,
+    "anti_forensics_allowed": false,
+    "access_control_bypass_allowed": false,
+    "technical_surveillance_implementation_details_allowed": false,
+    "lawful_public_source_analysis_allowed": true
+  },
+  "authority_layers": [
+    {
+      "authority_id": "criminal-procedure-law-current",
+      "name": "中华人民共和国刑事诉讼法（现行）",
+      "authority_level": "LAW_PRIMARY",
+      "official_hosts": ["flk.npc.gov.cn", "npc.gov.cn"],
+      "effective_state": "current",
+      "topics": ["criminal_procedure", "evidence", "investigation", "search", "seizure", "query_freeze", "appraisal", "identification", "technical_investigation"],
+      "review_role": "Primary legal framework for criminal investigation powers, evidence and procedural safeguards."
+    },
+    {
+      "authority_id": "public-security-criminal-procedure-2020",
+      "name": "公安机关办理刑事案件程序规定（2020修正）",
+      "authority_level": "DEPARTMENT_RULE_PRIMARY_PROCEDURE",
+      "official_hosts": ["mps.gov.cn", "moj.gov.cn", "gov.cn"],
+      "effective_state": "current_unless_superseded_by_later_official_publication",
+      "topics": ["criminal_case", "evidence", "interrogation", "witness", "inspection", "search", "seizure", "query_freeze", "appraisal", "identification", "technical_investigation"],
+      "review_role": "Operational procedural framework for public-security criminal cases; verify current text before high-stakes reliance."
+    },
+    {
+      "authority_id": "electronic-data-evidence-2016",
+      "name": "关于办理刑事案件收集提取和审查判断电子数据若干问题的规定",
+      "authority_level": "JOINT_JUDICIAL_PUBLIC_SECURITY_RULE_PRIMARY",
+      "official_hosts": ["court.gov.cn", "spp.gov.cn", "gov.cn", "mps.gov.cn"],
+      "effective_state": "current_unless_officially_superseded",
+      "topics": ["electronic_evidence", "online_collection", "remote_examination", "storage_media", "hash", "backup", "freeze", "logs", "identity_attribution", "authenticity", "legality", "relevance"],
+      "review_role": "Primary electronic-evidence collection, integrity, transfer and admissibility reference."
+    },
+    {
+      "authority_id": "cybersecurity-law-2025-current",
+      "name": "中华人民共和国网络安全法（2025修正，2026-01-01施行）",
+      "authority_level": "LAW_PRIMARY",
+      "official_hosts": ["flk.npc.gov.cn", "npc.gov.cn", "cac.gov.cn"],
+      "effective_state": "current",
+      "topics": ["network_security", "operator_duties", "technical_support_and_assistance", "network_data", "security_monitoring"],
+      "review_role": "Current cybersecurity baseline, including lawful technical-support and assistance duties."
+    },
+    {
+      "authority_id": "data-security-law",
+      "name": "中华人民共和国数据安全法",
+      "authority_level": "LAW_PRIMARY",
+      "official_hosts": ["flk.npc.gov.cn", "npc.gov.cn"],
+      "effective_state": "current",
+      "topics": ["lawful_data_collection", "data_security", "important_data", "law_enforcement_data_request", "strict_approval"],
+      "review_role": "Data acquisition legality and law-enforcement data-request boundary; lawful requests require prescribed approval procedures."
+    },
+    {
+      "authority_id": "personal-information-protection-law",
+      "name": "中华人民共和国个人信息保护法",
+      "authority_level": "LAW_PRIMARY",
+      "official_hosts": ["flk.npc.gov.cn", "npc.gov.cn"],
+      "effective_state": "current",
+      "topics": ["personal_information", "sensitive_personal_information", "state_organs", "necessity", "scope_limit", "cross_border"],
+      "review_role": "Personal-information baseline, including special limits on state-organ processing to statutory authority, procedure and necessary scope."
+    },
+    {
+      "authority_id": "network-data-security-regulation",
+      "name": "网络数据安全管理条例",
+      "authority_level": "ADMINISTRATIVE_REGULATION_PRIMARY",
+      "official_hosts": ["gov.cn", "cac.gov.cn", "xzfg.moj.gov.cn"],
+      "effective_state": "current_since_2025-01-01",
+      "topics": ["network_data", "incident_reporting", "regulatory_inspection", "important_data", "personal_information", "cross_border", "law_enforcement_cooperation"],
+      "review_role": "Current network-data governance and regulatory-supervision framework."
+    },
+    {
+      "authority_id": "anti-telecom-fraud-law",
+      "name": "中华人民共和国反电信网络诈骗法",
+      "authority_level": "LAW_PRIMARY_SPECIAL",
+      "official_hosts": ["flk.npc.gov.cn", "npc.gov.cn", "miit.gov.cn"],
+      "effective_state": "current",
+      "topics": ["real_name", "telecom", "internet_service", "financial_accounts", "transaction_monitoring", "fund_query_freeze", "service_provider_assistance", "logs", "traceability"],
+      "review_role": "Special anti-fraud rules for telecom, internet, financial and platform records, risk monitoring and lawful assistance."
+    },
+    {
+      "authority_id": "public-security-administrative-procedure-2018",
+      "name": "公安机关办理行政案件程序规定（2018修正）",
+      "authority_level": "DEPARTMENT_RULE_ADMIN_PROCEDURE",
+      "official_hosts": ["mps.gov.cn", "moj.gov.cn"],
+      "effective_state": "current_unless_superseded_by_later_official_publication",
+      "topics": ["administrative_case", "electronic_data", "inspection", "inquiry", "evidence_preservation", "appraisal", "identification"],
+      "review_role": "Administrative-case evidence and investigation procedure; verify against later amendments and current substantive law."
+    },
+    {
+      "authority_id": "public-security-administration-punishments-law-2025",
+      "name": "中华人民共和国治安管理处罚法（2025修订，2026-01-01施行）",
+      "authority_level": "LAW_PRIMARY",
+      "official_hosts": ["flk.npc.gov.cn", "npc.gov.cn"],
+      "effective_state": "current",
+      "topics": ["public_security_administration", "administrative_evidence", "rights", "procedure"],
+      "review_role": "Current substantive public-security administration law; use together with the current administrative-case procedure rules."
+    },
+    {
+      "authority_id": "anti-unfair-competition-law-2025",
+      "name": "中华人民共和国反不正当竞争法（2025修订）",
+      "authority_level": "LAW_PRIMARY_COMMERCIAL_DATA",
+      "official_hosts": ["flk.npc.gov.cn", "npc.gov.cn", "samr.gov.cn"],
+      "effective_state": "current_since_2025-10-15",
+      "topics": ["commercial_data", "platform_data", "technical_measures", "competition", "trade_secret"],
+      "review_role": "Commercial/platform data acquisition and competition-risk boundary."
+    },
+    {
+      "authority_id": "state-secrets-law-2024",
+      "name": "中华人民共和国保守国家秘密法（2024修订）及实施条例",
+      "authority_level": "LAW_AND_REGULATION_SPECIAL_REDLINE",
+      "official_hosts": ["flk.npc.gov.cn", "gjbmj.gov.cn"],
+      "effective_state": "current",
+      "topics": ["state_secret", "confidentiality", "restricted_information", "data_redline"],
+      "review_role": "Independent state-secret redline; overrides ordinary public-data assumptions when applicable."
+    }
+  ],
+  "evidence_and_investigative_categories": [
+    {
+      "category_id": "identity-and-account-attribution",
+      "name": "身份、账号与现实主体关联",
+      "legal_view": "Electronic-evidence rules recognize user registration, identity-authentication and related records; network identity may be assessed together with IP, network activity, terminal attribution and other evidence.",
+      "evidence_examples": ["user_registration_record", "identity_authentication_record", "account_profile_record", "service_subscription_record", "terminal_attribution_record"],
+      "defensive_use": "Assess whether a tool/account action can reasonably be linked to a real person or organization.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "network-and-service-logs",
+      "name": "网络、平台与服务日志",
+      "legal_view": "Electronic evidence can include communication records, login logs and other service records. Some specialized laws require traceable service logs in defined contexts.",
+      "evidence_examples": ["login_log", "access_log", "communication_record", "domain_resolution_record", "redirect_record", "cloud_service_log", "application_audit_log"],
+      "defensive_use": "Model what audit trails may exist and whether retention/provenance controls are needed.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "communications-and-content",
+      "name": "通信与内容类电子数据",
+      "legal_view": "Electronic evidence can include SMS, email, instant messages, group communications, public web content, cloud files and other electronic files when lawfully collected.",
+      "evidence_examples": ["sms", "email", "instant_message", "group_message", "public_post", "web_content", "cloud_file", "image_audio_video_document"],
+      "defensive_use": "Identify content classes that need privacy, secrecy and provenance controls.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "financial-and-transaction-records",
+      "name": "资金流、交易与支付记录",
+      "legal_view": "Transaction records are recognized electronic evidence; anti-fraud law establishes special mechanisms for suspicious-account monitoring and lawful fund query, stop-payment, freeze and return.",
+      "evidence_examples": ["bank_transaction_record", "payment_record", "merchant_record", "counterparty_record", "account_risk_record"],
+      "defensive_use": "Assess payment-account attribution and transaction audit exposure for lawful compliance review.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "device-and-storage-media",
+      "name": "设备、本地文件与原始存储介质",
+      "legal_view": "Rules address seizure/sealing of original storage media, extraction when media cannot be seized, backups, integrity checks and examination of electronic files.",
+      "evidence_examples": ["phone_or_computer_storage", "disk_or_memory_media", "document", "image", "audio_video", "digital_certificate", "program_file"],
+      "defensive_use": "Preserve lawful records and understand chain-of-custody requirements.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "online-and-remote-electronic-data",
+      "name": "网络在线数据与远程电子数据",
+      "legal_view": "The electronic-evidence framework recognizes online extraction and defines remote network examination as an investigation activity subject to legal procedure.",
+      "evidence_examples": ["online_extracted_data", "remote_system_state_record", "network_transmission_data", "cloud_hosted_record"],
+      "defensive_use": "Classify remotely hosted evidence and require source/time/integrity documentation.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "lawful-data-request-and-provider-assistance",
+      "name": "依法调取与平台/运营商协助",
+      "legal_view": "Data Security Law requires prescribed strict approval for public-security or state-security data requests; cybersecurity and anti-fraud laws impose defined technical-support or assistance duties in lawful cases.",
+      "evidence_examples": ["lawful_request_receipt", "provider_response_record", "account_or_service_record", "technical_assistance_record"],
+      "defensive_use": "Assess whether provider-held records may be lawfully requested and whether internal response procedures are needed.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "inspection-search-seizure-and-preservation",
+      "name": "勘验检查、搜查、查封扣押与证据保全",
+      "legal_view": "Criminal and administrative procedures contain legally defined investigation and preservation measures with procedural requirements.",
+      "evidence_examples": ["inspection_record", "search_record", "seizure_inventory", "sealed_media", "evidence_preservation_record"],
+      "defensive_use": "Map procedural provenance and legal-authority checkpoints, not physical countermeasures.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "query-freeze-and-preservation-orders",
+      "name": "查询、冻结与数据保全",
+      "legal_view": "Criminal procedure and special anti-fraud rules provide lawful query/freeze mechanisms; electronic-evidence rules also recognize freezing electronic data to preserve integrity.",
+      "evidence_examples": ["query_order", "freeze_order", "freeze_status", "access_operation_log"],
+      "defensive_use": "Understand legal preservation exposure and maintain accurate auditable records.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "appraisal-identification-and-specialist-review",
+      "name": "鉴定、辨认与专门性审查",
+      "legal_view": "Criminal and administrative procedures provide appraisal/identification mechanisms; electronic-data specialized issues may require qualified technical explanation or appraisal.",
+      "evidence_examples": ["appraisal_opinion", "identification_record", "specialist_report", "technical_explanation"],
+      "defensive_use": "Separate raw evidence from expert interpretation and preserve methodological provenance.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "technical-investigation-legal-gate",
+      "name": "技术侦查的法定门槛",
+      "legal_view": "Criminal Procedure Law permits technical investigation only for statutorily specified serious cases after strict approval, within approved type, target and duration; unrelated material is subject to legal handling restrictions.",
+      "evidence_examples": ["approval_record", "authorized_scope_record", "lawful_evidence_material"],
+      "defensive_use": "Recognize that technical investigation exists as a tightly governed legal category; no implementation or avoidance details are provided.",
+      "operational_evasion_guidance": false,
+      "implementation_details_included": false
+    },
+    {
+      "category_id": "regulatory-supervision-and-inspection",
+      "name": "行政监管检查",
+      "legal_view": "Network-data regulators may, within statutory authority, request explanations, inspect or copy relevant records and inspect security measures/equipment; unrelated business information should not be collected under the network-data regulation.",
+      "evidence_examples": ["regulatory_explanation", "copied_record", "security_measure_check", "equipment_inspection_record"],
+      "defensive_use": "Prepare a documented compliance response and data-minimization boundary.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "cross-source-correlation",
+      "name": "跨来源关联与同一性判断",
+      "legal_view": "Identity and fact patterns may be assessed by combining multiple lawful records rather than relying on one identifier alone.",
+      "evidence_examples": ["registration_plus_login", "ip_plus_activity", "terminal_plus_account", "transaction_plus_account", "content_plus_timeline"],
+      "defensive_use": "Use a multi-signal attribution model when deciding whether a tool action is reasonably attributable to the user.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "integrity-chain-of-custody-and-admissibility",
+      "name": "完整性、证据链与可采性",
+      "legal_view": "Electronic evidence is reviewed for authenticity, legality and relevance; integrity can be supported by original media sealing, hashes, backups, video records, freeze/access logs, digital signatures/certificates and reproducible collection records.",
+      "evidence_examples": ["hash", "backup", "seal_record", "collection_record", "video_record", "access_log", "digital_signature", "digital_certificate", "source_timestamp"],
+      "defensive_use": "Preserve provenance and distinguish legally meaningful evidence from unverified screenshots or transformed data.",
+      "operational_evasion_guidance": false
+    },
+    {
+      "category_id": "rights-confidentiality-and-purpose-limits",
+      "name": "权利保护、保密与用途限制",
+      "legal_view": "State organs and investigators remain subject to statutory authority, procedure, necessity, confidentiality and use restrictions; state secrets, commercial secrets, personal privacy and personal information receive additional protection.",
+      "evidence_examples": ["authority_basis", "approval_record", "purpose_record", "scope_record", "confidentiality_record"],
+      "defensive_use": "Check both investigative authority and limits; lawful authority does not eliminate purpose, scope or confidentiality constraints.",
+      "operational_evasion_guidance": false
+    }
+  ],
+  "joint_review_logic": [
+    "yuandian_recall",
+    "current_official_law_validation",
+    "criminal_or_administrative_procedure_validation",
+    "electronic_evidence_rule_validation",
+    "provider_and_sector_specific_duties",
+    "evidence_and_attribution_category_mapping",
+    "rights_confidentiality_and_special_redline_check",
+    "technical_standard_mapping",
+    "final_risk_classification"
+  ],
+  "final_rule": "YuanDian broadens recall; current official law, regulation, judicial/procuratorial/public-security material and applicable provider terms control final conclusions. Unknown validity or supersession status is REVIEW_BEFORE_PRODUCTION."
+}
