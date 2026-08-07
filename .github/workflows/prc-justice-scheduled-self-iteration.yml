@@ -10,15 +10,14 @@ on:
         required: false
         default: "auto"
         type: choice
-        options:
-          - auto
-          - daily
-          - weekly
+        options: [auto, daily, weekly]
   pull_request:
     paths:
       - "api-center/prc-legal-investigative-intelligence/prc-justice-self-iteration-policy.json"
       - "api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration.py"
+      - "api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration_v2.py"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration.py"
+      - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration_v2.py"
       - "api-center/prc-legal-investigative-intelligence/investigative-technology-intelligence-matrix.json"
       - "api-center/prc-legal-investigative-intelligence/case-derived-investigative-capability-ledger.json"
       - ".github/workflows/prc-justice-scheduled-self-iteration.yml"
@@ -44,6 +43,7 @@ jobs:
       PROFILE: ${{ github.event.inputs.profile || 'auto' }}
       LEDGER: api-center/prc-legal-investigative-intelligence/case-derived-investigative-capability-ledger.json
       ITERATION_DIR: prc-justice-self-iteration-artifact
+
     steps:
       - name: Checkout current ref
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -55,42 +55,51 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Compile and validate self-iteration contract
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check --no-input jsonschema requests
+
+      - name: Compile and validate self-iteration contracts
         run: |
           set -euo pipefail
           python -m py_compile \
             api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration.py \
-            api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration.py
+            api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration_v2.py \
+            api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration.py \
+            api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration_v2.py
           python api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration.py | tee prc-justice-self-iteration-validation.json
-          python api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration.py \
+          python api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration_v2.py | tee prc-justice-self-iteration-v2-validation.json
+          python api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration_v2.py \
             --mode validate \
             --output-dir "$ITERATION_DIR"
 
       - name: Stop after zero-network validation on pull requests
         if: github.event_name == 'pull_request'
         run: |
+          set -euo pipefail
           python -m json.tool api-center/prc-legal-investigative-intelligence/prc-justice-self-iteration-policy.json >/dev/null
           python -m json.tool "$ITERATION_DIR/contract-validation.json" >/dev/null
           git diff --check
 
-      - name: Run bounded live case learning
+      - name: Run bounded live latest-practice learning
         id: live
         if: github.event_name != 'pull_request'
         continue-on-error: true
         run: |
           set -o pipefail
           rm -rf "$ITERATION_DIR"
-          python api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration.py \
+          python api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration_v2.py \
             --mode live \
             --profile "$PROFILE" \
             --write-ledger \
             --output-dir "$ITERATION_DIR" | tee prc-justice-self-iteration-run.json
 
       - name: Validate proposed ledger update
+        id: proposed_validation
         if: github.event_name != 'pull_request' && steps.live.outcome == 'success'
         run: |
           set -euo pipefail
           python api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration.py
+          python api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration_v2.py
           python api-center/prc-legal-investigative-intelligence/validate_investigative_technology_learning.py
           (
             cd api-center/prc-legal-investigative-intelligence
@@ -104,19 +113,19 @@ jobs:
 
       - name: Read iteration gate
         id: gate
-        if: github.event_name != 'pull_request' && steps.live.outcome == 'success'
+        if: github.event_name != 'pull_request' && steps.live.outcome == 'success' && steps.proposed_validation.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           from pathlib import Path
-          p = Path("prc-justice-self-iteration-artifact/self-iteration-report.json")
-          r = json.loads(p.read_text(encoding="utf-8"))
+          r = json.loads(Path("prc-justice-self-iteration-artifact/self-iteration-report.json").read_text(encoding="utf-8"))
           print(f"changed={'true' if r.get('ledger_changed') else 'false'}")
           print(f"eligible={'true' if r.get('auto_merge_eligible') else 'false'}")
           print(f"review_count={int(r.get('review_candidate_count') or 0)}")
           print(f"new_count={int(r.get('new_observation_count') or 0)}")
+          print(f"historical_count={int(r.get('historical_reference_count') or 0)}")
           print(f"status={r.get('status')}")
           PY
           if git diff --quiet -- "$LEDGER"; then
@@ -126,7 +135,7 @@ jobs:
           fi
 
       - name: Enforce ledger-only automatic write
-        if: github.event_name != 'pull_request' && steps.live.outcome == 'success' && steps.gate.outputs.changed == 'true'
+        if: github.event_name != 'pull_request' && steps.gate.outputs.changed == 'true'
         run: |
           set -euo pipefail
           mapfile -t changed < <(git diff --name-only)
@@ -137,7 +146,7 @@ jobs:
 
       - name: Create auditable iteration PR
         id: pr
-        if: github.event_name != 'pull_request' && steps.live.outcome == 'success' && steps.gate.outputs.changed == 'true'
+        if: github.event_name != 'pull_request' && steps.gate.outputs.changed == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -146,39 +155,31 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"
           git add "$LEDGER"
-          git commit -m "chore: absorb verified public PRC justice case observations"
+          git commit -m "chore: absorb verified recent PRC justice case observations"
           git push origin "$branch"
           cat > /tmp/pr-body.md <<EOF
-          Automated bounded PRC justice self-iteration.
+          Automated bounded PRC justice latest-practice iteration.
 
-          - New public primary-source observations: ${{ steps.gate.outputs.new_count }}
+          - New recent primary-source observations: ${{ steps.gate.outputs.new_count }}
+          - Historical references excluded from automatic latest-practice learning: ${{ steps.gate.outputs.historical_count }}
           - Review-only candidates: ${{ steps.gate.outputs.review_count }}
           - Automatic merge eligible: ${{ steps.gate.outputs.eligible }}
-          - Source policy: public/authorized primary sources only
-          - No login, CAPTCHA/WAF bypass, hidden API reverse engineering, proxy rotation, secret operational detail, investigation evasion, anti-forensics, or personal targeting
           - Source run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}
 
-          This PR only changes the append-only case-derived capability ledger.
+          Only the append-only case-derived capability ledger is changed. No login, CAPTCHA/WAF bypass, hidden API reverse engineering, proxy rotation, secret operational detail, investigation evasion, anti-forensics, or personal targeting is permitted.
           EOF
-          pr_url="$(gh pr create \
-            --repo "$GITHUB_REPOSITORY" \
-            --base main \
-            --head "$branch" \
-            --title "chore: PRC justice case-learning iteration ${GITHUB_RUN_ID}" \
+          pr_url="$(gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" \
+            --title "chore: PRC justice recent case-learning iteration ${GITHUB_RUN_ID}" \
             --body-file /tmp/pr-body.md)"
-          pr_number="$(gh pr view "$pr_url" --repo "$GITHUB_REPOSITORY" --json number --jq .number)"
-          head_sha="$(git rev-parse HEAD)"
           echo "branch=$branch" >> "$GITHUB_OUTPUT"
-          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
-          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
-          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          echo "number=$(gh pr view "$pr_url" --repo "$GITHUB_REPOSITORY" --json number --jq .number)" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Dispatch required validation checks on automation branch
         if: github.event_name != 'pull_request' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          branch="${{ steps.pr.outputs.branch }}"
           workflows=(
             prc-investigative-technology-learning-validate.yml
             prc-legal-investigative-validate.yml
@@ -191,7 +192,7 @@ jobs:
             codeql.yml
           )
           for workflow in "${workflows[@]}"; do
-            gh workflow run "$workflow" --repo "$GITHUB_REPOSITORY" --ref "$branch"
+            gh workflow run "$workflow" --repo "$GITHUB_REPOSITORY" --ref "${{ steps.pr.outputs.branch }}"
           done
           printf '%s\n' "${workflows[@]}" > /tmp/dispatched-workflows.txt
 
@@ -206,49 +207,31 @@ jobs:
           for workflow in "${workflows[@]}"; do
             run_id=""
             for _ in $(seq 1 30); do
-              run_id="$(gh run list \
-                --repo "$GITHUB_REPOSITORY" \
-                --workflow "$workflow" \
-                --branch "$branch" \
-                --event workflow_dispatch \
-                --limit 10 \
-                --json databaseId,headSha,createdAt \
+              run_id="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow "$workflow" --branch "$branch" \
+                --event workflow_dispatch --limit 10 --json databaseId,headSha \
                 --jq ".[] | select(.headSha == \"$head_sha\") | .databaseId" | head -n 1)"
-              if [[ -n "$run_id" ]]; then
-                break
-              fi
+              [[ -n "$run_id" ]] && break
               sleep 4
             done
-            if [[ -z "$run_id" ]]; then
-              echo "No dispatched run found for $workflow"
-              exit 1
-            fi
+            [[ -n "$run_id" ]] || { echo "No dispatched run found for $workflow"; exit 1; }
             gh run watch "$run_id" --repo "$GITHUB_REPOSITORY" --exit-status
           done
 
       - name: Merge verified iteration without branch-protection bypass
         if: github.event_name != 'pull_request' && steps.pr.outputs.number != '' && steps.gate.outputs.eligible == 'true'
-        shell: bash
         run: |
           set -euo pipefail
-          gh pr merge "${{ steps.pr.outputs.number }}" \
-            --repo "$GITHUB_REPOSITORY" \
-            --merge \
-            --delete-branch
+          gh pr merge "${{ steps.pr.outputs.number }}" --repo "$GITHUB_REPOSITORY" --merge --delete-branch
 
       - name: Record review-only candidates
-        if: github.event_name != 'pull_request' && steps.live.outcome == 'success' && steps.gate.outputs.review_count != '0'
+        if: github.event_name != 'pull_request' && steps.gate.outputs.review_count != '' && steps.gate.outputs.review_count != '0'
         shell: bash
         run: |
           set -euo pipefail
           title="[prc-justice-self-iteration-review] public case candidates require review"
-          body="Run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} produced ${{ steps.gate.outputs.review_count }} review-only candidates. They were not auto-absorbed because they failed a deterministic primary-source, conflict, safety, date, or known-capability gate. Review the run artifact; do not bypass login/CAPTCHA/WAF or collect secret operational details."
+          body="Run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} produced ${{ steps.gate.outputs.review_count }} review-only candidates. They were not auto-absorbed because a deterministic primary-source, conflict, safety, date, freshness, or known-capability gate did not pass."
           number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
-          if [[ -n "$number" ]]; then
-            gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"
-          else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
-          fi
+          if [[ -n "$number" ]]; then gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"; else gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"; fi
 
       - name: Record live discovery failure
         if: github.event_name != 'pull_request' && steps.live.outcome != 'success'
@@ -256,14 +239,20 @@ jobs:
         run: |
           set -euo pipefail
           title="[prc-justice-self-iteration] scheduled discovery failed"
-          body="Scheduled PRC justice self-iteration failed in ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. The system did not modify the ledger. Check whether at least one of EXA_API_KEY/TAVILY_API_KEY is configured and whether the bounded public-source routes are healthy."
+          body="Scheduled PRC justice self-iteration failed in ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. The ledger was not committed. Check discovery keys and bounded public-source health."
           number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
-          if [[ -n "$number" ]]; then
-            gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"
-          else
-            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"
-          fi
+          if [[ -n "$number" ]]; then gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"; else gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"; fi
           exit 1
+
+      - name: Record post-discovery pipeline failure
+        if: failure() && github.event_name != 'pull_request' && steps.live.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          title="[prc-justice-self-iteration] validation or merge pipeline failed"
+          body="Discovery completed, but a downstream validation/PR/merge gate failed in ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. No failed gate is bypassed; inspect the Artifact and workflow logs before any retry."
+          number="$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "$title in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number" | head -n 1)"
+          if [[ -n "$number" ]]; then gh issue comment "$number" --repo "$GITHUB_REPOSITORY" --body "$body"; else gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --body "$body"; fi
 
       - name: Upload self-iteration evidence
         if: always()
@@ -272,6 +261,7 @@ jobs:
           name: prc-justice-self-iteration-${{ github.run_id }}
           path: |
             prc-justice-self-iteration-validation.json
+            prc-justice-self-iteration-v2-validation.json
             prc-justice-self-iteration-run.json
             prc-justice-self-iteration-artifact/
           if-no-files-found: warn
