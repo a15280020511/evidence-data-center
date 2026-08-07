@@ -2,7 +2,15 @@
   "schema_version": "prc-open-intelligence-tool-registry-v1",
   "reviewed_at": "2026-08-07",
   "objective": "Retain high-value PRC intelligence capabilities while keeping production free-first, read-only, replaceable and compliant with the repository tool-admission policy.",
-  "production_rule": "A tool may be production_enabled only when the active capability is zero-cost, no automatic paid overage, read-only, bounded, license-scoped, does not require personal login state, and contains no proxy/CAPTCHA/fingerprint/denial-evasion path.",
+  "production_rule": "A tool may be production_enabled only when the active capability is zero-cost, has no automatic paid overage, is read-only and bounded, has a known compatible license, requires no personal login state, and contains no proxy/CAPTCHA/fingerprint/denial-evasion path.",
+  "allowed_statuses": [
+    "PRODUCTION_SAFE_READONLY",
+    "PROVISIONAL_SAFE_READONLY",
+    "CONTROLLED_SPECIAL_USE",
+    "QUARANTINED",
+    "REJECTED",
+    "DISABLED"
+  ],
   "tools": [
     {
       "id": "china-check-mcp",
@@ -14,11 +22,11 @@
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-07",
       "status": "PROVISIONAL_SAFE_READONLY",
+      "decision_reason_code": "REMOTE_FREE_TIER_REQUIRES_HEALTH_GATE",
       "production_enabled": true,
-      "integration": "api-center/prc-open-intelligence provider china-check",
-      "stability": "replaceable_remote_provider",
+      "integration": "provider:china-check",
       "fallback": "new independent task against official public company sources; never bypass an upstream denial",
-      "notes": "Hosted free tier is not treated as permanent contractual SLA; health checks and structured stop are mandatory."
+      "notes": "The hosted free tier is useful but not treated as a permanent SLA. Health checks and structured stop are mandatory."
     },
     {
       "id": "sinofacts-dataset",
@@ -30,9 +38,9 @@
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-08-06",
       "status": "PRODUCTION_SAFE_READONLY",
+      "decision_reason_code": "ATTRIBUTED_PUBLIC_SNAPSHOT",
       "production_enabled": true,
-      "integration": "api-center/prc-open-intelligence provider sinofacts",
-      "stability": "versioned_public_snapshot",
+      "integration": "provider:sinofacts",
       "fallback": "canonical company source URLs and existing web retrieval",
       "notes": "Periodic snapshot; attribution is preserved and the live paid verification layer is not used."
     },
@@ -45,12 +53,12 @@
       "key_required": false,
       "automatic_paid_overage": false,
       "maintenance_observed": "2026",
-      "status": "REFERENCE_IMPLEMENTATION_ONLY",
+      "status": "CONTROLLED_SPECIAL_USE",
+      "decision_reason_code": "OFFICIAL_SOURCE_ALREADY_PRIMARY",
       "production_enabled": false,
-      "integration": "official ccgp.gov.cn source already registered in PRC source plans; retain parser/scoring design as reference",
-      "stability": "official_source_preferred_over_third_party_crawler",
+      "integration": "reference parser/scoring design only",
       "fallback": "Tavily/Exa discovery then direct ccgp.gov.cn verification",
-      "notes": "Do not vendor the crawler as a production dependency; use official public pages and preserve its conservative no-proxy/no-CAPTCHA principles."
+      "notes": "Do not create a duplicate crawler dependency where the official public source is already registered."
     },
     {
       "id": "general-news-extractor",
@@ -62,11 +70,10 @@
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-03-08",
       "status": "CONTROLLED_SPECIAL_USE",
+      "decision_reason_code": "OPTIONAL_COPYLEFT_PARSER",
       "production_enabled": false,
-      "integration": "approved parser candidate behind fixed HTML input boundary",
-      "stability": "local_library_candidate",
-      "fallback": "existing web-retrieval deterministic HTML extraction",
-      "notes": "Useful parser, but keep as separable optional component so copyleft and dependency upgrades cannot silently change the main runtime."
+      "integration": "separable fixed-HTML parser candidate",
+      "fallback": "existing web-retrieval deterministic HTML extraction"
     },
     {
       "id": "rsshub",
@@ -78,11 +85,11 @@
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-08-07",
       "status": "CONTROLLED_SPECIAL_USE",
+      "decision_reason_code": "SELF_HOST_ROUTE_HEALTH_REQUIRED",
       "production_enabled": false,
-      "integration": "self-host candidate only; never depend on a public community instance as a production SLA",
-      "stability": "self_host_required_for_reliability",
+      "integration": "self-host candidate only",
       "fallback": "direct official RSS/Atom or existing web retrieval",
-      "notes": "Routes can break when source sites change; route-level health checks are required before promotion."
+      "notes": "Never depend on a public community instance as a production SLA."
     },
     {
       "id": "trendradar",
@@ -94,11 +101,10 @@
       "automatic_paid_overage": false,
       "maintenance_observed": "2026",
       "status": "CONTROLLED_SPECIAL_USE",
+      "decision_reason_code": "OVERLAPS_EXISTING_RADAR",
       "production_enabled": false,
-      "integration": "monitoring architecture/reference; existing radar remains primary",
-      "stability": "depends_on_newsnow_and_routes",
-      "fallback": "existing Information Tool Radar + RSS + web search",
-      "notes": "Avoid duplicate production stack while retaining its source/monitoring design as an upgrade candidate."
+      "integration": "monitoring architecture and upgrade reference",
+      "fallback": "existing Information Tool Radar plus RSS and web search"
     },
     {
       "id": "hanlp",
@@ -109,12 +115,12 @@
       "key_required": false,
       "automatic_paid_overage": false,
       "maintenance_observed": "2025-05",
-      "status": "APPROVED_CANDIDATE",
+      "status": "CONTROLLED_SPECIAL_USE",
+      "decision_reason_code": "MODEL_ASSETS_REQUIRE_SEPARATE_REVIEW",
       "production_enabled": false,
-      "integration": "local deterministic NLP candidate; model assets require separate license and reproducibility review",
-      "stability": "local_package_with_model_assets",
+      "integration": "local deterministic NLP candidate",
       "fallback": "existing text processing and model-free normalization",
-      "notes": "Code license is suitable; do not auto-download arbitrary models at runtime."
+      "notes": "Code license is suitable; arbitrary model downloads at runtime remain prohibited."
     },
     {
       "id": "cninfo-hedge-crawler",
@@ -125,12 +131,12 @@
       "key_required": false,
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-06-02",
-      "status": "REFERENCE_IMPLEMENTATION_ONLY",
+      "status": "CONTROLLED_SPECIAL_USE",
+      "decision_reason_code": "EVASION_SUBCAPABILITY_EXCLUDED",
       "production_enabled": false,
-      "integration": "retain announcement/PDF/SQLite parsing ideas; official CNINFO public access remains source",
-      "stability": "source_specific_crawler",
-      "fallback": "AKShare + official CNINFO pages + web retrieval",
-      "notes": "Its TLS fingerprint evasion behavior is not admitted; no evasion code enters production."
+      "integration": "announcement/PDF/SQLite parsing design reference",
+      "fallback": "AKShare plus official CNINFO pages plus web retrieval",
+      "notes": "TLS fingerprint-evasion behavior is not admitted."
     },
     {
       "id": "lawrefbook-laws",
@@ -142,27 +148,25 @@
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-06-03",
       "status": "QUARANTINED",
+      "decision_reason_code": "LICENSE_SCOPE_UNKNOWN",
       "production_enabled": false,
       "integration": "radar/reference only",
-      "stability": "license_scope_unknown",
-      "fallback": "official National Laws and Regulations Database and existing legal sources",
-      "notes": "No explicit repository license was found, so the free-license gate blocks production use."
+      "fallback": "official National Laws and Regulations Database and existing legal sources"
     },
     {
       "id": "opensanctions",
       "repository": "opensanctions/opensanctions",
       "role": "global_sanctions_and_entity_risk",
-      "license": "MIT_CODE_CC-BY-NC_DATA",
+      "license": "MIT_CODE_NONCOMMERCIAL_OR_LICENSED_DATA",
       "free_mode": "noncommercial_data_only",
       "key_required": false,
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-08-07",
-      "status": "REJECTED_FREE_COMMERCIAL_GATE",
+      "status": "REJECTED",
+      "decision_reason_code": "FREE_COMMERCIAL_DATA_GATE_FAILED",
       "production_enabled": false,
-      "integration": "software/data model may remain research reference; dataset not enabled",
-      "stability": "commercial_data_license_required_for_business_use",
-      "fallback": "official sanctions lists and public regulator sources",
-      "notes": "Current OpenSanctions policy requires a commercial data license for business use; this conflicts with the always-free production requirement."
+      "integration": "research reference only",
+      "fallback": "official sanctions lists and public regulator sources"
     },
     {
       "id": "weibo-spider",
@@ -174,11 +178,10 @@
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-02-04",
       "status": "CONTROLLED_SPECIAL_USE",
+      "decision_reason_code": "COOKIE_AND_PERSONAL_FIELD_RISK",
       "production_enabled": false,
       "integration": "research-only aggregated brand/event monitoring candidate",
-      "stability": "platform_policy_and_cookie_sensitive",
-      "fallback": "Trend/RSS/search public evidence",
-      "notes": "Default implementation can require cookies and exposes user-level fields; not eligible for unattended production."
+      "fallback": "trend/RSS/search public evidence"
     },
     {
       "id": "mediacrawler",
@@ -189,12 +192,11 @@
       "key_required": false,
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-08-05",
-      "status": "REJECTED_PRODUCTION",
+      "status": "REJECTED",
+      "decision_reason_code": "LOGIN_PROXY_AND_COMMERCIAL_SCOPE_CONFLICT",
       "production_enabled": false,
       "integration": "architecture reference only",
-      "stability": "login_signature_proxy_sensitive",
-      "fallback": "public trend/RSS/search sources",
-      "notes": "Login-state, proxy and platform-signature behavior conflicts with the production containment policy."
+      "fallback": "public trend/RSS/search sources"
     },
     {
       "id": "easyspider",
@@ -206,11 +208,11 @@
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-07-03",
       "status": "CONTROLLED_SPECIAL_USE",
+      "decision_reason_code": "GENERAL_BROWSER_REQUIRES_CAPABILITY_REDUCTION",
       "production_enabled": false,
-      "integration": "fixed-page extraction design reference only",
-      "stability": "general_browser_runtime",
+      "integration": "fixed-page extraction design reference",
       "fallback": "Browserless/Cloudflare fixed read-only flows",
-      "notes": "Repository includes CAPTCHA integration material; all such capability remains permanently disabled."
+      "notes": "CAPTCHA integrations remain permanently disabled."
     },
     {
       "id": "drissionpage",
@@ -221,12 +223,11 @@
       "key_required": false,
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-07-22",
-      "status": "REJECTED_PRODUCTION",
+      "status": "REJECTED",
+      "decision_reason_code": "COMMERCIAL_SCOPE_AND_OVERLAP_CONFLICT",
       "production_enabled": false,
       "integration": "technical radar only",
-      "stability": "overlaps_existing_cloud_browser",
-      "fallback": "Browserless/Cloudflare",
-      "notes": "Commercial-use restrictions and capability overlap make it unsuitable for the always-free production path."
+      "fallback": "Browserless/Cloudflare"
     },
     {
       "id": "pywencai",
@@ -237,12 +238,11 @@
       "key_required": false,
       "automatic_paid_overage": false,
       "maintenance_observed": "2025-05",
-      "status": "REJECTED_PRODUCTION",
+      "status": "REJECTED",
+      "decision_reason_code": "PERSONAL_LOGIN_STATE_REQUIRED",
       "production_enabled": false,
       "integration": "radar only",
-      "stability": "cookie_and_upstream_strategy_sensitive",
-      "fallback": "AKShare and official/approved financial sources",
-      "notes": "Current upstream access requires a cookie; personal login state is not admitted."
+      "fallback": "AKShare and official/approved financial sources"
     },
     {
       "id": "public-proxy-pools",
@@ -253,12 +253,11 @@
       "key_required": false,
       "automatic_paid_overage": false,
       "maintenance_observed": "2026-08-07",
-      "status": "REJECTED_PRODUCTION",
+      "status": "REJECTED",
+      "decision_reason_code": "PROXY_POOL_PERMANENT_DENY",
       "production_enabled": false,
-      "integration": "metadata/health research only; never browser egress",
-      "stability": "individual_proxies_are_ephemeral_and_untrusted",
-      "fallback": "stable direct egress and approved cloud browsers",
-      "notes": "Repository policy permanently denies proxy pools and denial-evasion retries, so these lists are not executable production infrastructure."
+      "integration": "metadata research only; never browser egress",
+      "fallback": "stable direct egress and approved cloud browsers"
     }
   ]
 }
