@@ -1,0 +1,554 @@
+name: PRC Open Generic Bridge Patch
+
+on:
+  push:
+    branches: [feat/prc-free-intelligence-suite]
+    paths:
+      - ".github/workflows/prc-open-generic-bridge-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: true
+          ref: feat/prc-free-intelligence-suite
+
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+
+      - name: Patch generic API ticket planner
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('api-center/api_ticket.py')
+          text = path.read_text(encoding='utf-8')
+
+          anchor = 'CONNECTORS_DIR = HERE / "connectors"\nMAX_BODY_CHARS = 100_000'
+          replacement = '''CONNECTORS_DIR = HERE / "connectors"
+          PRC_LOCAL_BRIDGE_PATH = HERE / "prc-open-intelligence/generic-bridge.json"
+          PRC_LOCAL_PROVIDER_CATALOG_PATH = HERE / "prc-open-intelligence/provider-catalog.json"
+          PRC_LOCAL_EXECUTION_MODE = "local-prc-open"
+          MAX_BODY_CHARS = 100_000'''.replace('          ', '')
+          if 'PRC_LOCAL_BRIDGE_PATH' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_ticket constant anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          anchor = '    return catalog\n\n\ndef _render_path_parameters('
+          helper = '''    return catalog
+
+
+def _prc_local_bridge_catalog(root: Path = HERE) -> dict[str, dict[str, Any]]:
+    bridge_path = root / "prc-open-intelligence/generic-bridge.json"
+    provider_path = root / "prc-open-intelligence/provider-catalog.json"
+    if not bridge_path.is_file() or not provider_path.is_file():
+        return {}
+    bridge = _load_json(bridge_path)
+    provider_catalog = _load_json(provider_path)
+    bridge_rows = bridge.get("connectors") if isinstance(bridge, Mapping) else None
+    providers = provider_catalog.get("providers") if isinstance(provider_catalog, Mapping) else None
+    if not isinstance(bridge_rows, list) or not isinstance(providers, list):
+        raise ValueError("PRC local bridge/provider catalog is malformed")
+    operation_catalog: dict[tuple[str, str], Mapping[str, Any]] = {}
+    for provider in providers:
+        if not isinstance(provider, Mapping) or provider.get("enabled") is not True:
+            continue
+        provider_id = str(provider.get("provider_id") or "")
+        for operation in provider.get("operations") or []:
+            if not isinstance(operation, Mapping):
+                continue
+            operation_catalog[(provider_id, str(operation.get("operation_id") or ""))] = operation
+    result: dict[str, dict[str, Any]] = {}
+    for raw in bridge_rows:
+        if not isinstance(raw, Mapping):
+            raise ValueError("PRC local bridge row must be an object")
+        connector_id = str(raw.get("connector_id") or "")
+        provider = str(raw.get("provider") or "")
+        operation = str(raw.get("operation") or "")
+        if not re.fullmatch(r"[a-z][a-z0-9-]{2,63}", connector_id):
+            raise ValueError(f"invalid PRC local connector id: {connector_id}")
+        operation_row = operation_catalog.get((provider, operation))
+        if operation_row is None:
+            raise ValueError(f"PRC bridge target is not an enabled provider operation: {provider}/{operation}")
+        result[connector_id] = {
+            "connector_id": connector_id,
+            "provider": provider,
+            "operation": operation,
+            "description": str(raw.get("description") or ""),
+            "parameter_schema": dict(operation_row.get("parameter_schema") or {}),
+            "execution_mode": PRC_LOCAL_EXECUTION_MODE,
+        }
+    return result
+
+
+def _render_path_parameters('''
+          if '_prc_local_bridge_catalog' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_ticket helper anchor missing')
+              text = text.replace(anchor, helper, 1)
+
+          anchor = '    catalog = _connector_catalog(root)\n    request_ids: set[str] = set()'
+          replacement = '''    catalog = _connector_catalog(root)
+    prc_local_catalog = _prc_local_bridge_catalog(root)
+    request_ids: set[str] = set()'''
+          if 'prc_local_catalog = _prc_local_bridge_catalog(root)' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_ticket plan catalog anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          anchor = '''        request_ids.add(request_id)
+
+        connector = catalog.get(connector_id)'''
+          replacement = '''        request_ids.add(request_id)
+
+        local_connector = prc_local_catalog.get(connector_id)
+        if local_connector is not None:
+            parameters = dict(request_row.get("parameters") or {})
+            parameter_schema = dict(local_connector.get("parameter_schema") or {})
+            parameter_errors = sorted(
+                Draft202012Validator(parameter_schema).iter_errors(parameters),
+                key=lambda item: list(item.absolute_path),
+            )
+            if parameter_errors:
+                rendered = "; ".join(
+                    f"parameters.{'.'.join(str(x) for x in item.absolute_path)}: {item.message}"
+                    for item in parameter_errors[:20]
+                )
+                raise ValueError(f"request {request_id} violates PRC local parameter contract: {rendered}")
+            planned.append(
+                {
+                    "request_id": request_id,
+                    "connector_id": connector_id,
+                    "endpoint": f"/local/prc-open/{connector_id}",
+                    "method": "LOCAL",
+                    "execution_mode": PRC_LOCAL_EXECUTION_MODE,
+                    "path_parameters": {},
+                    "parameters": parameters,
+                    "allow_empty": bool(request_row.get("allow_empty", False)),
+                    "response_contract": {"success_when_data_present": True},
+                    "response_quality": {},
+                    "quality_checks": {},
+                    "connector_sha256": canonical_sha(local_connector),
+                }
+            )
+            continue
+
+        connector = catalog.get(connector_id)'''
+          if 'local_connector = prc_local_catalog.get(connector_id)' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_ticket local connector insertion anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          anchor = '''    if len(required_secrets) > 1:
+        raise ValueError('''
+          replacement = '''    execution_modes = {
+        str(row.get("execution_mode") or "gateway") for row in planned
+    }
+    if PRC_LOCAL_EXECUTION_MODE in execution_modes and execution_modes != {PRC_LOCAL_EXECUTION_MODE}:
+        raise ValueError("PRC local intelligence requests must be isolated in their own [api] ticket")
+
+    if len(required_secrets) > 1:
+        raise ValueError('''
+          if 'PRC local intelligence requests must be isolated' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_ticket isolation anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Patch generic API executor local mode
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('api-center/api_task.py')
+          text = path.read_text(encoding='utf-8')
+
+          anchor = 'import argparse\nimport hashlib'
+          replacement = 'import argparse\nimport hashlib\nimport importlib.util'
+          if 'import importlib.util' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_task import anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          anchor = 'SOURCE_SIDE_HARD_STOP_HTTP = {401, 403, 429}\n'
+          replacement = '''SOURCE_SIDE_HARD_STOP_HTTP = {401, 403, 429}
+          PRC_LOCAL_EXECUTION_MODE = "local-prc-open"
+          '''.replace('          ', '')
+          if 'PRC_LOCAL_EXECUTION_MODE' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_task constant anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          anchor = 'def resolve_mode(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:\n'
+          helpers = '''def _plan_execution_modes(plan: Mapping[str, Any]) -> set[str]:
+    rows = plan.get("requests") if isinstance(plan, Mapping) else None
+    if not isinstance(rows, list):
+        return set()
+    return {
+        str(row.get("execution_mode") or "gateway")
+        for row in rows
+        if isinstance(row, Mapping)
+    }
+
+
+def _load_prc_local_bridge():
+    path = Path(__file__).resolve().parent / "prc-open-intelligence/generic_bridge.py"
+    spec = importlib.util.spec_from_file_location("prc_open_generic_bridge", path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot load PRC open-intelligence generic bridge")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def resolve_mode(plan: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
+'''
+          if '_plan_execution_modes' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_task resolve helper anchor missing')
+              text = text.replace(anchor, helpers, 1)
+
+          anchor = '''    required = [str(item) for item in plan.get("required_secret_environment_variables", [])]
+    result: dict[str, Any]
+    if remote_url and remote_token:'''
+          replacement = '''    required = [str(item) for item in plan.get("required_secret_environment_variables", [])]
+    execution_modes = _plan_execution_modes(plan)
+    result: dict[str, Any]
+    if PRC_LOCAL_EXECUTION_MODE in execution_modes:
+        if execution_modes != {PRC_LOCAL_EXECUTION_MODE}:
+            raise ValueError("PRC local intelligence requests cannot be mixed with gateway requests")
+        if required:
+            raise ValueError("PRC local intelligence mode must not require Repository Secrets")
+        result = {
+            "mode": PRC_LOCAL_EXECUTION_MODE,
+            "base_url": "",
+            "reason": "governance-compatible local execution of approved zero-key PRC providers",
+            "required_secret_count": 0,
+            "secret_source": "none",
+        }
+        write_json(output_dir / "gateway-mode.json", result)
+        for name in ("mode", "base_url", "reason"):
+            write_output(name, result.get(name, ""))
+        write_output("env_file", "")
+        return result
+    if remote_url and remote_token:'''
+          if 'governance-compatible local execution of approved zero-key PRC providers' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_task resolve local mode anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          anchor = '\n\ndef _diagnostics(\n'
+          helper = '''
+
+def _execute_prc_local_one(
+    *,
+    request_row: Mapping[str, Any],
+    timeout_seconds: int,
+    max_bytes: int,
+) -> dict[str, Any]:
+    started = time.perf_counter()
+    bridge = _load_prc_local_bridge()
+    outcome = bridge.execute_request(
+        str(request_row["connector_id"]),
+        dict(request_row.get("parameters") or {}),
+        timeout_seconds=timeout_seconds,
+        max_response_bytes=max_bytes,
+        allow_empty=bool(request_row.get("allow_empty", False)),
+    )
+    metadata = outcome.get("upstream_metadata") if isinstance(outcome.get("upstream_metadata"), Mapping) else {}
+    attempt_count = int(metadata.get("request_count") or 1)
+    return {
+        "request_id": str(request_row["request_id"]),
+        "connector_id": str(request_row["connector_id"]),
+        "connector_sha256": str(request_row["connector_sha256"]),
+        "endpoint": str(request_row["endpoint"]),
+        "parameters": dict(request_row.get("parameters") or {}),
+        "observed_at": utc_now(),
+        "http_status": metadata.get("http_status"),
+        "response_headers": {},
+        "attempts": [{"mode": PRC_LOCAL_EXECUTION_MODE, "elapsed_seconds": round(time.perf_counter() - started, 6)}],
+        "attempt_count": attempt_count,
+        "source_side_hard_stop": bool(outcome.get("source_side_hard_stop")),
+        "state": str(outcome.get("state") or "upstream_error"),
+        "success": bool(outcome.get("success")),
+        "business_status": f"{outcome.get('provider')}/{outcome.get('operation')}",
+        "business_code": outcome.get("error_type"),
+        "message": str(outcome.get("message") or ""),
+        "data_present": bool(outcome.get("data_present")),
+        "quality": {"blocking_failure": False, "local_prc_open": True},
+        "response": outcome.get("response"),
+        "upstream_metadata": dict(metadata),
+        "error_type": outcome.get("error_type"),
+    }
+
+
+def _diagnostics(
+'''
+          if '_execute_prc_local_one' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_task diagnostics anchor missing')
+              text = text.replace(anchor, helper, 1)
+
+          anchor = '''    if mode == "blocked":
+        results: list[dict[str, Any]] = []
+        status = "API_BLOCKED"
+        primary_failure = {
+            "code": "API_GATEWAY_NOT_CONFIGURED",
+            "stage": "resolve_gateway",
+            "message": str(os.getenv("API_GATEWAY_BLOCK_REASON") or "no usable gateway mode"),
+            "retryable": False,
+        }
+    else:
+        base_url = validate_gateway_base_url(base_url, mode)'''
+          replacement = '''    if mode == "blocked":
+        results: list[dict[str, Any]] = []
+        status = "API_BLOCKED"
+        primary_failure = {
+            "code": "API_GATEWAY_NOT_CONFIGURED",
+            "stage": "resolve_gateway",
+            "message": str(os.getenv("API_GATEWAY_BLOCK_REASON") or "no usable gateway mode"),
+            "retryable": False,
+        }
+    elif mode == PRC_LOCAL_EXECUTION_MODE:
+        acceptance = dict(plan["acceptance"])
+        results = [
+            _execute_prc_local_one(
+                request_row=dict(row),
+                timeout_seconds=int(acceptance["timeout_seconds"]),
+                max_bytes=int(acceptance["max_response_bytes_per_request"]),
+            )
+            for row in plan["requests"]
+        ]
+        successful = sum(bool(item["success"]) for item in results)
+        required = int(acceptance["minimum_successful_requests"])
+        if successful == len(results):
+            status = "API_COMPLETED"
+        elif successful >= required:
+            status = "API_PARTIAL"
+        else:
+            status = "API_FAILED"
+        failed = next((item for item in results if not item["success"]), None)
+        primary_failure = (
+            {"code": "NONE", "stage": "complete", "message": "", "retryable": False}
+            if status == "API_COMPLETED"
+            else {
+                "code": f"API_REQUEST_{str((failed or {}).get('state') or 'FAILED').upper()}",
+                "stage": "execute_requests",
+                "message": str((failed or {}).get("message") or "one or more PRC local requests failed"),
+                "request_id": (failed or {}).get("request_id"),
+                "retryable": False,
+            }
+        )
+    else:
+        base_url = validate_gateway_base_url(base_url, mode)'''
+          if 'one or more PRC local requests failed' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_task execute branch anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          anchor = '''            "environment_allowlist": [key.lower() for key in SAFE_ENV_KEYS],
+        },'''
+          replacement = '''            "environment_allowlist": [key.lower() for key in SAFE_ENV_KEYS],
+            "local_prc_open_execution": gateway_mode == PRC_LOCAL_EXECUTION_MODE,
+            "local_prc_open_secrets_required": 0,
+        },'''
+          if 'local_prc_open_execution' not in text:
+              if anchor not in text:
+                  raise SystemExit('api_task diagnostics security anchor missing')
+              text = text.replace(anchor, replacement, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Add generic bridge regression tests
+        run: |
+          cat > api-center/tests/test_prc_open_generic_bridge.py <<'PY'
+          from __future__ import annotations
+
+          import importlib.util
+          import json
+          import os
+          import tempfile
+          import unittest
+          from pathlib import Path
+          from types import SimpleNamespace
+          from unittest import mock
+
+          ROOT = Path(__file__).resolve().parents[1]
+
+
+          def load_module(name: str, path: Path):
+              spec = importlib.util.spec_from_file_location(name, path)
+              assert spec and spec.loader
+              module = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(module)
+              return module
+
+
+          api_ticket = load_module("api_ticket_prc_bridge", ROOT / "api_ticket.py")
+          api_task = load_module("api_task_prc_bridge", ROOT / "api_task.py")
+
+
+          class PRCOpenGenericBridgeTests(unittest.TestCase):
+              def packet(self, connector_id: str = "prc-sinofacts-company-search") -> dict:
+                  return {
+                      "task_id": "api-prc-open-0001",
+                      "objective": "collect public non-personal company intelligence",
+                      "data_policy": {"classification": "public", "contains_personal_data": False},
+                      "requests": [
+                          {
+                              "request_id": "prc-1",
+                              "connector_id": connector_id,
+                              "parameters": {"query": "01.AI", "max_results": 3}
+                              if connector_id == "prc-sinofacts-company-search"
+                              else {"query": "示例公司", "language": "zh"},
+                          }
+                      ],
+                      "acceptance": {"require_all": True, "minimum_successful_requests": 1},
+                  }
+
+              def test_generic_ticket_plans_local_prc_connector(self) -> None:
+                  packet = self.packet()
+                  self.assertEqual(list(api_ticket.VALIDATOR.iter_errors(packet)), [])
+                  plan = api_ticket._validate_and_plan(packet, ROOT)
+                  row = plan["requests"][0]
+                  self.assertEqual(row["execution_mode"], "local-prc-open")
+                  self.assertEqual(row["method"], "LOCAL")
+                  self.assertEqual(plan["required_secret_environment_variables"], [])
+
+              def test_generic_ticket_rejects_unknown_local_parameter(self) -> None:
+                  packet = self.packet("prc-china-check-company-search")
+                  packet["requests"][0]["parameters"]["cookie"] = "forbidden"
+                  with self.assertRaisesRegex(ValueError, "PRC local parameter contract"):
+                      api_ticket._validate_and_plan(packet, ROOT)
+
+              def test_local_and_gateway_requests_cannot_mix(self) -> None:
+                  packet = self.packet()
+                  packet["requests"].append(
+                      {
+                          "request_id": "wb-1",
+                          "connector_id": "worldbank-indicator",
+                          "parameters": {"indicator_code": "NY.GDP.MKTP.CD", "format": "json"},
+                      }
+                  )
+                  packet["acceptance"] = {"require_all": True, "minimum_successful_requests": 2}
+                  with self.assertRaisesRegex(ValueError, "must be isolated"):
+                      api_ticket._validate_and_plan(packet, ROOT)
+
+              def test_resolve_mode_selects_zero_secret_local_execution(self) -> None:
+                  plan = api_ticket._validate_and_plan(self.packet(), ROOT)
+                  with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(
+                      os.environ,
+                      {"API_GATEWAY_BASE_URL": "", "API_GATEWAY_AUTH_TOKEN": ""},
+                      clear=False,
+                  ):
+                      result = api_task.resolve_mode(plan, Path(tmp))
+                  self.assertEqual(result["mode"], "local-prc-open")
+                  self.assertEqual(result["required_secret_count"], 0)
+                  self.assertEqual(result["secret_source"], "none")
+
+              def test_execute_local_mode_publishes_normal_api_completed_snapshot(self) -> None:
+                  plan = api_ticket._validate_and_plan(self.packet(), ROOT)
+                  fake_bridge = SimpleNamespace(
+                      execute_request=lambda *args, **kwargs: {
+                          "success": True,
+                          "state": "success",
+                          "message": "",
+                          "data_present": True,
+                          "response": {"matches": [{"name_zh": "示例"}]},
+                          "upstream_metadata": {"http_status": 200},
+                          "source_side_hard_stop": False,
+                          "error_type": None,
+                          "provider": "sinofacts",
+                          "operation": "company-search",
+                      }
+                  )
+                  with tempfile.TemporaryDirectory() as tmp, mock.patch.object(
+                      api_task, "_load_prc_local_bridge", return_value=fake_bridge
+                  ), mock.patch.dict(
+                      os.environ,
+                      {"API_GATEWAY_MODE": "local-prc-open", "API_GATEWAY_BASE_URL": ""},
+                      clear=False,
+                  ):
+                      root = Path(tmp)
+                      plan_path = root / "plan.json"
+                      plan_path.write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+                      rc = api_task.execute(plan_path, root / "out")
+                      snapshot = json.loads((root / "out/api-snapshot.json").read_text(encoding="utf-8"))
+                  self.assertEqual(rc, 0)
+                  self.assertEqual(snapshot["status"], "API_COMPLETED")
+                  self.assertEqual(snapshot["gateway_mode"], "local-prc-open")
+                  self.assertEqual(snapshot["successful_request_count"], 1)
+
+              def test_source_denial_stays_failed_without_retry_or_fallback(self) -> None:
+                  plan = api_ticket._validate_and_plan(self.packet("prc-china-check-company-search"), ROOT)
+                  fake_bridge = SimpleNamespace(
+                      execute_request=lambda *args, **kwargs: {
+                          "success": False,
+                          "state": "rate_limited",
+                          "message": "HTTP 429",
+                          "data_present": False,
+                          "response": None,
+                          "upstream_metadata": {},
+                          "source_side_hard_stop": True,
+                          "error_type": "RATE_LIMITED",
+                          "provider": "china-check",
+                          "operation": "company-search",
+                      }
+                  )
+                  with tempfile.TemporaryDirectory() as tmp, mock.patch.object(
+                      api_task, "_load_prc_local_bridge", return_value=fake_bridge
+                  ), mock.patch.dict(
+                      os.environ,
+                      {"API_GATEWAY_MODE": "local-prc-open", "API_GATEWAY_BASE_URL": ""},
+                      clear=False,
+                  ):
+                      root = Path(tmp)
+                      plan_path = root / "plan.json"
+                      plan_path.write_text(json.dumps(plan, ensure_ascii=False), encoding="utf-8")
+                      rc = api_task.execute(plan_path, root / "out")
+                      snapshot = json.loads((root / "out/api-snapshot.json").read_text(encoding="utf-8"))
+                      audit = json.loads((root / "out/api-audit.json").read_text(encoding="utf-8"))
+                  self.assertEqual(rc, 2)
+                  self.assertEqual(snapshot["status"], "API_FAILED")
+                  self.assertEqual(snapshot["requests"][0]["attempt_count"], 1)
+                  self.assertEqual(audit["source_side_hard_stop_count"], 1)
+
+
+          if __name__ == "__main__":
+              unittest.main()
+          PY
+
+      - name: Install pinned dependencies
+        run: python -m pip install --disable-pip-version-check --no-input -r api-center/requirements.txt
+
+      - name: Compile and run API-center regressions
+        run: |
+          python -m py_compile \
+            api-center/api_ticket.py \
+            api-center/api_task.py \
+            api-center/prc-open-intelligence/generic_bridge.py
+          python -m unittest discover -s api-center/tests -p 'test_*.py' -v
+          python -m unittest discover -s api-center/prc-open-intelligence/tests -p 'test_*.py' -v
+          python api-center/prc-open-intelligence/validate_registry.py
+
+      - name: Commit bridge changes
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add api-center/api_ticket.py api-center/api_task.py api-center/tests/test_prc_open_generic_bridge.py
+          git commit -m "feat(prc-intel): bridge governance API route to free local providers"
+          git push origin HEAD:feat/prc-free-intelligence-suite
