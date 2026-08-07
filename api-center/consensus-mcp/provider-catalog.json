@@ -6,15 +6,18 @@
     {
       "provider_id": "consensus-mcp",
       "display_name": "Consensus MCP",
-      "description": "通过 Consensus 官方 Streamable HTTP MCP Server 检索 2 亿+ 同行评审学术论文；不抓取 Consensus 网页。服务器端真实探测确认远程调用受 OAuth Bearer 保护。",
+      "description": "通过 Consensus 官方 Streamable HTTP MCP Server 检索 2 亿+ 同行评审学术论文；不抓取 Consensus 网页。Free 账号通过本地 PKCE 一次授权后，可由 GitHub Actions 使用 refresh-token bridge 换取短期 Bearer。",
       "enabled": true,
-      "runtime_status": "oauth-gated",
+      "runtime_status": "oauth-bridge-ready-awaiting-secret",
       "production_search_ready": false,
       "ticket_prefix": "[api-consensus-mcp]",
       "required_secret_environment_variable": null,
-      "optional_secret_environment_variable": "CONSENSUS_MCP_BEARER_TOKEN",
+      "optional_secret_environment_variables": [
+        "CONSENSUS_MCP_REFRESH_TOKEN",
+        "CONSENSUS_MCP_BEARER_TOKEN"
+      ],
       "catalog_policy": "仅开放官方 MCP 上游实际发现并经仓库固定登记的只读 search 工具，以及本地能力目录和 OAuth/tools 探测；禁止任意 JSON-RPC 方法、任意工具名、网页抓取和付费 API 自动启用。",
-      "execution_policy": "远程 tools/list/search 必须取得 Consensus 接受的 OAuth Bearer。当前 GitHub Actions 不伪装匿名可用：无 Bearer 时真实上游返回 401。Free 账号的 OAuth Authorization Code 需要交互式授权；当前官方元数据未提供 client_credentials，因此在增加安全 OAuth 凭证桥前，服务器端论文搜索保持 fail-closed。",
+      "execution_policy": "远程 tools/list/search 必须取得 Consensus 接受的 OAuth Bearer。优先使用显式 CONSENSUS_MCP_BEARER_TOKEN；否则使用 GitHub Secret CONSENSUS_MCP_REFRESH_TOKEN 通过固定 public OAuth client 换取仅当前 runner 使用的短期 access token。refresh/access token 不写入仓库、Issue 或 Artifact。若官方刷新时旋转 refresh token，则 fail-closed，因为当前 GitHub 集成不能安全自动改写 Repository Secret。",
       "official_origin": "https://mcp.consensus.app",
       "official_endpoint": "https://mcp.consensus.app/mcp",
       "mcp_transport": "StreamableHttp",
@@ -23,12 +26,19 @@
         "verified_unauthenticated_http_status": 401,
         "oauth_metadata_discoverable": true,
         "authorization_code_supported": true,
+        "refresh_token_supported": true,
         "dynamic_client_registration_present": true,
         "client_credentials_supported": false,
-        "free_account_mode": "interactive-oauth-client",
-        "github_actions_mode": "bearer-required-or-oauth-bridge-required",
+        "token_endpoint_auth_method": "none",
+        "pkce_method": "S256",
+        "public_client_id": "ee123d14-833d-428c-bc28-e796c2e4b25f",
+        "redirect_uri": "http://127.0.0.1:8765/callback",
+        "free_account_mode": "local-loopback-pkce-bootstrap-then-refresh-secret",
+        "github_actions_mode": "refresh-secret-to-ephemeral-bearer",
+        "refresh_secret": "CONSENSUS_MCP_REFRESH_TOKEN",
         "bearer_secret": "CONSENSUS_MCP_BEARER_TOKEN",
-        "bearer_secret_role": "optional externally provisioned bearer; never logged",
+        "browser_only_bridge_supported": false,
+        "browser_cors_probe_note": "2026-08-07 live probes found no usable CORS permission on registration or token endpoints, so token exchange is not delegated to browser JavaScript.",
         "free_account_limits_documented": {
           "papers_per_search": 10,
           "monthly_searches": 30
@@ -54,7 +64,7 @@
         {
           "operation_id": "mcp-tools-list",
           "description": "通过 MCP initialize 和 tools/list 验证官方服务器及当前只读工具目录。",
-          "credential_mode": "oauth-bearer-required",
+          "credential_mode": "oauth-bearer-or-refresh-bridge",
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
@@ -65,7 +75,7 @@
         {
           "operation_id": "search",
           "description": "检索 Consensus 同行评审论文索引。支持年份、研究类型、期刊质量、人类研究、样本量、医学模式、排除预印本和研究时长过滤。",
-          "credential_mode": "oauth-bearer-required",
+          "credential_mode": "oauth-bearer-or-refresh-bridge",
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
