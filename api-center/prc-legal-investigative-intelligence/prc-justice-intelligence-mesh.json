@@ -1,0 +1,93 @@
+{
+  "schema_version": "prc-justice-intelligence-mesh-v1",
+  "reviewed_at": "2026-08-07",
+  "jurisdiction": "PRC_MAINLAND",
+  "mission": "持续形成中国大陆公开或明确授权司法能力、技术、理论、实践标准和执行趋势的可查询衍生情报库与阶段性分析报告。",
+  "core_dimensions": [
+    {"id":"capability","name":"能力","question":"公开可验证地具备什么能力，成熟到哪一阶段"},
+    {"id":"technology","name":"技术演进","question":"技术从科研、培训、标准、采购、部署到案件实践如何演化"},
+    {"id":"doctrine_and_norm","name":"法律理论与规范","question":"法律、司法解释、政策理论和证据规则如何变化"},
+    {"id":"practice_standard","name":"办案实践与证据标准","question":"公开实践中如何形成、保存、审查、补强、采信或否定证据"},
+    {"id":"outcome_and_enforcement","name":"司法结果与执行尺度","question":"起诉不起诉、采信排除、二审再审、监督和执行重点如何变化"},
+    {"id":"capacity_building","name":"能力建设与领先指标","question":"学院、科研、标准、采购、人才、平台和预算预示哪些未来方向"}
+  ],
+  "slice_dimensions": {
+    "institution": ["public_security","procuratorate","court","justice_administration_and_forensics","discipline_supervision","legislature_or_rulemaker","judicial_education_or_research","cross_institution"],
+    "region": "national_to_province_to_city_when_publicly_identifiable",
+    "legal_or_case_domain": ["criminal","civil","administrative","execution","public_interest_litigation","intellectual_property","finance","cyber_and_data","environment_resources","labor","medical","food_drug","telecom_fraud","enterprise_commercial","juvenile","foreign_related"],
+    "industry_mapping": ["finance","internet_platform","telecom","medical","energy","real_estate","transport","manufacturing","public_services","other"],
+    "time_windows_days": [7,30,90,180,365,1095],
+    "confidence": ["LOW","MEDIUM","MEDIUM_HIGH","HIGH"]
+  },
+  "source_mesh": [
+    {"source_family":"law_and_norm","priority":1,"examples":["NPC law database","gov.cn","SPC","SPP","MPS","MOJ","CCDI/NSC"],"preferred_access":["official_api_or_html","direct_https","cloudflare_browser_rendering_fallback"]},
+    {"source_family":"case_and_outcome","priority":1,"examples":["People's Court Case Library","SPC cases","SPP guiding/typical cases","12309","public security cases","justice administration cases"],"preferred_access":["direct_https","Exa/Tavily discovery","Cloudflare Browser Rendering for JS pages"]},
+    {"source_family":"education_training","priority":2,"examples":["police academies","National Prosecutors College","National Judges College","judicial appraisal training"],"preferred_access":["official_html","site search","Cloudflare Browser Rendering"]},
+    {"source_family":"research_theory","priority":2,"examples":["official research institutes","law societies","academic indexes","institution journals","research projects"],"preferred_access":["Crossref/OpenAlex/OpenCitations","Exa/Tavily","official pages"]},
+    {"source_family":"standards","priority":1,"examples":["MPS standards","TC179","national standards platform","judicial appraisal standards"],"preferred_access":["official_html","direct_https","Cloudflare Browser Rendering"]},
+    {"source_family":"procurement_budget","priority":1,"examples":["China Government Procurement Network","ministry/provincial procurement notices","procurement intention","award/contract"],"preferred_access":["public procurement pages","search discovery","Cloudflare Browser Rendering"]},
+    {"source_family":"deployment_infrastructure","priority":2,"examples":["laboratory","technical center","digital prosecution","digital court","data platform","pilot"],"preferred_access":["official reports","procurement linkage","institution announcements"]},
+    {"source_family":"talent_recruitment","priority":3,"examples":["public recruitment","specialty requirements","technical post openings"],"preferred_access":["institution announcements","government recruitment pages"]},
+    {"source_family":"statistics_reports","priority":1,"examples":["annual work reports","case statistics","supervision statistics","technology/model counts"],"preferred_access":["official reports","structured tables","Cloudflare Browser Rendering"]}
+  ],
+  "collection_strategy": {
+    "discovery_order": ["registered_official_sources","Exa","Tavily","SerpAPI_Google","Baidu_AI_Search","Cloudflare_Browser_Rendering"],
+    "cloudflare_role": ["render_Javascript_heavy_public_pages","schema_constrained_AI_translation_of_PRIMARY_VERIFIED_pages","bounded_markdown_or_snapshot_when_needed_for_verification"],
+    "cloudflare_not_allowed": ["login_automation","cookie_injection","proxy_rotation","captcha_or_waf_bypass","custom_browser_script","hidden_endpoint_discovery","private_api_reverse_engineering"],
+    "semantic_budget_policy": "deterministic_first; Cloudflare AI only after primary verification; stop on quota/rate limit; defer remaining pages to next cycle",
+    "max_cloudflare_ai_pages_per_cycle": 6
+  },
+  "data_flow": [
+    "discover_candidate",
+    "verify_primary_source",
+    "create_primary_verified_signal_event",
+    "cloudflare_schema_constrained_transform",
+    "validate_derived_record",
+    "associate_by_capability_institution_region_domain_and_time",
+    "emit_governance_hf_export_without_raw_source",
+    "governance_validate_and_write_private_hf_dataset",
+    "expert_semantic_cross_case_analysis_via_governance",
+    "compute_quantitative_trend_analysis_via_governance",
+    "governance_approve_versioned_trend_snapshot",
+    "generate_queryable_report_views"
+  ],
+  "derived_storage": {
+    "target": "governance-owned-private-huggingface-dataset",
+    "dataset_role": "PRC Justice Intelligence derived knowledge and trend store",
+    "sections": [
+      "signals","capabilities","technology_lifecycle","practice_standards","doctrine","procurement_and_deployment","institutions_regions","judicial_outcomes","trend_snapshots","model_findings","compute_indices","report_snapshots"
+    ],
+    "allowed": ["model_normalized_structured_records","opaque_evidence_ref_ids","relationship_edges","approved_metrics","approved_report_snapshots"],
+    "forbidden": ["raw_web_page_text","raw_pdf_text","raw_source_url","raw_model_response","credentials","personal_targeting_data","secret_operational_details","evasion_or_anti_forensics_content"],
+    "source_resolution": "opaque evidence_ref_id resolves only inside Evidence Center provenance store"
+  },
+  "collision_analysis": {
+    "join_keys": ["capability_id","technology_term","institution_type","institution_name","region","legal_domain","case_domain","time_window","evidence_ref_id"],
+    "relationship_strengths": ["DIRECT","STRONG_ASSOCIATION","CONTEXTUAL_ASSOCIATION","UNRESOLVED"],
+    "rules": [
+      "procurement_and_case_temporal_proximity_never_proves_direct_use",
+      "single_course_or_procurement_never_equals_operational_capability",
+      "multiple_independent_primary_sources_required_for_generalization",
+      "cross_region_and_cross_institution_support_raise_maturity",
+      "contradictions_are_preserved_and_reduce_confidence",
+      "absence_of_public_evidence_never_proves_absence_of_capability"
+    ]
+  },
+  "reporting": {
+    "daily": ["new_primary_verified_signals","first_seen_terms","material_conflicts","major_law_or_policy_changes"],
+    "weekly": ["technology_radar","capability_lifecycle_changes","regional_diffusion","procurement_training_standard_alignment"],
+    "monthly": ["national_overview","public_security","procuratorate","court","new_technology_radar","practice_standard_changes","doctrine_changes","enforcement_changes","regional_and_domain_slices","leading_indicators","conflicts_and_corrections","30_90_day_watchlist","evidence_confidence_appendix"],
+    "quarterly": ["structural_trends","cross_region_diffusion","cross_institution_maturity","theory_to_practice_conversion","technology_lifecycle_progression"],
+    "on_demand": ["capability_profile","institution_profile","region_profile","legal_domain_profile","technology_timeline","procurement_to_practice_evidence_chain"]
+  },
+  "safety_boundary": {
+    "public_or_authorized_only": true,
+    "secret_internal_system_inference": false,
+    "covert_surveillance_implementation": false,
+    "target_selection_or_tracking": false,
+    "surveillance_blind_spot_analysis": false,
+    "investigation_evasion": false,
+    "anti_forensics": false,
+    "personal_targeting": false
+  }
+}
