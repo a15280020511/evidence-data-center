@@ -37,6 +37,8 @@
 
 本模块不提供独立 Issue 执行入口。网页 GPT 与其他上层调用者必须继续使用治理仓既有 `intelligence` 路由；治理仓会创建标准 `[api]` 子 Issue，由情报中心通用 API Center 校验后进入 `local-prc-open` 本地只读模式。
 
+治理兼容性由 `api-center/tests/test_prc_open_generic_bridge.py` 持续回归：验证 `[api]` 票据规划、零 Secret 本地模式、禁止与普通网关请求混装，以及 401/403/429 等源端拒绝不得重试或切换出口。
+
 允许的 4 个固定连接器：
 
 - `prc-china-check-company-search`
@@ -63,6 +65,7 @@
 ```
 
 PRC 本地连接器不得与普通网关连接器混装在同一张 `[api]` 票据中；它们不启动 KrakenD 网关、不读取 Repository Secret，也不允许在上游拒绝后改用代理、身份或付费服务。
+
 ## 稳定性机制
 
 ```text
