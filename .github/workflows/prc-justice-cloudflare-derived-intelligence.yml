@@ -8,7 +8,7 @@ on:
     paths:
       - "api-center/prc-legal-investigative-intelligence/prc-justice-derived-intelligence-record.schema.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-intelligence-mesh.json"
-      - "api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare.py"
+      - "api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py"
       - ".github/workflows/prc-justice-cloudflare-derived-intelligence.yml"
   workflow_dispatch:
@@ -22,7 +22,7 @@ on:
     paths:
       - "api-center/prc-legal-investigative-intelligence/prc-justice-derived-intelligence-record.schema.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-intelligence-mesh.json"
-      - "api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare.py"
+      - "api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py"
       - ".github/workflows/prc-justice-cloudflare-derived-intelligence.yml"
 
@@ -67,10 +67,10 @@ jobs:
         run: |
           set -euo pipefail
           python -m py_compile \
-            api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare.py \
+            api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py \
             api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py
           python api-center/prc-legal-investigative-intelligence/validate_prc_justice_derived_intelligence.py | tee prc-justice-derived-validation.json
-          python api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare.py \
+          python api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py \
             --validate-only --output-dir "$OUT_DIR" | tee prc-justice-cloudflare-transform-validation.json
           git diff --check
 
@@ -118,7 +118,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf "$OUT_DIR"
-          python api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare.py \
+          python api-center/prc-legal-investigative-intelligence/transform_prc_justice_with_cloudflare_v2.py \
             --input /tmp/prc-justice-primary.jsonl \
             --output-dir "$OUT_DIR" \
             --max-pages "$MAX_PAGES" | tee prc-justice-cloudflare-transform-run.json
@@ -142,6 +142,7 @@ jobs:
               'quota_exhausted': False,
               'network_used': False,
               'model_calls': 0,
+              'raw_html_persisted': False,
               'raw_source_text_persisted': False,
               'raw_source_url_in_hf_export': False,
               'raw_model_response_persisted': False,
@@ -162,6 +163,8 @@ jobs:
           path = Path('prc-justice-derived-intelligence/governance-hf-justice-export.json')
           print('record_count=' + str(receipt.get('record_count', 0)))
           print('model_calls=' + str(receipt.get('model_calls', 0)))
+          print('cloudflare_requests=' + str(receipt.get('cloudflare_requests', 0)))
+          print('fallback_count=' + str(receipt.get('in_memory_html_fallback_count', 0)))
           print('quota_exhausted=' + ('true' if receipt.get('quota_exhausted') else 'false'))
           print('export_sha256=' + (hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else ''))
           PY
@@ -216,9 +219,12 @@ jobs:
             echo '## PRC Justice Cloudflare Derived Intelligence'
             echo "- Recent PRIMARY_VERIFIED inputs: ${{ steps.recent.outputs.recent_count || '0' }}"
             echo "- Derived records: ${{ steps.handoff.outputs.record_count || '0' }}"
-            echo "- Cloudflare model calls: ${{ steps.handoff.outputs.model_calls || '0' }}"
+            echo "- Successful Cloudflare model calls: ${{ steps.handoff.outputs.model_calls || '0' }}"
+            echo "- Cloudflare requests: ${{ steps.handoff.outputs.cloudflare_requests || '0' }}"
+            echo "- In-memory HTML fallbacks: ${{ steps.handoff.outputs.fallback_count || '0' }}"
             echo "- Quota exhausted: ${{ steps.handoff.outputs.quota_exhausted || 'false' }}"
             echo '- Reprocess window: last 30 hours only'
+            echo '- Raw HTML persisted: false'
             echo '- Raw source text persisted: false'
             echo '- Raw source URL exported to HF: false'
             echo '- Raw model response persisted: false'
