@@ -1,16 +1,16 @@
 {
-  "schema_version": "prc-legal-investigative-provider-catalog-v2",
+  "schema_version": "prc-legal-investigative-provider-catalog-v3",
   "secret_values_exposed": false,
   "providers": [
     {
       "provider_id": "prc-legal-investigative-intelligence",
       "display_name": "中国大陆法律、司法与电子证据联合情报目录",
-      "description": "对元典、现行官方法条、公安/司法程序、电子证据规则、监管与技术标准进行确定性分级和路由，并提供防御性证据/侦查类别矩阵。",
+      "description": "对元典、全国立法法源、法院、检察、公安程序、司法行政、行政复议/执法监督、执行破产与专项审判来源进行确定性分级和路由，并提供中国大陆法律体系矩阵与防御性证据/侦查类别矩阵。",
       "enabled": true,
       "ticket_prefix": "[intel-prc-legal]",
       "required_secret_environment_variable": "",
-      "catalog_policy": "仅返回本地固定来源目录、证据/侦查法律矩阵、来源路由和联合审计顺序；实际公开网页/PDF读取必须复用现有受控 web-retrieval；元典检索复用 yuandian-law。禁止自动登录、验证码破解、WAF绕过、拒绝后换IP/账号/Provider继续、隐藏API逆向、反取证、销毁证据和侦查规避。",
-      "execution_policy": "每张票据仅执行一个本地只读操作，零网络、零模型、零密钥。技术侦查仅记录法定存在、审批/范围/用途边界，不提供具体实施能力、规避或对抗细节。",
+      "catalog_policy": "仅返回本地固定来源目录、法律体系矩阵、证据/侦查法律矩阵、来源路由和联合审计顺序；实际公开网页/PDF读取必须复用现有受控 web-retrieval；元典检索复用 yuandian-law。禁止自动登录、验证码破解、WAF绕过、拒绝后换IP/账号/Provider继续、隐藏API逆向、反取证、销毁证据和侦查规避。",
+      "execution_policy": "每张票据仅执行一个本地只读操作，零网络、零模型、零密钥。实名当事人案件查询、网上信访、在线复议申请等能力只登记，不由情报中心自动登录或提交。技术侦查仅记录法定存在、审批/范围/用途边界，不提供具体实施能力、规避或对抗细节。",
       "limits": {
         "network_used": false,
         "requests_per_ticket_max": 0,
@@ -31,14 +31,14 @@
       "operations": [
         {
           "operation_id": "catalog-capabilities",
-          "description": "读取本地能力目录及来源/法律矩阵摘要。",
+          "description": "读取本地能力目录及来源/法律体系/证据矩阵摘要。",
           "parameters": [],
           "parameter_schema": {"type": "object", "additionalProperties": false, "properties": {}},
           "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
         },
         {
           "operation_id": "source-catalog",
-          "description": "按主题、来源等级或接入方式筛选中国大陆法律、司法、监管、公安电子证据和技术标准来源。",
+          "description": "按主题、来源等级或接入方式筛选基础中国大陆法律、司法、监管、公安电子证据和技术标准来源。",
           "parameters": ["topic", "access_class", "evidence_weight", "limit"],
           "parameter_schema": {
             "type": "object",
@@ -54,13 +54,28 @@
         },
         {
           "operation_id": "source-route",
-          "description": "按 source_id 返回固定来源的权威等级、访问类别和现有 Provider 路由。",
+          "description": "按基础 source_id 返回固定来源的权威等级、访问类别和现有 Provider 路由。完整司法体系新增来源请使用 legal-system-matrix。",
           "parameters": ["source_id"],
           "parameter_schema": {
             "type": "object",
             "additionalProperties": false,
             "required": ["source_id"],
             "properties": {"source_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,80}$"}}
+          },
+          "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
+        },
+        {
+          "operation_id": "legal-system-matrix",
+          "description": "读取中国大陆全国司法/法治体系矩阵：国家法源、法院、检察、公安侦查程序、司法行政、行政复议/执法、执行破产、专项审判、监察职务犯罪衔接和地方司法来源族，并返回与元典的联合检索/官方复核路径。",
+          "parameters": ["topic", "system_lane", "limit"],
+          "parameter_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "topic": {"type": "string", "minLength": 1, "maxLength": 80},
+              "system_lane": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_]{2,80}$"},
+              "limit": {"type": "integer", "minimum": 1, "maximum": 100}
+            }
           },
           "result_contract": {"official_endpoint": "LOCAL", "http_method": "LOCAL", "read_only": true, "credential_mode": "none"}
         },
@@ -80,7 +95,7 @@
         },
         {
           "operation_id": "joint-audit-plan",
-          "description": "生成元典召回→现行官方法条→刑事/行政程序→电子证据规则→案例→监管→技术标准→专项红线→证据/归因类别映射的确定性联合审计顺序。",
+          "description": "生成元典召回→法律体系分层→现行官方法条→刑事/行政程序→电子证据规则→案例/文书/执行→监管→技术标准→专项红线→证据/归因类别映射的确定性联合审计顺序。",
           "parameters": ["risk_topics"],
           "parameter_schema": {
             "type": "object",
