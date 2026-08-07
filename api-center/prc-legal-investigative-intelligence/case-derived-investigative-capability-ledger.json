@@ -104,9 +104,13 @@
   "capability_rollup": [
     {"capability_id":"technical-evidence-specialist-review","verification_level":"CORROBORATED_PRACTICE","supporting_observation_ids":["spp-2025-shi-network-electronic-evidence","spp-2025-li-medical-dna-review","spp-2025-public-interest-remote-sensing-modeling","spp-2026-lingtai-medical-imaging-review"],"note":"多件最高检公开材料跨不同案件类型显示技术性证据专门审查；仍需结合具体案件和现行规则判断适用。"},
     {"capability_id":"forensic-medicine-and-dna","verification_level":"CORROBORATED_PRACTICE","supporting_observation_ids":["spp-2025-li-medical-dna-review","spp-2026-lingtai-medical-imaging-review"],"note":"两个一手检察公开实践支持法医/医学影像/DNA技术审查能力存在。"},
+    {"capability_id":"provider-and-institutional-assistance","verification_level":"CORROBORATED_PRACTICE","supporting_observation_ids":["spp-2025-li-medical-dna-review","spp-2026-lingtai-medical-imaging-review"],"note":"两个一手公开案件体现依法取得医疗、鉴定等机构记录并用于技术审查。"},
     {"capability_id":"network-crime-investigation","verification_level":"PRIMARY_OBSERVED","supporting_observation_ids":["spp-2025-shi-network-electronic-evidence"],"note":"账本当前只以该一手公开案例记录结果侧观察；源头侧另有公安院校课程、公安标准和科研材料支持，需更多独立案件才能升级。"},
     {"capability_id":"electronic-data-forensics","verification_level":"PRIMARY_OBSERVED","supporting_observation_ids":["spp-2025-shi-network-electronic-evidence"],"note":"案件结果侧至少一个一手公开案例；应继续从法院、公安和检察独立案件补充。"},
-    {"capability_id":"geospatial-remote-sensing-and-mapping","verification_level":"PRIMARY_OBSERVED","supporting_observation_ids":["spp-2025-public-interest-remote-sensing-modeling"],"note":"当前证明检察公益诉讼监督实践中公开使用，不外推至所有刑事侦查场景。"}
+    {"capability_id":"network-log-and-connection-evidence","verification_level":"PRIMARY_OBSERVED","supporting_observation_ids":["spp-2025-shi-network-electronic-evidence"],"note":"一手公开案例明确出现日志、网络连接等证据审查类别，仅证明该案中出现。"},
+    {"capability_id":"interagency-evidence-cooperation","verification_level":"PRIMARY_OBSERVED","supporting_observation_ids":["spp-2025-shi-network-electronic-evidence"],"note":"一手公开案例体现检察介入和技术支持协作，仅证明该案公开披露的协作方式。"},
+    {"capability_id":"geospatial-remote-sensing-and-mapping","verification_level":"PRIMARY_OBSERVED","supporting_observation_ids":["spp-2025-public-interest-remote-sensing-modeling"],"note":"当前证明检察公益诉讼监督实践中公开使用，不外推至所有刑事侦查场景。"},
+    {"capability_id":"data-intelligence-and-correlation","verification_level":"PRIMARY_OBSERVED","supporting_observation_ids":["spp-2025-public-interest-remote-sensing-modeling"],"note":"一手公开案件体现多源数据比对和变化检测，仅证明该监督案件中的公开能力。"}
   ],
   "iteration_rules": {
     "append_only_observation_history": true,
