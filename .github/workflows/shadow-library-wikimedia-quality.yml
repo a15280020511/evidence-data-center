@@ -1,10 +1,13 @@
-name: Shadow Library Wikimedia Discovery Quality
+name: Global Open and Shadow Library Discovery Quality
 
 on:
   pull_request:
     paths:
       - 'api-center/information-tool-radar/global-knowledge-sources.json'
       - 'api-center/information-tool-radar/global_knowledge_registry.py'
+      - 'api-center/information-tool-radar/global-open-library-discovery-sources.json'
+      - 'api-center/information-tool-radar/global_open_library_discovery.py'
+      - 'api-center/information-tool-radar/test_global_open_library_discovery.py'
       - 'api-center/information-tool-radar/shadow-library-wikimedia-sources.json'
       - 'api-center/information-tool-radar/shadow_library_wikimedia_discovery.py'
       - 'api-center/information-tool-radar/test_shadow_library_wikimedia_discovery.py'
@@ -28,14 +31,32 @@ jobs:
         run: |
           python -m py_compile \
             api-center/information-tool-radar/global_knowledge_registry.py \
+            api-center/information-tool-radar/global_open_library_discovery.py \
             api-center/information-tool-radar/shadow_library_wikimedia_discovery.py \
             api-center/information-tool-radar/test_global_knowledge_registry.py \
+            api-center/information-tool-radar/test_global_open_library_discovery.py \
             api-center/information-tool-radar/test_shadow_library_wikimedia_discovery.py
       - name: Run deterministic policy tests
         working-directory: api-center/information-tool-radar
         run: |
           python test_global_knowledge_registry.py
+          python test_global_open_library_discovery.py
           python test_shadow_library_wikimedia_discovery.py
+      - name: Enforce open-library discovery backbone
+        run: |
+          python api-center/information-tool-radar/global_open_library_discovery.py \
+            --registry api-center/information-tool-radar/global-open-library-discovery-sources.json \
+            --output /tmp/open-library-discovery.json \
+            --enforce
+          python - <<'PY'
+          import json
+          with open('/tmp/open-library-discovery.json', encoding='utf-8') as fh:
+              report = json.load(fh)
+          assert report['status'] == 'pass', report
+          assert report['discovery_source_count'] >= 15, report
+          assert report['governance']['automatic_child_endpoint_promotion'] is False, report
+          assert report['governance']['child_verification_required'] is True, report
+          PY
       - name: Run bounded Wikimedia canary
         run: |
           python api-center/information-tool-radar/shadow_library_wikimedia_discovery.py \
