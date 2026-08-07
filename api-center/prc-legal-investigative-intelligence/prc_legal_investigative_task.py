@@ -24,6 +24,7 @@ from managed_provider_runtime import (  # noqa: E402
 SCHEMA_PATH = HERE / "ticket.schema.json"
 CATALOG_PATH = HERE / "provider-catalog.json"
 SOURCE_CATALOG_PATH = HERE / "source-catalog.json"
+INVESTIGATIVE_MATRIX_PATH = HERE / "investigative-evidence-matrix.json"
 
 
 def normalized(value: Any) -> str:
@@ -86,7 +87,58 @@ def stage_sources(catalog: Mapping[str, Any], topics: set[str]) -> list[Mapping[
     return selected
 
 
-def joint_audit_plan(catalog: Mapping[str, Any], parameters: Mapping[str, Any]) -> Mapping[str, Any]:
+def filter_investigative_matrix(matrix: Mapping[str, Any], parameters: Mapping[str, Any]) -> Mapping[str, Any]:
+    topic = normalized(parameters.get("topic"))
+    limit = bounded_int(parameters.get("limit"), default=100, minimum=1, maximum=100, name="limit")
+
+    authorities: list[dict[str, Any]] = []
+    for row in matrix.get("authority_layers") or []:
+        if not isinstance(row, Mapping):
+            continue
+        topics = {normalized(item) for item in row.get("topics") or []}
+        if topic and topic not in topics:
+            continue
+        authorities.append(dict(row))
+        if len(authorities) >= limit:
+            break
+
+    categories: list[dict[str, Any]] = []
+    for row in matrix.get("evidence_and_investigative_categories") or []:
+        if not isinstance(row, Mapping):
+            continue
+        searchable = {
+            normalized(row.get("category_id")),
+            normalized(row.get("name")),
+            normalized(row.get("legal_view")),
+            normalized(row.get("defensive_use")),
+        }
+        searchable.update(normalized(item) for item in row.get("evidence_examples") or [])
+        if topic and not any(topic in value for value in searchable if value):
+            continue
+        categories.append(dict(row))
+        if len(categories) >= limit:
+            break
+
+    return {
+        "schema_version": matrix.get("schema_version"),
+        "reviewed_at": matrix.get("reviewed_at"),
+        "jurisdiction": matrix.get("jurisdiction"),
+        "purpose": matrix.get("purpose"),
+        "safety_boundary": matrix.get("safety_boundary"),
+        "authority_count": len(authorities),
+        "category_count": len(categories),
+        "authority_layers": authorities,
+        "evidence_and_investigative_categories": categories,
+        "joint_review_logic": matrix.get("joint_review_logic"),
+        "final_rule": matrix.get("final_rule"),
+    }
+
+
+def joint_audit_plan(
+    catalog: Mapping[str, Any],
+    matrix: Mapping[str, Any],
+    parameters: Mapping[str, Any],
+) -> Mapping[str, Any]:
     topics_raw = parameters.get("risk_topics") or []
     if not isinstance(topics_raw, list):
         raise ValueError("risk_topics must be an array")
@@ -96,7 +148,8 @@ def joint_audit_plan(catalog: Mapping[str, Any], parameters: Mapping[str, Any]) 
 
     stage_map = [
         ("yuandian_recall", ["yuandian-law"]),
-        ("official_law_validation", ["npc-national-law-database", "spc-official", "moj-national-regulations"]),
+        ("current_official_law_validation", ["npc-national-law-database", "moj-national-regulations"]),
+        ("criminal_and_administrative_procedure", ["spc-official", "spp-guiding-cases", "public-security-electronic-evidence-rules"]),
         ("judicial_and_procuratorial_cases", ["spc-case-library", "spc-official", "spp-guiding-cases"]),
         ("public_security_electronic_evidence_rules", ["public-security-electronic-evidence-rules"]),
         ("sector_regulator_rules_and_enforcement", ["cac-data-governance", "samr-enforcement", "miit-data-security", "national-data-administration", "cnipa-copyright-data-rights"]),
@@ -104,21 +157,46 @@ def joint_audit_plan(catalog: Mapping[str, Any], parameters: Mapping[str, Any]) 
         ("special_redline_domains", ["state-secrets-bureau", "mnr-geospatial"]),
     ]
     stages = []
+    always_include = {"yuandian-law", "npc-national-law-database", "public-security-electronic-evidence-rules"}
     for stage_name, source_ids in stage_map:
         if topics:
-            routed = [source_id for source_id in source_ids if source_id in candidate_ids or source_id in {"yuandian-law", "npc-national-law-database", "public-security-electronic-evidence-rules"}]
+            routed = [source_id for source_id in source_ids if source_id in candidate_ids or source_id in always_include]
         else:
             routed = list(source_ids)
         stages.append({"stage": stage_name, "source_ids": routed})
+
+    matrix_view = filter_investigative_matrix(matrix, {"limit": 100})
+    matched_authorities = []
+    for row in matrix_view["authority_layers"]:
+        row_topics = {normalized(item) for item in row.get("topics") or []}
+        if not topics or row_topics & topics:
+            matched_authorities.append(row.get("authority_id"))
+
+    matched_categories = []
+    for row in matrix_view["evidence_and_investigative_categories"]:
+        text = " ".join(
+            [
+                normalized(row.get("category_id")),
+                normalized(row.get("name")),
+                normalized(row.get("legal_view")),
+                normalized(row.get("defensive_use")),
+                " ".join(normalized(item) for item in row.get("evidence_examples") or []),
+            ]
+        )
+        if not topics or any(topic in text for topic in topics):
+            matched_categories.append(row.get("category_id"))
 
     return {
         "jurisdiction": "PRC_MAINLAND",
         "risk_topics": sorted(topics),
         "purpose": "defensive_compliance_and_evidence_review_only",
-        "decision_rule": "YuanDian is a recall layer; current official law/regulator/judicial sources control final verification.",
+        "decision_rule": "YuanDian is a recall layer; current official law/regulator/judicial/public-security sources control final verification.",
         "investigation_evasion_allowed": False,
         "identity_concealment_allowed": False,
+        "technical_surveillance_implementation_details_allowed": False,
         "stages": stages,
+        "matched_authority_ids": matched_authorities,
+        "matched_investigative_category_ids": matched_categories,
         "final_output": ["GREEN", "YELLOW", "ORANGE", "RED", "REVIEW_BEFORE_PRODUCTION"],
     }
 
@@ -144,21 +222,38 @@ def execute(ticket_path: Path, output_dir: Path) -> int:
         "captcha_solving": False,
         "waf_bypass": False,
         "investigation_evasion": False,
+        "technical_surveillance_details": False,
         "secret_values_exposed": False,
         "model_calls": 0,
     }
     try:
         catalog = load_json(SOURCE_CATALOG_PATH)
+        matrix = load_json(INVESTIGATIVE_MATRIX_PATH)
         if operation == "catalog-capabilities":
             if parameters:
                 raise ValueError("catalog-capabilities accepts no parameters")
-            snapshot = {"provider": provider_row(CATALOG_PATH), "source_catalog_summary": {"schema_version": catalog.get("schema_version"), "reviewed_at": catalog.get("reviewed_at"), "source_count": len(catalog.get("sources") or [])}}
+            snapshot = {
+                "provider": provider_row(CATALOG_PATH),
+                "source_catalog_summary": {
+                    "schema_version": catalog.get("schema_version"),
+                    "reviewed_at": catalog.get("reviewed_at"),
+                    "source_count": len(catalog.get("sources") or []),
+                },
+                "investigative_matrix_summary": {
+                    "schema_version": matrix.get("schema_version"),
+                    "reviewed_at": matrix.get("reviewed_at"),
+                    "authority_count": len(matrix.get("authority_layers") or []),
+                    "category_count": len(matrix.get("evidence_and_investigative_categories") or []),
+                },
+            }
         elif operation == "source-catalog":
             snapshot = {"source_catalog": filter_sources(catalog, parameters)}
         elif operation == "source-route":
             snapshot = {"source_route": source_route(catalog, str(parameters.get("source_id") or ""))}
+        elif operation == "investigative-evidence-matrix":
+            snapshot = {"investigative_evidence_matrix": filter_investigative_matrix(matrix, parameters)}
         elif operation == "joint-audit-plan":
-            snapshot = {"joint_audit_plan": joint_audit_plan(catalog, parameters)}
+            snapshot = {"joint_audit_plan": joint_audit_plan(catalog, matrix, parameters)}
         else:
             raise ValueError(f"unsupported operation: {operation}")
         status = "INTEL_PRC_LEGAL_INVESTIGATIVE_COMPLETED"
