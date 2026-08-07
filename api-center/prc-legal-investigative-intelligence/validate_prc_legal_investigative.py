@@ -13,6 +13,7 @@ SAMPLES = {
     "source-route": {"source_id": "public-security-electronic-evidence-rules"},
     "legal-system-matrix": {"system_lane": "court_system", "limit": 100},
     "investigative-evidence-matrix": {"limit": 100},
+    "public-security-practice-matrix": {"limit": 100},
     "joint-audit-plan": {"risk_topics": ["electronic_evidence", "personal_information", "geospatial"]},
 }
 
@@ -54,10 +55,38 @@ def validate(operation: str) -> dict[str, object]:
             assert view["lane_count"] == 1
             assert view["source_count"] >= 8
             assert view["system_lanes"][0]["lane_id"] == "court_system"
+        if operation == "public-security-practice-matrix":
+            view = snapshot["public_security_practice_matrix"]
+            assert view["schema_version"] == "prc-justice-knowledge-practice-matrix-v2"
+            assert view["source_count"] >= 30
+            assert view["capability_domain_count"] >= 20
+            assert view["safety_boundary"]["operational_surveillance_details_allowed"] is False
+            assert view["safety_boundary"]["private_training_platform_login_allowed"] is False
+            source_ids = {row["source_id"] for row in view["source_families"]}
+            required_sources = {
+                "mps-public-rules-news",
+                "national-criminal-technology-standardization",
+                "ppsuc-public-education-research",
+                "cipuc-public-education-research",
+                "spc-national-judge-college",
+                "spp-national-prosecutor-college",
+                "spp-procuratorial-technology",
+                "judicial-appraisal-science-institute",
+                "central-judicial-police-officer-college",
+                "ccdi-nsc-public-law-practice",
+                "china-academy-discipline-inspection-supervision",
+                "discipline-inspection-nine-textbooks",
+                "yuandian-spc-spp-case-outcome-family",
+            }
+            assert required_sources <= source_ids
+            assert "anti_forensics_or_evasion_method" in view["forbidden_extraction_fields"]
+            assert "operational_tactical_playbook" in view["forbidden_extraction_fields"]
         if operation == "joint-audit-plan":
             plan = snapshot["joint_audit_plan"]
             assert plan["matched_legal_system_lane_ids"]
             assert plan["investigation_evasion_allowed"] is False
+            assert "public_security_source_view" in {stage["stage"] for stage in plan["stages"]}
+            assert "case_derived_outcome_view" in {stage["stage"] for stage in plan["stages"]}
         return {"status": "PASS", "operation": operation, "provider_catalog": CATALOG_PATH.name}
 
 
