@@ -49,16 +49,14 @@ jobs:
             -r api-center/cloudflare/requirements.txt
           python -m pip check
 
-      - name: Compile provider
+      - name: Compile provider and validate storage topology
         run: |
           set -euo pipefail
           python -m py_compile \
             api-center/managed_provider_runtime.py \
-            api-center/cloudflare/cloudflare_task.py
-          if grep -q 'secrets.HF_TOKEN\|HF_CLOUDFLARE_DATASET_REPO\|hf_archive.py' .github/workflows/cloudflare-api-ticket.yml; then
-            echo 'private Hugging Face archive is forbidden in evidence center' >&2
-            exit 1
-          fi
+            api-center/cloudflare/cloudflare_task.py \
+            api-center/huggingface/validate_storage_topology.py
+          python api-center/huggingface/validate_storage_topology.py
 
       - name: Parse and authorize ticket
         id: prepare
