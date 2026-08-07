@@ -39,6 +39,7 @@
       "required_for_gate": true,
       "category": "global_events",
       "endpoint": "https://api.reliefweb.int/v2/disasters",
+      "fallback_endpoint": "https://eonet.gsfc.nasa.gov/api/v3/events",
       "appname": "evidence-data-center"
     },
     "wikimedia": {
