@@ -6,7 +6,9 @@ on:
     paths:
       - "api-center/prc-legal-investigative-intelligence/prc-justice-self-iteration-policy.json"
       - "api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration.py"
+      - "api-center/prc-legal-investigative-intelligence/prc_justice_self_iteration_v2.py"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration.py"
+      - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_self_iteration_v2.py"
       - ".github/workflows/prc-justice-scheduled-self-iteration.yml"
       - ".github/workflows/prc-justice-self-iteration-production-smoke.yml"
   workflow_dispatch:
