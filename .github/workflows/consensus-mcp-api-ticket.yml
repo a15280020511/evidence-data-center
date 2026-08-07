@@ -25,6 +25,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       ISSUE_NUMBER: ${{ github.event.issue.number }}
       CONSENSUS_MCP_BEARER_TOKEN: ${{ secrets.CONSENSUS_MCP_BEARER_TOKEN }}
+      CONSENSUS_MCP_REFRESH_TOKEN: ${{ secrets.CONSENSUS_MCP_REFRESH_TOKEN }}
     steps:
       - name: Checkout pinned source
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -45,7 +46,10 @@ jobs:
           python -m pip check
 
       - name: Compile managed MCP control plane
-        run: python -m py_compile api-center/consensus-mcp/consensus_mcp_task.py
+        run: |
+          python -m py_compile \
+            api-center/consensus-mcp/consensus_mcp_task.py \
+            api-center/consensus-mcp/oauth_refresh.py
 
       - name: Parse and authorize Consensus MCP ticket
         id: prepare
@@ -70,6 +74,28 @@ jobs:
             --output-dir consensus-mcp-artifacts --phase rejected > consensus-mcp-comment.md
           gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
             -F body=@consensus-mcp-comment.md
+
+      - name: Resolve Free-account OAuth access token
+        id: oauth
+        if: >-
+          steps.prepare.outputs.accepted == 'true' &&
+          env.CONSENSUS_MCP_BEARER_TOKEN == '' &&
+          env.CONSENSUS_MCP_REFRESH_TOKEN != ''
+        continue-on-error: true
+        run: python api-center/consensus-mcp/oauth_refresh.py --timeout 20
+
+      - name: Comment OAuth refresh failure
+        if: steps.oauth.outcome == 'failure'
+        run: |
+          cat > consensus-oauth-failure.md <<'EOF'
+          ## CONSENSUS_MCP_OAUTH_REFRESH_FAILED
+
+          - The configured `CONSENSUS_MCP_REFRESH_TOKEN` could not be safely resolved into a runner access token.
+          - No token value was written to Issue comments or artifacts.
+          - Re-run the local PKCE bootstrap and update the repository Secret if the token expired, was revoked, or Consensus rotated refresh tokens.
+          EOF
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/issues/${ISSUE_NUMBER}/comments" \
+            -F body=@consensus-oauth-failure.md
 
       - name: Execute bounded read-only MCP operation
         id: execute
@@ -107,6 +133,7 @@ jobs:
         if: >-
           always() &&
           (steps.prepare.outputs.accepted != 'true' ||
+           steps.oauth.outcome == 'failure' ||
            steps.execute.outputs.status != 'API_CONSENSUS_MCP_COMPLETED' ||
            steps.upload.outcome != 'success')
         run: |
