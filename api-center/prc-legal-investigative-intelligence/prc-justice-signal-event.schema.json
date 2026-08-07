@@ -1,0 +1,141 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "prc-justice-signal-event-v1",
+  "title": "PRC Justice Signal Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_date",
+    "institution_type",
+    "signal_type",
+    "subject_type",
+    "source",
+    "support_or_conflict",
+    "review_status",
+    "safety"
+  ],
+  "properties": {
+    "event_id": {"type":"string","pattern":"^[a-z0-9][a-z0-9._:-]{5,180}$"},
+    "event_date": {"type":"string","format":"date"},
+    "publication_date": {"type":["string","null"],"format":"date"},
+    "institution_type": {
+      "enum": [
+        "public_security",
+        "procuratorate",
+        "court",
+        "justice_administration_and_forensics",
+        "discipline_supervision",
+        "legislature_or_rulemaker",
+        "judicial_education_or_research",
+        "cross_institution"
+      ]
+    },
+    "institution_name": {"type":["string","null"],"maxLength":300},
+    "region": {"type":["string","null"],"maxLength":120},
+    "signal_type": {
+      "enum": [
+        "law_and_norm",
+        "policy_and_strategy",
+        "education_and_training",
+        "research",
+        "standard",
+        "procurement_and_budget",
+        "talent_and_recruitment",
+        "infrastructure_and_deployment",
+        "case_practice",
+        "judicial_outcome",
+        "statistics_and_report",
+        "doctrine_and_commentary"
+      ]
+    },
+    "subject_type": {"enum":["capability","technology","practice_standard","doctrine","enforcement","institutional_capacity"]},
+    "capability_ids": {
+      "type":"array",
+      "maxItems":20,
+      "uniqueItems":true,
+      "items":{"type":"string","pattern":"^[a-z0-9][a-z0-9-]{2,100}$"}
+    },
+    "technology_terms": {
+      "type":"array",
+      "maxItems":30,
+      "uniqueItems":true,
+      "items":{"type":"string","minLength":1,"maxLength":160}
+    },
+    "legal_domains": {
+      "type":"array",
+      "maxItems":20,
+      "uniqueItems":true,
+      "items":{"type":"string","minLength":1,"maxLength":120}
+    },
+    "procedural_stage": {"type":["string","null"],"maxLength":160},
+    "case_type": {"type":["string","null"],"maxLength":160},
+    "metrics": {
+      "type":"object",
+      "additionalProperties":{"type":["number","integer","null"]},
+      "maxProperties":50
+    },
+    "lifecycle_stage": {
+      "type":["string","null"],
+      "enum":[null,"CONCEPT","RESEARCH_SIGNAL","TRAINING_SIGNAL","STANDARDIZING","STANDARDIZED","INVESTING","DEPLOYING","FIRST_PRACTICE","REPEATED_PRACTICE","CROSS_REGION_OBSERVED","CROSS_INSTITUTION_OBSERVED","MATURE_PUBLIC_PRACTICE","CONTESTED","STALE_REVIEW_REQUIRED"]
+    },
+    "practice_standard": {
+      "type":"object",
+      "additionalProperties":false,
+      "properties": {
+        "collection_standard":{"type":["string","null"],"maxLength":1200},
+        "preservation_standard":{"type":["string","null"],"maxLength":1200},
+        "integrity_standard":{"type":["string","null"],"maxLength":1200},
+        "review_standard":{"type":["string","null"],"maxLength":1200},
+        "admissibility_standard":{"type":["string","null"],"maxLength":1200},
+        "corroboration_standard":{"type":["string","null"],"maxLength":1200},
+        "failure_pattern":{"type":["string","null"],"maxLength":1200},
+        "current_authority":{"type":["string","null"],"maxLength":500}
+      }
+    },
+    "support_or_conflict": {"enum":["SUPPORTS","CONFLICTS","NEUTRAL","REVIEW_REQUIRED"]},
+    "source": {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["url","host","source_class","primary","content_fingerprint"],
+      "properties": {
+        "url":{"type":"string","format":"uri","maxLength":2000},
+        "host":{"type":"string","minLength":3,"maxLength":255},
+        "source_class":{"enum":["official_primary","official_secondary","academic_primary","authorized_database","secondary_discovery"]},
+        "primary":{"type":"boolean"},
+        "title":{"type":["string","null"],"maxLength":500},
+        "content_fingerprint":{"type":"string","pattern":"^[0-9a-f]{64}$"},
+        "retrieved_at":{"type":["string","null"],"format":"date-time"}
+      }
+    },
+    "evidence_ids": {
+      "type":"array",
+      "maxItems":100,
+      "uniqueItems":true,
+      "items":{"type":"string","minLength":3,"maxLength":180}
+    },
+    "model_analysis": {
+      "type":["object","null"],
+      "additionalProperties":false,
+      "properties": {
+        "semantic_normalization":{"type":["string","null"],"maxLength":1200},
+        "novelty_class":{"enum":["EXISTING_TERM","NEW_ALIAS","POSSIBLE_NEW_CAPABILITY","UNRESOLVED"]},
+        "trend_interpretation":{"type":["string","null"],"maxLength":2000},
+        "uncertainty":{"type":["string","null"],"maxLength":1200},
+        "supporting_evidence_ids":{"type":"array","maxItems":100,"uniqueItems":true,"items":{"type":"string","minLength":3,"maxLength":180}}
+      }
+    },
+    "review_status": {"enum":["DISCOVERED","PRIMARY_VERIFIED","CROSS_VERIFIED","CONTESTED","STALE_REVIEW_REQUIRED","REJECTED"]},
+    "safety": {
+      "type":"object",
+      "additionalProperties":false,
+      "required":["public_or_authorized","contains_secret_operational_detail","contains_targeting_or_evasion_detail","contains_personal_targeting"],
+      "properties": {
+        "public_or_authorized":{"const":true},
+        "contains_secret_operational_detail":{"const":false},
+        "contains_targeting_or_evasion_detail":{"const":false},
+        "contains_personal_targeting":{"const":false}
+      }
+    }
+  }
+}
