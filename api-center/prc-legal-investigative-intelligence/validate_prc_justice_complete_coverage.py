@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import urlparse
 
 HERE = Path(__file__).resolve().parent
 DAG_PATH = HERE / "prc-justice-complete-node-dag.json"
 MONITOR_PATH = HERE / "prc-justice-monitoring-registry.json"
+WATCH_TARGETS_PATH = HERE / "prc-justice-watch-targets.json"
+WATCH_SCRIPT_PATH = HERE / "prc_justice_public_source_watch.py"
 
 
 def load(path: Path) -> dict:
@@ -19,7 +22,9 @@ def load(path: Path) -> dict:
 def main() -> int:
     dag = load(DAG_PATH)
     monitor = load(MONITOR_PATH)
+    watch = load(WATCH_TARGETS_PATH)
 
+    assert DAG_PATH.is_file() and MONITOR_PATH.is_file() and WATCH_SCRIPT_PATH.is_file()
     assert dag["schema_version"] == "prc-justice-complete-node-dag-v1"
     assert dag["jurisdiction"] == "PRC_MAINLAND"
     assert len(dag["normative_hierarchy"]) >= 12
@@ -119,6 +124,30 @@ def main() -> int:
     assert connectors["playwright-mcp"]["status"] == "RECOMMENDED_LOCAL_FALLBACK"
     assert connectors["browserless-mcp"]["status"] == "NOT_RECOMMENDED_AS_DEFAULT_FOR_PRC_JUSTICE"
 
+    assert watch["schema_version"] == "prc-justice-watch-targets-v1"
+    targets = watch["targets"]
+    assert len(targets) == 20
+    assert watch["max_targets"] == 20
+    assert len({row["id"] for row in targets}) == 20
+    assert len({row["url"] for row in targets}) == 20
+    for row in targets:
+        parsed = urlparse(row["url"])
+        assert parsed.scheme == "https" and parsed.hostname
+        assert not parsed.username and not parsed.password
+    rules = watch["rules"]
+    assert rules["same_request_no_retry"] is True
+    assert rules["request_interval_seconds"] >= 10
+    assert rules["max_response_bytes_per_target"] <= 524288
+    for key in [
+        "allow_form_submission",
+        "allow_login",
+        "allow_captcha_solving",
+        "allow_waf_bypass",
+        "allow_proxy_rotation",
+        "allow_hidden_api_discovery",
+    ]:
+        assert rules[key] is False, key
+
     print(json.dumps({
         "status": "PASS",
         "normative_nodes": len(dag["normative_hierarchy"]),
@@ -127,6 +156,7 @@ def main() -> int:
         "process_dags": len(dag["process_dags"]),
         "monitoring_groups": len(monitor["source_groups"]),
         "connector_rows": len(monitor["discovery_and_retrieval_connectors"]),
+        "live_watch_targets": len(targets),
     }, ensure_ascii=False))
     return 0
 
