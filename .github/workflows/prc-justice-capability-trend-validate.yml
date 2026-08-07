@@ -6,7 +6,9 @@ on:
       - "api-center/prc-legal-investigative-intelligence/prc-justice-capability-trend-system.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-signal-event.schema.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-analysis-contract.json"
+      - "api-center/prc-legal-investigative-intelligence/prc-justice-trend-source-plan.json"
       - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py"
+      - "api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py"
       - "api-center/prc-legal-investigative-intelligence/investigative-technology-intelligence-matrix.json"
       - "api-center/prc-legal-investigative-intelligence/case-derived-investigative-capability-ledger.json"
       - "api-center/prc-legal-investigative-intelligence/prc-justice-self-iteration-policy.json"
@@ -32,11 +34,15 @@ jobs:
       - name: Validate capability and trend intelligence contracts
         run: |
           set -euo pipefail
-          python -m py_compile api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py
+          python -m py_compile \
+            api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py \
+            api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py
           python api-center/prc-legal-investigative-intelligence/validate_prc_justice_capability_trend_system.py | tee prc-justice-capability-trend-validation.json
+          python api-center/prc-legal-investigative-intelligence/validate_prc_justice_trend_source_plan.py | tee prc-justice-trend-source-validation.json
           python -m json.tool api-center/prc-legal-investigative-intelligence/prc-justice-capability-trend-system.json >/dev/null
           python -m json.tool api-center/prc-legal-investigative-intelligence/prc-justice-signal-event.schema.json >/dev/null
           python -m json.tool api-center/prc-legal-investigative-intelligence/prc-justice-trend-analysis-contract.json >/dev/null
+          python -m json.tool api-center/prc-legal-investigative-intelligence/prc-justice-trend-source-plan.json >/dev/null
           git diff --check
 
       - name: Upload validation evidence
@@ -44,6 +50,8 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: prc-justice-capability-trend-${{ github.run_id }}
-          path: prc-justice-capability-trend-validation.json
+          path: |
+            prc-justice-capability-trend-validation.json
+            prc-justice-trend-source-validation.json
           if-no-files-found: warn
           retention-days: 45
