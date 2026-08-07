@@ -3,14 +3,14 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from jsonschema import Draft202012Validator
 
 HERE = Path(__file__).resolve().parent
 SCHEMA = HERE / "prc-justice-derived-intelligence-record.schema.json"
 MESH = HERE / "prc-justice-intelligence-mesh.json"
-TRANSFORM = HERE / "transform_prc_justice_with_cloudflare.py"
+TRANSFORM = HERE / "transform_prc_justice_with_cloudflare_v2.py"
 
 
 def load(path: Path) -> Any:
@@ -54,19 +54,26 @@ def validate() -> dict[str, Any]:
         '"raw_source_text_persisted": False',
         '"raw_source_url_in_hf_export": False',
         '"raw_model_response_persisted": False',
+        '"raw_html_persisted": False',
         '"direct_huggingface_write": False',
         '"storage_gateway_owner": "a15280020511/decision-system-governance"',
         'MAX_PAGES = 6',
         'if response.status_code == 429',
+        'if status != 422',
+        '_fetch_verified_html(url)',
+        '"simple-json-schema-plus-local-strict-validation"',
     )
     missing = [item for item in markers if item not in text]
     if missing:
-        raise RuntimeError("transform safety markers missing: " + ", ".join(missing))
+        raise RuntimeError("transform v2 safety/resilience markers missing: " + ", ".join(missing))
     return {
-        "status": "PRC_JUSTICE_DERIVED_INTELLIGENCE_VALIDATED",
+        "status": "PRC_JUSTICE_DERIVED_INTELLIGENCE_V2_VALIDATED",
         "core_dimension_count": 6,
         "hf_section_count": len(sections),
         "cloudflare_ai_pages_per_cycle": 6,
+        "cloudflare_url_first": True,
+        "bounded_in_memory_html_fallback_on_422": True,
+        "raw_html_persisted": False,
         "raw_source_in_hf": False,
         "raw_model_response_in_hf": False,
         "direct_hf_write": False,
