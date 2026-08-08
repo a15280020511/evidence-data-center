@@ -62,6 +62,7 @@ jobs:
           set -euo pipefail
           self_path='.github/workflows/evidence-center-pause-controller.yml'
           codeql_path='.github/workflows/codeql.yml'
+          dependabot_path='dynamic/dependabot/dependabot-updates'
           disabled=0
           preserved=0
           failed=0
@@ -76,8 +77,10 @@ jobs:
             if [[ -z "$workflow_id" || -z "$workflow_path" ]]; then
               continue
             fi
-            if [[ "$workflow_path" == "$self_path" || "$workflow_path" == "$codeql_path" ]]; then
-              printf 'preserve\t%s\t%s\t%s\n' "$workflow_id" "$workflow_path" "$workflow_state" \
+            if [[ "$workflow_path" == "$self_path" || \
+                  "$workflow_path" == "$codeql_path" || \
+                  "$workflow_path" == "$dependabot_path" ]]; then
+              printf 'preserve-maintenance\t%s\t%s\t%s\n' "$workflow_id" "$workflow_path" "$workflow_state" \
                 >> pause-artifacts/workflow-actions.tsv
               preserved=$((preserved + 1))
               continue
@@ -110,6 +113,7 @@ jobs:
           allowed = {
               ".github/workflows/evidence-center-pause-controller.yml",
               ".github/workflows/codeql.yml",
+              "dynamic/dependabot/dependabot-updates",
           }
           active = []
           for line in Path("pause-artifacts/workflows-after.tsv").read_text(encoding="utf-8").splitlines():
@@ -122,6 +126,7 @@ jobs:
                   "allowed_active_workflows": sorted(allowed),
                   "unexpected_active_workflows": active,
                   "pause_enforced": not active,
+                  "maintenance_exemptions_do_not_collect_evidence": True,
               }, ensure_ascii=False, indent=2) + "\n",
               encoding="utf-8",
           )
