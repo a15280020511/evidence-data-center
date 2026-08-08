@@ -43,7 +43,8 @@
     "grobid",
     "apache-tika",
     "opensearch",
-    "scrapy"
+    "scrapy",
+    "warcio"
   ],
   "arbitrary_code_allowed": false,
   "arbitrary_url_allowed": false,

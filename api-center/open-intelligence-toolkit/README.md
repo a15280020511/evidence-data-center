@@ -4,6 +4,8 @@
 
 重型工具 Browsertrix、Crawl4AI、Playwright MCP、SearXNG、Docling、GROBID、Tika、OpenSearch和Scrapy仅进入条件能力矩阵；已有Browserless、Cloudflare Browser Run和Internet Archive直接复用，不重复建设。
 
+Warcio 作为条件证据归档能力登记，仅用于本地 WARC/ARC 流式读写、已获准公开响应的可复现证据封装与离线回放；不提供独立网络采集入口，不恢复封存状态下已删除的 GitHub Actions 执行入口，也不允许借此扩大 URL、登录、Cookie、代理或验证码边界。
+
 PHDA因`uniqueNum`验证参数、ScienceDB因端点合同尚未冻结、国家数据集平台因尚无稳定公共API，均不伪报为生产接口。
 
 SEC EDGAR已验证为GitHub Actions生产出口HTTP 403，因此仅登记为条件能力，不作为可调用生产操作。
