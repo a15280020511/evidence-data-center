@@ -1,0 +1,51 @@
+{
+  "schema_version": "github-intelligence-tool-gap-audit-v1",
+  "audited_at": "2026-08-08",
+  "center": "evidence-data-center",
+  "repository_state": "sealed-no-github-actions-entrypoints",
+  "policy": {
+    "restore_deleted_workflows": false,
+    "new_independent_network_entrypoint_allowed": false,
+    "free_first": true,
+    "public_read_only_only": true,
+    "credential_cookie_captcha_proxy_bypass_allowed": false,
+    "arbitrary_code_allowed": false,
+    "arbitrary_url_allowed": false
+  },
+  "candidates": [
+    {
+      "tool": "docling-project/docling",
+      "license": "MIT",
+      "decision": "retain-conditional-existing",
+      "reason": "already present in conditional toolchain; valuable for structured PDF/DOCX/PPTX/HTML/table extraction; no duplicate integration"
+    },
+    {
+      "tool": "unclecode/crawl4ai",
+      "license": "Apache-2.0",
+      "decision": "retain-conditional-existing",
+      "reason": "already present in conditional toolchain; bounded public-page structuring only; no anti-bot bypass role"
+    },
+    {
+      "tool": "searxng/searxng",
+      "license": "AGPL-3.0",
+      "decision": "retain-conditional-existing",
+      "reason": "already present as optional discovery layer; not a production SLA or single dependency"
+    },
+    {
+      "tool": "moj-analytical-services/splink",
+      "license": "MIT",
+      "decision": "do-not-install-in-evidence-center",
+      "reason": "authoritative capability ownership assigns probabilistic entity-resolution scoring to compute-simulation-center; evidence center only prepares normalized candidate blocks"
+    },
+    {
+      "tool": "webrecorder/warcio",
+      "license": "Apache-2.0",
+      "decision": "register-conditional",
+      "reason": "net-new local WARC/ARC evidence packaging and replay capability; no independent collection or network entrypoint"
+    }
+  ],
+  "production_dependency_changes": [],
+  "workflow_changes": [],
+  "model_calls": 0,
+  "paid_services_added": 0
+}
