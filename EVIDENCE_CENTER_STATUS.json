@@ -1,7 +1,7 @@
 {
   "schema_version": "evidence-center-status-v1",
   "status": "paused-risk-review",
-  "effective_scope": "all GitHub Actions execution except pause controller and CodeQL",
+  "effective_scope": "all evidence/intelligence collection, provider validation, scheduled discovery, issue-ticket execution and manual evidence workflows are paused; only pause control, CodeQL and GitHub Dependabot maintenance may remain active",
   "reason": "Operator-requested pause pending risk review",
   "data_collection_allowed": false,
   "provider_validation_allowed": false,
@@ -9,5 +9,11 @@
   "issue_ticket_execution_allowed": false,
   "manual_workflow_execution_allowed": false,
   "repository_read_only_inspection_allowed": true,
+  "non_collection_maintenance_allowed": true,
+  "non_collection_maintenance_allowlist": [
+    ".github/workflows/evidence-center-pause-controller.yml",
+    ".github/workflows/codeql.yml",
+    "dynamic/dependabot/dependabot-updates"
+  ],
   "resume_policy": "explicit operator-approved governance change required"
 }
