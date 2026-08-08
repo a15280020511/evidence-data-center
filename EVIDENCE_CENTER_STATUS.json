@@ -1,19 +1,19 @@
 {
   "schema_version": "evidence-center-status-v1",
-  "status": "paused-risk-review",
-  "effective_scope": "all evidence/intelligence collection, provider validation, scheduled discovery, issue-ticket execution and manual evidence workflows are paused; only pause control, CodeQL and GitHub Dependabot maintenance may remain active",
-  "reason": "Operator-requested pause pending risk review",
+  "status": "sealed-security-hold",
+  "effective_scope": "The evidence/intelligence center is fully sealed. All collection, provider validation, scheduled discovery, issue-ticket execution, manual workflows, CI/security scans, dependency maintenance, external API access, and automated repository execution are stopped. Repository contents remain available only for static read-only inspection until an explicit operator-approved unseal change is made.",
+  "reason": "Operator-requested full seal pending resolution of security issues",
   "data_collection_allowed": false,
   "provider_validation_allowed": false,
   "scheduled_discovery_allowed": false,
   "issue_ticket_execution_allowed": false,
   "manual_workflow_execution_allowed": false,
+  "actions_execution_allowed": false,
+  "external_api_access_allowed": false,
+  "code_scanning_allowed": false,
+  "dependency_updates_allowed": false,
+  "non_collection_maintenance_allowed": false,
+  "non_collection_maintenance_allowlist": [],
   "repository_read_only_inspection_allowed": true,
-  "non_collection_maintenance_allowed": true,
-  "non_collection_maintenance_allowlist": [
-    ".github/workflows/evidence-center-pause-controller.yml",
-    ".github/workflows/codeql.yml",
-    "dynamic/dependabot/dependabot-updates"
-  ],
-  "resume_policy": "explicit operator-approved governance change required"
+  "resume_policy": "explicit operator-approved unseal change required after security review"
 }
