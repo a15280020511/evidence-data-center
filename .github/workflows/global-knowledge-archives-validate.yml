@@ -97,7 +97,7 @@ jobs:
           assert catalog['secret_values_exposed'] is False
           PY
           git diff --check
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: global-knowledge-registry-${{ github.run_id }}
@@ -164,7 +164,7 @@ jobs:
           assert 200 <= row['http_status'] < 300
           assert row['response_bytes'] > 0
           PY
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: global-knowledge-live-${{ matrix.source }}-${{ github.run_id }}
@@ -228,7 +228,7 @@ jobs:
               assert row['network_used'] is False
               assert row['request_count']==0
           PY
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: global-knowledge-key-${{ matrix.source }}-${{ github.run_id }}

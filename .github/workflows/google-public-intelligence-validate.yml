@@ -154,7 +154,7 @@ jobs:
           summary={'status':'PASS','services':['YouTube Data API v3','Fact Check Tools API','PageSpeed Insights API v5','Chrome UX Report API'],'request_count':4,'model_calls':0,'secret_values_exposed':False}
           (root/'summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n')
           PY
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
           name: google-public-live-${{ github.run_id }}
