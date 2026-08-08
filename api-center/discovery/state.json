@@ -1,15 +1,13 @@
 {
-  "apis_guru_cursor": 840,
+  "apis_guru_cursor": 960,
   "last_engine_counts": {
     "exa": 8,
     "github": 4,
     "tavily": 8
   },
-  "last_errors": [
-    "apis.guru spec azure.com:cognitiveservices-LUIS-Runtime: InvalidURL: URL can't contain control characters. '/v2/specs/azure.com/cognitiveservices-LUIS-Runtime/v2.0 preview/swagger.json' (found at least ' ')"
-  ],
-  "last_run_at": "2026-08-07T04:10:54+00:00",
-  "query_cursor": 168,
-  "runs": 7,
+  "last_errors": [],
+  "last_run_at": "2026-08-08T03:10:47+00:00",
+  "query_cursor": 192,
+  "runs": 8,
   "schema_version": "global-source-discovery-state-v2"
 }
