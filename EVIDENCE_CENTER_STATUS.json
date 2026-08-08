@@ -1,0 +1,13 @@
+{
+  "schema_version": "evidence-center-status-v1",
+  "status": "paused-risk-review",
+  "effective_scope": "all GitHub Actions execution except pause controller and CodeQL",
+  "reason": "Operator-requested pause pending risk review",
+  "data_collection_allowed": false,
+  "provider_validation_allowed": false,
+  "scheduled_discovery_allowed": false,
+  "issue_ticket_execution_allowed": false,
+  "manual_workflow_execution_allowed": false,
+  "repository_read_only_inspection_allowed": true,
+  "resume_policy": "explicit operator-approved governance change required"
+}
